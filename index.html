@@ -6,28 +6,36 @@
   <title>NUMINA | Lujo y Sorteos Exclusivos</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <style>
+    /* Reset y base */
     body {
       margin: 0;
       font-family: 'Montserrat', sans-serif;
       background-color: #111;
       color: #fff;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     header {
       background: linear-gradient(to right, #111, #222);
       text-align: center;
       padding: 40px 20px;
+      user-select: none;
     }
 
     header h1 {
       font-size: 3em;
       color: gold;
       margin-bottom: 10px;
+      letter-spacing: 2px;
+      font-weight: 700;
     }
 
     header p {
       font-size: 1.2em;
       color: #ccc;
+      font-weight: 400;
+      letter-spacing: 1px;
     }
 
     section {
@@ -38,9 +46,11 @@
 
     h2 {
       color: gold;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
       font-size: 2em;
       text-align: center;
+      font-weight: 700;
+      letter-spacing: 1.5px;
     }
 
     .product-grid {
@@ -53,10 +63,16 @@
     .product {
       background-color: #1a1a1a;
       border: 1px solid #333;
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 20px;
       width: 250px;
       text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .product:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 8px 20px rgba(255,215,0,0.6);
     }
 
     .product img {
@@ -64,60 +80,78 @@
       height: 200px;
       object-fit: cover;
       border-radius: 10px;
+      background-color: #111;
+      user-select: none;
     }
-
-    /* Clase específica para la imagen finegold para que se ajuste mejor */
-    .ajuste-vertical {
-      width: 100%;
-      height: 200px;
+    /* Imagen finegold con object-fit contain para que no se corte */
+    .product img.ajuste-vertical {
       object-fit: contain;
-      background-color: #111; /* fondo negro */
-      border-radius: 10px;
-      display: block;
-      margin: 0 auto;
     }
 
     .product h3 {
       margin-top: 15px;
       color: #f5f5f5;
+      font-weight: 600;
+      font-size: 1.2em;
+      letter-spacing: 0.5px;
     }
 
     .product p {
       color: #aaa;
+      margin: 8px 0 15px;
+      font-weight: 400;
+      font-size: 1em;
+      letter-spacing: 0.3px;
     }
 
     .button {
       display: inline-block;
-      margin-top: 10px;
-      background-color: gold;
+      background-color: #ffd700; /* amarillo dorado */
       color: #000;
-      padding: 10px 20px;
-      border-radius: 5px;
+      padding: 12px 24px;
+      border-radius: 25px;
       text-decoration: none;
-      font-weight: bold;
-      transition: background-color 0.3s ease;
-      cursor: pointer;
-      border: none;
+      font-weight: 700;
       font-family: 'Montserrat', sans-serif;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 8px rgba(255,215,0,0.3);
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
     }
     .button:hover {
       background-color: #e6c200;
+      box-shadow: 0 6px 15px rgba(230,194,0,0.7);
     }
 
     form {
       background-color: #1a1a1a;
       padding: 30px;
-      border-radius: 10px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      max-width: 400px;
+      margin: 0 auto 60px;
     }
 
     form input {
       width: 100%;
       margin-bottom: 15px;
-      padding: 10px;
+      padding: 12px 15px;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
       background-color: #333;
       color: #fff;
+      font-size: 1em;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      transition: background-color 0.3s ease;
+      user-select: text;
+    }
+    form input:focus {
+      outline: none;
+      background-color: #444;
+      box-shadow: 0 0 5px gold;
     }
 
     .footer {
@@ -126,6 +160,8 @@
       padding: 20px;
       font-size: 0.9em;
       color: #777;
+      user-select: none;
+      letter-spacing: 0.5px;
     }
 
     .info-box {
@@ -133,7 +169,11 @@
       padding: 20px;
       border-left: 5px solid gold;
       margin: 20px 0;
-      border-radius: 10px;
+      border-radius: 12px;
+      font-size: 1em;
+      letter-spacing: 0.3px;
+      user-select: none;
+      line-height: 1.4;
     }
   </style>
 </head>
@@ -148,28 +188,28 @@
   <h2>Productos de lujo</h2>
   <div class="product-grid">
     <div class="product">
-      <img src="img.rolex.jpg" alt="Rolex">
+      <img src="img.rolex.jpg" alt="Rolex" class="product-img">
       <h3>Reloj Rolex</h3>
       <p>USDT 20.000</p>
       <a href="#" class="button">Comprar</a>
     </div>
 
     <div class="product">
-      <img src="finegold.webp" alt="Oro fino" class="product-img">
+      <img src="finegold.webp" alt="Oro fino" class="ajuste-vertical">
       <h3>1 ounce oro puro</h3>
       <p>USDT 4500</p>
       <a href="#" class="button">Comprar</a>
     </div>
 
     <div class="product">
-      <img src="platiino.webp" alt="Platino">
+      <img src="platiino.webp" alt="Platino" class="product-img">
       <h3>1 ounce Platino Puro</h3>
       <p>USDT 3200</p>
       <a href="#" class="button">Comprar</a>
     </div>
 
     <div class="product">
-      <img src="ticket.webp" alt="Ticket de sorteo">
+      <img src="ticket.webp" alt="Ticket de sorteo" class="product-img">
       <h3>Ticket para sorteo</h3>
       <p>USDT 30</p>
       <a href="#" class="button">Comprar Ticket</a>
@@ -210,3 +250,4 @@
 
 </body>
 </html>
+
