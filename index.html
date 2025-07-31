@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NUMINA | Lujo y Sorteos Exclusivos</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+
   <style>
-    /* Reset y base */
+    /* (todo tu CSS original igual) */
     body {
       margin: 0;
       font-family: 'Montserrat', sans-serif;
@@ -83,7 +84,7 @@
       background-color: #111;
       user-select: none;
     }
-    /* Imagen finegold con object-fit contain para que no se corte */
+
     .product img.ajuste-vertical {
       object-fit: contain;
     }
@@ -106,7 +107,7 @@
 
     .button {
       display: inline-block;
-      background-color: #ffd700; /* amarillo dorado */
+      background-color: #ffd700;
       color: #000;
       padding: 12px 24px;
       border-radius: 25px;
@@ -176,6 +177,8 @@
       line-height: 1.4;
     }
   </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 </head>
 <body>
 
@@ -213,7 +216,6 @@
       <h3>Ticket para sorteo</h3>
       <p>USDT 30</p>
       <a href="https://nowpayments.io/payment/?iid=6336506398" class="button" target="_blank" rel="noopener noreferrer">Comprar Ticket</a>
-
     </div>
   </div>
 </section>
@@ -236,11 +238,11 @@
 
 <section>
   <h2>Registro de usuarios</h2>
-  <form action="https://formsubmit.co/tu-email@mail.com" method="POST">
-    <input type="text" name="nombre" placeholder="Nombre completo" required>
-    <input type="email" name="email" placeholder="Correo electrónico" required>
-    <input type="text" name="direccion" placeholder="Dirección de envío" required>
-    <input type="text" name="referido" placeholder="Código de referido (opcional)">
+  <form id="registroForm">
+    <input type="text" id="nombre" name="nombre" placeholder="Nombre completo" required>
+    <input type="email" id="email" name="email" placeholder="Correo electrónico" required>
+    <input type="text" id="direccion" name="direccion" placeholder="Dirección de envío" required>
+    <input type="text" id="referido" name="referido" placeholder="Código de referido (opcional)">
     <button type="submit" class="button">Registrarme y recibir 1 ticket</button>
   </form>
 </section>
@@ -249,6 +251,6 @@
   © 2025 NUMINA. Todos los derechos reservados.
 </div>
 
-</body>
-</html>
-
+<script>
+  const supabaseUrl = 'https://xaeybhscsxpvtnqzpgwj.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3
