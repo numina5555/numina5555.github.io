@@ -5,9 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NUMINA | Lujo y Sorteos Exclusivos</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-
   <style>
-    /* (todo tu CSS original igual) */
+    /* Reset y base */
     body {
       margin: 0;
       font-family: 'Montserrat', sans-serif;
@@ -177,8 +176,6 @@
       line-height: 1.4;
     }
   </style>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 </head>
 <body>
 
@@ -238,19 +235,55 @@
 
 <section>
   <h2>Registro de usuarios</h2>
-  <form id="registroForm">
-    <input type="text" id="nombre" name="nombre" placeholder="Nombre completo" required>
-    <input type="email" id="email" name="email" placeholder="Correo electrónico" required>
-    <input type="text" id="direccion" name="direccion" placeholder="Dirección de envío" required>
-    <input type="text" id="referido" name="referido" placeholder="Código de referido (opcional)">
+  <form id="registerForm">
+    <input type="text" id="nombre" placeholder="Nombre completo" required>
+    <input type="email" id="email" placeholder="Correo electrónico" required>
+    <input type="text" id="direccion" placeholder="Dirección de envío" required>
+    <input type="text" id="referido" placeholder="Código de referido (opcional)">
     <button type="submit" class="button">Registrarme y recibir 1 ticket</button>
   </form>
+  <div id="msg" style="color:gold;text-align:center;margin-top:15px;"></div>
 </section>
 
 <div class="footer">
   © 2025 NUMINA. Todos los derechos reservados.
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 <script>
   const supabaseUrl = 'https://xaeybhscsxpvtnqzpgwj.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnFncWp3aiIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzUzOTI0NDc2LCJleHAiOjIwNjk1MDA0NzZ9.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU';
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+  const form = document.getElementById('registerForm');
+  const msgDiv = document.getElementById('msg');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const nombre = document.getElementById('nombre').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const direccion = document.getElementById('direccion').value.trim();
+    const referido = document.getElementById('referido').value.trim();
+
+    if (!nombre || !email || !direccion) {
+      msgDiv.textContent = 'Por favor, completa todos los campos obligatorios.';
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('users')
+      .insert([{ nombre, email, direccion, referido }]);
+
+    if (error) {
+      msgDiv.textContent = 'Error al registrar. Intenta nuevamente.';
+      console.error(error);
+    } else {
+      msgDiv.textContent = '¡Registro exitoso! Recibiste 1 ticket gratis.';
+      form.reset();
+    }
+  });
+</script>
+
+</body>
+</html>
