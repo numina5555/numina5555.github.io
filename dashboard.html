@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard | NUMINA</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #111; color: #fff; padding: 20px; }
+    h1 { color: gold; }
+    .compra { background: #222; margin: 10px 0; padding: 10px; border-radius: 8px; }
+    button { background: gold; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<h1>Dashboard de usuario</h1>
+<div id="user-email"></div>
+<button id="logoutBtn">Cerrar sesión</button>
+
+<h2>Compras realizadas</h2>
+<div id="compras-lista">
+  Cargando...
+</div>
+
+<script>
+  const supabaseUrl = 'https://xaeybhscsxpvtnqzpgwj.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnF6cGd3aiIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzUzOTI0NDc2LCJleHAiOjIwNjk1MDA0NzZ9.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU';
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+  async function checkUser() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = 'login.html';
+      return;
+    }
+    document.getElementById('user-email').textContent = 'Hola, ' + session.user.email;
+    cargarCompras(session.user.id);
+  }
+
+  async function cargarCompras(userId) {
+    const { data, error } = await supabase
+      .from('compras')
+      .select('*')
+      .eq('user_id', userId);
+
+    const lista = document.getElementById('compras-lista');
+    if (error) {
+      lista.textContent = 'Error al cargar compras.';
+      return;
+    }
+    if (data.length === 0) {
+      lista.textContent = 'No tenés compras registradas aún.';
+      return;
+    }
+
+    lista.innerHTML = '';
+    data.forEach(compra => {
+      const div = document.createElement('div');
+      div.classList.add('compra');
+      div.textContent = `Producto: ${compra.producto} - Precio: USDT ${compra.precio} - Fecha: ${new Date(compra.fecha).toLocaleDateString()}`;
+      lista.appendChild(div);
+    });
+  }
+
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.href = 'login.html';
+  });
+
+  checkUser();
+</script>
+
+</body>
+</html>
