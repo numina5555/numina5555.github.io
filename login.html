@@ -1,77 +1,187 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>NUMINA - Login / Registro</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NUMINA | Acceso Exclusivo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <style>
-    body { background:#111; color:#fff; font-family: Montserrat, sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; margin:0;}
-    form { background:#222; padding:20px; border-radius:10px; margin:10px; width:320px;}
-    input, button { width:100%; margin:8px 0; padding:10px; border-radius:6px; border:none; }
-    button { background:#ffd700; color:#000; font-weight:700; cursor:pointer; }
-    h2 { text-align:center; margin-bottom:10px; color:gold;}
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background-color: #111;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      position: relative;
+    }
+    .login-container {
+      background: linear-gradient(to right, #1a1a1a, #222);
+      padding: 40px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      border: 1px solid #333;
+      text-align: center;
+    }
+    .login-container h1 {
+      color: gold;
+      margin-bottom: 30px;
+      font-size: 2.2em;
+      letter-spacing: 1.5px;
+    }
+    .login-container input {
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 20px;
+      border: none;
+      border-radius: 8px;
+      background-color: #333;
+      color: #fff;
+      font-size: 1em;
+      transition: all 0.3s;
+    }
+    .login-container input:focus {
+      outline: none;
+      background-color: #444;
+      box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+    }
+    .login-button {
+      background-color: #ffd700;
+      color: #000;
+      border: none;
+      padding: 12px 0;
+      width: 100%;
+      border-radius: 25px;
+      font-weight: 700;
+      font-size: 1em;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 10px;
+    }
+    .login-button:hover {
+      background-color: #e6c200;
+      transform: translateY(-2px);
+    }
+    .toggle-form {
+      color: #aaa;
+      margin-top: 20px;
+      display: block;
+      cursor: pointer;
+    }
+    .toggle-form:hover {
+      color: gold;
+    }
+    #error-message {
+      color: #ff6b6b;
+      margin-top: 15px;
+      font-size: 0.9em;
+    }
+    .logo {
+      color: gold;
+      font-size: 1.8em;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
+  <div class="login-container">
+    <div class="logo">NUMINA</div>
+    <h1>Acceso Exclusivo</h1>
+    
+    <!-- Formulario de Login -->
+    <div id="login-form">
+      <input type="email" id="email" placeholder="Correo electrónico" required>
+      <input type="password" id="password" placeholder="Contraseña" required>
+      <button class="login-button" onclick="login()">Ingresar</button>
+      <p id="error-message"></p>
+      <a class="toggle-form" onclick="toggleForm()">¿No tienes cuenta? Regístrate</a>
+    </div>
+    
+    <!-- Formulario de Registro (oculto inicialmente) -->
+    <div id="register-form" style="display: none;">
+      <input type="email" id="register-email" placeholder="Correo electrónico" required>
+      <input type="password" id="register-password" placeholder="Contraseña" required>
+      <input type="text" id="full-name" placeholder="Nombre completo" required>
+      <button class="login-button" onclick="register()">Crear cuenta</button>
+      <p id="register-error-message"></p>
+      <a class="toggle-form" onclick="toggleForm()">¿Ya tienes cuenta? Inicia sesión</a>
+    </div>
+  </div>
 
-<h1>NUMINA - Iniciar sesión / Registrarse</h1>
+  <script>
+    // Configura Supabase
+    const supabaseUrl = 'TU_URL_SUPABASE';
+    const supabaseKey = 'TU_KEY_PUBLICA';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-<form id="signup-form">
-  <h2>Registrarse</h2>
-  <input type="email" id="signup-email" placeholder="Email" required />
-  <input type="password" id="signup-password" placeholder="Contraseña" required />
-  <button type="submit">Registrarse</button>
-</form>
-
-<form id="login-form">
-  <h2>Iniciar sesión</h2>
-  <input type="email" id="login-email" placeholder="Email" required />
-  <input type="password" id="login-password" placeholder="Contraseña" required />
-  <button type="submit">Iniciar sesión</button>
-</form>
-
-<script>
-  const supabaseUrl = 'https://xaeybhscsxpvtnqzpgwj.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnFncndqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU';
-  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-  // Registro
-  const signupForm = document.getElementById('signup-form');
-  signupForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('signup-email').value;
-    const password = document.getElementById('signup-password').value;
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      alert('Error al registrarse: ' + error.message);
-    } else {
-      alert('Registrado con éxito. Revisa tu email para confirmar.');
+    // Alternar entre login/registro
+    function toggleForm() {
+      const loginForm = document.getElementById('login-form');
+      const registerForm = document.getElementById('register-form');
+      
+      if (loginForm.style.display === 'none') {
+        loginForm.style.display = 'block';
+        registerForm.style.display = 'none';
+      } else {
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'block';
+      }
     }
-  });
 
-  // Login
-  const loginForm = document.getElementById('login-form');
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      alert('Error al iniciar sesión: ' + error.message);
-    } else {
-      window.location.href = 'dashboard.html';
+    // Login
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) {
+        document.getElementById('error-message').textContent = error.message;
+      } else {
+        window.location.href = "dashboard.html"; // Redirige al dashboard
+      }
     }
-  });
 
-  // Chequear sesión actual y redirigir si ya está logueado
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    if (session) {
-      window.location.href = 'dashboard.html';
+    // Registro
+    async function register() {
+      const email = document.getElementById('register-email').value;
+      const password = document.getElementById('register-password').value;
+      const fullName = document.getElementById('full-name').value;
+      
+      // 1. Registrar usuario
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName
+          }
+        }
+      });
+      
+      if (error) {
+        document.getElementById('register-error-message').textContent = error.message;
+      } else {
+        alert('¡Registro exitoso! Verifica tu correo electrónico.');
+        toggleForm(); // Vuelve al formulario de login
+      }
     }
-  });
-</script>
 
+    // Verificar si ya está autenticado
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) window.location.href = "dashboard.html";
+    });
+  </script>
+</body>
+</html>
 </body>
 </html>
 
