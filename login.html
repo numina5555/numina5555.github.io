@@ -125,7 +125,7 @@
     // Configura Supabase
     const supabaseUrl = "https://xaeybhscsxpvtnqzpgwj.supabase.co";
     const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU";
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
     // Alternar entre login/registro
     function toggleForm() {
@@ -160,7 +160,7 @@
         return;
       }
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabaseClient.auth.signInWithPassword({
         email,
         password,
       });
@@ -174,7 +174,7 @@
 
     // Registro
     async function register() {
-      console.log("Función register() llamada"); // Log para debug
+      console.log("Función register() llamada");
 
       const email = document.getElementById("register-email").value;
       const password = document.getElementById("register-password").value;
@@ -190,7 +190,7 @@
         return;
       }
 
-      const response = await supabase.auth.signUp({
+      const response = await supabaseClient.auth.signUp({
         email,
         password,
         options: {
