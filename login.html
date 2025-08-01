@@ -76,10 +76,14 @@
     .toggle-form:hover {
       color: gold;
     }
-    #error-message {
+    #error-message, #register-error-message, #register-success-message {
       color: #ff6b6b;
       margin-top: 15px;
       font-size: 0.9em;
+      min-height: 20px;
+    }
+    #register-success-message {
+      color: #4CAF50; /* verde */
     }
     .logo {
       color: gold;
@@ -110,6 +114,7 @@
       <input type="text" id="full-name" placeholder="Nombre completo" required>
       <button class="login-button" onclick="register()">Crear cuenta</button>
       <p id="register-error-message"></p>
+      <p id="register-success-message"></p>
       <a class="toggle-form" onclick="toggleForm()">¿Ya tienes cuenta? Inicia sesión</a>
     </div>
   </div>
@@ -124,6 +129,13 @@
     function toggleForm() {
       const loginForm = document.getElementById('login-form');
       const registerForm = document.getElementById('register-form');
+      const errorMsg = document.getElementById('error-message');
+      const regErrorMsg = document.getElementById('register-error-message');
+      const regSuccessMsg = document.getElementById('register-success-message');
+      
+      errorMsg.textContent = '';
+      regErrorMsg.textContent = '';
+      regSuccessMsg.textContent = '';
       
       if (loginForm.style.display === 'none') {
         loginForm.style.display = 'block';
@@ -138,13 +150,21 @@
     async function login() {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
+      const errorMsg = document.getElementById('error-message');
+      errorMsg.textContent = '';
+
+      if (!email || !password) {
+        errorMsg.textContent = 'Por favor completa todos los campos.';
+        return;
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
       
       if (error) {
-        document.getElementById('error-message').textContent = error.message;
+        errorMsg.textContent = error.message;
       } else {
         window.location.href = "dashboard.html"; // Redirige al dashboard
       }
@@ -155,8 +175,17 @@
       const email = document.getElementById('register-email').value;
       const password = document.getElementById('register-password').value;
       const fullName = document.getElementById('full-name').value;
-      
-      // 1. Registrar usuario
+      const regErrorMsg = document.getElementById('register-error-message');
+      const regSuccessMsg = document.getElementById('register-success-message');
+
+      regErrorMsg.textContent = '';
+      regSuccessMsg.textContent = '';
+
+      if (!email || !password || !fullName) {
+        regErrorMsg.textContent = 'Por favor completa todos los campos.';
+        return;
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -166,12 +195,15 @@
           }
         }
       });
-      
+
       if (error) {
-        document.getElementById('register-error-message').textContent = error.message;
+        regErrorMsg.textContent = error.message;
       } else {
-        alert('¡Registro exitoso! Verifica tu correo electrónico.');
-        toggleForm(); // Vuelve al formulario de login
+        regSuccessMsg.textContent = '¡Registro exitoso! Revisa tu correo para confirmar la cuenta.';
+        // Opcional: limpiar inputs
+        document.getElementById('register-email').value = '';
+        document.getElementById('register-password').value = '';
+        document.getElementById('full-name').value = '';
       }
     }
 
@@ -182,6 +214,3 @@
   </script>
 </body>
 </html>
-</body>
-</html>
-
