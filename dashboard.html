@@ -1,20 +1,381 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NUMINA | Dashboard</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet"
-  />
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-  />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* (Mantengo todo igual, omitido aquí por brevedad) */
-    /* Copiá y pega el CSS que ya tenías, no lo repito para ahorrar espacio */
+    :root {
+      --primary: #ffd700;
+      --primary-dark: #e6c200;
+      --dark: #111;
+      --dark-light: #1a1a1a;
+      --dark-lighter: #222;
+      --text: #fff;
+      --text-light: #ccc;
+      --success: #28a745;
+      --warning: #ffc107;
+      --danger: #dc3545;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--dark);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Header */
+    .dashboard-header {
+      background: linear-gradient(to right, var(--dark), var(--dark-lighter));
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+    }
+    
+    .logo {
+      color: var(--primary);
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: var(--primary);
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    
+    /* Main Layout */
+    .dashboard-container {
+      display: flex;
+      flex: 1;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background-color: var(--dark-light);
+      padding: 1.5rem 0;
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .sidebar-menu {
+      list-style: none;
+    }
+    
+    .menu-item {
+      padding: 0.8rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      border-left: 3px solid transparent;
+    }
+    
+    .menu-item:hover, .menu-item.active {
+      background-color: rgba(255, 215, 0, 0.1);
+      border-left: 3px solid var(--primary);
+      color: var(--primary);
+    }
+    
+    .menu-item i {
+      width: 20px;
+      text-align: center;
+    }
+    
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+      background-color: var(--dark);
+    }
+    
+    .welcome-banner {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+      border: 1px solid rgba(255, 215, 0, 0.1);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .welcome-text h2 {
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .welcome-text p {
+      color: var(--text-light);
+    }
+    
+    .referral-code {
+      background-color: var(--dark-light);
+      padding: 0.8rem 1.2rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    
+    .referral-code span {
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+    
+    .copy-btn {
+      background-color: var(--primary);
+      color: var(--dark);
+      border: none;
+      padding: 0.3rem 0.6rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .copy-btn:hover {
+      background-color: var(--primary-dark);
+    }
+    
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+      background-color: var(--dark-light);
+      border-radius: 10px;
+      padding: 1.5rem;
+      border-left: 4px solid var(--primary);
+    }
+    
+    .stat-card h3 {
+      color: var(--text-light);
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .stat-card .value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-card .change {
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    
+    .change.positive {
+      color: var(--success);
+    }
+    
+    .change.negative {
+      color: var(--danger);
+    }
+    
+    /* Tables */
+    .section-title {
+      color: var(--primary);
+      margin: 2rem 0 1rem;
+      font-size: 1.3rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    
+    .table-container {
+      background-color: var(--dark-light);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    th, td {
+      padding: 1rem;
+      text-align: left;
+    }
+    
+    th {
+      background-color: var(--dark-lighter);
+      color: var(--primary);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+    }
+    
+    td {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-light);
+    }
+    
+    tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .status {
+      padding: 0.3rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    
+    .status.active {
+      background-color: rgba(40, 167, 69, 0.2);
+      color: var(--success);
+    }
+    
+    .status.pending {
+      background-color: rgba(255, 193, 7, 0.2);
+      color: var(--warning);
+    }
+    
+    .status.completed {
+      background-color: rgba(13, 110, 253, 0.2);
+      color: #0d6efd;
+    }
+    
+    .action-btn {
+      background-color: transparent;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      padding: 0.3rem 0.8rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .action-btn:hover {
+      background-color: var(--primary);
+      color: var(--dark);
+    }
+    
+    /* Account Info */
+    .account-info {
+      background-color: var(--dark-light);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-top: 2rem;
+    }
+    
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .info-item h4 {
+      color: var(--text-light);
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+    
+    .info-item p {
+      font-weight: 600;
+    }
+    
+    .edit-btn {
+      display: inline-block;
+      margin-top: 1.5rem;
+      background-color: var(--primary);
+      color: var(--dark);
+      padding: 0.6rem 1.2rem;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    
+    .edit-btn:hover {
+      background-color: var(--primary-dark);
+    }
+    
+    /* Responsive */
+    @media (max-width: 992px) {
+      .sidebar {
+        width: 70px;
+      }
+      
+      .menu-item span {
+        display: none;
+      }
+      
+      .menu-item {
+        justify-content: center;
+      }
+      
+      .welcome-banner {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .dashboard-container {
+        flex-direction: column;
+      }
+      
+      .sidebar {
+        width: 100%;
+        padding: 0;
+      }
+      
+      .sidebar-menu {
+        display: flex;
+        overflow-x: auto;
+      }
+      
+      .menu-item {
+        padding: 1rem;
+        min-width: 70px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -22,10 +383,10 @@
   <header class="dashboard-header">
     <div class="logo">NUMINA</div>
     <div class="user-menu">
-      <div id="user-avatar" class="user-avatar">JD</div>
+      <div class="user-avatar">JD</div>
     </div>
   </header>
-
+  
   <div class="dashboard-container">
     <!-- Sidebar -->
     <nav class="sidebar">
@@ -54,215 +415,233 @@
           <i class="fas fa-cog"></i>
           <span>Configuración</span>
         </li>
-        <li class="menu-item" id="logout-button">
+        <li class="menu-item">
           <i class="fas fa-sign-out-alt"></i>
           <span>Cerrar Sesión</span>
         </li>
       </ul>
     </nav>
-
+    
     <!-- Main Content -->
     <main class="main-content">
       <!-- Welcome Banner -->
       <section class="welcome-banner">
         <div class="welcome-text">
-          <h2 id="welcome-name">Bienvenido, Juan Delgado</h2>
-          <p id="welcome-level">Nivel Oro | Miembro desde: 15/03/2023</p>
+          <h2>Bienvenido, Juan Delgado</h2>
+          <p>Nivel Oro | Miembro desde: 15/03/2023</p>
         </div>
         <div class="referral-code">
           <i class="fas fa-user-plus"></i>
-          <span id="referral-code">CODIGO123</span>
+          <span>CODIGO123</span>
           <button class="copy-btn">Copiar</button>
         </div>
       </section>
-
+      
       <!-- Stats Grid -->
       <div class="stats-grid">
         <div class="stat-card">
           <h3>Saldo Disponible</h3>
-          <div class="value" id="saldo-disponible">$4,250.00</div>
+          <div class="value">$4,250.00</div>
           <div class="change positive">
             <i class="fas fa-arrow-up"></i>
             <span>12% este mes</span>
           </div>
         </div>
-
+        
         <div class="stat-card">
           <h3>Compras Activas</h3>
-          <div class="value" id="compras-activas">3</div>
+          <div class="value">3</div>
           <div class="change positive">
             <i class="fas fa-arrow-up"></i>
             <span>1 nueva</span>
           </div>
         </div>
-
+        
         <div class="stat-card">
           <h3>Referidos</h3>
-          <div class="value" id="referidos-count">27</div>
+          <div class="value">27</div>
           <div class="change positive">
             <i class="fas fa-arrow-up"></i>
             <span>5 nuevos</span>
           </div>
         </div>
-
+        
         <div class="stat-card">
           <h3>Tickets de Sorteo</h3>
-          <div class="value" id="tickets-sorteo">15</div>
+          <div class="value">15</div>
           <div class="change negative">
             <i class="fas fa-arrow-down"></i>
             <span>2 usados</span>
           </div>
         </div>
       </div>
-
-      <!-- (Resto del contenido lo dejamos igual, ya que es estático o se podría mejorar luego) -->
-
+      
+      <!-- Active Purchases -->
+      <h2 class="section-title">
+        <i class="fas fa-shopping-bag"></i>
+        <span>Compras Activas</span>
+      </h2>
+      
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Fecha</th>
+              <th>Valor</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <strong>Reloj Rolex Daytona</strong>
+                <div style="font-size: 0.8rem; color: #aaa;">ID: #NUM-4892</div>
+              </td>
+              <td>15/06/2023</td>
+              <td>$20,000.00</td>
+              <td><span class="status active">En proceso</span></td>
+              <td><button class="action-btn">Seguimiento</button></td>
+            </tr>
+            <tr>
+              <td>
+                <strong>1 Onza Oro Puro</strong>
+                <div style="font-size: 0.8rem; color: #aaa;">ID: #NUM-3751</div>
+              </td>
+              <td>02/06/2023</td>
+              <td>$4,500.00</td>
+              <td><span class="status pending">Verificación</span></td>
+              <td><button class="action-btn">Detalles</button></td>
+            </tr>
+            <tr>
+              <td>
+                <strong>5 Tickets Sorteo</strong>
+                <div style="font-size: 0.8rem; color: #aaa;">ID: #NUM-2084</div>
+              </td>
+              <td>28/05/2023</td>
+              <td>$150.00</td>
+              <td><span class="status completed">Activos</span></td>
+              <td><button class="action-btn">Ver</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Referral History -->
+      <h2 class="section-title">
+        <i class="fas fa-users"></i>
+        <span>Historial de Referidos</span>
+      </h2>
+      
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Referido</th>
+              <th>Fecha</th>
+              <th>Compras</th>
+              <th>Estado</th>
+              <th>Comisión</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <strong>María González</strong>
+                <div style="font-size: 0.8rem; color: #aaa;">maria.g@email.com</div>
+              </td>
+              <td>10/06/2023</td>
+              <td>3</td>
+              <td><span class="status active">Activo</span></td>
+              <td>$125.00</td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Carlos Pérez</strong>
+                <div style="font-size: 0.8rem; color: #aaa;">carlos.p@email.com</div>
+              </td>
+              <td>25/05/2023</td>
+              <td>1</td>
+              <td><span class="status active">Activo</span></td>
+              <td>$50.00</td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Ana Rodríguez</strong>
+                <div style="font-size: 0.8rem; color: #aaa;">ana.r@email.com</div>
+              </td>
+              <td>14/05/2023</td>
+              <td>0</td>
+              <td><span class="status pending">Inactivo</span></td>
+              <td>$0.00</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
       <!-- Account Information -->
       <h2 class="section-title">
         <i class="fas fa-user-circle"></i>
         <span>Información de la Cuenta</span>
       </h2>
-
+      
       <div class="account-info">
         <div class="info-grid">
           <div class="info-item">
             <h4>Nombre Completo</h4>
-            <p id="info-nombre">Juan Delgado</p>
+            <p>Juan Delgado</p>
           </div>
           <div class="info-item">
             <h4>Correo Electrónico</h4>
-            <p id="info-email">juan.delgado@email.com</p>
+            <p>juan.delgado@email.com</p>
           </div>
           <div class="info-item">
             <h4>Teléfono</h4>
-            <p id="info-telefono">+1 (555) 123-4567</p>
+            <p>+1 (555) 123-4567</p>
           </div>
           <div class="info-item">
             <h4>Dirección</h4>
-            <p id="info-direccion">Calle Principal 123, Ciudad</p>
+            <p>Calle Principal 123, Ciudad</p>
           </div>
           <div class="info-item">
             <h4>Nivel de Membresía</h4>
-            <p id="info-nivel">Oro</p>
+            <p>Oro</p>
           </div>
           <div class="info-item">
             <h4>Fecha de Registro</h4>
-            <p id="info-fecha-registro">15/03/2023</p>
+            <p>15/03/2023</p>
           </div>
         </div>
-
+        
         <a href="#" class="edit-btn">Editar Información</a>
       </div>
     </main>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    const supabaseUrl = 'https://xaeybhscsxpvtnqzpgwj.supabase.co'; // <- Cambiá esto
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU'; // <- Cambiá esto
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-    // Copiar código referido
-    document.querySelector('.copy-btn').addEventListener('click', function () {
-      const referralCode = document.getElementById('referral-code').textContent;
+    // Función para copiar el código de referido
+    document.querySelector('.copy-btn').addEventListener('click', function() {
+      const referralCode = 'CODIGO123';
       navigator.clipboard.writeText(referralCode);
-
+      
       const originalText = this.textContent;
       this.textContent = '¡Copiado!';
       this.style.backgroundColor = '#28a745';
-
+      
       setTimeout(() => {
         this.textContent = originalText;
         this.style.backgroundColor = '#ffd700';
       }, 2000);
     });
-
-    // Cambio de menú activo
+    
+    // Simular cambio de menú activo
     const menuItems = document.querySelectorAll('.menu-item');
-    menuItems.forEach((item) => {
-      item.addEventListener('click', function () {
-        menuItems.forEach((i) => i.classList.remove('active'));
+    menuItems.forEach(item => {
+      item.addEventListener('click', function() {
+        menuItems.forEach(i => i.classList.remove('active'));
         this.classList.add('active');
       });
-    });
-
-    // Función para cargar datos del usuario y mostrarlos
-    async function cargarDatosUsuario() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        // No hay usuario logueado, redirigir a login
-        window.location.href = '/login.html'; // Cambiá a la ruta real de tu login
-        return;
-      }
-
-      // Consultar tabla perfiles (profiles)
-      const { data: perfil, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (error) {
-        console.error('Error al obtener perfil:', error.message);
-        return;
-      }
-
-      // Actualizar DOM con datos reales
-      const avatar = document.getElementById('user-avatar');
-      const welcomeName = document.getElementById('welcome-name');
-      const welcomeLevel = document.getElementById('welcome-level');
-      const referralCode = document.getElementById('referral-code');
-
-      const infoNombre = document.getElementById('info-nombre');
-      const infoEmail = document.getElementById('info-email');
-      const infoTelefono = document.getElementById('info-telefono');
-      const infoDireccion = document.getElementById('info-direccion');
-      const infoNivel = document.getElementById('info-nivel');
-      const infoFechaRegistro = document.getElementById('info-fecha-registro');
-
-      // Mostrar iniciales en avatar (ejemplo: Juan Delgado -> JD)
-      const initials = perfil.full_name
-        ? perfil.full_name
-            .split(' ')
-            .map((n) => n[0])
-            .join('')
-            .toUpperCase()
-        : 'U';
-
-      avatar.textContent = initials;
-
-      // Actualizar textos
-      welcomeName.textContent = `Bienvenido, ${perfil.full_name || 'Usuario'}`;
-      welcomeLevel.textContent = `Nivel ${perfil.level || '-'} | Miembro desde: ${
-        perfil.created_at
-          ? new Date(perfil.created_at).toLocaleDateString('es-AR')
-          : '-'
-      }`;
-      referralCode.textContent = perfil.referral_code || 'SIN CÓDIGO';
-
-      infoNombre.textContent = perfil.full_name || '-';
-      infoEmail.textContent = user.email || '-';
-      infoTelefono.textContent = perfil.phone || '-';
-      infoDireccion.textContent = perfil.address || '-';
-      infoNivel.textContent = perfil.level || '-';
-      infoFechaRegistro.textContent = perfil.created_at
-        ? new Date(perfil.created_at).toLocaleDateString('es-AR')
-        : '-';
-    }
-
-    cargarDatosUsuario();
-
-    // Logout (cerrar sesión)
-    document.getElementById('logout-button').addEventListener('click', async () => {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        alert('Error al cerrar sesión: ' + error.message);
-      } else {
-        window.location.href = '/login.html'; // Cambiá a la ruta real de login
-      }
     });
   </script>
 </body>
