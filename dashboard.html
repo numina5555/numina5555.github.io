@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NUMINA | Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
     :root {
       --primary: #ffd700;
@@ -480,6 +480,424 @@
       <h2 class="section-title">
         <i class="fas fa-shopping-bag"></i>
         <span>Compras Activas</span>
+      </h2>
+      
+      <div class="table-container">
+        <table id="purchases-table">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Fecha</th>
+              <th>Valor</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Datos dinámicos -->
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Referral History -->
+      <h2 class="section-title">
+        <i class="fas fa-users"></i>
+        <span>Historial de Referidos</span>
+      </h2>
+      
+      <div class="table-container">
+        <table id="referrals-table">
+          <thead>
+            <tr>
+              <th>Referido</th>
+              <th>Fecha</th>
+              <th>Compras</th>
+              <th>Estado</th>
+              <th>Comisión</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Datos dinámicos -->
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Account Information -->
+      <h2 class="section-title">
+        <i class="fas fa-user-circle"></i>
+        <span>Información de la Cuenta</span>
+      </h2>
+      
+      <div class="account-info">
+        <div class="info-grid" id="account-info-grid">
+          <!-- Datos dinámicos -->
+        </div>
+        
+        <a href="#" class="edit-btn">Editar Información</a>
+      </div>
+    </main>
+  </div>
+
+  <!-- Librería Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+
+  <script>
+    // Configurá con tus datos reales de Supabase
+    const SUPABASE_URL = 'https://xaeybhscsxpvtnqzpgwj.supabase.co'; // Cambia esto
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU'; // Cambia esto
+
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Copiar código de referido
+    document.querySelector('.copy-btn').addEventListener('click', function() {
+      const referralCode = this.previousElementSibling.textContent;
+      navigator.clipboard.writeText(referralCode);
+      const originalText = this.textContent;
+      this.textContent = '¡Copiado!';
+      this.style.backgroundColor = '#28a745';
+      setTimeout(() => {
+        this.textContent = originalText;
+        this.style.backgroundColor = '#ffd700';
+      }, 2000);
+    });
+
+    // Cambiar menú activo
+    const menuItems = document.querySelectorAll('.menu-item');
+    menuItems.forEach(item => {
+      item.addEventListener('click', function() {
+        menuItems.forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    // Función para cargar datos del usuario y mostrar en el dashboard
+    async function loadUserData() {
+      const {
+        data: { session },
+        error: sessionError
+      } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        console.error('Error obteniendo sesión:', sessionError);
+        return;
+      }
+
+      if (!session) {
+        // No hay sesión, redirigir a login
+        window.location.href = '/login.html';
+        return;
+      }
+
+      const user = session.user;
+
+      // Obtener perfil
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Error cargando perfil:', profileError);
+        return;
+      }
+
+      // Actualizar avatar
+      const avatarEl = document.querySelector('.user-avatar');
+      avatarEl.textContent = profile.initials || user.email.charAt(0).toUpperCase();
+
+      // Actualizar texto bienvenida
+      const welcomeTitle = document.querySelector('.welcome-text h2');
+      welcomeTitle.textContent = `Bienvenido, ${profile.full_name || user.email}`;
+
+      const welcomeSub = document.querySelector('.welcome-text p');
+      const date = profile.created_at ? new Date(profile.created_at).toLocaleDateString() : '';
+      welcomeSub.textContent = `${profile.membership_level || 'Nivel Básico'} | Miembro desde: ${date}`;
+
+      // Código de referido
+      const referralCodeSpan = document.querySelector('.referral-code span');
+      referralCodeSpan.textContent = profile.referral_code || '---';
+
+      // Mostrar saldo disponible, referidos, tickets etc.
+      // Para ejemplo, supongamos estos campos en perfil o calculados:
+
+      // Actualizar Stats Cards con datos dinámicos
+      document.querySelectorAll('.stat-card')[0].querySelector('.value').textContent = `$${profile.balance?.toFixed(2) || '0.00'}`;
+      document.querySelectorAll('.stat-card')[1].querySelector('.value').textContent = profile.active_purchases_count || '0';
+      document.querySelectorAll('.stat-card')[2].querySelector('.value').textContent = profile.referrals_count || '0';
+      document.querySelectorAll('.stat-card')[3].querySelector('.value').textContent = profile.tickets_count || '0';
+
+      // Cargar compras activas
+      loadActivePurchases(user.id);
+      
+      // Cargar historial de referidos
+      loadReferralHistory(user.id);
+      
+      // Cargar información de cuenta
+      loadAccountInfo(profile);
+    }
+
+    // Función para cargar compras activas
+    async function loadActivePurchases(userId) {
+      const { data: purchases, error } = await supabase
+        .from('purchases')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'active');
+
+      if (error) {
+        console.error('Error cargando compras:', error);
+        return;
+      }
+
+      const tbody = document.querySelector('#purchases-table tbody');
+      tbody.innerHTML = '';
+
+      purchases.forEach(purchase => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${purchase.product_name}</strong><div style="font-size:0.8rem;color:#aaa;">ID: #${purchase.id}</div></td>
+          <td>${new Date(purchase.date).toLocaleDateString()}</td>
+          <td>$${purchase.value.toFixed(2)}</td>
+          <td><span class="status active">Activo</span></td>
+          <td><button class="action-btn" onclick="alert('Detalle compra ID: ${purchase.id}')">Detalles</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Función para cargar historial de referidos
+    async function loadReferralHistory(userId) {
+      const { data: referrals, error } = await supabase
+        .from('referrals')
+        .select('*')
+        .eq('referrer_id', userId);
+
+      if (error) {
+        console.error('Error cargando referidos:', error);
+        return;
+      }
+
+      const tbody = document.querySelector('#referrals-table tbody');
+      tbody.innerHTML = '';
+
+      referrals.forEach(ref => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${ref.referred_name || 'Anónimo'}</td>
+          <td>${new Date(ref.date).toLocaleDateString()}</td>
+          <td>${ref.purchases_count || 0}</td>
+          <td>${ref.status || 'Activo'}</td>
+          <td>$${ref.commission?.toFixed(2) || '0.00'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Función para cargar info de cuenta en sección de cuenta
+    function loadAccountInfo(profile) {
+      const container = document.getElementById('account-info-grid');
+      container.innerHTML = `
+        <div class="info-item">
+          <h4>Nombre Completo</h4>
+          <p>${profile.full_name || 'No definido'}</p>
+        </div>
+        <div class="info-item">
+          <h4>Email</h4>
+          <p>${profile.email || 'No definido'}</p>
+        </div>
+        <div class="info-item">
+          <h4>Teléfono</h4>
+          <p>${profile.phone || 'No definido'}</p>
+        </div>
+        <div class="info-item">
+          <h4>Dirección</h4>
+          <p>${profile.address || 'No definido'}</p>
+        </div>
+      `;
+    }
+
+    // Ejecutar carga al cargar la página
+    window.addEventListener('DOMContentLoaded', loadUserData);
+  </script>
+</body>
+</html>
+
+      </h2>
+      
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Fecha</th>
+              <th>Valor</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <strong>Reloj Rolex Daytona</strong>
+                <div style="font-size: 0.8rem; color: #aaa;">ID: #NUM-4892</div>
+              </td>
+              <td>15/06/2023</td>
+              <td>$20,000.00</td>
+              <td><span class="status active">En proceso</span></td>
+              <td><button class="action-btn">Seguimiento</button></td>
+            </tr>
+            <tr>
+              <td>
+                <strong>1 Onza Oro Puro</strong>
+                <div style="font-size: 0.8rem; color: #aaa;">ID: #NUM-3751</div>
+              </td>
+              <td>02/06/2023</td>
+              <td>$4,500.00</td>
+              <td><span class="status pending">Verificación</span></td>
+              <td><button class="action-btn">Detalles</button></td>
+            </tr>
+            <tr>
+              <td>
+                <strong>5 Tickets Sorteo</strong>
+                <div style="font-size: 0.8rem; color: #aaa;">ID: #NUM-2084</div>
+              </td>
+              <td>28/05/2023</td>
+              <td>$150.00</td>
+              <td><span class="status completed">Activos</span></td>
+              <td><button class="action-btn">Ver</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Referral History -->
+      <h2 class="section-title">
+        <i class="fas fa-users"></i>
+        <span>Historial de Referidos</span>
+      </h2>
+      
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Referido</th>
+              <th>Fecha</th>
+              <th>Compras</th>
+              <th>Estado</th>
+              <th>Comisión</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <strong>María González</strong>
+                <div style="font-size: 0.8rem; color: #aaa;">maria.g@email.com</div>
+              </td>
+              <td>10/06/2023</td>
+              <td>3</td>
+              <td><span class="status active">Activo</span></td>
+              <td>$125.00</td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Carlos Pérez</strong>
+                <div style="font-size: 0.8rem; color: #aaa;">carlos.p@email.com</div>
+              </td>
+              <td>25/05/2023</td>
+              <td>1</td>
+              <td><span class="status active">Activo</span></td>
+              <td>$50.00</td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Ana Rodríguez</strong>
+                <div style="font-size: 0.8rem; color: #aaa;">ana.r@email.com</div>
+              </td>
+              <td>14/05/2023</td>
+              <td>0</td>
+              <td><span class="status pending">Inactivo</span></td>
+              <td>$0.00</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Account Information -->
+      <h2 class="section-title">
+        <i class="fas fa-user-circle"></i>
+        <span>Información de la Cuenta</span>
+      </h2>
+      
+      <div class="account-info">
+        <div class="info-grid">
+          <div class="info-item">
+            <h4>Nombre Completo</h4>
+            <p>Juan Delgado</p>
+          </div>
+          <div class="info-item">
+            <h4>Correo Electrónico</h4>
+            <p>juan.delgado@email.com</p>
+          </div>
+          <div class="info-item">
+            <h4>Teléfono</h4>
+            <p>+1 (555) 123-4567</p>
+          </div>
+          <div class="info-item">
+            <h4>Dirección</h4>
+            <p>Calle Principal 123, Ciudad</p>
+          </div>
+          <div class="info-item">
+            <h4>Nivel de Membresía</h4>
+            <p>Oro</p>
+          </div>
+          <div class="info-item">
+            <h4>Fecha de Registro</h4>
+            <p>15/03/2023</p>
+          </div>
+        </div>
+        
+        <a href="#" class="edit-btn">Editar Información</a>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Función para copiar el código de referido
+    document.querySelector('.copy-btn').addEventListener('click', function() {
+      const referralCode = 'CODIGO123';
+      navigator.clipboard.writeText(referralCode);
+      
+      const originalText = this.textContent;
+      this.textContent = '¡Copiado!';
+      this.style.backgroundColor = '#28a745';
+      
+      setTimeout(() => {
+        this.textContent = originalText;
+        this.style.backgroundColor = '#ffd700';
+      }, 2000);
+    });
+    
+    // Simular cambio de menú activo
+    const menuItems = document.querySelectorAll('.menu-item');
+    menuItems.forEach(item => {
+      item.addEventListener('click', function() {
+        menuItems.forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+<script>
+  // Simular cambio de menú activo
+  const menuItems = document.querySelectorAll('.menu-item');
+  menuItems.forEach(item => {
+    item.addEventListener('click', function () {
+      menuItems.forEach(i => i.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
       </h2>
       
       <div class="table-container">
