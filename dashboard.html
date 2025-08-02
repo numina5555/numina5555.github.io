@@ -596,12 +596,13 @@
   document.addEventListener('DOMContentLoaded', async () => {
     try {
       // 1. Inicializar Supabase
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true
-        }
-      });
+     supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
+});
         // 2. Verificar autenticación
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         
