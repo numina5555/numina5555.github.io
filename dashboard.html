@@ -335,6 +335,32 @@
       background-color: var(--primary-dark);
     }
     
+    /* Error Banner */
+    .error-banner {
+      background: rgba(220, 53, 69, 0.2);
+      padding: 1rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1rem;
+      border: 1px solid var(--danger);
+    }
+    
+    .error-banner i {
+      color: var(--danger);
+    }
+    
+    .error-banner button {
+      margin-left: auto;
+      background: var(--dark);
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
     /* Responsive */
     @media (max-width: 992px) {
       .sidebar {
@@ -379,6 +405,7 @@
   </style>
 </head>
 <body>
+  <!-- [Todo el HTML del cuerpo permanece igual que en tu código original] -->
   <!-- Header -->
   <header class="dashboard-header">
     <div class="logo">NUMINA</div>
@@ -494,7 +521,6 @@
             </tr>
           </thead>
           <tbody>
-            <!-- Datos dinámicos desde Supabase -->
             <tr>
               <td colspan="5" style="text-align: center;">Cargando compras...</td>
             </tr>
@@ -520,7 +546,6 @@
             </tr>
           </thead>
           <tbody>
-            <!-- Datos dinámicos desde Supabase -->
             <tr>
               <td colspan="5" style="text-align: center;">Cargando referidos...</td>
             </tr>
@@ -536,7 +561,6 @@
       
       <div class="account-info">
         <div class="info-grid" id="account-info-grid">
-          <!-- Datos dinámicos desde Supabase -->
           <div class="info-item">
             <h4>Nombre Completo</h4>
             <p>Cargando...</p>
@@ -560,80 +584,85 @@
     </main>
   </div>
 
-  <!-- Librería Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
-
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // Configuración de Supabase - REEMPLAZA CON TUS DATOS REALES
-    const SUPABASE_URL = 'https://xaeybhscsxpvtnqzpgwj.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU';
-
-    // Crear cliente Supabase
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // Función principal para cargar datos del usuario
-    async function loadUserData() {
+    // Configuración de Supabase - REEMPLAZA CON TUS DATOS
+    const SUPABASE_URL = 'https://tu-proyecto.supabase.co';
+    const SUPABASE_ANON_KEY = 'tu-clave-anon-publica';
+    
+    // Inicialización segura
+    document.addEventListener('DOMContentLoaded', async () => {
       try {
-        // 1. Verificar sesión
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        // 1. Inicializar Supabase
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        if (sessionError || !session) {
-          console.error('Error de sesión:', sessionError);
-          window.location.href = '/login.html';
-          return;
-        }
-
-        // 2. Obtener perfil del usuario
-        const { data: profile, error: profileError } = await supabase
+        // 2. Verificar conexión
+        const { data, error } = await supabaseClient
+          .from('profiles')
+          .select('*')
+          .limit(1);
+          
+        if (error) throw error;
+        
+        // 3. Cargar datos del usuario
+        await loadUserData(supabaseClient);
+        
+      } catch (error) {
+        console.error('Error inicial:', error);
+        showError(`Error de conexión: ${error.message}`);
+      }
+    });
+    
+    async function loadUserData(supabaseClient) {
+      try {
+        // Obtener sesión
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError || !session) throw new Error('No hay sesión activa');
+        
+        // Obtener perfil
+        const { data: profile, error: profileError } = await supabaseClient
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
           .single();
-
+          
         if (profileError) throw profileError;
-
-        // 3. Actualizar la interfaz con los datos
-        updateUI(profile, session.user);
-
-        // 4. Cargar datos adicionales
-        await loadActivePurchases(session.user.id);
-        await loadReferralHistory(session.user.id);
+        
+        // Actualizar UI
+        updateUI(profile, session.user, supabaseClient);
         
       } catch (error) {
         console.error('Error cargando datos:', error);
-        showError('Error al cargar los datos. Por favor recarga la página.');
+        showError(error.message);
       }
     }
-
-    // Actualizar la interfaz con datos del usuario
-    function updateUI(profile, user) {
-      // Avatar
-      const avatarEl = document.querySelector('.user-avatar');
+    
+    function updateUI(profile, user, supabaseClient) {
+      // Actualizar avatar
       const initials = profile.full_name 
-        ? profile.full_name.split(' ').map(n => n[0]).join('') 
+        ? profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase() 
         : user.email.charAt(0).toUpperCase();
-      avatarEl.textContent = initials || 'US';
-
-      // Bienvenida
-      document.querySelector('.welcome-text h2').textContent = `Bienvenido, ${profile.full_name || user.email}`;
+      document.querySelector('.user-avatar').textContent = initials || 'US';
       
-      const joinDate = profile.created_at 
-        ? new Date(profile.created_at).toLocaleDateString() 
-        : 'Fecha desconocida';
+      // Actualizar bienvenida
+      document.querySelector('.welcome-text h2').textContent = `Bienvenido, ${profile.full_name || user.email}`;
       document.querySelector('.welcome-text p').textContent = 
-        `${profile.membership_level || 'Nivel Básico'} | Miembro desde: ${joinDate}`;
-
-      // Código de referido
+        `${profile.membership_level || 'Nivel Básico'} | Miembro desde: ${
+          profile.created_at ? new Date(profile.created_at).toLocaleDateString() : 'Fecha desconocida'
+        }`;
+      
+      // Actualizar código de referido
       document.querySelector('.referral-code span').textContent = profile.referral_code || 'SIN-CODIGO';
-
-      // Estadísticas
+      
+      // Actualizar estadísticas
       document.querySelectorAll('.stat-card .value')[0].textContent = `$${profile.balance?.toFixed(2) || '0.00'}`;
       document.querySelectorAll('.stat-card .value')[1].textContent = profile.active_purchases_count || '0';
       document.querySelectorAll('.stat-card .value')[2].textContent = profile.referrals_count || '0';
       document.querySelectorAll('.stat-card .value')[3].textContent = profile.tickets_count || '0';
-
-      // Información de cuenta
-      const accountInfoHTML = `
+      
+      // Actualizar información de cuenta
+      document.getElementById('account-info-grid').innerHTML = `
         <div class="info-item">
           <h4>Nombre Completo</h4>
           <p>${profile.full_name || 'No definido'}</p>
@@ -651,115 +680,83 @@
           <p>${profile.address || 'No definido'}</p>
         </div>
       `;
-      document.getElementById('account-info-grid').innerHTML = accountInfoHTML;
+      
+      // Cargar datos adicionales
+      loadAdditionalData(supabaseClient, user.id);
     }
-
-    // Cargar compras activas
-    async function loadActivePurchases(userId) {
+    
+    async function loadAdditionalData(supabaseClient, userId) {
       try {
-        const { data: purchases, error } = await supabase
-          .from('purchases')
-          .select('*')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        const tbody = document.querySelector('#purchases-table tbody');
+        // Cargar compras y referidos en paralelo
+        const [purchases, referrals] = await Promise.all([
+          supabaseClient.from('purchases').select('*').eq('user_id', userId),
+          supabaseClient.from('referrals').select('*').eq('referrer_id', userId)
+        ]);
         
-        if (purchases.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No tienes compras activas</td></tr>';
-          return;
-        }
-
-        tbody.innerHTML = purchases.map(purchase => `
-          <tr>
-            <td><strong>${purchase.product_name}</strong><div style="font-size:0.8rem;color:#aaa;">ID: #${purchase.id}</div></td>
-            <td>${new Date(purchase.created_at).toLocaleDateString()}</td>
-            <td>$${purchase.value?.toFixed(2) || '0.00'}</td>
-            <td><span class="status ${purchase.status}">${purchase.status}</span></td>
-            <td><button class="action-btn" data-id="${purchase.id}">Detalles</button></td>
-          </tr>
-        `).join('');
+        // Procesar compras
+        const purchasesTable = document.querySelector('#purchases-table tbody');
+        purchasesTable.innerHTML = purchases.data?.length > 0
+          ? purchases.data.map(p => `
+              <tr>
+                <td><strong>${p.product_name}</strong><div style="font-size:0.8rem;color:#aaa;">ID: #${p.id}</div></td>
+                <td>${new Date(p.created_at).toLocaleDateString()}</td>
+                <td>$${p.value?.toFixed(2) || '0.00'}</td>
+                <td><span class="status ${p.status}">${p.status}</span></td>
+                <td><button class="action-btn" data-id="${p.id}">Detalles</button></td>
+              </tr>
+            `).join('')
+          : '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
+        
+        // Procesar referidos
+        const referralsTable = document.querySelector('#referrals-table tbody');
+        referralsTable.innerHTML = referrals.data?.length > 0
+          ? referrals.data.map(r => `
+              <tr>
+                <td>${r.referred_name || r.referred_email || 'Anónimo'}</td>
+                <td>${new Date(r.created_at).toLocaleDateString()}</td>
+                <td>${r.purchases_count || 0}</td>
+                <td><span class="status ${r.status}">${r.status}</span></td>
+                <td>$${r.commission?.toFixed(2) || '0.00'}</td>
+              </tr>
+            `).join('')
+          : '<tr><td colspan="5" style="text-align: center;">No hay referidos</td></tr>';
+          
       } catch (error) {
-        console.error('Error cargando compras:', error);
-        document.querySelector('#purchases-table tbody').innerHTML = 
-          '<tr><td colspan="5" style="text-align: center; color: var(--danger);">Error al cargar compras</td></tr>';
+        console.error('Error cargando datos adicionales:', error);
       }
     }
-
-    // Cargar historial de referidos
-    async function loadReferralHistory(userId) {
-      try {
-        const { data: referrals, error } = await supabase
-          .from('referrals')
-          .select('*')
-          .eq('referrer_id', userId)
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        const tbody = document.querySelector('#referrals-table tbody');
-        
-        if (referrals.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No tienes referidos aún</td></tr>';
-          return;
-        }
-
-        tbody.innerHTML = referrals.map(ref => `
-          <tr>
-            <td>${ref.referred_name || ref.referred_email || 'Anónimo'}</td>
-            <td>${new Date(ref.created_at).toLocaleDateString()}</td>
-            <td>${ref.purchases_count || 0}</td>
-            <td><span class="status ${ref.status}">${ref.status}</span></td>
-            <td>$${ref.commission?.toFixed(2) || '0.00'}</td>
-          </tr>
-        `).join('');
-      } catch (error) {
-        console.error('Error cargando referidos:', error);
-        document.querySelector('#referrals-table tbody').innerHTML = 
-          '<tr><td colspan="5" style="text-align: center; color: var(--danger);">Error al cargar referidos</td></tr>';
-      }
-    }
-
-    // Mostrar mensaje de error
+    
     function showError(message) {
       const banner = document.querySelector('.welcome-banner');
-      banner.innerHTML = `
-        <div style="width: 100%; text-align: center; color: var(--danger);">
-          <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-          <h2>${message}</h2>
-        </div>
-      `;
+      if (banner) {
+        banner.innerHTML = `
+          <div class="error-banner">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>${message}</span>
+            <button onclick="window.location.reload()">Reintentar</button>
+          </div>
+        `;
+      }
     }
-
-    // Evento para copiar código de referido
+    
+    // Eventos de interacción
     document.querySelector('.copy-btn').addEventListener('click', function() {
-      const referralCode = document.querySelector('.referral-code span').textContent;
-      navigator.clipboard.writeText(referralCode);
-      
-      const originalText = this.textContent;
+      const code = document.querySelector('.referral-code span').textContent;
+      navigator.clipboard.writeText(code);
       this.textContent = '¡Copiado!';
       this.style.backgroundColor = '#28a745';
-      
       setTimeout(() => {
-        this.textContent = originalText;
+        this.textContent = 'Copiar';
         this.style.backgroundColor = '#ffd700';
       }, 2000);
     });
     
-    // Cambiar menú activo
-    const menuItems = document.querySelectorAll('.menu-item');
-    menuItems.forEach(item => {
+    document.querySelectorAll('.menu-item').forEach(item => {
       item.addEventListener('click', function() {
-        menuItems.forEach(i => i.classList.remove('active'));
+        document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
         this.classList.add('active');
       });
     });
-
-    // Cargar datos cuando el DOM esté listo
-    document.addEventListener('DOMContentLoaded', loadUserData);
- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
+  </script>
 </body>
 </html>
