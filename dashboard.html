@@ -405,12 +405,11 @@
   </style>
 </head>
 <body>
-  <!-- [Todo el HTML del cuerpo permanece igual que en tu código original] -->
   <!-- Header -->
   <header class="dashboard-header">
     <div class="logo">NUMINA</div>
     <div class="user-menu">
-      <div class="user-avatar">US</div>
+      <div class="user-avatar" id="user-avatar">US</div>
     </div>
   </header>
   
@@ -442,7 +441,7 @@
           <i class="fas fa-cog"></i>
           <span>Configuración</span>
         </li>
-        <li class="menu-item">
+        <li class="menu-item" id="logout-btn">
           <i class="fas fa-sign-out-alt"></i>
           <span>Cerrar Sesión</span>
         </li>
@@ -452,15 +451,15 @@
     <!-- Main Content -->
     <main class="main-content">
       <!-- Welcome Banner -->
-      <section class="welcome-banner">
+      <section class="welcome-banner" id="welcome-banner">
         <div class="welcome-text">
-          <h2>Cargando datos...</h2>
-          <p>Por favor espera</p>
+          <h2 id="welcome-title">Cargando datos...</h2>
+          <p id="welcome-subtitle">Por favor espera</p>
         </div>
         <div class="referral-code">
           <i class="fas fa-user-plus"></i>
-          <span>---</span>
-          <button class="copy-btn">Copiar</button>
+          <span id="referral-code">---</span>
+          <button class="copy-btn" id="copy-btn">Copiar</button>
         </div>
       </section>
       
@@ -468,7 +467,7 @@
       <div class="stats-grid">
         <div class="stat-card">
           <h3>Saldo Disponible</h3>
-          <div class="value">$---</div>
+          <div class="value" id="balance-value">$---</div>
           <div class="change positive">
             <i class="fas fa-arrow-up"></i>
             <span>Cargando...</span>
@@ -477,7 +476,7 @@
         
         <div class="stat-card">
           <h3>Compras Activas</h3>
-          <div class="value">--</div>
+          <div class="value" id="purchases-value">--</div>
           <div class="change positive">
             <i class="fas fa-arrow-up"></i>
             <span>Cargando...</span>
@@ -486,7 +485,7 @@
         
         <div class="stat-card">
           <h3>Referidos</h3>
-          <div class="value">--</div>
+          <div class="value" id="referrals-value">--</div>
           <div class="change positive">
             <i class="fas fa-arrow-up"></i>
             <span>Cargando...</span>
@@ -495,7 +494,7 @@
         
         <div class="stat-card">
           <h3>Tickets de Sorteo</h3>
-          <div class="value">--</div>
+          <div class="value" id="tickets-value">--</div>
           <div class="change negative">
             <i class="fas fa-arrow-down"></i>
             <span>Cargando...</span>
@@ -520,7 +519,7 @@
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="purchases-body">
             <tr>
               <td colspan="5" style="text-align: center;">Cargando compras...</td>
             </tr>
@@ -545,7 +544,7 @@
               <th>Comisión</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="referrals-body">
             <tr>
               <td colspan="5" style="text-align: center;">Cargando referidos...</td>
             </tr>
@@ -563,23 +562,23 @@
         <div class="info-grid" id="account-info-grid">
           <div class="info-item">
             <h4>Nombre Completo</h4>
-            <p>Cargando...</p>
+            <p id="full-name">Cargando...</p>
           </div>
           <div class="info-item">
             <h4>Correo Electrónico</h4>
-            <p>Cargando...</p>
+            <p id="user-email">Cargando...</p>
           </div>
           <div class="info-item">
             <h4>Teléfono</h4>
-            <p>Cargando...</p>
+            <p id="user-phone">Cargando...</p>
           </div>
           <div class="info-item">
             <h4>Dirección</h4>
-            <p>Cargando...</p>
+            <p id="user-address">Cargando...</p>
           </div>
         </div>
         
-        <a href="#" class="edit-btn">Editar Información</a>
+        <a href="#" class="edit-btn" id="edit-btn">Editar Información</a>
       </div>
     </main>
   </div>
@@ -589,145 +588,120 @@
   <script>
     // Configuración de Supabase - REEMPLAZA CON TUS DATOS
     const SUPABASE_URL = 'https://xaeybhscsxpvtnqzpgwj.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU';
-    
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU';
+
     // Inicialización segura
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        // 1. Inicializar Supabase
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // 1. Inicializar Supabase con configuración mejorada
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true
+          }
+        });
+
+        // 2. Verificar autenticación
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
         
-        // 2. Verificar conexión
-        const { data, error } = await supabaseClient
-          .from('profiles')
-          .select('*')
-          .limit(1);
-          
-        if (error) throw error;
-        
-        // 3. Cargar datos del usuario
-        await loadUserData(supabaseClient);
+        if (authError || !user) {
+          window.location.href = '/login.html';
+          return;
+        }
+
+        // 3. Cargar datos del dashboard
+        await loadDashboardData(supabase, user.id);
         
       } catch (error) {
         console.error('Error inicial:', error);
-        showError(`Error de conexión: ${error.message}`);
+        showError('Error al conectar con el servidor. Recarga la página.');
       }
     });
-    
-    async function loadUserData(supabaseClient) {
+
+    async function loadDashboardData(supabase, userId) {
       try {
-        // Obtener sesión
-        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-        if (sessionError || !session) throw new Error('No hay sesión activa');
-        
-        // Obtener perfil
-        const { data: profile, error: profileError } = await supabaseClient
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
+        // Consulta optimizada para obtener todos los datos necesarios
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select(`
+            *,
+            purchases: purchases(*),
+            referrals: referrals(*)
+          `)
+          .eq('id', userId)
           .single();
-          
-        if (profileError) throw profileError;
-        
-        // Actualizar UI
-        updateUI(profile, session.user, supabaseClient);
+
+        if (userError) throw userError;
+
+        // Actualizar la interfaz
+        updateDashboardUI(userData);
         
       } catch (error) {
         console.error('Error cargando datos:', error);
-        showError(error.message);
+        showError('Error al cargar los datos. Intenta nuevamente.');
       }
     }
-    
-    function updateUI(profile, user, supabaseClient) {
-      // Actualizar avatar
-      const initials = profile.full_name 
-        ? profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase() 
-        : user.email.charAt(0).toUpperCase();
-      document.querySelector('.user-avatar').textContent = initials || 'US';
+
+    function updateDashboardUI(userData) {
+      // Actualizar información del usuario
+      document.getElementById('user-avatar').textContent = 
+        userData.full_name ? userData.full_name.charAt(0).toUpperCase() : 'U';
       
-      // Actualizar bienvenida
-      document.querySelector('.welcome-text h2').textContent = `Bienvenido, ${profile.full_name || user.email}`;
-      document.querySelector('.welcome-text p').textContent = 
-        `${profile.membership_level || 'Nivel Básico'} | Miembro desde: ${
-          profile.created_at ? new Date(profile.created_at).toLocaleDateString() : 'Fecha desconocida'
+      document.getElementById('welcome-title').textContent = 
+        `Bienvenido, ${userData.full_name || userData.email}`;
+      
+      document.getElementById('welcome-subtitle').textContent = 
+        `${userData.membership_level || 'Nivel Básico'} | Miembro desde: ${
+          userData.created_at ? new Date(userData.created_at).toLocaleDateString() : 'Fecha desconocida'
         }`;
       
-      // Actualizar código de referido
-      document.querySelector('.referral-code span').textContent = profile.referral_code || 'SIN-CODIGO';
-      
+      document.getElementById('referral-code').textContent = 
+        userData.referral_code || 'SIN-CODIGO';
+
       // Actualizar estadísticas
-      document.querySelectorAll('.stat-card .value')[0].textContent = `$${profile.balance?.toFixed(2) || '0.00'}`;
-      document.querySelectorAll('.stat-card .value')[1].textContent = profile.active_purchases_count || '0';
-      document.querySelectorAll('.stat-card .value')[2].textContent = profile.referrals_count || '0';
-      document.querySelectorAll('.stat-card .value')[3].textContent = profile.tickets_count || '0';
-      
+      document.getElementById('balance-value').textContent = `$${userData.balance?.toFixed(2) || '0.00'}`;
+      document.getElementById('purchases-value').textContent = userData.active_purchases || '0';
+      document.getElementById('referrals-value').textContent = userData.referrals_count || '0';
+      document.getElementById('tickets-value').textContent = userData.tickets_count || '0';
+
       // Actualizar información de cuenta
-      document.getElementById('account-info-grid').innerHTML = `
-        <div class="info-item">
-          <h4>Nombre Completo</h4>
-          <p>${profile.full_name || 'No definido'}</p>
-        </div>
-        <div class="info-item">
-          <h4>Correo Electrónico</h4>
-          <p>${user.email || 'No definido'}</p>
-        </div>
-        <div class="info-item">
-          <h4>Teléfono</h4>
-          <p>${profile.phone || 'No definido'}</p>
-        </div>
-        <div class="info-item">
-          <h4>Dirección</h4>
-          <p>${profile.address || 'No definido'}</p>
-        </div>
-      `;
-      
-      // Cargar datos adicionales
-      loadAdditionalData(supabaseClient, user.id);
+      document.getElementById('full-name').textContent = userData.full_name || 'No definido';
+      document.getElementById('user-email').textContent = userData.email || 'No definido';
+      document.getElementById('user-phone').textContent = userData.phone || 'No definido';
+      document.getElementById('user-address').textContent = userData.address || 'No definido';
+
+      // Actualizar tabla de compras
+      const purchasesBody = document.getElementById('purchases-body');
+      purchasesBody.innerHTML = userData.purchases && userData.purchases.length > 0
+        ? userData.purchases.map(p => `
+            <tr>
+              <td><strong>${p.product_name}</strong></td>
+              <td>${new Date(p.purchase_date || p.created_at).toLocaleDateString()}</td>
+              <td>$${p.value?.toFixed(2) || '0.00'}</td>
+              <td><span class="status ${p.status}">${p.status}</span></td>
+              <td><button class="action-btn">Detalles</button></td>
+            </tr>
+          `).join('')
+        : '<tr><td colspan="5" style="text-align: center;">No hay compras registradas</td></tr>';
+
+      // Actualizar tabla de referidos
+      const referralsBody = document.getElementById('referrals-body');
+      referralsBody.innerHTML = userData.referrals && userData.referrals.length > 0
+        ? userData.referrals.map(r => `
+            <tr>
+              <td>${r.referred_name || r.referred_email || 'Anónimo'}</td>
+              <td>${new Date(r.signup_date || r.created_at).toLocaleDateString()}</td>
+              <td>${r.purchases_count || '0'}</td>
+              <td><span class="status ${r.is_active ? 'active' : 'inactive'}">${r.is_active ? 'Activo' : 'Inactivo'}</span></td>
+              <td>$${r.total_commission?.toFixed(2) || '0.00'}</td>
+            </tr>
+          `).join('')
+        : '<tr><td colspan="5" style="text-align: center;">No hay referidos registrados</td></tr>';
     }
-    
-    async function loadAdditionalData(supabaseClient, userId) {
-      try {
-        // Cargar compras y referidos en paralelo
-        const [purchases, referrals] = await Promise.all([
-          supabaseClient.from('purchases').select('*').eq('user_id', userId),
-          supabaseClient.from('referrals').select('*').eq('referrer_id', userId)
-        ]);
-        
-        // Procesar compras
-        const purchasesTable = document.querySelector('#purchases-table tbody');
-        purchasesTable.innerHTML = purchases.data?.length > 0
-          ? purchases.data.map(p => `
-              <tr>
-                <td><strong>${p.product_name}</strong><div style="font-size:0.8rem;color:#aaa;">ID: #${p.id}</div></td>
-                <td>${new Date(p.created_at).toLocaleDateString()}</td>
-                <td>$${p.value?.toFixed(2) || '0.00'}</td>
-                <td><span class="status ${p.status}">${p.status}</span></td>
-                <td><button class="action-btn" data-id="${p.id}">Detalles</button></td>
-              </tr>
-            `).join('')
-          : '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
-        
-        // Procesar referidos
-        const referralsTable = document.querySelector('#referrals-table tbody');
-        referralsTable.innerHTML = referrals.data?.length > 0
-          ? referrals.data.map(r => `
-              <tr>
-                <td>${r.referred_name || r.referred_email || 'Anónimo'}</td>
-                <td>${new Date(r.created_at).toLocaleDateString()}</td>
-                <td>${r.purchases_count || 0}</td>
-                <td><span class="status ${r.status}">${r.status}</span></td>
-                <td>$${r.commission?.toFixed(2) || '0.00'}</td>
-              </tr>
-            `).join('')
-          : '<tr><td colspan="5" style="text-align: center;">No hay referidos</td></tr>';
-          
-      } catch (error) {
-        console.error('Error cargando datos adicionales:', error);
-      }
-    }
-    
+
     function showError(message) {
-      const banner = document.querySelector('.welcome-banner');
+      const banner = document.getElementById('welcome-banner');
       if (banner) {
         banner.innerHTML = `
           <div class="error-banner">
@@ -738,19 +712,21 @@
         `;
       }
     }
-    
+
     // Eventos de interacción
-    document.querySelector('.copy-btn').addEventListener('click', function() {
-      const code = document.querySelector('.referral-code span').textContent;
+    document.getElementById('copy-btn')?.addEventListener('click', function() {
+      const code = document.getElementById('referral-code').textContent;
       navigator.clipboard.writeText(code);
       this.textContent = '¡Copiado!';
-      this.style.backgroundColor = '#28a745';
-      setTimeout(() => {
-        this.textContent = 'Copiar';
-        this.style.backgroundColor = '#ffd700';
-      }, 2000);
+      setTimeout(() => this.textContent = 'Copiar', 2000);
     });
-    
+
+    document.getElementById('logout-btn')?.addEventListener('click', async () => {
+      const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      await supabase.auth.signOut();
+      window.location.href = '/login.html';
+    });
+
     document.querySelectorAll('.menu-item').forEach(item => {
       item.addEventListener('click', function() {
         document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
