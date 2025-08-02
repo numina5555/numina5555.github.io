@@ -566,49 +566,48 @@
     </main>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    // 1. CONFIGURACIÓN SUPABASE CORRECTA
-    const supabase = supabase.createClient(
-      'https://xaeybhscsxpvtnqzpgwj.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU',
-      {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // 1. DECLARA supabase PRIMERO (antes de usarlo)
+  let supabase;
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      // 2. INICIALIZA SUPABASE ANTES DE CUALQUIER OPERACIÓN
+      supabase = supabase.createClient(
+        'https://xaeybhscsxpvtnqzpgwj.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU',
+        {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+            storage: localStorage // Añade esto para mayor seguridad
+          }
         }
+      );
+
+      // El resto de tu código puede permanecer igual...
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        window.location.href = '/login.html';
+        return;
       }
-    );
 
-    // 2. CARGA INICIAL DEL DASHBOARD
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        // Verificar sesión
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError || !user) {
-          window.location.href = '/login.html';
-          return;
-        }
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('*, purchases(*), referrals(*)')
+        .eq('id', user.id)
+        .single();
 
-        // Cargar datos del usuario
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('*, purchases(*), referrals(*)')
-          .eq('id', user.id)
-          .single();
+      if (userError) throw userError;
+      updateDashboard(userData);
 
-        if (userError) throw userError;
-
-        // Actualizar UI
-        updateDashboard(userData);
-
-      } catch (error) {
-        console.error('Error:', error);
-        showError('Error al conectar con el servidor. Recarga la página.');
-      }
-    });
-
+    } catch (error) {
+      console.error('Error:', error);
+      showError('Error al conectar con el servidor. Recarga la página.');
+    }
+  });
     // 3. FUNCIÓN PARA ACTUALIZAR EL DASHBOARD
     function updateDashboard(userData) {
       // Avatar y bienvenida
