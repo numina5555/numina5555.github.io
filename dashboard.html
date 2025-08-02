@@ -35,7 +35,6 @@
       flex-direction: column;
     }
     
-    /* Header */
     .dashboard-header {
       background: linear-gradient(to right, var(--dark), var(--dark-lighter));
       padding: 1rem 2rem;
@@ -71,13 +70,11 @@
       cursor: pointer;
     }
     
-    /* Main Layout */
     .dashboard-container {
       display: flex;
       flex: 1;
     }
     
-    /* Sidebar */
     .sidebar {
       width: 250px;
       background-color: var(--dark-light);
@@ -110,7 +107,6 @@
       text-align: center;
     }
     
-    /* Main Content */
     .main-content {
       flex: 1;
       padding: 2rem;
@@ -165,7 +161,6 @@
       background-color: var(--primary-dark);
     }
     
-    /* Stats Cards */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -211,7 +206,6 @@
       color: var(--danger);
     }
     
-    /* Tables */
     .section-title {
       color: var(--primary);
       margin: 2rem 0 1rem;
@@ -294,7 +288,6 @@
       color: var(--dark);
     }
     
-    /* Account Info */
     .account-info {
       background-color: var(--dark-light);
       border-radius: 10px;
@@ -335,7 +328,6 @@
       background-color: var(--primary-dark);
     }
     
-    /* Error Banner */
     .error-banner {
       background: rgba(220, 53, 69, 0.2);
       padding: 1rem;
@@ -361,7 +353,6 @@
       cursor: pointer;
     }
     
-    /* Responsive */
     @media (max-width: 992px) {
       .sidebar {
         width: 70px;
@@ -405,7 +396,6 @@
   </style>
 </head>
 <body>
-  <!-- Header -->
   <header class="dashboard-header">
     <div class="logo">NUMINA</div>
     <div class="user-menu">
@@ -414,7 +404,6 @@
   </header>
   
   <div class="dashboard-container">
-    <!-- Sidebar -->
     <nav class="sidebar">
       <ul class="sidebar-menu">
         <li class="menu-item active">
@@ -448,9 +437,7 @@
       </ul>
     </nav>
     
-    <!-- Main Content -->
     <main class="main-content">
-      <!-- Welcome Banner -->
       <section class="welcome-banner" id="welcome-banner">
         <div class="welcome-text">
           <h2 id="welcome-title">Cargando datos...</h2>
@@ -463,7 +450,6 @@
         </div>
       </section>
       
-      <!-- Stats Grid -->
       <div class="stats-grid">
         <div class="stat-card">
           <h3>Saldo Disponible</h3>
@@ -502,7 +488,6 @@
         </div>
       </div>
       
-      <!-- Active Purchases -->
       <h2 class="section-title">
         <i class="fas fa-shopping-bag"></i>
         <span>Compras Activas</span>
@@ -527,7 +512,6 @@
         </table>
       </div>
       
-      <!-- Referral History -->
       <h2 class="section-title">
         <i class="fas fa-users"></i>
         <span>Historial de Referidos</span>
@@ -552,7 +536,6 @@
         </table>
       </div>
       
-      <!-- Account Information -->
       <h2 class="section-title">
         <i class="fas fa-user-circle"></i>
         <span>Información de la Cuenta</span>
@@ -584,123 +567,100 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  // Configuración de Supabase - REEMPLAZA CON TUS DATOS
-  const SUPABASE_URL = 'https://xaeybhscsxpvtnqzpgwj.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU';
-  
-  // Declarar supabase en ámbito global
-  let supabaseClient;
+  <script>
+    // 1. CONFIGURACIÓN SUPABASE CORRECTA
+    const supabase = supabase.createClient(
+      'https://xaeybhscsxpvtnqzpgwj.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU',
+      {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      }
+    );
 
-  // Inicialización segura
-  document.addEventListener('DOMContentLoaded', async () => {
-    try {
-      // 1. Inicializar Supabase
-     supabaseClient = supabase.createClient('https://xaeybhscsxpvtnqzpgwj.supabase.co',  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU', {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true
-  }
-});
-        // 2. Verificar autenticación
+    // 2. CARGA INICIAL DEL DASHBOARD
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        // Verificar sesión
         const { data: { user }, error: authError } = await supabase.auth.getUser();
-        
         if (authError || !user) {
           window.location.href = '/login.html';
           return;
         }
 
-        // 3. Cargar datos del dashboard
-        await loadDashboardData(supabase, user.id);
-        
-      } catch (error) {
-        console.error('Error inicial:', error);
-        showError('Error al conectar con el servidor. Recarga la página.');
-      }
-    });
-
-    async function loadDashboardData(supabase, userId) {
-      try {
-        // Consulta optimizada para obtener todos los datos necesarios
+        // Cargar datos del usuario
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select(`
-            *,
-            purchases: purchases(*),
-            referrals: referrals(*)
-          `)
-          .eq('id', userId)
+          .select('*, purchases(*), referrals(*)')
+          .eq('id', user.id)
           .single();
 
         if (userError) throw userError;
 
-        // Actualizar la interfaz
-        updateDashboardUI(userData);
-        
-      } catch (error) {
-        console.error('Error cargando datos:', error);
-        showError('Error al cargar los datos. Intenta nuevamente.');
-      }
-    }
+        // Actualizar UI
+        updateDashboard(userData);
 
-    function updateDashboardUI(userData) {
-      // Actualizar información del usuario
+      } catch (error) {
+        console.error('Error:', error);
+        showError('Error al conectar con el servidor. Recarga la página.');
+      }
+    });
+
+    // 3. FUNCIÓN PARA ACTUALIZAR EL DASHBOARD
+    function updateDashboard(userData) {
+      // Avatar y bienvenida
       document.getElementById('user-avatar').textContent = 
-        userData.full_name ? userData.full_name.charAt(0).toUpperCase() : 'U';
-      
+        userData.full_name?.charAt(0).toUpperCase() || 'U';
       document.getElementById('welcome-title').textContent = 
         `Bienvenido, ${userData.full_name || userData.email}`;
-      
-      document.getElementById('welcome-subtitle').textContent = 
-        `${userData.membership_level || 'Nivel Básico'} | Miembro desde: ${
-          userData.created_at ? new Date(userData.created_at).toLocaleDateString() : 'Fecha desconocida'
-        }`;
-      
       document.getElementById('referral-code').textContent = 
-        userData.referral_code || 'SIN-CODIGO';
+        userData.referral_code || '---';
 
-      // Actualizar estadísticas
+      // Estadísticas
       document.getElementById('balance-value').textContent = `$${userData.balance?.toFixed(2) || '0.00'}`;
       document.getElementById('purchases-value').textContent = userData.active_purchases || '0';
       document.getElementById('referrals-value').textContent = userData.referrals_count || '0';
       document.getElementById('tickets-value').textContent = userData.tickets_count || '0';
 
-      // Actualizar información de cuenta
+      // Información de cuenta
       document.getElementById('full-name').textContent = userData.full_name || 'No definido';
       document.getElementById('user-email').textContent = userData.email || 'No definido';
       document.getElementById('user-phone').textContent = userData.phone || 'No definido';
       document.getElementById('user-address').textContent = userData.address || 'No definido';
 
-      // Actualizar tabla de compras
+      // Compras
       const purchasesBody = document.getElementById('purchases-body');
-      purchasesBody.innerHTML = userData.purchases && userData.purchases.length > 0
+      purchasesBody.innerHTML = userData.purchases?.length > 0 
         ? userData.purchases.map(p => `
             <tr>
-              <td><strong>${p.product_name}</strong></td>
-              <td>${new Date(p.purchase_date || p.created_at).toLocaleDateString()}</td>
-              <td>$${p.value?.toFixed(2) || '0.00'}</td>
+              <td>${p.product_name}</td>
+              <td>${new Date(p.created_at).toLocaleDateString()}</td>
+              <td>$${p.value?.toFixed(2)}</td>
               <td><span class="status ${p.status}">${p.status}</span></td>
               <td><button class="action-btn">Detalles</button></td>
             </tr>
           `).join('')
-        : '<tr><td colspan="5" style="text-align: center;">No hay compras registradas</td></tr>';
+        : '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
 
-      // Actualizar tabla de referidos
+      // Referidos
       const referralsBody = document.getElementById('referrals-body');
-      referralsBody.innerHTML = userData.referrals && userData.referrals.length > 0
+      referralsBody.innerHTML = userData.referrals?.length > 0
         ? userData.referrals.map(r => `
             <tr>
-              <td>${r.referred_name || r.referred_email || 'Anónimo'}</td>
-              <td>${new Date(r.signup_date || r.created_at).toLocaleDateString()}</td>
+              <td>${r.referred_email}</td>
+              <td>${new Date(r.created_at).toLocaleDateString()}</td>
               <td>${r.purchases_count || '0'}</td>
               <td><span class="status ${r.is_active ? 'active' : 'inactive'}">${r.is_active ? 'Activo' : 'Inactivo'}</span></td>
-              <td>$${r.total_commission?.toFixed(2) || '0.00'}</td>
+              <td>$${r.commission?.toFixed(2) || '0.00'}</td>
             </tr>
           `).join('')
-        : '<tr><td colspan="5" style="text-align: center;">No hay referidos registrados</td></tr>';
+        : '<tr><td colspan="5" style="text-align: center;">No hay referidos</td></tr>';
     }
 
+    // 4. MANEJO DE ERRORES
     function showError(message) {
       const banner = document.getElementById('welcome-banner');
       if (banner) {
@@ -714,7 +674,7 @@
       }
     }
 
-    // Eventos de interacción
+    // 5. EVENT LISTENERS
     document.getElementById('copy-btn')?.addEventListener('click', function() {
       const code = document.getElementById('referral-code').textContent;
       navigator.clipboard.writeText(code);
@@ -723,16 +683,8 @@
     });
 
     document.getElementById('logout-btn')?.addEventListener('click', async () => {
-      const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       await supabase.auth.signOut();
       window.location.href = '/login.html';
-    });
-
-    document.querySelectorAll('.menu-item').forEach(item => {
-      item.addEventListener('click', function() {
-        document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-        this.classList.add('active');
-      });
     });
   </script>
 </body>
