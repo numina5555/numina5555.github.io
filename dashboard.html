@@ -643,6 +643,32 @@
         this.classList.add('active');
       });
     });
-  </script>
+ <script>
+  // Simular botón de copiado con cambio de color
+  const copyButtons = document.querySelectorAll('.copy-button');
+  copyButtons.forEach(button => {
+    button.addEventListener('click', function () {
+      const originalText = this.textContent;
+      this.textContent = '¡Copiado!';
+      this.style.backgroundColor = '#28a745';
+
+      setTimeout(() => {
+        this.textContent = originalText;
+        this.style.backgroundColor = '#ffd700';
+      }, 2000);
+    });
+  });
+
+  // Simular cambio de menú activo
+  const menuItems = document.querySelectorAll('.menu-item');
+  menuItems.forEach(item => {
+    item.addEventListener('click', function () {
+      menuItems.forEach(i => i.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  // Aquí podés agregar más código JS si lo necesitás
+</script>
 </body>
 </html>
