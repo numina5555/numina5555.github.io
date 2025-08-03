@@ -694,4 +694,24 @@ document.addEventListener('DOMContentLoaded', () => {
   hideIfReady('referrals-value');
   hideIfReady('tickets-value');
 });
-</script></body></html>
+</script><script>
+document.addEventListener('DOMContentLoaded', () => {
+  const copyBtn = document.getElementById('copy-btn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      const code = document.getElementById('referral-code').textContent.trim();
+      if (code) {
+        navigator.clipboard.writeText(code).then(() => {
+          copyBtn.textContent = '¡Copiado!';
+          setTimeout(() => {
+            copyBtn.textContent = 'Copiar';
+          }, 2000);
+        }).catch(err => {
+          console.error('Error al copiar:', err);
+        });
+      }
+    });
+  }
+});
+</script>
+</body></html>
