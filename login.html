@@ -124,7 +124,6 @@
   </div>
 
   <script>
-    // Supabase config
     const supabaseUrl = "https://xaeybhscsxpvtnqzpgwj.supabase.co";
     const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU";
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
@@ -177,8 +176,7 @@
       try {
         const { data, error } = await supabaseClient.auth.signUp({
           email,
-          password,
-          options: { data: { full_name: fullName } }
+          password
         });
 
         if (error) throw error;
