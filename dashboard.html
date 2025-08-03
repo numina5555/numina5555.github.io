@@ -1,12 +1,13 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>NUMINA | Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>NUMINA | Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
     :root {
       --primary: #ffd700;
       --primary-dark: #e6c200;
@@ -396,178 +397,162 @@
   </style>
 </head>
 <body>
-  <header class="dashboard-header">
-    <div class="header-container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;"><div class="logo">NUMINA</div><div class="user-menu">
-      <div class="user-avatar" id="user-avatar">US</div>
-    </div>
-  </header>
-  
-  <div class="dashboard-container">
-    <nav class="sidebar">
-      <ul class="sidebar-menu">
-        <li class="menu-item active">
-          <i class="fas fa-home"></i>
-          <span>Dashboard</span>
-        </li>
-        <li class="menu-item">
-          <i class="fas fa-shopping-bag"></i>
-          <span>Mis Compras</span>
-        </li>
-        <li class="menu-item">
-          <i class="fas fa-ticket-alt"></i>
-          <span>Sorteos</span>
-        </li>
-        <li class="menu-item">
-          <i class="fas fa-users"></i>
-          <span>Referidos</span>
-        </li>
-        <li class="menu-item">
-          <i class="fas fa-wallet"></i>
-          <span>Billetera</span>
-        </li>
-        <li class="menu-item">
-          <i class="fas fa-cog"></i>
-          <span>Configuración</span>
-        </li>
-        <li class="menu-item" id="logout-btn">
-          <i class="fas fa-sign-out-alt"></i>
-          <span>Cerrar Sesión</span>
-        </li>
-      </ul>
-    </nav>
-    
-    <main class="main-content">
-      <section class="welcome-banner" id="welcome-banner">
-        <div class="welcome-text">
-          <h2 id="welcome-title">Cargando datos...</h2>
-          <p id="welcome-subtitle">Por favor espera</p>
-        </div>
-        <div class="referral-code">
-          <i class="fas fa-user-plus"></i>
-          <span id="referral-code">---</span>
-          <button class="copy-btn" id="copy-btn">Copiar</button>
-        </div>
-      </section>
-      
-      <div class="stats-grid">
-        <div class="stat-card">
-          <h3>Saldo Disponible</h3>
-          <div class="value" id="balance-value">$---</div>
-          <div class="change positive">
-            <i class="fas fa-arrow-up"></i>
-            <span>Cargando...</span>
-          </div>
-        </div>
-        
-        <div class="stat-card">
-          <h3>Compras Activas</h3>
-          <div class="value" id="purchases-value">--</div>
-          <div class="change positive">
-            <i class="fas fa-arrow-up"></i>
-            <span>Cargando...</span>
-          </div>
-        </div>
-        
-        <div class="stat-card">
-          <h3>Referidos</h3>
-          <div class="value" id="referrals-value">--</div>
-          <div class="change positive">
-            <i class="fas fa-arrow-up"></i>
-            <span>Cargando...</span>
-          </div>
-        </div>
-        
-        <div class="stat-card">
-          <h3>Tickets de Sorteo</h3>
-          <div class="value" id="tickets-value">--</div>
-          <div class="change negative">
-            <i class="fas fa-arrow-down"></i>
-            <span>Cargando...</span>
-          </div>
-        </div>
-      </div>
-      
-      <h2 class="section-title">
-        <i class="fas fa-shopping-bag"></i>
-        <span>Compras Activas</span>
-      </h2>
-      
-      <div class="table-container">
-        <table id="purchases-table">
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Fecha</th>
-              <th>Valor</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="purchases-body">
-            <tr>
-              <td colspan="5" style="text-align: center;">Cargando compras...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      
-      <h2 class="section-title">
-        <i class="fas fa-users"></i>
-        <span>Historial de Referidos</span>
-      </h2>
-      
-      <div class="table-container">
-        <table id="referrals-table">
-          <thead>
-            <tr>
-              <th>Referido</th>
-              <th>Fecha</th>
-              <th>Compras</th>
-              <th>Estado</th>
-              <th>Comisión</th>
-            </tr>
-          </thead>
-          <tbody id="referrals-body">
-            <tr>
-              <td colspan="5" style="text-align: center;">Cargando referidos...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      
-      <h2 class="section-title">
-        <i class="fas fa-user-circle"></i>
-        <span>Información de la Cuenta</span>
-      </h2>
-      
-      <div class="account-info">
-        <div class="info-grid" id="account-info-grid">
-          <div class="info-item">
-            <h4>Nombre Completo</h4>
-            <p id="full-name">Cargando...</p>
-          </div>
-          <div class="info-item">
-            <h4>Correo Electrónico</h4>
-            <p id="user-email">Cargando...</p>
-          </div>
-          <div class="info-item">
-            <h4>Teléfono</h4>
-            <p id="user-phone">Cargando...</p>
-          </div>
-          <div class="info-item">
-            <h4>Dirección</h4>
-            <p id="user-address">Cargando...</p>
-          </div>
-        </div>
-        
-        <a href="#" class="edit-btn" id="edit-btn">Editar Información</a>
-      </div>
-    </main>
-  </div>
-
+<header class="dashboard-header"><div style="display: flex; justify-content: space-between; align-items: center; width: 100%;"><div class="logo">NUMINA</div><div class="user-menu">
+<div class="user-avatar" id="user-avatar">US</div>
+</div></div></header>
+<div class="dashboard-container">
+<nav class="sidebar">
+<ul class="sidebar-menu">
+<li class="menu-item active">
+<i class="fas fa-home"></i>
+<span>Dashboard</span>
+</li>
+<li class="menu-item">
+<i class="fas fa-shopping-bag"></i>
+<span>Mis Compras</span>
+</li>
+<li class="menu-item">
+<i class="fas fa-ticket-alt"></i>
+<span>Sorteos</span>
+</li>
+<li class="menu-item">
+<i class="fas fa-users"></i>
+<span>Referidos</span>
+</li>
+<li class="menu-item">
+<i class="fas fa-wallet"></i>
+<span>Billetera</span>
+</li>
+<li class="menu-item">
+<i class="fas fa-cog"></i>
+<span>Configuración</span>
+</li>
+<li class="menu-item" id="logout-btn">
+<i class="fas fa-sign-out-alt"></i>
+<span>Cerrar Sesión</span>
+</li>
+</ul>
+</nav>
+<main class="main-content">
+<section class="welcome-banner" id="welcome-banner">
+<div class="welcome-text">
+<h2 id="welcome-title">Cargando datos...</h2>
+<p id="welcome-subtitle">Por favor espera</p>
+</div>
+<div class="referral-code">
+<i class="fas fa-user-plus"></i>
+<span id="referral-code">---</span>
+<button class="copy-btn" id="copy-btn">Copiar</button>
+</div>
+</section>
+<div class="stats-grid">
+<div class="stat-card">
+<h3>Saldo Disponible</h3>
+<div class="value" id="balance-value">$---</div>
+<div class="change positive">
+<i class="fas fa-arrow-up"></i>
+<span>Cargando...</span>
+</div>
+</div>
+<div class="stat-card">
+<h3>Compras Activas</h3>
+<div class="value" id="purchases-value">--</div>
+<div class="change positive">
+<i class="fas fa-arrow-up"></i>
+<span>Cargando...</span>
+</div>
+</div>
+<div class="stat-card">
+<h3>Referidos</h3>
+<div class="value" id="referrals-value">--</div>
+<div class="change positive">
+<i class="fas fa-arrow-up"></i>
+<span>Cargando...</span>
+</div>
+</div>
+<div class="stat-card">
+<h3>Tickets de Sorteo</h3>
+<div class="value" id="tickets-value">--</div>
+<div class="change negative">
+<i class="fas fa-arrow-down"></i>
+<span>Cargando...</span>
+</div>
+</div>
+</div>
+<h2 class="section-title">
+<i class="fas fa-shopping-bag"></i>
+<span>Compras Activas</span>
+</h2>
+<div class="table-container">
+<table id="purchases-table">
+<thead>
+<tr>
+<th>Producto</th>
+<th>Fecha</th>
+<th>Valor</th>
+<th>Estado</th>
+<th>Acciones</th>
+</tr>
+</thead>
+<tbody id="purchases-body">
+<tr>
+<td colspan="5" style="text-align: center;">Cargando compras...</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 class="section-title">
+<i class="fas fa-users"></i>
+<span>Historial de Referidos</span>
+</h2>
+<div class="table-container">
+<table id="referrals-table">
+<thead>
+<tr>
+<th>Referido</th>
+<th>Fecha</th>
+<th>Compras</th>
+<th>Estado</th>
+<th>Comisión</th>
+</tr>
+</thead>
+<tbody id="referrals-body">
+<tr>
+<td colspan="5" style="text-align: center;">Cargando referidos...</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 class="section-title">
+<i class="fas fa-user-circle"></i>
+<span>Información de la Cuenta</span>
+</h2>
+<div class="account-info">
+<div class="info-grid" id="account-info-grid">
+<div class="info-item">
+<h4>Nombre Completo</h4>
+<p id="full-name">Cargando...</p>
+</div>
+<div class="info-item">
+<h4>Correo Electrónico</h4>
+<p id="user-email">Cargando...</p>
+</div>
+<div class="info-item">
+<h4>Teléfono</h4>
+<p id="user-phone">Cargando...</p>
+</div>
+<div class="info-item">
+<h4>Dirección</h4>
+<p id="user-address">Cargando...</p>
+</div>
+</div>
+<a class="edit-btn" href="#" id="edit-btn">Editar Información</a>
+</div>
+</main>
+</div>
 <script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
 <script>
-  
+  // 1. VERIFICACIÓN DE CARGA DE SUPABASE
   function checkSupabaseLoaded() {
     return new Promise((resolve) => {
       const check = () => {
@@ -581,13 +566,13 @@
     });
   }
 
-  
+  // 2. INICIALIZACIÓN PRINCIPAL
   document.addEventListener('DOMContentLoaded', async () => {
     try {
-      
+      // Espera a que Supabase esté disponible
       await checkSupabaseLoaded();
       
-      
+      // Conexión a Supabase (TUS CREDENCIALES ORIGINALES)
       const supabase = window.supabase.createClient(
         'https://xaeybhscsxpvtnqzpgwj.supabase.co',
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU',
@@ -601,8 +586,8 @@
         }
       );
 
-      
-      
+      // ► [TODO EL RESTO DE TU CÓDIGO ORIGINAL SE MANTIENE IGUAL]
+      // Desde la verificación de sesión hasta los event listeners
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) {
         window.location.href = '/login.html';
@@ -617,7 +602,7 @@
 
       if (userError) throw userError;
 
-      
+      // Actualizar UI (tu función original)
       document.getElementById('user-avatar').textContent = 
         userData.full_name?.charAt(0).toUpperCase() || 'U';
       document.getElementById('welcome-title').textContent = 
@@ -633,7 +618,7 @@
       document.getElementById('user-phone').textContent = userData.phone || 'No definido';
       document.getElementById('user-address').textContent = userData.address || 'No definido';
 
-      
+      // Compras
       const purchasesBody = document.getElementById('purchases-body');
       purchasesBody.innerHTML = userData.purchases?.length > 0 
         ? userData.purchases.map(p => `
@@ -647,7 +632,7 @@
           `).join('')
         : '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
 
-      
+      // Referidos
       const referralsBody = document.getElementById('referrals-body');
       referralsBody.innerHTML = userData.referrals?.length > 0
         ? userData.referrals.map(r => `
@@ -676,7 +661,7 @@
     }
   });
 
-  
+  // Event listeners (originales)
   document.getElementById('copy-btn')?.addEventListener('click', function() {
     const code = document.getElementById('referral-code').textContent;
     navigator.clipboard.writeText(code);
@@ -693,3 +678,19 @@
     window.location.href = '/login.html';
   });
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const copyBtn = document.getElementById('copy-btn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', function () {
+      const code = document.getElementById('referral-code')?.textContent;
+      if (code) {
+        navigator.clipboard.writeText(code).then(() => {
+          copyBtn.textContent = '¡Copiado!';
+          setTimeout(() => copyBtn.textContent = 'Copiar', 2000);
+        });
+      }
+    });
+  }
+});
+</script></body></html>
