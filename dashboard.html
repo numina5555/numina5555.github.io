@@ -397,7 +397,7 @@
   </style>
 </head>
 <body>
-<header class="dashboard-header">
+<header class="dashboard-header" style=" display: flex; justify-content: center; align-items: center; gap: 2rem;">
 <div class="logo">NUMINA</div>
 <div class="user-menu">
 <div class="user-avatar" id="user-avatar">US</div>
@@ -695,5 +695,17 @@ document.addEventListener('DOMContentLoaded', () => {
   hideIfReady('purchases-value');
   hideIfReady('referrals-value');
   hideIfReady('tickets-value');
+});
+</script><script>
+document.getElementById('copy-btn')?.addEventListener('click', function() {
+  const code = document.getElementById('referral-code').textContent;
+  navigator.clipboard.writeText(code)
+    .then(() => {
+      this.textContent = '¡Copiado!';
+      setTimeout(() => this.textContent = 'Copiar', 2000);
+    })
+    .catch(err => {
+      console.error('Error al copiar el código:', err);
+    });
 });
 </script></body></html>
