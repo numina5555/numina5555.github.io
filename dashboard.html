@@ -633,6 +633,16 @@
       document.getElementById('user-email').textContent = userData.email || 'No definido';
       document.getElementById('user-phone').textContent = userData.phone || 'No definido';
       document.getElementById('user-address').textContent = userData.address || 'No definido';
+// ✅ OCULTA "Por favor espera"
+const subtitleEl = document.getElementById('welcome-subtitle');
+if (subtitleEl) subtitleEl.style.display = 'none';
+
+// ✅ LIMPIA todos los "Cargando..."
+document.querySelectorAll('.change span').forEach(span => {
+  if (span.textContent.trim().toLowerCase().includes('cargando')) {
+    span.textContent = '';
+  }
+});
 
       // Compras
       const purchasesBody = document.getElementById('purchases-body');
