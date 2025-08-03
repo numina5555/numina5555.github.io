@@ -174,21 +174,27 @@
       regSuccessMsg.textContent = "";
 
       try {
-        const { data, error } = await supabaseClient.auth.signUp({
+        const { error: signUpError } = await supabaseClient.auth.signUp({
           email,
           password
         });
 
-        if (error) throw error;
-        if (!data?.user?.id) throw new Error("Error inesperado: Usuario no creado.");
+        if (signUpError) throw signUpError;
 
-        await supabaseClient.from("users").insert([{
-          id: data.user.id,
+        const { data: userData, error: userError } = await supabaseClient.auth.getUser();
+        const userId = userData?.user?.id;
+
+        if (userError || !userId) throw new Error("No se pudo obtener el ID del usuario.");
+
+        const { error: insertError } = await supabaseClient.from("users").insert([{
+          id: userId,
           email: email,
           full_name: fullName,
           balance: 0,
           referral_code: "NUM" + Math.random().toString(36).slice(2, 8).toUpperCase()
         }]);
+
+        if (insertError) throw insertError;
 
         regSuccessMsg.textContent = "¡Cuenta creada! Redirigiendo...";
         setTimeout(() => window.location.href = "dashboard.html", 2000);
