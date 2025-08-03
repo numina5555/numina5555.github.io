@@ -397,9 +397,12 @@
   </style>
 </head>
 <body>
-<header class="dashboard-header"><div style="display: flex; justify-content: space-between; align-items: center; width: 100%;"><div class="logo">NUMINA</div><div class="user-menu">
+<header class="dashboard-header">
+<div class="logo">NUMINA</div>
+<div class="user-menu">
 <div class="user-avatar" id="user-avatar">US</div>
-</div></div></header>
+</div>
+</header>
 <div class="dashboard-container">
 <nav class="sidebar">
 <ul class="sidebar-menu">
@@ -437,7 +440,7 @@
 <section class="welcome-banner" id="welcome-banner">
 <div class="welcome-text">
 <h2 id="welcome-title">Cargando datos...</h2>
-<p id="welcome-subtitle">Por favor espera</p>
+<p id="welcome-subtitle" style="display: none;">Por favor espera</p>
 </div>
 <div class="referral-code">
 <i class="fas fa-user-plus"></i>
@@ -679,18 +682,18 @@
   });
 </script>
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-  const copyBtn = document.getElementById('copy-btn');
-  if (copyBtn) {
-    copyBtn.addEventListener('click', function () {
-      const code = document.getElementById('referral-code')?.textContent;
-      if (code) {
-        navigator.clipboard.writeText(code).then(() => {
-          copyBtn.textContent = '¡Copiado!';
-          setTimeout(() => copyBtn.textContent = 'Copiar', 2000);
-        });
-      }
-    });
-  }
+document.addEventListener('DOMContentLoaded', () => {
+  const hideIfReady = (id, expected) => {
+    const el = document.getElementById(id);
+    if (el && !el.textContent.includes('Cargando')) {
+      const change = el.parentElement.querySelector('.change');
+      if (change) change.style.display = 'none';
+    }
+  };
+
+  hideIfReady('balance-value');
+  hideIfReady('purchases-value');
+  hideIfReady('referrals-value');
+  hideIfReady('tickets-value');
 });
 </script></body></html>
