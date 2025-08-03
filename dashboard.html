@@ -614,7 +614,7 @@
         .from('users')
         .select('*, purchases(*), referrals(*)')
         .eq('id', user.id)
-        .maybesingle();
+        .maybeSingle();
 
       if (userError) throw userError;
 
