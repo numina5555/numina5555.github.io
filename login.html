@@ -174,32 +174,43 @@
 
     // Registro
     async function register() {
-      console.log("Función register() llamada");
+  const email = document.getElementById("register-email").value;
+  const password = document.getElementById("register-password").value;
+  const fullName = document.getElementById("full-name").value;
 
-      const email = document.getElementById("register-email").value;
-      const password = document.getElementById("register-password").value;
-      const fullName = document.getElementById("full-name").value;
-      const regErrorMsg = document.getElementById("register-error-message");
-      const regSuccessMsg = document.getElementById("register-success-message");
+  const registerBtn = document.querySelector("#register-form button");
+  registerBtn.disabled = true;
+  registerBtn.textContent = "Creando cuenta...";
 
-      regErrorMsg.textContent = "";
-      regSuccessMsg.textContent = "";
+  try {
+    // 1. Registro en auth.users (esto ya funciona en tu código)
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: fullName } }
+    });
 
-      if (!email || !password || !fullName) {
-        regErrorMsg.textContent = "Por favor completa todos los campos.";
-        return;
-      }
+    if (error) throw error;
 
-      const response = await supabaseClient.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-          },
-        },
-      });
+    // 2. ¡ESTA ES LA PARTE NUEVA! Crea el perfil en public.users
+    await supabaseClient.from("users").insert([{
+      id: data.user.id,
+      email: email,
+      full_name: fullName,
+      balance: 0,
+      referral_code: "NUM" + Math.random().toString(36).slice(2, 8).toUpperCase()
+    }]);
 
+    document.getElementById("register-success-message").textContent = "¡Cuenta creada!";
+    setTimeout(() => window.location.href = "dashboard.html", 2000);
+
+  } catch (error) {
+    document.getElementById("register-error-message").textContent = error.message;
+  } finally {
+    registerBtn.disabled = false;
+    registerBtn.textContent = "Crear cuenta";
+  }
+}
       console.log("Respuesta Supabase:", response);
 
       const { data, error } = response;
