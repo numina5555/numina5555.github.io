@@ -404,6 +404,738 @@
 <div class="dashboard-container">
 <nav class="sidebar">
 <ul class="sidebar-menu">
+<li class="menu-item active" data-target="dashboard">
+<i class="fas fa-home"></i>
+<span>Dashboard</span>
+</li>
+<li class="menu-item" data-target="compras">
+<i class="fas fa-shopping-bag"></i>
+<span>Mis Compras</span>
+</li>
+<li class="menu-item" data-target="sorteos">
+<i class="fas fa-ticket-alt"></i>
+<span>Sorteos</span>
+</li>
+<li class="menu-item" data-target="referidos">
+<i class="fas fa-users"></i>
+<span>Referidos</span>
+</li>
+<li class="menu-item" data-target="billetera">
+<i class="fas fa-wallet"></i>
+<span>Billetera</span>
+</li>
+<li class="menu-item" data-target="configuracion">
+<i class="fas fa-cog"></i>
+<span>Configuración</span>
+</li>
+<li class="menu-item" data-target="logout" id="logout-btn">
+<i class="fas fa-sign-out-alt"></i>
+<span>Cerrar Sesión</span>
+</li>
+</ul>
+</nav>
+<main class="main-content">
+<section class="welcome-banner" id="welcome-banner">
+<div class="welcome-text">
+<h2 id="welcome-title">Cargando datos...</h2>
+<p id="welcome-subtitle" style="display: none;">Por favor espera</p>
+</div>
+<div class="referral-code">
+<i class="fas fa-user-plus"></i>
+<span id="referral-code">---</span>
+<button class="copy-btn" id="copy-btn">Copiar</button>
+</div>
+</section>
+<div class="stats-grid">
+<div class="stat-card">
+<h3>Saldo Disponible</h3>
+<div class="value" id="balance-value">$---</div>
+<div class="change positive">
+<i class="fas fa-arrow-up"></i>
+<span>Cargando...</span>
+</div>
+</div>
+<div class="stat-card">
+<h3>Compras Activas</h3>
+<div class="value" id="purchases-value">--</div>
+<div class="change positive">
+<i class="fas fa-arrow-up"></i>
+<span>Cargando...</span>
+</div>
+</div>
+<div class="stat-card">
+<h3>Referidos</h3>
+<div class="value" id="referrals-value">--</div>
+<div class="change positive">
+<i class="fas fa-arrow-up"></i>
+<span>Cargando...</span>
+</div>
+</div>
+<div class="stat-card">
+<h3>Tickets de Sorteo</h3>
+<div class="value" id="tickets-value">--</div>
+<div class="change negative">
+<i class="fas fa-arrow-down"></i>
+<span>Cargando...</span>
+</div>
+</div>
+</div>
+<h2 class="section-title">
+<i class="fas fa-shopping-bag"></i>
+<span>Compras Activas</span>
+</h2>
+<div class="table-container">
+<table id="purchases-table">
+<thead>
+<tr>
+<th>Producto</th>
+<th>Fecha</th>
+<th>Valor</th>
+<th>Estado</th>
+<th>Acciones</th>
+</tr>
+</thead>
+<tbody id="purchases-body">
+<tr>
+<td colspan="5" style="text-align: center;">Cargando compras...</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 class="section-title">
+<i class="fas fa-users"></i>
+<span>Historial de Referidos</span>
+</h2>
+<div class="table-container">
+<table id="referrals-table">
+<thead>
+<tr>
+<th>Referido</th>
+<th>Fecha</th>
+<th>Compras</th>
+<th>Estado</th>
+<th>Comisión</th>
+</tr>
+</thead>
+<tbody id="referrals-body">
+<tr>
+<td colspan="5" style="text-align: center;">Cargando referidos...</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 class="section-title">
+<i class="fas fa-user-circle"></i>
+<span>Información de la Cuenta</span>
+</h2>
+<div class="account-info">
+<div class="info-grid" id="account-info-grid">
+<div class="info-item">
+<h4>Nombre Completo</h4>
+<p id="full-name">Cargando...</p>
+</div>
+<div class="info-item">
+<h4>Correo Electrónico</h4>
+<p id="user-email">Cargando...</p>
+</div>
+<div class="info-item">
+<h4>Teléfono</h4>
+<p id="user-phone">Cargando...</p>
+</div>
+<div class="info-item">
+<h4>Dirección</h4>
+<p id="user-address">Cargando...</p>
+</div>
+</div>
+<a class="edit-btn" href="#" id="edit-btn">Editar Información</a>
+</div>
+</main>
+</div>
+<script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
+<script>
+  // 1. VERIFICACIÓN DE CARGA DE SUPABASE
+  function checkSupabaseLoaded() {
+    return new Promise((resolve) => {
+      const check = () => {
+        if (window.supabase) {
+          resolve();
+        } else {
+          setTimeout(check, 100);
+        }
+      };
+      check();
+    });
+  }
+
+  // 2. INICIALIZACIÓN PRINCIPAL
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      // Espera a que Supabase esté disponible
+      await checkSupabaseLoaded();
+      
+      // Conexión a Supabase (TUS CREDENCIALES ORIGINALES)
+      const supabase = window.supabase.createClient(
+        'https://xaeybhscsxpvtnqzpgwj.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU',
+        {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+            storage: localStorage
+          }
+        }
+      );
+
+      // ► [TODO EL RESTO DE TU CÓDIGO ORIGINAL SE MANTIENE IGUAL]
+      // Desde la verificación de sesión hasta los event listeners
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('*, purchases(*), referrals(*)')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (userError) throw userError;
+
+      // Actualizar UI (tu función original)
+      document.getElementById('user-avatar').textContent = 
+        userData.full_name?.charAt(0).toUpperCase() || 'U';
+      document.getElementById('welcome-title').textContent = 
+        `Bienvenido, ${userData.full_name || userData.email}`;
+      document.getElementById('referral-code').textContent = 
+        userData.referral_code || '---';
+      document.getElementById('balance-value').textContent = `$${userData.balance?.toFixed(2) || '0.00'}`;
+      document.getElementById('purchases-value').textContent = userData.active_purchases || '0';
+      document.getElementById('referrals-value').textContent = userData.referrals_count || '0';
+      document.getElementById('tickets-value').textContent = userData.tickets_count || '0';
+      document.getElementById('full-name').textContent = userData.full_name || 'No definido';
+      document.getElementById('user-email').textContent = userData.email || 'No definido';
+      document.getElementById('user-phone').textContent = userData.phone || 'No definido';
+      document.getElementById('user-address').textContent = userData.address || 'No definido';
+
+      // Compras
+      const purchasesBody = document.getElementById('purchases-body');
+      purchasesBody.innerHTML = userData.purchases?.length > 0 
+        ? userData.purchases.map(p => `
+            <tr>
+              <td>${p.product_name}</td>
+              <td>${new Date(p.created_at).toLocaleDateString()}</td>
+              <td>$${p.value?.toFixed(2)}</td>
+              <td><span class="status ${p.status}">${p.status}</span></td>
+              <td><button class="action-btn">Detalles</button></td>
+            </tr>
+          `).join('')
+        : '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
+
+      // Referidos
+      const referralsBody = document.getElementById('referrals-body');
+      referralsBody.innerHTML = userData.referrals?.length > 0
+        ? userData.referrals.map(r => `
+            <tr>
+              <td>${r.referred_email}</td>
+              <td>${new Date(r.created_at).toLocaleDateString()}</td>
+              <td>${r.purchases_count || '0'}</td>
+              <td><span class="status ${r.is_active ? 'active' : 'inactive'}">${r.is_active ? 'Activo' : 'Inactivo'}</span></td>
+              <td>$${r.commission?.toFixed(2) || '0.00'}</td>
+            </tr>
+          `).join('')
+        : '<tr><td colspan="5" style="text-align: center;">No hay referidos</td></tr>';
+
+    } catch (error) {
+      console.error('Error:', error);
+      const banner = document.getElementById('welcome-banner');
+      if (banner) {
+        banner.innerHTML = `
+          <div class="error-banner">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>Error al conectar con el servidor. Recarga la página.</span>
+            <button onclick="window.location.reload()">Reintentar</button>
+          </div>
+        `;
+      }
+    }
+  });
+
+  // Event listeners (originales)
+  document.getElementById('copy-btn')?.addEventListener('click', function() {
+    const code = document.getElementById('referral-code').textContent;
+    navigator.clipboard.writeText(code);
+    this.textContent = '¡Copiado!';
+    setTimeout(() => this.textContent = 'Copiar', 2000);
+  });
+
+  document.getElementById('logout-btn')?.addEventListener('click', async () => {
+    const supabase = window.supabase.createClient(
+      'https://xaeybhscsxpvtnqzpgwj.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU'
+    );
+    await supabase.auth.signOut();
+    window.location.href = '/login.html';
+  });
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const hideIfReady = (id, expected) => {
+    const el = document.getElementById(id);
+    if (el && !el.textContent.includes('Cargando')) {
+      const change = el.parentElement.querySelector('.change');
+      if (change) change.style.display = 'none';
+    }
+  };
+
+  hideIfReady('balance-value');
+  hideIfReady('purchases-value');
+  hideIfReady('referrals-value');
+  hideIfReady('tickets-value');
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const copyBtn = document.getElementById("copy-btn");
+  const referralCode = document.getElementById("referral-code");
+
+  if (copyBtn && referralCode) {
+    copyBtn.addEventListener("click", async () => {
+      const code = referralCode.textContent;
+
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(code);
+        } else {
+          const textarea = document.createElement("textarea");
+          textarea.value = code;
+          textarea.style.position = "fixed";
+          textarea.style.opacity = 0;
+          document.body.appendChild(textarea);
+          textarea.focus();
+          textarea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textarea);
+        }
+
+        copyBtn.textContent = "¡Copiado!";
+        setTimeout(() => copyBtn.textContent = "Copiar", 2000);
+      } catch (err) {
+        alert("No se pudo copiar el código. Intenta manualmente.");
+        console.error("Error al copiar:", err);
+      }
+    });
+  }
+});
+</script>
+</body></html>
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>NUMINA | Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+    :root {
+      --primary: #ffd700;
+      --primary-dark: #e6c200;
+      --dark: #111;
+      --dark-light: #1a1a1a;
+      --dark-lighter: #222;
+      --text: #fff;
+      --text-light: #ccc;
+      --success: #28a745;
+      --warning: #ffc107;
+      --danger: #dc3545;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--dark);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .dashboard-header {
+      background: linear-gradient(to right, var(--dark), var(--dark-lighter));
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+    }
+    
+    .logo {
+      color: var(--primary);
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: var(--primary);
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    
+    .dashboard-container {
+      display: flex;
+      flex: 1;
+    }
+    
+    .sidebar {
+      width: 250px;
+      background-color: var(--dark-light);
+      padding: 1.5rem 0;
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .sidebar-menu {
+      list-style: none;
+    }
+    
+    .menu-item {
+      padding: 0.8rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      border-left: 3px solid transparent;
+    }
+    
+    .menu-item:hover, .menu-item.active {
+      background-color: rgba(255, 215, 0, 0.1);
+      border-left: 3px solid var(--primary);
+      color: var(--primary);
+    }
+    
+    .menu-item i {
+      width: 20px;
+      text-align: center;
+    }
+    
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+      background-color: var(--dark);
+    }
+    
+    .welcome-banner {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+      border: 1px solid rgba(255, 215, 0, 0.1);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .welcome-text h2 {
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .welcome-text p {
+      color: var(--text-light);
+    }
+    
+    .referral-code {
+      background-color: var(--dark-light);
+      padding: 0.8rem 1.2rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    
+    .referral-code span {
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+    
+    .copy-btn {
+      background-color: var(--primary);
+      color: var(--dark);
+      border: none;
+      padding: 0.3rem 0.6rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .copy-btn:hover {
+      background-color: var(--primary-dark);
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+      background-color: var(--dark-light);
+      border-radius: 10px;
+      padding: 1.5rem;
+      border-left: 4px solid var(--primary);
+    }
+    
+    .stat-card h3 {
+      color: var(--text-light);
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .stat-card .value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-card .change {
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    
+    .change.positive {
+      color: var(--success);
+    }
+    
+    .change.negative {
+      color: var(--danger);
+    }
+    
+    .section-title {
+      color: var(--primary);
+      margin: 2rem 0 1rem;
+      font-size: 1.3rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    
+    .table-container {
+      background-color: var(--dark-light);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    th, td {
+      padding: 1rem;
+      text-align: left;
+    }
+    
+    th {
+      background-color: var(--dark-lighter);
+      color: var(--primary);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+    }
+    
+    td {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-light);
+    }
+    
+    tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .status {
+      padding: 0.3rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    
+    .status.active {
+      background-color: rgba(40, 167, 69, 0.2);
+      color: var(--success);
+    }
+    
+    .status.pending {
+      background-color: rgba(255, 193, 7, 0.2);
+      color: var(--warning);
+    }
+    
+    .status.completed {
+      background-color: rgba(13, 110, 253, 0.2);
+      color: #0d6efd;
+    }
+    
+    .action-btn {
+      background-color: transparent;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      padding: 0.3rem 0.8rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .action-btn:hover {
+      background-color: var(--primary);
+      color: var(--dark);
+    }
+    
+    .account-info {
+      background-color: var(--dark-light);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-top: 2rem;
+    }
+    
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .info-item h4 {
+      color: var(--text-light);
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+    
+    .info-item p {
+      font-weight: 600;
+    }
+    
+    .edit-btn {
+      display: inline-block;
+      margin-top: 1.5rem;
+      background-color: var(--primary);
+      color: var(--dark);
+      padding: 0.6rem 1.2rem;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    
+    .edit-btn:hover {
+      background-color: var(--primary-dark);
+    }
+    
+    .error-banner {
+      background: rgba(220, 53, 69, 0.2);
+      padding: 1rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1rem;
+      border: 1px solid var(--danger);
+    }
+    
+    .error-banner i {
+      color: var(--danger);
+    }
+    
+    .error-banner button {
+      margin-left: auto;
+      background: var(--dark);
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    @media (max-width: 992px) {
+      .sidebar {
+        width: 70px;
+      }
+      
+      .menu-item span {
+        display: none;
+      }
+      
+      .menu-item {
+        justify-content: center;
+      }
+      
+      .welcome-banner {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .dashboard-container {
+        flex-direction: column;
+      }
+      
+      .sidebar {
+        width: 100%;
+        padding: 0;
+      }
+      
+      .sidebar-menu {
+        display: flex;
+        overflow-x: auto;
+      }
+      
+      .menu-item {
+        padding: 1rem;
+        min-width: 70px;
+      }
+    }
+  </style>
+</head>
+<body>
+<header class="dashboard-header"><div style="flex-grow:1; text-align:center;"><div class="logo">NUMINA</div></div><div class="user-menu">
+<div class="user-avatar" id="user-avatar">US</div>
+</div>
+</header>
+<div class="dashboard-container">
+<nav class="sidebar">
+<ul class="sidebar-menu">
 <li class="menu-item active">
 <i class="fas fa-home"></i>
 <span>Dashboard</span>
