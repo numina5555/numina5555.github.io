@@ -686,6 +686,17 @@
     await supabase.auth.signOut();
     window.location.href = '/login.html';
   });
+// Oculta subtítulo "Por favor espera"
+const subtitle = document.getElementById('welcome-subtitle');
+if (subtitle) subtitle.style.display = 'none';
+
+// Borra todos los textos "Cargando..."
+document.querySelectorAll('.change span').forEach(span => {
+  if (span.textContent.toLowerCase().includes('cargando')) {
+    span.textContent = '';
+  }
+});
+
 </script>
 
 </script>
