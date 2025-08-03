@@ -16,7 +16,6 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      position: relative;
     }
     .login-container {
       background: linear-gradient(to right, #1a1a1a, #222);
@@ -76,12 +75,15 @@
     .toggle-form:hover {
       color: gold;
     }
-    #error-message, #register-error-message, #register-success-message {
+    #error-message,
+    #register-error-message,
+    #register-success-message {
       margin-top: 15px;
       font-size: 0.9em;
       min-height: 20px;
     }
-    #error-message, #register-error-message {
+    #error-message,
+    #register-error-message {
       color: #ff6b6b;
     }
     #register-success-message {
@@ -109,7 +111,7 @@
       <a class="toggle-form" onclick="toggleForm()">¿No tienes cuenta? Regístrate</a>
     </div>
 
-    <!-- Formulario de Registro (oculto inicialmente) -->
+    <!-- Formulario de Registro -->
     <div id="register-form" style="display: none;">
       <input type="email" id="register-email" placeholder="Correo electrónico" required />
       <input type="password" id="register-password" placeholder="Contraseña" required />
@@ -122,33 +124,22 @@
   </div>
 
   <script>
-    // Configura Supabase
+    // Supabase config
     const supabaseUrl = "https://xaeybhscsxpvtnqzpgwj.supabase.co";
     const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU";
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-    // Alternar entre login/registro
     function toggleForm() {
       const loginForm = document.getElementById("login-form");
       const registerForm = document.getElementById("register-form");
-      const errorMsg = document.getElementById("error-message");
-      const regErrorMsg = document.getElementById("register-error-message");
-      const regSuccessMsg = document.getElementById("register-success-message");
+      document.getElementById("error-message").textContent = "";
+      document.getElementById("register-error-message").textContent = "";
+      document.getElementById("register-success-message").textContent = "";
 
-      errorMsg.textContent = "";
-      regErrorMsg.textContent = "";
-      regSuccessMsg.textContent = "";
-
-      if (loginForm.style.display === "none") {
-        loginForm.style.display = "block";
-        registerForm.style.display = "none";
-      } else {
-        loginForm.style.display = "none";
-        registerForm.style.display = "block";
-      }
+      loginForm.style.display = loginForm.style.display === "none" ? "block" : "none";
+      registerForm.style.display = registerForm.style.display === "none" ? "block" : "none";
     }
 
-    // Login
     async function login() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
@@ -160,69 +151,55 @@
         return;
       }
 
-      const { error } = await supabaseClient.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
       if (error) {
         errorMsg.textContent = error.message;
       } else {
-        window.location.href = "dashboard.html"; // Redirige al dashboard
+        window.location.href = "dashboard.html";
       }
     }
 
-    // Registro
     async function register() {
-  const email = document.getElementById("register-email").value;
-  const password = document.getElementById("register-password").value;
-  const fullName = document.getElementById("full-name").value;
+      const email = document.getElementById("register-email").value;
+      const password = document.getElementById("register-password").value;
+      const fullName = document.getElementById("full-name").value;
 
-  const registerBtn = document.querySelector("#register-form button");
-  registerBtn.disabled = true;
-  registerBtn.textContent = "Creando cuenta...";
+      const registerBtn = document.querySelector("#register-form button");
+      const regErrorMsg = document.getElementById("register-error-message");
+      const regSuccessMsg = document.getElementById("register-success-message");
 
-  try {
-    // 1. Registro en auth.users (esto ya funciona en tu código)
-    const { data, error } = await supabaseClient.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName } }
-    });
+      registerBtn.disabled = true;
+      registerBtn.textContent = "Creando cuenta...";
+      regErrorMsg.textContent = "";
+      regSuccessMsg.textContent = "";
 
-    if (error) throw error;
+      try {
+        const { data, error } = await supabaseClient.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: fullName } }
+        });
 
-    // 2. ¡ESTA ES LA PARTE NUEVA! Crea el perfil en public.users
-    await supabaseClient.from("users").insert([{
-      id: data.user.id,
-      email: email,
-      full_name: fullName,
-      balance: 0,
-      referral_code: "NUM" + Math.random().toString(36).slice(2, 8).toUpperCase()
-    }]);
+        if (error) throw error;
+        if (!data?.user?.id) throw new Error("Error inesperado: Usuario no creado.");
 
-    document.getElementById("register-success-message").textContent = "¡Cuenta creada!";
-    setTimeout(() => window.location.href = "dashboard.html", 2000);
+        await supabaseClient.from("users").insert([{
+          id: data.user.id,
+          email: email,
+          full_name: fullName,
+          balance: 0,
+          referral_code: "NUM" + Math.random().toString(36).slice(2, 8).toUpperCase()
+        }]);
 
-  } catch (error) {
-    document.getElementById("register-error-message").textContent = error.message;
-  } finally {
-    registerBtn.disabled = false;
-    registerBtn.textContent = "Crear cuenta";
-  }
-}
-      console.log("Respuesta Supabase:", response);
+        regSuccessMsg.textContent = "¡Cuenta creada! Redirigiendo...";
+        setTimeout(() => window.location.href = "dashboard.html", 2000);
 
-      const { data, error } = response;
-
-      if (error) {
+      } catch (error) {
         regErrorMsg.textContent = error.message;
-      } else {
-        regSuccessMsg.textContent =
-          "¡Registro exitoso! Revisa tu correo para confirmar la cuenta.";
-        document.getElementById("register-email").value = "";
-        document.getElementById("register-password").value = "";
-        document.getElementById("full-name").value = "";
+      } finally {
+        registerBtn.disabled = false;
+        registerBtn.textContent = "Crear cuenta";
       }
     }
   </script>
