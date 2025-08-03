@@ -174,17 +174,15 @@
       regSuccessMsg.textContent = "";
 
       try {
-        const { error: signUpError } = await supabaseClient.auth.signUp({
+        const { data, error: signUpError } = await supabaseClient.auth.signUp({
           email,
           password
         });
 
         if (signUpError) throw signUpError;
 
-        const { data: userData, error: userError } = await supabaseClient.auth.getUser();
-        const userId = userData?.user?.id;
-
-        if (userError || !userId) throw new Error("No se pudo obtener el ID del usuario.");
+        const userId = data?.user?.id;
+        if (!userId) throw new Error("No se pudo obtener el ID del usuario.");
 
         const { error: insertError } = await supabaseClient.from("users").insert([{
           id: userId,
@@ -195,6 +193,9 @@
         }]);
 
         if (insertError) throw insertError;
+
+        const { error: loginError } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (loginError) throw loginError;
 
         regSuccessMsg.textContent = "¡Cuenta creada! Redirigiendo...";
         setTimeout(() => window.location.href = "dashboard.html", 2000);
