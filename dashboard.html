@@ -568,7 +568,7 @@
 
 <script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
 <script>
-
+  // 1. VERIFICACIÓN DE CARGA DE SUPABASE
   function checkSupabaseLoaded() {
     return new Promise((resolve) => {
       const check = () => {
@@ -582,11 +582,13 @@
     });
   }
 
+  // 2. INICIALIZACIÓN PRINCIPAL
   document.addEventListener('DOMContentLoaded', async () => {
     try {
-
+      // Espera a que Supabase esté disponible
       await checkSupabaseLoaded();
-
+      
+      // Conexión a Supabase (TUS CREDENCIALES ORIGINALES)
       const supabase = window.supabase.createClient(
         'https://xaeybhscsxpvtnqzpgwj.supabase.co',
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU',
@@ -600,7 +602,8 @@
         }
       );
 
-
+      // ► [TODO EL RESTO DE TU CÓDIGO ORIGINAL SE MANTIENE IGUAL]
+      // Desde la verificación de sesión hasta los event listeners
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) {
         window.location.href = '/login.html';
@@ -615,6 +618,7 @@
 
       if (userError) throw userError;
 
+      // Actualizar UI (tu función original)
       document.getElementById('user-avatar').textContent = 
         userData.full_name?.charAt(0).toUpperCase() || 'U';
       document.getElementById('welcome-title').textContent = 
@@ -630,6 +634,7 @@
       document.getElementById('user-phone').textContent = userData.phone || 'No definido';
       document.getElementById('user-address').textContent = userData.address || 'No definido';
 
+      // Compras
       const purchasesBody = document.getElementById('purchases-body');
       purchasesBody.innerHTML = userData.purchases?.length > 0 
         ? userData.purchases.map(p => `
@@ -643,6 +648,7 @@
           `).join('')
         : '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
 
+      // Referidos
       const referralsBody = document.getElementById('referrals-body');
       referralsBody.innerHTML = userData.referrals?.length > 0
         ? userData.referrals.map(r => `
@@ -671,6 +677,7 @@
     }
   });
 
+  // Event listeners (originales)
   document.getElementById('copy-btn')?.addEventListener('click', function() {
     const code = document.getElementById('referral-code').textContent;
     navigator.clipboard.writeText(code);
@@ -686,17 +693,4 @@
     await supabase.auth.signOut();
     window.location.href = '/login.html';
   });
-// Oculta subtítulo "Por favor espera"
-const subtitle = document.getElementById('welcome-subtitle');
-if (subtitle) subtitle.style.display = 'none';
-
-// Borra todos los textos "Cargando..."
-document.querySelectorAll('.change span').forEach(span => {
-  if (span.textContent.toLowerCase().includes('cargando')) {
-    span.textContent = '';
-  }
-});
-
-</script>
-
 </script>
