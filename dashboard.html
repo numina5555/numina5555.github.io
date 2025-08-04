@@ -549,16 +549,14 @@
 </div>
 <a class="edit-btn" href="#" id="edit-btn">Editar Información</a>
 </div>
-
 <div class="section-content" id="section-configuracion" style="display:none;">
-  <h2>Configuración de cuenta</h2>
-  <form id="config-form">
-    <label>Contraseña Nueva:<br><input type="password" placeholder="********" required></label><br><br>
-    <label>Repetir Contraseña:<br><input type="password" placeholder="********" required></label><br><br>
-    <button type="submit">Guardar cambios</button>
-  </form>
+<h2>Configuración de cuenta</h2>
+<form id="config-form">
+<label>Contraseña Nueva:<br/><input placeholder="********" required="" type="password"/></label><br/><br/>
+<label>Repetir Contraseña:<br/><input placeholder="********" required="" type="password"/></label><br/><br/>
+<button type="submit">Guardar cambios</button>
+</form>
 </div>
-
 </main>
 </div>
 <script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
@@ -774,4 +772,29 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const menuItems = document.querySelectorAll(".menu-item[data-target]");
+  const mainContent = document.querySelector(".main-content");
+  const originalContent = mainContent.innerHTML;
+
+  menuItems.forEach(item => {
+    item.addEventListener("click", () => {
+      const target = item.getAttribute("data-target");
+      if (target !== "dashboard" && target !== "logout") {
+        if (mainContent) {
+          mainContent.innerHTML = "";
+          mainContent.style.backgroundColor = "#000";
+        }
+      } else if (target === "dashboard") {
+        if (mainContent) {
+          mainContent.innerHTML = originalContent;
+          mainContent.style.backgroundColor = "";
+        }
+      }
+    });
+  });
+});
+</script>
 </body></html>
