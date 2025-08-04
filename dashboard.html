@@ -774,4 +774,24 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const menuItems = document.querySelectorAll(".menu-item[data-target]");
+  const mainContent = document.querySelector(".main-content");
+
+  menuItems.forEach(item => {
+    item.addEventListener("click", () => {
+      const target = item.getAttribute("data-target");
+      if (target !== "dashboard" && target !== "logout") {
+        if (mainContent) {
+          mainContent.innerHTML = ""; // Limpiar todo el contenido
+          mainContent.style.backgroundColor = "#000"; // Fondo negro
+        }
+      }
+    });
+  });
+});
+</script>
+
 </body></html>
