@@ -547,21 +547,7 @@
 <p id="user-address">Cargando...</p>
 </div>
 </div>
-
 <a class="edit-btn" href="#" id="edit-btn">Editar Información</a>
-<form id="edit-form" style="display:none; margin-top:1rem;">
-  <label for="edit-name">Nombre Completo</label>
-  <input type="text" id="edit-name" placeholder="Nombre completo" style="width:100%;padding:0.5rem;margin-bottom:1rem;">
-
-  <label for="edit-phone">Teléfono</label>
-  <input type="text" id="edit-phone" placeholder="Teléfono" style="width:100%;padding:0.5rem;margin-bottom:1rem;">
-
-  <label for="edit-address">Dirección</label>
-  <input type="text" id="edit-address" placeholder="Dirección" style="width:100%;padding:0.5rem;margin-bottom:1rem;">
-
-  <button type="submit" style="width:100%;padding:0.8rem;background:#ffd700;color:#111;font-weight:bold;border:none;border-radius:5px;">Guardar Cambios</button>
-</form>
-
 </div>
 <div class="section-content" id="section-configuracion" style="display:none;">
 <h2>Configuración de cuenta</h2>
@@ -811,46 +797,4 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
-
-<script>
-document.getElementById("edit-btn").addEventListener("click", function(event) {
-  event.preventDefault();
-  const form = document.getElementById("edit-form");
-  form.style.display = form.style.display === "none" ? "block" : "none";
-  document.getElementById("edit-name").value = document.getElementById("full-name").textContent.trim();
-  document.getElementById("edit-phone").value = document.getElementById("user-phone").textContent.trim();
-  document.getElementById("edit-address").value = document.getElementById("user-address").textContent.trim();
-});
-
-document.getElementById("edit-form").addEventListener("submit", async function(event) {
-  event.preventDefault();
-  const full_name = document.getElementById("edit-name").value;
-  const phone = document.getElementById("edit-phone").value;
-  const address = document.getElementById("edit-address").value;
-
-  const supabase = window.supabase.createClient(
-    'https://xaeybhscsxpvtnqzpgwj.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU'
-  );
-
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) return alert("No hay sesión activa.");
-
-  const { error } = await supabase.from("users").update({
-    full_name,
-    phone,
-    address
-  }).eq("id", user.id);
-
-  if (error) {
-    alert("Hubo un error al guardar los cambios.");
-    console.error(error);
-  } else {
-    alert("Cambios guardados con éxito.");
-    location.reload();
-  }
-});
-</script>
-
 </body></html>
