@@ -870,7 +870,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const template = document.getElementById("dashboard-template");
 
   function mostrarDashboard() {
-    main.innerHTML = template.innerHTML;
+    const content = template.content.cloneNode(true);
+    main.innerHTML = '';
+    main.appendChild(content);
     main.style.backgroundColor = "";
     setTimeout(() => cargarDashboard(), 50);
   }
