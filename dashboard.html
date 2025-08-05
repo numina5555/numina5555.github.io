@@ -761,7 +761,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   menuItems.forEach(item => {
     item.addEventListener("click", () => {
-      if (item.getAttribute(\"data-target\") === \"dashboard\") cargarDashboard();
       const target = item.getAttribute("data-target");
       sections.forEach(section => {
         section.style.display = section.id === 'section-' + target ? 'block' : 'none';
@@ -782,7 +781,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   menuItems.forEach(item => {
     item.addEventListener("click", () => {
-      if (item.getAttribute(\"data-target\") === \"dashboard\") cargarDashboard();
       const target = item.getAttribute("data-target");
       if (target !== "dashboard" && target !== "logout") {
         if (mainContent) {
@@ -799,79 +797,4 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
-
-<script>
-async function cargarDashboard() {
-  try {
-    const supabase = window.supabase.createClient(
-      'https://xaeybhscsxpvtnqzpgwj.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU',
-      {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true,
-          storage: localStorage
-        }
-      }
-    );
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) return;
-
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('*, purchases(*), referrals(*)')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    if (userError) throw userError;
-
-    document.getElementById('user-avatar').textContent = 
-      userData.full_name?.charAt(0).toUpperCase() || 'U';
-    document.getElementById('welcome-title').textContent = 
-      `Bienvenido, ${userData.full_name || userData.email}`;
-    document.getElementById('referral-code').textContent = 
-      userData.referral_code || '---';
-    document.getElementById('balance-value').textContent = `$${userData.balance?.toFixed(2) || '0.00'}`;
-    document.getElementById('purchases-value').textContent = userData.active_purchases || '0';
-    document.getElementById('referrals-value').textContent = userData.referrals_count || '0';
-    document.getElementById('tickets-value').textContent = userData.tickets_count || '0';
-    document.getElementById('full-name').textContent = userData.full_name || 'No definido';
-    document.getElementById('user-email').textContent = userData.email || 'No definido';
-    document.getElementById('user-phone').textContent = userData.phone || 'No definido';
-    document.getElementById('user-address').textContent = userData.address || 'No definido';
-
-    const purchasesBody = document.getElementById('purchases-body');
-    purchasesBody.innerHTML = userData.purchases?.length > 0 
-      ? userData.purchases.map(p => `
-          <tr>
-            <td>${p.product_name}</td>
-            <td>${new Date(p.created_at).toLocaleDateString()}</td>
-            <td>$${p.value?.toFixed(2)}</td>
-            <td><span class="status ${p.status}">${p.status}</span></td>
-            <td><button class="action-btn">Detalles</button></td>
-          </tr>
-        `).join('')
-      : '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
-
-    const referralsBody = document.getElementById('referrals-body');
-    referralsBody.innerHTML = userData.referrals?.length > 0
-      ? userData.referrals.map(r => `
-          <tr>
-            <td>${r.referred_email}</td>
-            <td>${new Date(r.created_at).toLocaleDateString()}</td>
-            <td>${r.purchases_count || '0'}</td>
-            <td><span class="status ${r.is_active ? 'active' : 'inactive'}">${r.is_active ? 'Activo' : 'Inactivo'}</span></td>
-            <td>$${r.commission?.toFixed(2) || '0.00'}</td>
-          </tr>
-        `).join('')
-      : '<tr><td colspan="5" style="text-align: center;">No hay referidos</td></tr>';
-
-  } catch (error) {
-    console.error('Error:', error);
-  }
-}
-</script>
-
 </body></html>
