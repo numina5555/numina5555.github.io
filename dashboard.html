@@ -713,7 +713,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const code = referralCode.textContent;
 
       try {
-        if (typeof navigator.clipboard !== 'undefined' && window.isSecureContext) {
+        if (typeof navigator !== 'undefined' &&
+            navigator.clipboard &&
+            typeof navigator.clipboard.writeText === 'function' &&
+            window.isSecureContext) {
           await navigator.clipboard.writeText(code);
         } else {
           const textarea = document.createElement("textarea");
