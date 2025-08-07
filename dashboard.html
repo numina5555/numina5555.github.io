@@ -557,7 +557,28 @@
 <button type="submit">Guardar cambios</button>
 </form>
 </div>
-</div></main>
+</div><section class="section-content" id="section-compras" style="display:none;">
+<h2 class="section-title">
+<i class="fas fa-shopping-bag"></i>
+<span>Mis Compras</span>
+</h2>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Producto</th>
+<th>Fecha</th>
+<th>Valor</th>
+<th>Estado</th>
+<th>Acciones</th>
+</tr>
+</thead>
+<tbody id="compras-body">
+<tr><td colspan="5" style="text-align:center;">Cargando compras...</td></tr>
+</tbody>
+</table>
+</div>
+</section></main>
 </div>
 <script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
 <script>
@@ -771,8 +792,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
-
-
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const menuItems = document.querySelectorAll(".menu-item[data-target]");
@@ -797,7 +816,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
-
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const menuItems = document.querySelectorAll(".menu-item[data-target]");
@@ -902,6 +920,4 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarDashboard();
 });
 </script>
-
 </body></html>
-
