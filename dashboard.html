@@ -557,30 +557,32 @@
 <button type="submit">Guardar cambios</button>
 </form>
 </div>
+</div></main>
+<div class="section-content" id="section-compras" style="display:none;">
+  <h2 class="section-title">
+    <i class="fas fa-shopping-bag"></i>
+    <span>Mis Compras</span>
+  </h2>
+  <div class="table-container">
+    <table id="miscompras-table">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Fecha</th>
+          <th>Valor</th>
+          <th>Estado</th>
+          <th>Reclamo</th>
+        </tr>
+      </thead>
+      <tbody id="miscompras-body">
+        <tr>
+          <td colspan="5" style="text-align: center;">Cargando compras...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
-<section class="section-content" id="section-compras" style="display:none;">
-<h2 class="section-title">
-<i class="fas fa-shopping-bag"></i>
-<span>Mis Compras</span>
-</h2>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>Producto</th>
-<th>Fecha</th>
-<th>Valor</th>
-<th>Estado</th>
-<th>Acciones</th>
-</tr>
-</thead>
-<tbody id="compras-body">
-<tr><td colspan="5" style="text-align:center;">Cargando compras...</td></tr>
-</tbody>
-</table>
-</div>
-</section>
-</main>
+
 </div>
 <script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
 <script>
@@ -794,6 +796,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
+
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const menuItems = document.querySelectorAll(".menu-item[data-target]");
@@ -818,6 +822,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const menuItems = document.querySelectorAll(".menu-item[data-target]");
@@ -922,67 +927,62 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarDashboard();
 });
 </script>
+
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const supabase = window.supabase.createClient(
-    'https://xaeybhscsxpvtnqzpgwj.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU'
-  );
+  const menuCompras = document.querySelector('.menu-item[data-target="compras"]');
+  const sectionCompras = document.getElementById("section-compras");
+  const mainDashboard = document.getElementById("main-dashboard");
 
-  async function cargarCompras() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data: compras, error } = await supabase
-      .from('purchases')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(7);
-
-    const tbody = document.getElementById("compras-body");
-    tbody.innerHTML = "";
-
-    if (error || !compras || compras.length === 0) {
-      tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No hay compras.</td></tr>";
-      return;
-    }
-
-    compras.forEach(compra => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = \`
-        <td>
-          <img src="rolex.jpg" alt="Producto" width="40" height="40">
-          <div><strong>\${compra.product_name}</strong><br><small>\${compra.tickets} tickets</small></div>
-        </td>
-        <td>\${new Date(compra.created_at).toLocaleDateString()}</td>
-        <td>$\${compra.value}</td>
-        <td><span class="status \${compra.status}">\${compra.status}</span></td>
-        <td><button class="action-btn">Hacer reclamo</button></td>
-      \`;
-      tbody.appendChild(tr);
-    });
-  }
-
-  document.querySelectorAll(".menu-item").forEach(item => {
-    item.addEventListener("click", () => {
-      const target = item.getAttribute("data-target");
-
-      document.querySelectorAll(".section-content").forEach(section => {
-        section.style.display = "none";
-      });
-
-      if (target === "compras") {
-        const comprasSection = document.getElementById("section-compras");
-        if (comprasSection) {
-          comprasSection.style.display = "block";
-          cargarCompras();
+  if (menuCompras) {
+    menuCompras.addEventListener("click", async () => {
+      if (mainDashboard) mainDashboard.style.display = "none";
+      if (sectionCompras) sectionCompras.style.display = "block";
+      // Traer compras recientes del usuario desde Supabase
+      try {
+        const supabase = window.supabase.createClient(
+          'https://xaeybhscsxpvtnqzpgwj.supabase.co',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU'
+        );
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          window.location.href = '/login.html';
+          return;
         }
-      } else {
-        const section = document.getElementById("section-" + target);
-        if (section) section.style.display = "block";
+        // Traer solo las 7 compras más recientes del usuario
+        const { data: purchases, error: purchaseError } = await supabase
+          .from('purchases')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(7);
+
+        const tbody = document.getElementById('miscompras-body');
+        if (purchaseError || !purchases) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
+          return;
+        }
+        if (purchases.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
+          return;
+        }
+        tbody.innerHTML = purchases.map(p => \`
+          <tr>
+            <td>\${p.product_name}</td>
+            <td>\${new Date(p.created_at).toLocaleDateString()}</td>
+            <td>$\${p.value?.toFixed(2) || '0.00'}</td>
+            <td><span class="status \${p.status}">\${p.status}</span></td>
+            <td><button class="action-btn" disabled>Hacer reclamo</button></td>
+          </tr>
+        \`).join('');
+      } catch (e) {
+        const tbody = document.getElementById('miscompras-body');
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Error cargando compras</td></tr>';
       }
     });
-  });
+  }
 });
-</script></body></html>
+</script>
+
+</body></html>
