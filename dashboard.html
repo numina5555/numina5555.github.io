@@ -920,4 +920,66 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarDashboard();
 });
 </script>
-</body></html>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const menuItems = document.querySelectorAll(".menu-item[data-target]");
+  const mainDashboard = document.getElementById("main-dashboard");
+  const sectionCompras = document.getElementById("section-compras");
+
+  async function cargarCompras() {
+    const supabase = window.supabase.createClient(
+      'https://xaeybhscsxpvtnqzpgwj.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU'
+    );
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: compras, error } = await supabase
+      .from('purchases')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(7);
+
+    const tbody = document.getElementById("compras-body");
+    tbody.innerHTML = "";
+
+    if (error || !compras || compras.length === 0) {
+      tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No hay compras.</td></tr>";
+      return;
+    }
+
+    compras.forEach(compra => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = \`
+        <td>
+          <img src="rolex.jpg" alt="Producto" width="40" height="40">
+          <div><strong>\${compra.product_name}</strong><br><small>\${compra.tickets} tickets</small></div>
+        </td>
+        <td>\${new Date(compra.created_at).toLocaleDateString()}</td>
+        <td>$\${compra.value}</td>
+        <td><span class="status \${compra.status}">\${compra.status}</span></td>
+        <td><button class="action-btn">Hacer reclamo</button></td>
+      \`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  menuItems.forEach(item => {
+    item.addEventListener("click", () => {
+      const target = item.getAttribute("data-target");
+
+      if (target === "compras") {
+        if (mainDashboard) mainDashboard.style.display = "none";
+        if (sectionCompras) {
+          sectionCompras.style.display = "block";
+          cargarCompras();
+        }
+      } else {
+        if (sectionCompras) sectionCompras.style.display = "none";
+      }
+    });
+  });
+});
+</script></body></html>
