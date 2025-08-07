@@ -557,7 +557,8 @@
 <button type="submit">Guardar cambios</button>
 </form>
 </div>
-</div><section class="section-content" id="section-compras" style="display:none;">
+</div>
+<section class="section-content" id="section-compras" style="display:none;">
 <h2 class="section-title">
 <i class="fas fa-shopping-bag"></i>
 <span>Mis Compras</span>
@@ -578,7 +579,8 @@
 </tbody>
 </table>
 </div>
-</section></main>
+</section>
+</main>
 </div>
 <script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
 <script>
@@ -922,16 +924,12 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const menuItems = document.querySelectorAll(".menu-item[data-target]");
-  const mainDashboard = document.getElementById("main-dashboard");
-  const sectionCompras = document.getElementById("section-compras");
+  const supabase = window.supabase.createClient(
+    'https://xaeybhscsxpvtnqzpgwj.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU'
+  );
 
   async function cargarCompras() {
-    const supabase = window.supabase.createClient(
-      'https://xaeybhscsxpvtnqzpgwj.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU'
-    );
-
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -966,18 +964,23 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  menuItems.forEach(item => {
+  document.querySelectorAll(".menu-item").forEach(item => {
     item.addEventListener("click", () => {
       const target = item.getAttribute("data-target");
 
+      document.querySelectorAll(".section-content").forEach(section => {
+        section.style.display = "none";
+      });
+
       if (target === "compras") {
-        if (mainDashboard) mainDashboard.style.display = "none";
-        if (sectionCompras) {
-          sectionCompras.style.display = "block";
+        const comprasSection = document.getElementById("section-compras");
+        if (comprasSection) {
+          comprasSection.style.display = "block";
           cargarCompras();
         }
       } else {
-        if (sectionCompras) sectionCompras.style.display = "none";
+        const section = document.getElementById("section-" + target);
+        if (section) section.style.display = "block";
       }
     });
   });
