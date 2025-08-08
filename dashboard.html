@@ -19,13 +19,13 @@
       --warning: #ffc107;
       --danger: #dc3545;
     }
-    
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-    
+
     body {
       font-family: 'Montserrat', sans-serif;
       background-color: var(--dark);
@@ -34,7 +34,7 @@
       display: flex;
       flex-direction: column;
     }
-    
+
     .dashboard-header {
       background: linear-gradient(to right, var(--dark), var(--dark-lighter));
       padding: 1rem 2rem;
@@ -43,20 +43,20 @@
       align-items: center;
       border-bottom: 1px solid rgba(255, 215, 0, 0.1);
     }
-    
+
     .logo {
       color: var(--primary);
       font-size: 1.8rem;
       font-weight: 700;
       letter-spacing: 1px;
     }
-    
+
     .user-menu {
       display: flex;
       align-items: center;
       gap: 1rem;
     }
-    
+
     .user-avatar {
       width: 40px;
       height: 40px;
@@ -69,23 +69,23 @@
       font-weight: 700;
       cursor: pointer;
     }
-    
+
     .dashboard-container {
       display: flex;
       flex: 1;
     }
-    
+
     .sidebar {
       width: 250px;
       background-color: var(--dark-light);
       padding: 1.5rem 0;
       border-right: 1px solid rgba(255, 255, 255, 0.05);
     }
-    
+
     .sidebar-menu {
       list-style: none;
     }
-    
+
     .menu-item {
       padding: 0.8rem 1.5rem;
       display: flex;
@@ -95,24 +95,24 @@
       transition: all 0.3s;
       border-left: 3px solid transparent;
     }
-    
+
     .menu-item:hover, .menu-item.active {
       background-color: rgba(255, 215, 0, 0.1);
       border-left: 3px solid var(--primary);
       color: var(--primary);
     }
-    
+
     .menu-item i {
       width: 20px;
       text-align: center;
     }
-    
+
     .main-content {
       flex: 1;
       padding: 2rem;
       background-color: var(--dark);
     }
-    
+
     .welcome-banner {
       background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
       border: 1px solid rgba(255, 215, 0, 0.1);
@@ -123,16 +123,16 @@
       justify-content: space-between;
       align-items: center;
     }
-    
+
     .welcome-text h2 {
       color: var(--primary);
       margin-bottom: 0.5rem;
     }
-    
+
     .welcome-text p {
       color: var(--text-light);
     }
-    
+
     .referral-code {
       background-color: var(--dark-light);
       padding: 0.8rem 1.2rem;
@@ -141,12 +141,12 @@
       align-items: center;
       gap: 0.8rem;
     }
-    
+
     .referral-code span {
       font-weight: 600;
       letter-spacing: 1px;
     }
-    
+
     .copy-btn {
       background-color: var(--primary);
       color: var(--dark);
@@ -156,25 +156,25 @@
       cursor: pointer;
       transition: all 0.3s;
     }
-    
+
     .copy-btn:hover {
       background-color: var(--primary-dark);
     }
-    
+
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 1.5rem;
       margin-bottom: 2rem;
     }
-    
+
     .stat-card {
       background-color: var(--dark-light);
       border-radius: 10px;
       padding: 1.5rem;
       border-left: 4px solid var(--primary);
     }
-    
+
     .stat-card h3 {
       color: var(--text-light);
       font-size: 0.9rem;
@@ -183,29 +183,29 @@
       text-transform: uppercase;
       letter-spacing: 1px;
     }
-    
+
     .stat-card .value {
       font-size: 1.8rem;
       font-weight: 700;
       color: var(--primary);
       margin-bottom: 0.5rem;
     }
-    
+
     .stat-card .change {
       font-size: 0.8rem;
       display: flex;
       align-items: center;
       gap: 0.3rem;
     }
-    
+
     .change.positive {
       color: var(--success);
     }
-    
+
     .change.negative {
       color: var(--danger);
     }
-    
+
     .section-title {
       color: var(--primary);
       margin: 2rem 0 1rem;
@@ -258,7 +258,7 @@
       .menu-item { justify-content: center; }
       .welcome-banner { flex-direction: column; text-align: center; gap: 1rem; }
     }
-    
+
     @media (max-width: 768px) {
       .dashboard-container { flex-direction: column; }
       .sidebar { width: 100%; padding: 0; }
@@ -546,7 +546,7 @@
   document.addEventListener('DOMContentLoaded', async () => {
     try {
       await checkSupabaseLoaded();
-      
+
       const supabase = window.supabase.createClient(
         'https://xaeybhscsxpvtnqzpgwj.supabase.co',
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU',
@@ -744,62 +744,53 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 <script>
+// Router único para navegar entre secciones y evitar listeners duplicados
 document.addEventListener("DOMContentLoaded", () => {
   const menuItems = document.querySelectorAll('.menu-item[data-target]');
   const sections = document.querySelectorAll('.section-content');
   const mainDashboard = document.getElementById('main-dashboard');
 
-  menuItems.forEach(item => {
-    item.addEventListener('click', () => {
-      const target = item.getAttribute('data-target');
-      sections.forEach(section => {
-        section.style.display = section.id === 'section-' + target ? 'block' : 'none';
+  function showSection(target) {
+    sections.forEach(section => { section.style.display = 'none'; });
+    if (target === 'dashboard') {
+      mainDashboard.style.display = 'block';
+      return;
+    }
+    const section = document.getElementById('section-' + target);
+    if (section) {
+      mainDashboard.style.display = 'none';
+      section.style.display = 'block';
+    } else {
+      mainDashboard.style.display = 'block';
+    }
+    if (target === 'configuracion' && typeof prefillConfigForms === 'function') {
+      try { prefillConfigForms(); } catch (_) {}
+    }
+  }
+  window.__showSection = showSection;
+  if (!window.__navBound) {
+    menuItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const target = item.getAttribute('data-target');
+        menuItems.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        if (target !== 'logout') showSection(target);
       });
-      menuItems.forEach(i => i.classList.remove('active'));
-      item.classList.add('active');
-
-      // Mostrar/ocultar dashboard principal
-      if (target === 'dashboard') {
-        mainDashboard.style.display = 'block';
-      } else if (target !== 'logout') {
-        mainDashboard.style.display = 'none';
-      }
-
-      // Si abren Configuración, prellenar por si hubo cambios recientes
-      if (target === 'configuracion') {
-        try { prefillConfigForms(); } catch (e) {}
-      }
     });
-  });
+    window.__navBound = true;
+  }
+  showSection('dashboard');
 });
 </script>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const menuItems = document.querySelectorAll(".menu-item[data-target]");
-  const sections = document.querySelectorAll(".section-content");
-
-  menuItems.forEach(item => {
-    item.addEventListener("click", () => {
-      const target = item.getAttribute("data-target");
-      sections.forEach(section => {
-        section.style.display = section.id === 'section-' + target ? 'block' : 'none';
-      });
-      menuItems.forEach(i => i.classList.remove("active"));
-      item.classList.add("active");
-    });
-  });
-});
-</script>
+<!-- script de navegación duplicado eliminado para evitar conflictos -->
 
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const menuItems = document.querySelectorAll(".menu-item[data-target]");
   const mainDashboard = document.getElementById("main-dashboard");
 
   async function cargarDashboard() {
     console.log("[cargarDashboard] Ejecutando");
-
     document.getElementById('welcome-title').textContent = 'Cargando datos...';
     document.getElementById('referral-code').textContent = '---';
     document.getElementById('balance-value').textContent = '$---';
@@ -877,21 +868,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  menuItems.forEach(item => {
-    item.addEventListener("click", () => {
-      const target = item.getAttribute("data-target");
-      menuItems.forEach(i => i.classList.remove("active"));
-      item.classList.add("active");
-
-      if (target === "dashboard") {
-        mainDashboard.style.display = "block";
-        cargarDashboard();
-      } else if (target !== "logout") {
-        mainDashboard.style.display = "none";
-      }
-    });
-  });
-
+  // Mostrar dashboard de inicio y cargar datos
   mainDashboard.style.display = "block";
   cargarDashboard();
 });
