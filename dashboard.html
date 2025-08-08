@@ -636,6 +636,20 @@
 </div>
 <script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
 <script>
+// Memoized Supabase client: re-use the same instance so session persists between sections
+(function(){
+  const URL = 'https://xaeybhscsxpvtnqzpgwj.supabase.co';
+  const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU';
+  let _client = null;
+  window.getSupabase = function(){
+    if (_client) return _client;
+    _client = getSupabase();
+    return _client;
+  };
+})();
+</script>
+
+<script>
   // 1. VERIFICACIÓN DE CARGA DE SUPABASE
   function checkSupabaseLoaded() {
     return new Promise((resolve) => {
@@ -657,18 +671,7 @@
       await checkSupabaseLoaded();
 
       // Conexión a Supabase (TUS CREDENCIALES ORIGINALES)
-      const supabase = window.supabase.createClient(
-        'https://xaeybhscsxpvtnqzpgwj.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU',
-        {
-          auth: {
-            persistSession: true,
-            autoRefreshToken: true,
-            detectSessionInUrl: true,
-            storage: localStorage
-          }
-        }
-      );
+      const supabase = getSupabase();
 
       // ► [TODO EL RESTO DE TU CÓDIGO ORIGINAL SE MANTIENE IGUAL]
       // Desde la verificación de sesión hasta los event listeners
@@ -759,11 +762,8 @@
   });
 
   document.getElementById('logout-btn')?.addEventListener('click', async () => {
-    const supabase = window.supabase.createClient(
-      'https://xaeybhscsxpvtnqzpgwj.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU'
-    );
-    await supabase.auth.signOut();
+    const supabase = getSupabase();
+    await getSupabase().auth.signOut();
     window.location.href = '/login.html';
   });
 </script>
@@ -930,10 +930,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('purchases-body').innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando compras...</td></tr>';
     document.getElementById('referrals-body').innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando referidos...</td></tr>';
 
-    const supabase = window.supabase.createClient(
-      'https://xaeybhscsxpvtnqzpgwj.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU'
-    );
+    const supabase = getSupabase();
 
     const { data: { user }, error } = await supabase.auth.getUser();
     if (error || !user) return;
@@ -1030,10 +1027,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (sectionCompras) sectionCompras.style.display = "block";
       // Traer compras recientes del usuario desde Supabase
       try {
-        const supabase = window.supabase.createClient(
-          'https://xaeybhscsxpvtnqzpgwj.supabase.co',
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU'
-        );
+        const supabase = getSupabase();
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError || !user) {
           window.location.href = '/login.html';
