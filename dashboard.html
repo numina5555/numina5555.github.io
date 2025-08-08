@@ -394,6 +394,9 @@
         min-width: 70px;
       }
     }
+
+    /* added: ensure section-content hidden by default */
+    .section-content { display: none; }
   </style>
 </head>
 <body>
@@ -557,7 +560,7 @@
 <button type="submit">Guardar cambios</button>
 </form>
 </div>
-</div></main>
+</div>
 <div class="section-content" id="section-compras" style="display:none;">
   <h2 class="section-title">
     <i class="fas fa-shopping-bag"></i>
@@ -581,7 +584,7 @@
       </tbody>
     </table>
   </div>
-</div>
+</main></div>
 
 </div>
 <script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
@@ -797,31 +800,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const menuItems = document.querySelectorAll(".menu-item[data-target]");
-  const mainContent = document.querySelector(".main-content");
-  const originalContent = mainContent.innerHTML;
-
-  menuItems.forEach(item => {
-    item.addEventListener("click", () => {
-      const target = item.getAttribute("data-target");
-      if (target !== "dashboard" && target !== "logout") {
-        if (mainContent) {
-          mainContent.innerHTML = "";
-          mainContent.style.backgroundColor = "#000";
-        }
-      } else if (target === "dashboard") {
-        if (mainContent) {
-          mainContent.innerHTML = originalContent;
-          mainContent.style.backgroundColor = "";
-        }
-      }
-    });
-  });
-});
-</script>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
