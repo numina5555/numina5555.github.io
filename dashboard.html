@@ -216,58 +216,198 @@
       gap: 0.8rem;
     }
 
-    /* ====== CONFIG - Styles ====== */
-    .settings-card {
+    .table-container {
+      background-color: var(--dark-light);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 1rem;
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--dark-lighter);
+      color: var(--primary);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+    }
+
+    td {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-light);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .status {
+      padding: 0.3rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .status.active {
+      background-color: rgba(40, 167, 69, 0.2);
+      color: var(--success);
+    }
+
+    .status.pending {
+      background-color: rgba(255, 193, 7, 0.2);
+      color: var(--warning);
+    }
+
+    .status.completed {
+      background-color: rgba(13, 110, 253, 0.2);
+      color: #0d6efd;
+    }
+
+    .action-btn {
+      background-color: transparent;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      padding: 0.3rem 0.8rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .action-btn:hover {
+      background-color: var(--primary);
+      color: var(--dark);
+    }
+
+    .account-info {
       background-color: var(--dark-light);
       border-radius: 10px;
       padding: 1.5rem;
-      margin-bottom: 1.5rem;
-      border: 1px solid rgba(255,255,255,0.05);
+      margin-top: 2rem;
     }
-    .settings-card h3 { color: var(--primary); margin-bottom: .8rem; font-size: 1.05rem; }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 1rem; }
-    .form-row { display:flex; flex-direction:column; gap:.4rem; }
-    .form-row label { color: var(--text-light); font-size: .9rem; }
-    .form-row input, .form-row select {
-      background: var(--dark);
-      border: 1px solid var(--dark-lighter);
-      border-radius: 8px;
-      padding: .7rem .8rem;
-      color: var(--text);
-      outline: none;
-    }
-    .form-actions { display:flex; gap:.6rem; justify-content:flex-end; margin-top: 1rem; }
-    .btn { background: var(--primary); color: var(--dark); border:none; padding:.6rem 1rem; border-radius:8px; font-weight:600; cursor:pointer; }
-    .btn:hover { background: var(--primary-dark); }
-    .helper { color: var(--text-light); font-size: .85rem; margin-top:.4rem; }
 
-    .table-container { background-color: var(--dark-light); border-radius: 10px; overflow: hidden; margin-bottom: 2rem; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 1rem; text-align: left; }
-    th { background-color: var(--dark-lighter); color: var(--primary); font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; }
-    td { border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: var(--text-light); }
-    tr:last-child td { border-bottom: none; }
-    .status { padding: 0.3rem 0.6rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
-    .status.active { background-color: rgba(40, 167, 69, 0.2); color: var(--success); }
-    .status.pending { background-color: rgba(255, 193, 7, 0.2); color: var(--warning); }
-    .status.completed { background-color: rgba(13, 110, 253, 0.2); color: #0d6efd; }
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .info-item h4 {
+      color: var(--text-light);
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .info-item p {
+      font-weight: 600;
+    }
+
+    .edit-btn {
+      display: inline-block;
+      margin-top: 1.5rem;
+      background-color: var(--primary);
+      color: var(--dark);
+      padding: 0.6rem 1.2rem;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .edit-btn:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .error-banner {
+      background: rgba(220, 53, 69, 0.2);
+      padding: 1rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1rem;
+      border: 1px solid var(--danger);
+    }
+
+    .error-banner i {
+      color: var(--danger);
+    }
+
+    .error-banner button {
+      margin-left: auto;
+      background: var(--dark);
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
 
     @media (max-width: 992px) {
-      .sidebar { width: 70px; }
-      .menu-item span { display: none; }
-      .menu-item { justify-content: center; }
-      .welcome-banner { flex-direction: column; text-align: center; gap: 1rem; }
+      .sidebar {
+        width: 70px;
+      }
+
+      .menu-item span {
+        display: none;
+      }
+
+      .menu-item {
+        justify-content: center;
+      }
+
+      .welcome-banner {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+      }
     }
 
     @media (max-width: 768px) {
-      .dashboard-container { flex-direction: column; }
-      .sidebar { width: 100%; padding: 0; }
-      .sidebar-menu { display: flex; overflow-x: auto; }
-      .menu-item { padding: 1rem; min-width: 70px; }
+      .dashboard-container {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        padding: 0;
+      }
+
+      .sidebar-menu {
+        display: flex;
+        overflow-x: auto;
+      }
+
+      .menu-item {
+        padding: 1rem;
+        min-width: 70px;
+      }
     }
 
     /* added: ensure section-content hidden by default */
     .section-content { display: none; }
+
+    /* ===== Estilos de Configuración (no afectan al dashboard) ===== */
+    .settings-card { background-color: var(--dark-light); border: 1px solid rgba(255,255,255,.05); border-radius:10px; padding:1.5rem; margin-bottom:1.5rem; }
+    .settings-card h3 { color: var(--primary); margin-bottom:.8rem; font-size:1.05rem; }
+    .form-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:1rem; }
+    .form-row { display:flex; flex-direction:column; gap:.4rem; }
+    .form-row label { color:var(--text-light); font-size:.9rem; }
+    .form-row input, .form-row select { background:var(--dark); border:1px solid var(--dark-lighter); border-radius:8px; padding:.7rem .8rem; color:var(--text); outline:none; }
+    .form-actions { display:flex; gap:.6rem; justify-content:flex-end; margin-top:1rem; }
+    .btn { background:var(--primary); color:var(--dark); border:none; padding:.6rem 1rem; border-radius:8px; font-weight:600; cursor:pointer; }
+    .btn:hover { background:var(--primary-dark); }
+    .helper { color:var(--text-light); font-size:.85rem; margin-top:.4rem; }
   </style>
 </head>
 <body>
@@ -423,39 +563,22 @@
 </div>
 <a class="edit-btn" href="#" id="edit-btn">Editar Información</a>
 </div>
+</div>
 
-<!-- =================== CONFIGURACIÓN (integrada) =================== -->
-<div class="section-content" id="section-configuracion" style="display:none;">
-  <h2 class="section-title">
-    <i class="fas fa-cog"></i>
-    <span>Configuración de la Cuenta</span>
-  </h2>
+<!-- Configuración: MOVIDA FUERA DE #main-dashboard -->
+<section class="section-content" id="section-configuracion" style="display:none;">
+  <h2 class="section-title"><i class="fas fa-cog"></i><span>Configuración de la Cuenta</span></h2>
 
   <div class="settings-card">
     <h3><i class="fas fa-id-card"></i> Datos Personales</h3>
     <form id="config-datos-form">
       <div class="form-grid">
-        <div class="form-row">
-          <label for="cfg-fullname">Nombre completo</label>
-          <input id="cfg-fullname" type="text" placeholder="Nombre y apellido"/>
-        </div>
-        <div class="form-row">
-          <label for="cfg-email">Correo electrónico</label>
-          <input id="cfg-email" type="email" placeholder="correo@ejemplo.com" disabled/>
-          <div class="helper">Tu correo no puede cambiarse desde aquí.</div>
-        </div>
-        <div class="form-row">
-          <label for="cfg-phone">Teléfono</label>
-          <input id="cfg-phone" type="tel" placeholder="+54 11 1234 5678"/>
-        </div>
-        <div class="form-row">
-          <label for="cfg-address">Dirección</label>
-          <input id="cfg-address" type="text" placeholder="Calle, número, ciudad"/>
-        </div>
+        <div class="form-row"><label for="cfg-fullname">Nombre completo</label><input id="cfg-fullname" type="text" placeholder="Nombre y apellido"/></div>
+        <div class="form-row"><label for="cfg-email">Correo electrónico</label><input id="cfg-email" type="email" placeholder="correo@ejemplo.com" disabled/><div class="helper">Tu correo no puede cambiarse desde aquí.</div></div>
+        <div class="form-row"><label for="cfg-phone">Teléfono</label><input id="cfg-phone" type="tel" placeholder="+54 11 1234 5678"/></div>
+        <div class="form-row"><label for="cfg-address">Dirección</label><input id="cfg-address" type="text" placeholder="Calle, número, ciudad"/></div>
       </div>
-      <div class="form-actions">
-        <button class="btn" type="submit">Guardar cambios</button>
-      </div>
+      <div class="form-actions"><button class="btn" type="submit">Guardar cambios</button></div>
     </form>
   </div>
 
@@ -463,18 +586,10 @@
     <h3><i class="fas fa-shield-alt"></i> Seguridad</h3>
     <form id="config-pass-form">
       <div class="form-grid">
-        <div class="form-row">
-          <label for="cfg-pass1">Nueva contraseña</label>
-          <input id="cfg-pass1" type="password" placeholder="********"/>
-        </div>
-        <div class="form-row">
-          <label for="cfg-pass2">Repetir contraseña</label>
-          <input id="cfg-pass2" type="password" placeholder="********"/>
-        </div>
+        <div class="form-row"><label for="cfg-pass1">Nueva contraseña</label><input id="cfg-pass1" type="password" placeholder="********"/></div>
+        <div class="form-row"><label for="cfg-pass2">Repetir contraseña</label><input id="cfg-pass2" type="password" placeholder="********"/></div>
       </div>
-      <div class="form-actions">
-        <button class="btn" type="submit">Actualizar contraseña</button>
-      </div>
+      <div class="form-actions"><button class="btn" type="submit">Actualizar contraseña</button></div>
     </form>
   </div>
 
@@ -484,23 +599,15 @@
       <div class="form-grid">
         <div class="form-row">
           <label for="cfg-lang">Idioma</label>
-          <select id="cfg-lang">
-            <option value="es">Español</option>
-            <option value="en">Inglés</option>
-          </select>
+          <select id="cfg-lang"><option value="es">Español</option><option value="en">Inglés</option></select>
         </div>
       </div>
-      <div class="form-actions">
-        <button class="btn" type="submit">Guardar preferencias</button>
-      </div>
+      <div class="form-actions"><button class="btn" type="submit">Guardar preferencias</button></div>
     </form>
   </div>
-</div>
-<!-- ================================================================ -->
+</section>
 
-</div>
-
-<div class="section-content" id="section-compras" style="display:none;">
+<section class="section-content" id="section-compras" style="display:none;">
   <h2 class="section-title">
     <i class="fas fa-shopping-bag"></i>
     <span>Mis Compras</span>
@@ -523,6 +630,7 @@
       </tbody>
     </table>
   </div>
+</section>
 </main></div>
 
 </div>
@@ -545,16 +653,25 @@
   // 2. INICIALIZACIÓN PRINCIPAL
   document.addEventListener('DOMContentLoaded', async () => {
     try {
+      // Espera a que Supabase esté disponible
       await checkSupabaseLoaded();
 
+      // Conexión a Supabase (TUS CREDENCIALES ORIGINALES)
       const supabase = window.supabase.createClient(
         'https://xaeybhscsxpvtnqzpgwj.supabase.co',
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU',
         {
-          auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: localStorage }
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+            storage: localStorage
+          }
         }
       );
 
+      // ► [TODO EL RESTO DE TU CÓDIGO ORIGINAL SE MANTIENE IGUAL]
+      // Desde la verificación de sesión hasta los event listeners
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) {
         window.location.href = '/login.html';
@@ -569,10 +686,7 @@
 
       if (userError) throw userError;
 
-      // Guardar global para reutilizar en Configuración
-      window._userData = userData || {};
-
-      // Actualizar UI
+      // Actualizar UI (tu función original)
       document.getElementById('user-avatar').textContent = 
         userData.full_name?.charAt(0).toUpperCase() || 'U';
       document.getElementById('welcome-title').textContent = 
@@ -588,7 +702,7 @@
       document.getElementById('user-phone').textContent = userData.phone || 'No definido';
       document.getElementById('user-address').textContent = userData.address || 'No definido';
 
-      // Compras (dashboard)
+      // Compras
       const purchasesBody = document.getElementById('purchases-body');
       purchasesBody.innerHTML = userData.purchases?.length > 0 
         ? userData.purchases.map(p => `
@@ -602,7 +716,7 @@
           `).join('')
         : '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
 
-      // Referidos (dashboard)
+      // Referidos
       const referralsBody = document.getElementById('referrals-body');
       referralsBody.innerHTML = userData.referrals?.length > 0
         ? userData.referrals.map(r => `
@@ -616,11 +730,10 @@
           `).join('')
         : '<tr><td colspan="5" style="text-align: center;">No hay referidos</td></tr>';
 
-      // Prefill de Configuración
-      prefillConfigForms();
-
-      // Handlers de formularios Configuración
-      attachConfigHandlers(supabase, user);
+      // --- NUEVO: Prefill y handlers de Configuración ---
+      try { prefillConfigForms(userData); } catch(e) {}
+      try { attachConfigHandlers(supabase); } catch(e) {}
+      // ---------------------------------------------------
 
     } catch (error) {
       console.error('Error:', error);
@@ -637,65 +750,82 @@
     }
   });
 
-  function prefillConfigForms() {
-    const data = window._userData || {};
-    document.getElementById('cfg-fullname').value = data.full_name || '';
-    document.getElementById('cfg-email').value = data.email || '';
-    document.getElementById('cfg-phone').value = data.phone || '';
-    document.getElementById('cfg-address').value = data.address || '';
-    document.getElementById('cfg-lang').value = (data.language || 'es');
-  }
+  // Event listeners (originales)
+  document.getElementById('copy-btn')?.addEventListener('click', function() {
+    const code = document.getElementById('referral-code').textContent;
+    navigator.clipboard.writeText(code);
+    this.textContent = '¡Copiado!';
+    setTimeout(() => this.textContent = 'Copiar', 2000);
+  });
 
-  function attachConfigHandlers(supabase, user) {
-    // Guardar datos personales
-    const formDatos = document.getElementById('config-datos-form');
-    formDatos.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const updates = {
-        full_name: document.getElementById('cfg-fullname').value.trim() || null,
-        phone: document.getElementById('cfg-phone').value.trim() || null,
-        address: document.getElementById('cfg-address').value.trim() || null,
-        updated_at: new Date().toISOString(),
-      };
-      const { error } = await supabase.from('users').update(updates).eq('id', user.id);
-      if (error) return alert('No se pudieron guardar los cambios');
-      alert('Cambios guardados');
-      window._userData = { ...window._userData, ...updates };
-      // Refrescar mini card de cuenta
-      document.getElementById('full-name').textContent = window._userData.full_name || 'No definido';
-      document.getElementById('user-phone').textContent = window._userData.phone || 'No definido';
-      document.getElementById('user-address').textContent = window._userData.address || 'No definido';
-    });
+  document.getElementById('logout-btn')?.addEventListener('click', async () => {
+    const supabase = window.supabase.createClient(
+      'https://xaeybhscsxpvtnqzpgwj.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU'
+    );
+    await supabase.auth.signOut();
+    window.location.href = '/login.html';
+  });
+</script>
+<script>
+// NUEVOS helpers para Configuración (no afectan otras vistas)
+function prefillConfigForms(userData){
+  const d = userData || {};
+  const $ = (id)=>document.getElementById(id);
+  if ($('cfg-fullname')) $('cfg-fullname').value = d.full_name || '';
+  if ($('cfg-email'))    $('cfg-email').value    = d.email || '';
+  if ($('cfg-phone'))    $('cfg-phone').value    = d.phone || '';
+  if ($('cfg-address'))  $('cfg-address').value  = d.address || '';
+  if ($('cfg-lang'))     $('cfg-lang').value     = d.language || 'es';
+}
 
-    // Actualizar contraseña
-    const formPass = document.getElementById('config-pass-form');
-    formPass.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const p1 = document.getElementById('cfg-pass1').value;
-      const p2 = document.getElementById('cfg-pass2').value;
-      if (!p1 || p1.length < 8) return alert('La contraseña debe tener al menos 8 caracteres');
-      if (p1 !== p2) return alert('Las contraseñas no coinciden');
-      const { error } = await supabase.auth.updateUser({ password: p1 });
-      if (error) return alert('No se pudo actualizar la contraseña');
-      alert('Contraseña actualizada');
-      formPass.reset();
-    });
+function attachConfigHandlers(supabase){
+  const datos = document.getElementById('config-datos-form');
+  if (datos) datos.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const updates = {
+      full_name: (document.getElementById('cfg-fullname').value||'').trim() || null,
+      phone:     (document.getElementById('cfg-phone').value||'').trim() || null,
+      address:   (document.getElementById('cfg-address').value||'').trim() || null,
+      updated_at: new Date().toISOString(),
+    };
+    const { data: { user } } = await supabase.auth.getUser();
+    const { error } = await supabase.from('users').update(updates).eq('id', user.id);
+    if (error) return alert('No se pudieron guardar los cambios');
+    alert('Cambios guardados');
+    // Refrescar en dashboard
+    document.getElementById('full-name').textContent = updates.full_name || 'No definido';
+    document.getElementById('user-phone').textContent = updates.phone || 'No definido';
+    document.getElementById('user-address').textContent = updates.address || 'No definido';
+  });
 
-    // Guardar preferencias
-    const formPrefs = document.getElementById('config-preferencias-form');
-    formPrefs.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const language = document.getElementById('cfg-lang').value;
-      const { error } = await supabase.from('users').update({ language }).eq('id', user.id);
-      if (error) return alert('No se pudieron guardar las preferencias');
-      alert('Preferencias guardadas');
-      window._userData = { ...window._userData, language };
-    });
-  }
+  const pass = document.getElementById('config-pass-form');
+  if (pass) pass.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const p1 = document.getElementById('cfg-pass1').value;
+    const p2 = document.getElementById('cfg-pass2').value;
+    if (!p1 || p1.length<8) return alert('La contraseña debe tener al menos 8 caracteres');
+    if (p1 !== p2) return alert('Las contraseñas no coinciden');
+    const { error } = await supabase.auth.updateUser({ password:p1 });
+    if (error) return alert('No se pudo actualizar la contraseña');
+    alert('Contraseña actualizada');
+    pass.reset();
+  });
+
+  const pref = document.getElementById('config-preferencias-form');
+  if (pref) pref.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const language = document.getElementById('cfg-lang').value;
+    const { data: { user } } = await supabase.auth.getUser();
+    const { error } = await supabase.from('users').update({ language }).eq('id', user.id);
+    if (error) return alert('No se pudieron guardar las preferencias');
+    alert('Preferencias guardadas');
+  });
+}
 </script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const hideIfReady = (id) => {
+  const hideIfReady = (id, expected) => {
     const el = document.getElementById(id);
     if (el && !el.textContent.includes('Cargando')) {
       const change = el.parentElement.querySelector('.change');
@@ -744,53 +874,49 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 <script>
-// Router único para navegar entre secciones y evitar listeners duplicados
 document.addEventListener("DOMContentLoaded", () => {
   const menuItems = document.querySelectorAll('.menu-item[data-target]');
   const sections = document.querySelectorAll('.section-content');
-  const mainDashboard = document.getElementById('main-dashboard');
 
-  function showSection(target) {
-    sections.forEach(section => { section.style.display = 'none'; });
-    if (target === 'dashboard') {
-      mainDashboard.style.display = 'block';
-      return;
-    }
-    const section = document.getElementById('section-' + target);
-    if (section) {
-      mainDashboard.style.display = 'none';
-      section.style.display = 'block';
-    } else {
-      mainDashboard.style.display = 'block';
-    }
-    if (target === 'configuracion' && typeof prefillConfigForms === 'function') {
-      try { prefillConfigForms(); } catch (_) {}
-    }
-  }
-  window.__showSection = showSection;
-  if (!window.__navBound) {
-    menuItems.forEach(item => {
-      item.addEventListener('click', () => {
-        const target = item.getAttribute('data-target');
-        menuItems.forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
-        if (target !== 'logout') showSection(target);
+  menuItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const target = item.getAttribute('data-target');
+      sections.forEach(section => {
+        section.style.display = section.id === 'section-' + target ? 'block' : 'none';
       });
+      menuItems.forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
     });
-    window.__navBound = true;
-  }
-  showSection('dashboard');
+  });
 });
 </script>
-<!-- script de navegación duplicado eliminado para evitar conflictos -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const menuItems = document.querySelectorAll(".menu-item[data-target]");
+  const sections = document.querySelectorAll(".section-content");
+
+  menuItems.forEach(item => {
+    item.addEventListener("click", () => {
+      const target = item.getAttribute("data-target");
+      sections.forEach(section => {
+        section.style.display = section.id === 'section-' + target ? 'block' : 'none';
+      });
+      menuItems.forEach(i => i.classList.remove("active"));
+      item.classList.add("active");
+    });
+  });
+});
+</script>
 
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+  const menuItems = document.querySelectorAll(".menu-item[data-target]");
   const mainDashboard = document.getElementById("main-dashboard");
 
   async function cargarDashboard() {
     console.log("[cargarDashboard] Ejecutando");
+
     document.getElementById('welcome-title').textContent = 'Cargando datos...';
     document.getElementById('referral-code').textContent = '---';
     document.getElementById('balance-value').textContent = '$---';
@@ -806,7 +932,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const supabase = window.supabase.createClient(
       'https://xaeybhscsxpvtnqzpgwj.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU'
     );
 
     const { data: { user }, error } = await supabase.auth.getUser();
@@ -839,7 +965,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const row = '<tr>' +
           '<td>' + p.product_name + '</td>' +
           '<td>' + new Date(p.created_at).toLocaleDateString() + '</td>' +
-          '<td>$' + ((p.value ?? 0).toFixed(2)) + '</td>' +
+          '<td>$' + (p.value?.toFixed(2) || '0.00') + '</td>' +
           '<td><span class="status ' + p.status + '">' + p.status + '</span></td>' +
           '<td><button class="action-btn">Detalles</button></td>' +
           '</tr>';
@@ -859,7 +985,7 @@ document.addEventListener("DOMContentLoaded", () => {
           '<td>' + (r.purchases_count || '0') + '</td>' +
           '<td><span class="status ' + (r.is_active ? 'active' : 'inactive') + '">' +
           (r.is_active ? 'Activo' : 'Inactivo') + '</span></td>' +
-          '<td>$' + ((r.commission ?? 0).toFixed(2)) + '</td>' +
+          '<td>$' + (r.commission?.toFixed(2) || '0.00') + '</td>' +
           '</tr>';
         referralsBody.innerHTML += row;
       });
@@ -868,7 +994,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Mostrar dashboard de inicio y cargar datos
+  menuItems.forEach(item => {
+    item.addEventListener("click", () => {
+      const target = item.getAttribute("data-target");
+      menuItems.forEach(i => i.classList.remove("active"));
+      item.classList.add("active");
+
+      if (target === "dashboard") {
+        mainDashboard.style.display = "block";
+        cargarDashboard();
+      } else if (target !== "logout") {
+        mainDashboard.style.display = "none";
+      }
+    });
+  });
+
   mainDashboard.style.display = "block";
   cargarDashboard();
 });
@@ -888,13 +1028,18 @@ document.addEventListener("DOMContentLoaded", () => {
     menuCompras.addEventListener("click", async () => {
       if (mainDashboard) mainDashboard.style.display = "none";
       if (sectionCompras) sectionCompras.style.display = "block";
+      // Traer compras recientes del usuario desde Supabase
       try {
         const supabase = window.supabase.createClient(
           'https://xaeybhscsxpvtnqzpgwj.supabase.co',
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU'
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU'
         );
         const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError || !user) { window.location.href = '/login.html'; return; }
+        if (authError || !user) {
+          window.location.href = '/login.html';
+          return;
+        }
+        // Traer solo las 7 compras más recientes del usuario
         const { data: purchases, error: purchaseError } = await supabase
           .from('purchases')
           .select('*')
@@ -903,7 +1048,11 @@ document.addEventListener("DOMContentLoaded", () => {
           .limit(7);
 
         const tbody = document.getElementById('miscompras-body');
-        if (purchaseError || !purchases || purchases.length === 0) {
+        if (purchaseError || !purchases) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
+          return;
+        }
+        if (purchases.length === 0) {
           tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
           return;
         }
@@ -925,11 +1074,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Configuración
   if (menuConfig) {
-    menuConfig.addEventListener('click', () => {
-      if (mainDashboard) mainDashboard.style.display = 'none';
-      if (sectionCompras) sectionCompras.style.display = 'none';
-      if (sectionConfig) sectionConfig.style.display = 'block';
-      try { prefillConfigForms(); } catch (e) {}
+    menuConfig.addEventListener("click", () => {
+      if (mainDashboard) mainDashboard.style.display = "none";
+      if (sectionCompras) sectionCompras.style.display = "none";
+      if (sectionConfig) sectionConfig.style.display = "block";
+      try { prefillConfigForms(window._userData || {}); } catch(e) {}
     });
   }
 });
