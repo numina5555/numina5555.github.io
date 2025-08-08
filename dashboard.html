@@ -642,7 +642,10 @@
   const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU';
   let _client = window.__supabaseClient || null;
   window.getSupabase = function(){
-    if (_client) window.__supabaseClient = _client; return _client;
+    if (_client) { 
+      window.__supabaseClient = _client; 
+      return _client; 
+    }
     // IMPORTANT: do NOT replace the next line; it must call window.supabase.createClient
     _client = window.supabase.createClient(URL, KEY, { 
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: localStorage }
