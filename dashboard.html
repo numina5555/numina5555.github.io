@@ -795,14 +795,14 @@ function attachConfigHandlers(supabase){
       address:   (document.getElementById('cfg-address').value||'').trim() || null,
     };
     const { data: { user } } = await supabase.auth.getUser();
-    const { error } = await supabase.from('users').upsert({ id: user.id, ...updates }, { onConflict: 'id' }).select('full_name,phone,address').single();
+    const { data, error } = await supabase.from('users').upsert({ id: user.id, ...updates }, { onConflict: 'id' }).select('full_name,phone,address').single();
     if (error) return alert('No se pudieron guardar los cambios');
     alert('Cambios guardados');
     const res = data || updates;
     // Refrescar en dashboard inmediatamente
-    document.getElementById('full-name')?.textContent = (res.full_name ?? updates.full_name) || 'No definido';
-    document.getElementById('user-phone')?.textContent = (res.phone ?? updates.phone) || 'No definido';
-    document.getElementById('user-address')?.textContent = (res.address ?? updates.address) || 'No definido';
+    (function(){var el=document.getElementById('full-name'); if(el) el.textContent = (res.full_name ?? updates.full_name) || 'No definido';})();
+    (function(){var el=document.getElementById('user-phone'); if(el) el.textContent = (res.phone ?? updates.phone) || 'No definido';})();
+    (function(){var el=document.getElementById('user-address'); if(el) el.textContent = (res.address ?? updates.address) || 'No definido';})();
     // Y forzar re-fetch al volver al Dashboard por si hay cálculos derivados
     if (typeof cargarDashboard === 'function') { try { await cargarDashboard(); } catch(_){} }
   });
