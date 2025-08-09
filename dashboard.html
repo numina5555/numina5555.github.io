@@ -409,6 +409,27 @@
     .btn:hover { background:var(--primary-dark); }
     .helper { color:var(--text-light); font-size:.85rem; margin-top:.4rem; }
   </style>
+<style>
+  /* === Productos (scoped) === */
+  .section-title { color: var(--primary, #ffd700); margin: 0 0 1rem; font-size: 1.3rem; font-weight: 600; display: flex; align-items: center; gap: .8rem; }
+  .products-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; }
+  @media (max-width: 1200px) { .products-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 900px)  { .products-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px)  { .products-grid { grid-template-columns: 1fr; } }
+  .product-card { background: var(--dark-light, #1a1a1a); border: 1px solid rgba(255,255,255,.05); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+  .product-card:hover { transform: translateY(-2px); border-color: rgba(255,215,0,.25); box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+  .product-media { background: var(--dark-lighter, #222); aspect-ratio: 16/10; }
+  .product-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .product-body { padding: 1rem; display: flex; flex-direction: column; gap: .6rem; }
+  .product-title { font-size: 1rem; font-weight: 700; color: var(--text, #fff); }
+  .product-desc  { font-size: .9rem; color: var(--text-light, #ccc); }
+  .price { color: var(--primary, #ffd700); font-weight: 700; font-size: 1.1rem; }
+  .btn { background: transparent; color: var(--primary, #ffd700); border: 1px solid var(--primary, #ffd700); padding: .55rem .9rem; border-radius: 8px; font-weight: 700; cursor: pointer; transition: background .2s ease, color .2s ease; }
+  .btn:hover { background: var(--primary, #ffd700); color: var(--dark, #111); }
+  .btn-primary { background: var(--primary, #ffd700); color: var(--dark, #111); }
+  .btn-primary:hover { filter: brightness(0.95); }
+
+</style>
 </head>
 <body>
 <header class="dashboard-header"><div style="flex-grow:1; text-align:center;"><div class="logo">NUMINA</div></div><div class="user-menu">
@@ -1072,6 +1093,91 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+</script>
+
+
+<!-- Sección Productos (NUMINA) -->
+<section class="section-content" id="section-productos" style="display:none;">
+  <h2 class="section-title"><i class="fas fa-box"></i><span>Productos</span></h2>
+  <section class="products-grid">
+    <article class="product-card">
+      <div class="product-media"><img src="https://via.placeholder.com/640x400?text=Lingote+Oro" alt="Lingote de oro" /></div>
+      <div class="product-body">
+        <h3 class="product-title">Lingote 100g Oro Fino</h3>
+        <p class="product-desc">Oro 999.9 certificado. Ideal para inversión y resguardo de valor.</p>
+        <span class="price">US$ 13,500</span>
+        <button class="btn btn-primary" data-action="more" data-sku="GOLD-100G">Más información</button>
+      </div>
+    </article>
+
+    <article class="product-card">
+      <div class="product-media"><img src="https://via.placeholder.com/640x400?text=Lingote+Platino" alt="Lingote de platino" /></div>
+      <div class="product-body">
+        <h3 class="product-title">Lingote 100g Platino Fino</h3>
+        <p class="product-desc">Platino 999.5 certificado. Inversión de alto valor y rareza.</p>
+        <span class="price">US$ 6,500</span>
+        <button class="btn btn-primary" data-action="more" data-sku="PLAT-100G">Más información</button>
+      </div>
+    </article>
+
+    <article class="product-card">
+      <div class="product-media"><img src="https://via.placeholder.com/640x400?text=Rolex+Starbucks" alt="Rolex Starbucks" /></div>
+      <div class="product-body">
+        <h3 class="product-title">Rolex Starbucks Ref. 126610L</h3>
+        <p class="product-desc">Submariner Date con bisel verde y caja Oystersteel. Automático.</p>
+        <span class="price">US$ 19,600</span>
+        <button class="btn btn-primary" data-action="more" data-sku="ROLEX-126610L">Más información</button>
+      </div>
+    </article>
+
+    <article class="product-card">
+      <div class="product-media"><img src="https://via.placeholder.com/640x400?text=Pulsera+Numina" alt="Pulsera Numina" /></div>
+      <div class="product-body">
+        <h3 class="product-title">Pulsera Numina</h3>
+        <p class="product-desc">Diseño exclusivo con materiales de alta calidad. Edición limitada.</p>
+        <span class="price">US$ 35</span>
+        <button class="btn btn-primary" data-action="more" data-sku="NUMINA-BRACELET">Más información</button>
+      </div>
+    </article>
+  </section>
+</section>
+
+
+<script>
+// ---- NUMINA: navegación para sección Productos ----
+(function(){
+  // Helper: show one section and hide others
+  function showSection(id){
+    var all = document.querySelectorAll('.section-content');
+    if (all && all.length){
+      all.forEach(function(sec){ sec.style.display = 'none'; });
+    }
+    var el = document.getElementById(id);
+    if (el) el.style.display = 'block';
+  }
+
+  // If there's already a global router, we only add a hook for 'productos'
+  var btn = document.querySelector('[data-section="productos"], [data-target="productos"], a[href="#productos"]');
+  if (btn){
+    btn.addEventListener('click', function(e){
+      e.preventDefault && e.preventDefault();
+      showSection('section-productos');
+      // optional: update active state on sidebar
+      try {
+        document.querySelectorAll('[data-section]').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+      } catch(err){}
+    });
+  }
+
+  // Optional demo: wire product buttons
+  document.addEventListener('click', function(e){
+    var b = e.target.closest('button[data-action="more"]');
+    if (!b) return;
+    var sku = b.getAttribute('data-sku') || '---';
+    alert('Detalles del producto: ' + sku);
+  });
+})();
 </script>
 
 </body></html>
