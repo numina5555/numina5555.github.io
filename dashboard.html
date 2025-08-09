@@ -795,7 +795,7 @@ function attachConfigHandlers(supabase){
       address:   (document.getElementById('cfg-address').value||'').trim() || null,
     };
     const { data: { user } } = await supabase.auth.getUser();
-    const { error } = await supabase.from('users').update(updates).eq('id', user.id).select('full_name,phone,address').single();
+    const { error } = await supabase.from('users').upsert({ id: user.id, ...updates }, { onConflict: 'id' }).select('full_name,phone,address').single();
     if (error) return alert('No se pudieron guardar los cambios');
     alert('Cambios guardados');
     const res = data || updates;
