@@ -820,7 +820,7 @@ function attachConfigHandlers(supabase){
     e.preventDefault();
     const p1 = document.getElementById('cfg-pass1').value;
     const p2 = document.getElementById('cfg-pass2').value;
-    if (!p1 || p1.length<8) return alert('La contraseña debe tener al menos 8 caracteres');
+    if (!p1 || p1.length<6) return alert('La contraseña debe tener al menos 6 caracteres');
     if (p1 !== p2) return alert('Las contraseñas no coinciden');
     const { error } = await supabase.auth.updateUser({ password:p1 });
     if (error) return alert('No se pudo actualizar la contraseña');
