@@ -742,7 +742,6 @@
       // --- NUEVO: Prefill y handlers de Configuración ---
       try { prefillConfigForms(userData); } catch(e) {}
       try { attachConfigHandlers(supabase); } catch(e) {}
-      try { applyLanguage((userData && userData.language) || localStorage.getItem('lang') || 'es'); } catch(e) {}
       // ---------------------------------------------------
 
     } catch (error) {
@@ -786,69 +785,6 @@ function prefillConfigForms(userData){
   if ($('cfg-lang'))     $('cfg-lang').value     = d.language || 'es';
 }
 
-
-// --- i18n básico (ES/EN) para textos clave ---
-const I18N = {
-  es: {
-    sidebar: { dashboard:'Dashboard', miscompras:'Mis Compras', sorteos:'Sorteos', referidos:'Referidos', billetera:'Billetera', configuracion:'Configuración', logout:'Cerrar Sesión' },
-    config: {
-      titulo:'Configuración de la Cuenta', datos:'Datos Personales', seguridad:'Seguridad', prefs:'Preferencias',
-      nombre:'Nombre completo', correo:'Correo electrónico', telefono:'Teléfono', direccion:'Dirección',
-      guardar:'Guardar cambios', nuevaPass:'Nueva contraseña', repetirPass:'Repetir contraseña', actPass:'Actualizar contraseña',
-      idioma:'Idioma', guardarPrefs:'Guardar preferencias'
-    }
-  },
-  en: {
-    sidebar: { dashboard:'Dashboard', miscompras:'My Purchases', sorteos:'Raffles', referidos:'Referrals', billetera:'Wallet', configuracion:'Settings', logout:'Log out' },
-    config: {
-      titulo:'Account Settings', datos:'Personal Info', seguridad:'Security', prefs:'Preferences',
-      nombre:'Full name', correo:'Email', telefono:'Phone', direccion:'Address',
-      guardar:'Save changes', nuevaPass:'New password', repetirPass:'Repeat password', actPass:'Update password',
-      idioma:'Language', guardarPrefs:'Save preferences'
-    }
-  }
-};
-
-function applyLanguage(lang){
-  const t = I18N[lang] || I18N.es;
-  // Sidebar
-  const qs = (sel)=>document.querySelector(sel);
-  const setTxt = (el, val)=>{ if (el && val) el.textContent = val; };
-  setTxt(qs('li[data-target="dashboard"] span'), t.sidebar.dashboard);
-  setTxt(qs('li[data-target="compras"] span'), t.sidebar.miscompras);
-  setTxt(qs('li[data-target="sorteos"] span'), t.sidebar.sorteos);
-  setTxt(qs('li[data-target="referidos"] span'), t.sidebar.referidos);
-  setTxt(qs('li[data-target="billetera"] span'), t.sidebar.billetera);
-  setTxt(qs('li[data-target="configuracion"] span'), t.sidebar.configuracion);
-  setTxt(qs('li[data-target="logout"] span'), t.sidebar.logout);
-  // Config titles/labels (best-effort; labels are associated via for=...)
-  const cfgSection = document.getElementById('section-configuracion');
-  if (cfgSection){
-    const setLabel = (forId, text)=>{
-      const lbl = cfgSection.querySelector('label[for="'+forId+'"]');
-      if (lbl) lbl.textContent = text;
-    };
-    const h2 = cfgSection.querySelector('h2.section-title span');
-    setTxt(h2, t.config.titulo);
-    const cards = cfgSection.querySelectorAll('.settings-card h3');
-    if (cards[0]) cards[0].innerHTML = cards[0].innerHTML.replace(/>[^<]+$/, '>'+t.config.datos);
-    if (cards[1]) cards[1].innerHTML = cards[1].innerHTML.replace(/>[^<]+$/, '>'+t.config.seguridad);
-    if (cards[2]) cards[2].innerHTML = cards[2].innerHTML.replace(/>[^<]+$/, '>'+t.config.prefs);
-    setLabel('cfg-fullname', t.config.nombre);
-    setLabel('cfg-email', t.config.correo);
-    setLabel('cfg-phone', t.config.telefono);
-    setLabel('cfg-address', t.config.direccion);
-    const btns = cfgSection.querySelectorAll('form#config-datos-form .form-actions .btn');
-    if (btns[0]) btns[0].textContent = t.config.guardar;
-    const btnPass = cfgSection.querySelector('form#config-pass-form .form-actions .btn');
-    if (btnPass) btnPass.textContent = t.config.actPass;
-    setLabel('cfg-pass1', t.config.nuevaPass);
-    setLabel('cfg-pass2', t.config.repetirPass);
-    setLabel('cfg-lang', t.config.idioma);
-    const btnPrefs = cfgSection.querySelector('form#config-preferencias-form .form-actions .btn');
-    if (btnPrefs) btnPrefs.textContent = t.config.guardarPrefs;
-  }
-}
 function attachConfigHandlers(supabase){
   const datos = document.getElementById('config-datos-form');
   if (datos) datos.addEventListener('submit', async (e)=>{
@@ -857,7 +793,6 @@ function attachConfigHandlers(supabase){
       full_name: (document.getElementById('cfg-fullname').value||'').trim() || null,
       phone:     (document.getElementById('cfg-phone').value||'').trim() || null,
       address:   (document.getElementById('cfg-address').value||'').trim() || null,
-      updated_at: new Date().toISOString(),
     };
     const { data: { user } } = await supabase.auth.getUser();
     const { error } = await supabase.from('users').update(updates).eq('id', user.id);
@@ -886,12 +821,13 @@ function attachConfigHandlers(supabase){
   if (pref) pref.addEventListener('submit', async (e)=>{
     e.preventDefault();
     const language = document.getElementById('cfg-lang').value;
-    const { data: { user } } = await supabase.auth.getUser();
-    const { error } = await supabase.from('users').update({ language }).eq('id', user.id);
-    if (error) return alert('No se pudieron guardar las preferencias');
-    try { localStorage.setItem('lang', language); } catch(e){}
-    try { applyLanguage(language); } catch(e){}
-    alert('Preferencias guardadas');
+    try {
+      localStorage.setItem('lang', language);
+      alert(language === 'en' ? 'Preferences saved' : 'Preferencias guardadas');
+    } catch(err) {
+      console.error(err);
+      alert('No se pudieron guardar las preferencias');
+    }
   });
 }
 </script>
