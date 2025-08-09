@@ -1228,7 +1228,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 <!-- NUMINA: Modal global de detalle de producto -->
-<div class="nm-overlay" id="nmOverlay" aria-hidden="true">
+<div class="nm-overlay" id="nmOverlay" hidden inert>
   <div class="nm-modal" role="dialog" aria-modal="true" aria-labelledby="nmTitle">
     <header>
       <h3 id="nmTitle">Detalles del producto</h3>
@@ -1252,87 +1252,87 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-<script>
-// NUMINA: Catálogo y modal a pantalla completa (robusto, accesible)
-document.addEventListener('DOMContentLoaded', function(){
 
+<script>
+// NUMINA: Catálogo y modal a pantalla completa (sin aria-hidden warnings)
+document.addEventListener('DOMContentLoaded', function(){
   const CATALOG = {
-    "GOLD-100G": {
-      sku: "GOLD-100G",
-      name: "Lingote 100g Oro Fino 999.9",
-      price: 13500,
-      img: "https://images.unsplash.com/photo-1623301762237-5b1056f3ce2d?q=80&w=1600&auto=format&fit=crop",
-      desc: "Lingote de 100 g de oro 999.9 con número de serie y certificado internacional. Alta liquidez y resguardo de valor."
-    },
-    "PLAT-100G": {
-      sku: "PLAT-100G",
-      name: "Lingote 100g Platino Fino 999.5",
-      price: 6500,
-      img: "https://images.unsplash.com/photo-1617195737499-1d6bf14acaa7?q=80&w=1600&auto=format&fit=crop",
-      desc: "Lingote de 100 g de platino 999.5. Metal escaso, con potencial de revalorización a largo plazo."
-    },
-    "ROLEX-126610L": {
-      sku: "ROLEX-126610L",
-      name: "Rolex Submariner Date 126610LV",
-      price: 19600,
-      img: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?q=80&w=1600&auto=format&fit=crop",
-      desc: "Modelo 'Starbucks' con bisel cerámico verde y caja Oystersteel. Movimiento automático y hermeticidad profesional."
-    },
-    "NUMINA-BRACELET": {
-      sku: "NUMINA-BRACELET",
-      name: "Pulsera Numina – Edición Limitada",
-      price: 35,
-      img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1600&auto=format&fit=crop",
-      desc: "Pulsera exclusiva con diseño minimalista y materiales de alta calidad. Incluye bolsita de microfibra."
-    }
+    "GOLD-100G": { sku:"GOLD-100G", name:"Lingote 100g Oro Fino 999.9", price:13500,
+      img:"https://images.unsplash.com/photo-1623301762237-5b1056f3ce2d?q=80&w=1600&auto=format&fit=crop",
+      desc:"Lingote de 100 g de oro 999.9 con número de serie y certificado internacional. Alta liquidez y resguardo de valor." },
+    "PLAT-100G": { sku:"PLAT-100G", name:"Lingote 100g Platino Fino 999.5", price:6500,
+      img:"https://images.unsplash.com/photo-1617195737499-1d6bf14acaa7?q=80&w=1600&auto=format&fit=crop",
+      desc:"Lingote de 100 g de platino 999.5. Metal escaso, con potencial de revalorización a largo plazo." },
+    "ROLEX-126610L": { sku:"ROLEX-126610L", name:"Rolex Submariner Date 126610LV", price:19600,
+      img:"https://images.unsplash.com/photo-1524805444758-089113d48a6d?q=80&w=1600&auto=format&fit=crop",
+      desc:"Modelo 'Starbucks' con bisel cerámico verde y caja Oystersteel. Movimiento automático y hermeticidad profesional." },
+    "NUMINA-BRACELET": { sku:"NUMINA-BRACELET", name:"Pulsera Numina – Edición Limitada", price:35,
+      img:"https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1600&auto=format&fit=crop",
+      desc:"Pulsera exclusiva con diseño minimalista y materiales de alta calidad. Incluye bolsita de microfibra." }
   };
 
   const $ = (s, c=document) => c.querySelector(s);
   const overlay = $("#nmOverlay");
+  const modal    = overlay ? overlay.querySelector(".nm-modal") : null;
   const closeBtn = $("#nmClose");
-  const buyBtn = $("#nmBuy");
-  const imgEl = $("#nmImg");
-  const nameEl = $("#nmName");
-  const descEl = $("#nmDesc");
-  const priceEl = $("#nmPrice");
-  const skuEl = $("#nmSku");
+  const buyBtn   = $("#nmBuy");
+  const imgEl    = $("#nmImg");
+  const nameEl   = $("#nmName");
+  const descEl   = $("#nmDesc");
+  const priceEl  = $("#nmPrice");
+  const skuEl    = $("#nmSku");
 
-  function money(v){ return new Intl.NumberFormat('en-US', {style:'currency', currency:'USD'}).format(v); }
+  function money(v){ return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(v); }
 
   let currentSku = null;
   let lastTrigger = null;
+
+  function trapFocus(e){
+    if (!overlay || overlay.hasAttribute('hidden')) return;
+    const focusable = overlay.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last  = focusable[focusable.length - 1];
+    if (e.key === 'Tab'){
+      if (e.shiftKey && document.activeElement === first){ last.focus(); e.preventDefault(); }
+      else if (!e.shiftKey && document.activeElement === last){ first.focus(); e.preventDefault(); }
+    }
+  }
 
   function openSKU(sku, trigger){
     const p = CATALOG[sku];
     if(!p || !overlay) return;
     currentSku = sku;
-    lastTrigger = trigger || lastTrigger;
+    lastTrigger = trigger || document.activeElement;
 
-    if (skuEl) skuEl.textContent = p.sku;
+    if (skuEl)  skuEl.textContent  = p.sku;
     if (nameEl) nameEl.textContent = p.name;
     if (descEl) descEl.textContent = p.desc;
-    if (priceEl) priceEl.textContent = money(p.price);
-    if (imgEl) imgEl.src = p.img;
+    if (priceEl)priceEl.textContent= money(p.price);
+    if (imgEl)  imgEl.src          = p.img;
 
     overlay.classList.add("show");
-    overlay.removeAttribute("aria-hidden");
-    // Mover foco al botón cerrar cuando abre
-    if (closeBtn) setTimeout(()=>closeBtn.focus(), 0);
+    overlay.removeAttribute("hidden");
+    overlay.removeAttribute("inert");
+    if (modal) { modal.setAttribute("tabindex","-1"); modal.focus({preventScroll:true}); }
+    if (closeBtn) closeBtn.focus({preventScroll:true});
+    document.addEventListener('keydown', trapFocus);
   }
 
   function close(){
     if (!overlay) return;
     overlay.classList.remove("show");
-    overlay.setAttribute("aria-hidden","true");
-    // Devolver foco al disparador
+    overlay.setAttribute("hidden","");
+    overlay.setAttribute("inert","");
+    document.removeEventListener('keydown', trapFocus);
     if (lastTrigger && typeof lastTrigger.focus === 'function') {
-      setTimeout(()=>lastTrigger.focus(), 0);
+      setTimeout(()=> lastTrigger.focus(), 0);
     }
   }
 
-  // Abrir: delegación de eventos
+  // Delegación: abrir modal
   document.addEventListener("click", (e) => {
-    const btn = e.target.closest('button[data-action="more"][data-sku], button[data-product]');
+    const btn = e.target.closest('button[data-action=\"more\"][data-sku], button[data-product]');
     if (btn) {
       e.preventDefault();
       const sku = btn.getAttribute('data-sku') || btn.getAttribute('data-product');
@@ -1340,20 +1340,16 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   });
 
-  // Comprar (handler único y robusto)
-  if (buyBtn) {
-    buyBtn.addEventListener('click', () => {
-      if (!currentSku) return;
-      alert("Ir al checkout para " + currentSku);
-    });
-  }
+  // Botón comprar
+  if (buyBtn) buyBtn.addEventListener('click', () => { if (currentSku) alert('Ir al checkout para ' + currentSku); });
 
-  // Cerrar
-  if (closeBtn) closeBtn.addEventListener("click", close);
-  if (overlay) overlay.addEventListener("click", (e)=>{ if(e.target===overlay) close(); });
-  document.addEventListener("keydown", (e)=>{ if(e.key==='Escape') close(); });
+  // Cerrar modal
+  if (closeBtn) closeBtn.addEventListener('click', close);
+  if (overlay) overlay.addEventListener('click', (e)=>{ if(e.target===overlay) close(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
 });
 </script>
+
     
 
 </body></html>
