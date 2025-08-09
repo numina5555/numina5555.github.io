@@ -1264,9 +1264,11 @@ document.addEventListener('DOMContentLoaded', function(){
   const CATALOG = {
     "GOLD-100G": { sku:"GOLD-100G", name:"Lingote 100g Oro Fino 999.9", price:13500,
       img:"https://images.unsplash.com/photo-1623301762237-5b1056f3ce2d?q=80&w=1600&auto=format&fit=crop",
+      pitch:"\ud83d\udcb0 <strong>Oro: Proteg\u00e9 tu dinero, asegur\u00e1 tu futuro</strong><br>Cuando todo sube y baja, el oro se mantiene firme. Es el activo refugio elegido por inversores de todo el mundo para proteger su patrimonio frente a la inflaci\u00f3n y la inestabilidad. El oro no depende de gobiernos ni bancos centrales: su valor es global, tangible y eterno. Comprarlo hoy es asegurarte un respaldo real que pod\u00e9s tener en tus manos y vender en cualquier momento. Invert\u00ed en oro y transform\u00e1 tu dinero en un activo que nunca pasa de moda y siempre vale.",
       desc:"Lingote de 100 g de oro 999.9 con número de serie y certificado internacional. Alta liquidez y resguardo de valor." },
     "PLAT-100G": { sku:"PLAT-100G", name:"Lingote 100g Platino Fino 999.5", price:6500,
       img:"https://images.unsplash.com/photo-1617195737499-1d6bf14acaa7?q=80&w=1600&auto=format&fit=crop",
+      pitch:"\ud83d\udc8e <strong>Platino: Exclusividad y potencial de crecimiento</strong><br>M\u00e1s escaso que el oro y con aplicaciones industriales cr\u00edticas (catalizadores, tecnolog\u00eda y joyer\u00eda), el platino combina lujo con oportunidad. Su rareza y demanda lo posicionan como un metal con fuerte potencial de revalorizaci\u00f3n a largo plazo. Asegur\u00e1 una parte de un recurso limitado, valioso y buscado en todo el mundo.",
       desc:"Lingote de 100 g de platino 999.5. Metal escaso, con potencial de revalorización a largo plazo." },
     "ROLEX-126610L": { sku:"ROLEX-126610L", name:"Rolex Submariner Date 126610LV", price:19600,
       img:"https://images.unsplash.com/photo-1524805444758-089113d48a6d?q=80&w=1600&auto=format&fit=crop",
@@ -1337,6 +1339,16 @@ document.addEventListener('DOMContentLoaded', function(){
         }
       }
     } catch(e) { console.warn('Pitch render skipped:', e); }
+      if (!pitchEl) {
+        if (p.pitch && descEl) {
+          try {
+            descEl.innerHTML = p.pitch + '<br><br>' + (p.desc || '');
+          } catch(_) {
+            descEl.textContent = (p.desc || '');
+          }
+        }
+      }
+
 overlay.classList.add("show");
     overlay.removeAttribute("hidden");
     overlay.removeAttribute("inert");
