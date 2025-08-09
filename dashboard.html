@@ -790,9 +790,9 @@ function attachConfigHandlers(supabase){
   if (datos) datos.addEventListener('submit', async (e)=>{
     e.preventDefault();
     const updates = {
-      full_name: ((document.getElementById('cfg-fullname') ? document.getElementById('cfg-fullname').value : '') || '').trim() || null,
-      phone:     ((document.getElementById('cfg-phone') ? document.getElementById('cfg-phone').value : '') || '').trim() || null,
-      address:   ((document.getElementById('cfg-address') ? document.getElementById('cfg-address').value : '') || '').trim() || null,
+      full_name: (document.getElementById('cfg-fullname')?.value || '').trim() || null,
+      phone:     (document.getElementById('cfg-phone')?.value || '').trim() || null,
+      address:   (document.getElementById('cfg-address')?.value || '').trim() || null,
     };
     const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase
@@ -807,17 +807,17 @@ function attachConfigHandlers(supabase){
     const fn = document.getElementById('full-name');
     const ph = document.getElementById('user-phone');
     const ad = document.getElementById('user-address');
-    if (fn) fn.textContent = (data.full_name != null && data.full_name !== undefined ? data.full_name : 'No definido');
-    if (ph) ph.textContent = (data.phone != null && data.phone !== undefined ? data.phone : 'No definido');
-    if (ad) ad.textContent = (data.address != null && data.address !== undefined ? data.address : 'No definido');
+    if (fn) fn.textContent = data.full_name ?? 'No definido';
+    if (ph) ph.textContent = data.phone ?? 'No definido';
+    if (ad) ad.textContent = data.address ?? 'No definido';
     alert('Cambios guardados');
   });
 
   const pass = document.getElementById('config-pass-form');
   if (pass) pass.addEventListener('submit', async (e)=>{
     e.preventDefault();
-    const p1 = (document.getElementById('cfg-pass1') ? document.getElementById('cfg-pass1').value : '') || '';
-    const p2 = (document.getElementById('cfg-pass2') ? document.getElementById('cfg-pass2').value : '') || '';
+    const p1 = document.getElementById('cfg-pass1')?.value || '';
+    const p2 = document.getElementById('cfg-pass2')?.value || '';
     if (!p1 || p1.length < 6) { alert('La contraseña debe tener al menos 6 caracteres'); return; }
     if (p1 !== p2) { alert('Las contraseñas no coinciden'); return; }
     const { error } = await supabase.auth.updateUser({ password: p1 });
