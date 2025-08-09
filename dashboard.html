@@ -475,7 +475,11 @@
   .nm-btn{background:transparent;border:1px solid #3a3a3a;color:#fafafa;padding:11px 14px;border-radius:12px;cursor:pointer}
   .nm-buy{background:#ffd700;color:#111;border:0;padding:12px 18px;border-radius:12px;font-weight:900;cursor:pointer}
   .nm-note{font-size:12px;color:#9aa0a6;margin-top:8px}
-  @media(max-width:900px){.nm-body{flex:1;display:grid;grid-template-columns:0.85fr 1.15fr;gap:22px;padding:22px;max-width:1200px;margin:0 auto}}
+  @media(max-width:900px){.nm-body{flex:1;display:grid;grid-template-columns:0.85fr 1.15fr;gap:22px;padding:22px;max-width:1200px;margin:0 auto}
+
+  .nm-pitch{margin:10px 0 14px;padding:12px 14px;border:1px solid #2b2e34;background:#16181d;border-radius:12px;line-height:1.55;color:#e7e7e7}
+  .nm-pitch strong{color:#ffd700}
+}
 </style>
 
 </head>
@@ -1241,6 +1245,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <h4 id="nmName">—</h4>
         <p class="nm-desc" id="nmDesc">—</p>
         <div class="nm-price" id="nmPrice">—</div>
+        <div class="nm-pitch" id="nmPitch" style="display:none"></div>
         <div class="nm-actions">
           <button class="nm-buy" id="nmBuy">Comprar</button>
         </div>
@@ -1311,7 +1316,28 @@ document.addEventListener('DOMContentLoaded', function(){
     if (priceEl)priceEl.textContent= money(p.price);
     if (imgEl)  imgEl.src          = p.img;
 
-    overlay.classList.add("show");
+    
+    // Ensure price appears before description and pitch is placed after price
+    try {
+      if (descEl && priceEl && descEl.previousElementSibling !== priceEl) {
+        descEl.parentNode.insertBefore(priceEl, descEl);
+      }
+      var pitchEl = document.getElementById('nmPitch');
+      if (pitchEl) {
+        if (p.pitch) {
+          pitchEl.innerHTML = p.pitch;
+          pitchEl.style.display = '';
+          // make sure pitch is right after price
+          if (priceEl.nextElementSibling !== pitchEl) {
+            priceEl.parentNode.insertBefore(pitchEl, descEl);
+          }
+        } else {
+          pitchEl.style.display = 'none';
+          pitchEl.innerHTML = '';
+        }
+      }
+    } catch(e) { console.warn('Pitch render skipped:', e); }
+overlay.classList.add("show");
     overlay.removeAttribute("hidden");
     overlay.removeAttribute("inert");
     if (modal) { modal.setAttribute("tabindex","-1"); modal.focus({preventScroll:true}); }
