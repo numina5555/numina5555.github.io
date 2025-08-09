@@ -449,18 +449,11 @@
 </style>
 
 
+
 <style>
-/* ---- Align Productos section flush to the right of the sidebar ---- */
-#section-productos { 
-  margin-left: var(--sidebar-w, 240px);
-  width: calc(100% - var(--sidebar-w, 240px));
-}
-#section-productos .products-wrap { 
-  max-width: none; 
-  margin: 0; 
-  padding: 0 24px 24px; 
-}
-#section-productos .section-title { justify-content: flex-start; padding-left: 4px; }
+  /* Compact top spacing for products */
+  #section-productos { margin-top: 0; }
+  #section-productos .products-wrap { padding-top: 0.5rem; }
 </style>
 
 </head>
@@ -675,9 +668,72 @@
     </table>
   </div>
 </section>
+<section class="section-content" id="section-productos" style="display:none;">
+  <div class="products-wrap">
+    <h2 class="section-title"><i class="fas fa-box"></i><span>Productos</span></h2>
+    <section class="products-grid">
+      <!-- Oro -->
+      <article class="product-card">
+        <figure class="product-media">
+          <svg viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Lingote de Oro">
+            <defs><linearGradient id="g1" x1="0" x2="1"><stop offset="0%" stop-color="#4b4300"/><stop offset="100%" stop-color="#8a7a00"/></linearGradient></defs>
+            <rect width="640" height="360" fill="url(#g1)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="36">Lingote de Oro</text>
+          </svg>
+        </figure>
+        <div class="product-body">
+          <h3 class="product-title">Lingote 100g Oro Fino</h3>
+          <p class="product-desc">Oro 999.9 certificado. Ideal para inversión y resguardo de valor.</p>
+          <span class="price">US$ 13,500</span>
+          <button class="btn btn-primary" data-action="more" data-sku="GOLD-100G">Más información</button>
+        </div>
+      </article>
+      <!-- Platino -->
+      <article class="product-card">
+        <figure class="product-media">
+          <svg viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Lingote de Platino">
+            <defs><linearGradient id="g2" x1="0" x2="1"><stop offset="0%" stop-color="#2e3136"/><stop offset="100%" stop-color="#6a6f78"/></linearGradient></defs>
+            <rect width="640" height="360" fill="url(#g2)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="36">Lingote de Platino</text>
+          </svg>
+        </figure>
+        <div class="product-body">
+          <h3 class="product-title">Lingote 100g Platino Fino</h3>
+          <p class="product-desc">Platino 999.5 certificado. Inversión de alto valor y rareza.</p>
+          <span class="price">US$ 6,500</span>
+          <button class="btn btn-primary" data-action="more" data-sku="PLAT-100G">Más información</button>
+        </div>
+      </article>
+      <!-- Rolex -->
+      <article class="product-card">
+        <figure class="product-media">
+          <svg viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Rolex 126610L">
+            <defs><linearGradient id="g3" x1="0" x2="1"><stop offset="0%" stop-color="#0d1f14"/><stop offset="100%" stop-color="#1d6c3a"/></linearGradient></defs>
+            <rect width="640" height="360" fill="url(#g3)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="34">Rolex 126610L</text>
+          </svg>
+        </figure>
+        <div class="product-body">
+          <h3 class="product-title">Rolex Starbucks Ref. 126610L</h3>
+          <p class="product-desc">Submariner Date con bisel verde y caja Oystersteel. Automático.</p>
+          <span class="price">US$ 19,600</span>
+          <button class="btn btn-primary" data-action="more" data-sku="ROLEX-126610L">Más información</button>
+        </div>
+      </article>
+      <!-- Pulsera -->
+      <article class="product-card">
+        <figure class="product-media">
+          <svg viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Pulsera Numina">
+            <defs><linearGradient id="g4" x1="0" x2="1"><stop offset="0%" stop-color="#2a0d2d"/><stop offset="100%" stop-color="#6f1d75"/></linearGradient></defs>
+            <rect width="640" height="360" fill="url(#g4)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="34">Pulsera Numina</text>
+          </svg>
+        </figure>
+        <div class="product-body">
+          <h3 class="product-title">Pulsera Numina</h3>
+          <p class="product-desc">Diseño exclusivo con materiales de alta calidad. Edición limitada.</p>
+          <span class="price">US$ 35</span>
+          <button class="btn btn-primary" data-action="more" data-sku="NUMINA-BRACELET">Más información</button>
+        </div>
+      </article>
+    </section>
 </main></div>
-
-</div>
 <script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
 <script>
 // Memoized Supabase client: re-use the same instance so session persists between sections
@@ -1130,72 +1186,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-<!-- Sección Productos (NUMINA) — 2x2 fixed layout -->
-<section class="section-content" id="section-productos" style="display:none;">
-  <div class="products-wrap">
-    <h2 class="section-title"><i class="fas fa-box"></i><span>Productos</span></h2>
-    <section class="products-grid">
-      <!-- Oro -->
-      <article class="product-card">
-        <figure class="product-media">
-          <svg viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Lingote de Oro">
-            <defs><linearGradient id="g1" x1="0" x2="1"><stop offset="0%" stop-color="#4b4300"/><stop offset="100%" stop-color="#8a7a00"/></linearGradient></defs>
-            <rect width="640" height="360" fill="url(#g1)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="36">Lingote de Oro</text>
-          </svg>
-        </figure>
-        <div class="product-body">
-          <h3 class="product-title">Lingote 100g Oro Fino</h3>
-          <p class="product-desc">Oro 999.9 certificado. Ideal para inversión y resguardo de valor.</p>
-          <span class="price">US$ 13,500</span>
-          <button class="btn btn-primary" data-action="more" data-sku="GOLD-100G">Más información</button>
-        </div>
-      </article>
-      <!-- Platino -->
-      <article class="product-card">
-        <figure class="product-media">
-          <svg viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Lingote de Platino">
-            <defs><linearGradient id="g2" x1="0" x2="1"><stop offset="0%" stop-color="#2e3136"/><stop offset="100%" stop-color="#6a6f78"/></linearGradient></defs>
-            <rect width="640" height="360" fill="url(#g2)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="36">Lingote de Platino</text>
-          </svg>
-        </figure>
-        <div class="product-body">
-          <h3 class="product-title">Lingote 100g Platino Fino</h3>
-          <p class="product-desc">Platino 999.5 certificado. Inversión de alto valor y rareza.</p>
-          <span class="price">US$ 6,500</span>
-          <button class="btn btn-primary" data-action="more" data-sku="PLAT-100G">Más información</button>
-        </div>
-      </article>
-      <!-- Rolex -->
-      <article class="product-card">
-        <figure class="product-media">
-          <svg viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Rolex 126610L">
-            <defs><linearGradient id="g3" x1="0" x2="1"><stop offset="0%" stop-color="#0d1f14"/><stop offset="100%" stop-color="#1d6c3a"/></linearGradient></defs>
-            <rect width="640" height="360" fill="url(#g3)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="34">Rolex 126610L</text>
-          </svg>
-        </figure>
-        <div class="product-body">
-          <h3 class="product-title">Rolex Starbucks Ref. 126610L</h3>
-          <p class="product-desc">Submariner Date con bisel verde y caja Oystersteel. Automático.</p>
-          <span class="price">US$ 19,600</span>
-          <button class="btn btn-primary" data-action="more" data-sku="ROLEX-126610L">Más información</button>
-        </div>
-      </article>
-      <!-- Pulsera -->
-      <article class="product-card">
-        <figure class="product-media">
-          <svg viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Pulsera Numina">
-            <defs><linearGradient id="g4" x1="0" x2="1"><stop offset="0%" stop-color="#2a0d2d"/><stop offset="100%" stop-color="#6f1d75"/></linearGradient></defs>
-            <rect width="640" height="360" fill="url(#g4)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="34">Pulsera Numina</text>
-          </svg>
-        </figure>
-        <div class="product-body">
-          <h3 class="product-title">Pulsera Numina</h3>
-          <p class="product-desc">Diseño exclusivo con materiales de alta calidad. Edición limitada.</p>
-          <span class="price">US$ 35</span>
-          <button class="btn btn-primary" data-action="more" data-sku="NUMINA-BRACELET">Más información</button>
-        </div>
-      </article>
-    </section>
+
   </div>
 </section>
 
