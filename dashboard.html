@@ -456,6 +456,28 @@
   #section-productos .products-wrap { padding-top: 0.5rem; }
 </style>
 
+
+<style>
+  /* === NUMINA: Modal de producto pantalla completa === */
+  .nm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;z-index:1000;}
+  .nm-overlay.show{display:block;}
+  .nm-modal{position:relative;min-height:100vh;background:#111214;color:#fff;display:flex;flex-direction:column;}
+  .nm-modal header{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;background:#1a1b1f;border-bottom:1px solid #24262b}
+  .nm-modal header h3{margin:0;font-size:18px;color:#ffd700;letter-spacing:.3px}
+  .nm-close{background:transparent;border:0;color:#b7b7b7;font-size:22px;cursor:pointer}
+  .nm-body{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:22px;padding:22px;max-width:1200px;margin:0 auto}
+  .nm-imgbox{background:#222;border-radius:16px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .nm-imgbox img{width:100%;height:auto;display:block}
+  .nm-info h4{margin:.2rem 0 .6rem;font-size:22px}
+  .nm-desc{color:#d0d0d0;line-height:1.55;margin:0 0 14px}
+  .nm-price{font-size:24px;font-weight:900;margin:10px 0 18px;color:#ffd700}
+  .nm-actions{display:flex;gap:10px;align-items:center;margin-top:6px}
+  .nm-btn{background:transparent;border:1px solid #3a3a3a;color:#fafafa;padding:11px 14px;border-radius:12px;cursor:pointer}
+  .nm-buy{background:#ffd700;color:#111;border:0;padding:12px 18px;border-radius:12px;font-weight:900;cursor:pointer}
+  .nm-note{font-size:12px;color:#9aa0a6;margin-top:8px}
+  @media(max-width:900px){.nm-body{grid-template-columns:1fr}}
+</style>
+
 </head>
 <body>
 <header class="dashboard-header"><div style="flex-grow:1; text-align:center;"><div class="logo">NUMINA</div></div><div class="user-menu">
@@ -1193,44 +1215,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 <script>
-// ---- NUMINA: navegación para sección Productos ----
-(function(){
-  // Helper: show one section and hide others
-  function showSection(id){
-    var all = document.querySelectorAll('.section-content');
-    if (all && all.length){
-      all.forEach(function(sec){ sec.style.display = 'none'; });
-    }
-    var el = document.getElementById(id);
-    if (el) el.style.display = 'block';
-  }
-
-  // If there's already a global router, we only add a hook for 'productos'
-  var btn = document.querySelector('[data-section="productos"], [data-target="productos"], a[href="#productos"]');
-  if (btn){
-    btn.addEventListener('click', function(e){
-      e.preventDefault && e.preventDefault();
-      showSection('section-productos');
-      // optional: update active state on sidebar
-      try {
-        document.querySelectorAll('[data-section]').forEach(function(b){ b.classList.remove('active'); });
-        btn.classList.add('active');
-      } catch(err){}
-    });
-  }
-
-  // Optional demo: wire product buttons
-  document.addEventListener('click', function(e){
-    var b = e.target.closest('button[data-action="more"]');
-    if (!b) return;
-    var sku = b.getAttribute('data-sku') || '---';
-    alert('Detalles del producto: ' + sku);
-  });
-})();
-</script>
-
-
-<script>
 (function(){
   function setSidebarWidthVar(){
     var sb = document.querySelector('.sidebar, .side-bar, nav.sidebar, aside.sidebar');
@@ -1239,6 +1223,104 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   setSidebarWidthVar();
   window.addEventListener('resize', setSidebarWidthVar);
+})();
+</script>
+
+
+<!-- NUMINA: Modal global de detalle de producto -->
+<div class="nm-overlay" id="nmOverlay" aria-hidden="true">
+  <div class="nm-modal" role="dialog" aria-modal="true" aria-labelledby="nmTitle">
+    <header>
+      <h3 id="nmTitle">Detalles del producto</h3>
+      <button class="nm-close" id="nmClose" aria-label="Cerrar">✕</button>
+    </header>
+    <div class="nm-body">
+      <div class="nm-imgbox"><img id="nmImg" alt="Producto"/></div>
+      <div class="nm-info">
+        <span id="nmSku" class="label" style="display:inline-block;padding:.15rem .5rem;border-radius:999px;background:#2a2a2a;color:#d7d7d7;font-size:12px;margin-bottom:12px"></span>
+        <h4 id="nmName">—</h4>
+        <p class="nm-desc" id="nmDesc">—</p>
+        <div class="nm-price" id="nmPrice">—</div>
+        <div class="nm-actions">
+          <button class="nm-btn" id="nmSpecs">Ver especificaciones</button>
+          <button class="nm-buy" id="nmBuy">Comprar</button>
+        </div>
+        <p class="nm-note">Envíos asegurados con seguimiento. Certificado incluido.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// NUMINA: Catálogo y modal a pantalla completa
+(function(){
+  const CATALOG = {
+    "GOLD-100G": {
+      sku: "GOLD-100G",
+      name: "Lingote 100g Oro Fino 999.9",
+      price: 13500,
+      img: "https://images.unsplash.com/photo-1623301762237-5b1056f3ce2d?q=80&w=1600&auto=format&fit=crop",
+      desc: "Lingote de 100 g de oro 999.9 con número de serie y certificado internacional. Alta liquidez y resguardo de valor."
+    },
+    "PLAT-100G": {
+      sku: "PLAT-100G",
+      name: "Lingote 100g Platino Fino 999.5",
+      price: 6500,
+      img: "https://images.unsplash.com/photo-1617195737499-1d6bf14acaa7?q=80&w=1600&auto=format&fit=crop",
+      desc: "Lingote de 100 g de platino 999.5. Metal escaso, con potencial de revalorización a largo plazo."
+    },
+    "ROLEX-126610L": {
+      sku: "ROLEX-126610L",
+      name: "Rolex Submariner Date 126610LV",
+      price: 19600,
+      img: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?q=80&w=1600&auto=format&fit=crop",
+      desc: "Modelo 'Starbucks' con bisel cerámico verde y caja Oystersteel. Movimiento automático y hermeticidad profesional."
+    },
+    "NUMINA-BRACELET": {
+      sku: "NUMINA-BRACELET",
+      name: "Pulsera Numina – Edición Limitada",
+      price: 35,
+      img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1600&auto=format&fit=crop",
+      desc: "Pulsera exclusiva con diseño minimalista y materiales de alta calidad. Incluye bolsita de microfibra."
+    }
+  };
+
+  const $ = (s, c=document) => c.querySelector(s);
+  const $$ = (s, c=document) => Array.from(c.querySelectorAll(s));
+  const overlay = $("#nmOverlay");
+  const closeBtn = $("#nmClose");
+
+  function money(v){ return new Intl.NumberFormat('en-US', {style:'currency', currency:'USD'}).format(v); }
+
+  function openSKU(sku){
+    const p = CATALOG[sku];
+    if(!p) return;
+    $("#nmSku").textContent = p.sku;
+    $("#nmName").textContent = p.name;
+    $("#nmDesc").textContent = p.desc;
+    $("#nmPrice").textContent = money(p.price);
+    $("#nmImg").src = p.img;
+    overlay.classList.add("show");
+    // Wire actions
+    $("#nmBuy").onclick = () => { alert("Ir al checkout para " + p.sku); };
+    $("#nmSpecs").onclick = () => { alert("Certificación / Especificaciones de " + p.sku); };
+  }
+
+  function close(){ overlay.classList.remove("show"); }
+
+  // Bind all product buttons (anywhere in the page)
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest('button[data-action="more"][data-sku]');
+    if (btn) {
+      e.preventDefault();
+      openSKU(btn.getAttribute('data-sku'));
+    }
+  });
+
+  closeBtn.addEventListener("click", close);
+  overlay.addEventListener("click", (e)=>{ if(e.target===overlay) close(); });
+  document.addEventListener("keydown", (e)=>{ if(e.key==='Escape') close(); });
 })();
 </script>
 
