@@ -448,6 +448,21 @@
   #section-productos .product-media { aspect-ratio: 16/9; display:block; }
 </style>
 
+
+<style>
+/* ---- Align Productos section flush to the right of the sidebar ---- */
+#section-productos { 
+  margin-left: var(--sidebar-w, 240px);
+  width: calc(100% - var(--sidebar-w, 240px));
+}
+#section-productos .products-wrap { 
+  max-width: none; 
+  margin: 0; 
+  padding: 0 24px 24px; 
+}
+#section-productos .section-title { justify-content: flex-start; padding-left: 4px; }
+</style>
+
 </head>
 <body>
 <header class="dashboard-header"><div style="flex-grow:1; text-align:center;"><div class="logo">NUMINA</div></div><div class="user-menu">
@@ -1220,6 +1235,19 @@ document.addEventListener("DOMContentLoaded", () => {
     var sku = b.getAttribute('data-sku') || '---';
     alert('Detalles del producto: ' + sku);
   });
+})();
+</script>
+
+
+<script>
+(function(){
+  function setSidebarWidthVar(){
+    var sb = document.querySelector('.sidebar, .side-bar, nav.sidebar, aside.sidebar');
+    var w = sb ? sb.offsetWidth : 0;
+    document.documentElement.style.setProperty('--sidebar-w', (w || 240) + 'px');
+  }
+  setSidebarWidthVar();
+  window.addEventListener('resize', setSidebarWidthVar);
 })();
 </script>
 
