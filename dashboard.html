@@ -573,8 +573,10 @@
     <h3><i class="fas fa-id-card"></i> Datos Personales</h3>
     <form id="config-datos-form">
       <div class="form-grid">
+      <!-- Nota: El campo de correo electrónico se eliminó de este formulario porque se gestiona únicamente desde el proveedor de autenticación (Supabase Auth). Si en el futuro se habilita su edición, puede reinsertarse un campo de solo lectura o un enlace a la sección correspondiente. Esta nota existe solo como documentación para el equipo y no se muestra al usuario. -->
+
         <div class="form-row"><label for="cfg-fullname">Nombre completo</label><input id="cfg-fullname" type="text" placeholder="Nombre y apellido"/></div>
-        <div class="form-row"><label for="cfg-email">Correo electrónico</label><input id="cfg-email" type="email" placeholder="correo@ejemplo.com" disabled/><div class="helper">Tu correo no puede cambiarse desde aquí.</div></div>
+        
         <div class="form-row"><label for="cfg-phone">Teléfono</label><input id="cfg-phone" type="tel" placeholder="+54 11 1234 5678"/></div>
         <div class="form-row"><label for="cfg-address">Dirección</label><input id="cfg-address" type="text" placeholder="Calle, número, ciudad"/></div>
       </div>
@@ -778,9 +780,7 @@
 function prefillConfigForms(userData){
   const d = userData || {};
   const $ = (id)=>document.getElementById(id);
-  if ($('cfg-fullname')) $('cfg-fullname').value = d.full_name || '';
-  if ($('cfg-email'))    $('cfg-email').value    = d.email || '';
-  if ($('cfg-phone'))    $('cfg-phone').value    = d.phone || '';
+  if ($('cfg-fullname')) $('cfg-fullname').value = d.full_name || '';if ($('cfg-phone'))    $('cfg-phone').value    = d.phone || '';
   if ($('cfg-address'))  $('cfg-address').value  = d.address || '';
   if ($('cfg-lang'))     $('cfg-lang').value     = d.language || 'es';
 }
