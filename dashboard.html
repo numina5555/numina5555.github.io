@@ -794,8 +794,16 @@ function attachConfigHandlers(supabase){
       phone:     (document.getElementById('cfg-phone').value||'').trim() || null,
       address:   (document.getElementById('cfg-address').value||'').trim() || null,
     };
+    // remove undefined keys and keep only provided values (avoid empty update bodies)
+    Object.keys(updates).forEach(k => { if (updates[k] === undefined) delete updates[k]; });
+    if (Object.values(updates).every(v => v === null)) { alert('No hay cambios para guardar'); return; }
     const { data: { user } } = await supabase.auth.getUser();
-    const { data, error } = await supabase.from('users').upsert({ id: user.id, ...updates }, { onConflict: 'id' }).select('full_name,phone,address').single();
+    const { data, error } = await supabase
+      .from('users')
+      .update(updates)
+      .eq('id', user.id)
+      .select('full_name,phone,address')
+      .single();
     if (error) return alert('No se pudieron guardar los cambios');
     alert('Cambios guardados');
     const res = data || updates;
