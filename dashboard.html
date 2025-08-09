@@ -1251,9 +1251,11 @@ document.addEventListener("DOMContentLoaded", () => {
 </div>
 
 
+
 <script>
-// NUMINA: Catálogo y modal a pantalla completa
-(function(){
+// NUMINA: Catálogo y modal a pantalla completa (robusto, accesible)
+document.addEventListener('DOMContentLoaded', function(){
+
   const CATALOG = {
     "GOLD-100G": {
       sku: "GOLD-100G",
@@ -1286,41 +1288,72 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const $ = (s, c=document) => c.querySelector(s);
-  const $$ = (s, c=document) => Array.from(c.querySelectorAll(s));
   const overlay = $("#nmOverlay");
   const closeBtn = $("#nmClose");
+  const buyBtn = $("#nmBuy");
+  const imgEl = $("#nmImg");
+  const nameEl = $("#nmName");
+  const descEl = $("#nmDesc");
+  const priceEl = $("#nmPrice");
+  const skuEl = $("#nmSku");
 
   function money(v){ return new Intl.NumberFormat('en-US', {style:'currency', currency:'USD'}).format(v); }
 
-  function openSKU(sku){
+  let currentSku = null;
+  let lastTrigger = null;
+
+  function openSKU(sku, trigger){
     const p = CATALOG[sku];
-    if(!p) return;
-    $("#nmSku").textContent = p.sku;
-    $("#nmName").textContent = p.name;
-    $("#nmDesc").textContent = p.desc;
-    $("#nmPrice").textContent = money(p.price);
-    $("#nmImg").src = p.img;
+    if(!p || !overlay) return;
+    currentSku = sku;
+    lastTrigger = trigger || lastTrigger;
+
+    if (skuEl) skuEl.textContent = p.sku;
+    if (nameEl) nameEl.textContent = p.name;
+    if (descEl) descEl.textContent = p.desc;
+    if (priceEl) priceEl.textContent = money(p.price);
+    if (imgEl) imgEl.src = p.img;
+
     overlay.classList.add("show");
-    // Wire actions
-    $("#nmBuy").onclick = () => { alert("Ir al checkout para " + p.sku); };
-    $("#nmSpecs").onclick = () => { alert("Certificación / Especificaciones de " + p.sku); };
+    overlay.removeAttribute("aria-hidden");
+    // Mover foco al botón cerrar cuando abre
+    if (closeBtn) setTimeout(()=>closeBtn.focus(), 0);
   }
 
-  function close(){ overlay.classList.remove("show"); }
+  function close(){
+    if (!overlay) return;
+    overlay.classList.remove("show");
+    overlay.setAttribute("aria-hidden","true");
+    // Devolver foco al disparador
+    if (lastTrigger && typeof lastTrigger.focus === 'function') {
+      setTimeout(()=>lastTrigger.focus(), 0);
+    }
+  }
 
-  // Bind all product buttons (anywhere in the page)
+  // Abrir: delegación de eventos
   document.addEventListener("click", (e) => {
-    const btn = e.target.closest('button[data-action="more"][data-sku]');
+    const btn = e.target.closest('button[data-action="more"][data-sku], button[data-product]');
     if (btn) {
       e.preventDefault();
-      openSKU(btn.getAttribute('data-sku'));
+      const sku = btn.getAttribute('data-sku') || btn.getAttribute('data-product');
+      openSKU(sku, btn);
     }
   });
 
-  closeBtn.addEventListener("click", close);
-  overlay.addEventListener("click", (e)=>{ if(e.target===overlay) close(); });
+  // Comprar (handler único y robusto)
+  if (buyBtn) {
+    buyBtn.addEventListener('click', () => {
+      if (!currentSku) return;
+      alert("Ir al checkout para " + currentSku);
+    });
+  }
+
+  // Cerrar
+  if (closeBtn) closeBtn.addEventListener("click", close);
+  if (overlay) overlay.addEventListener("click", (e)=>{ if(e.target===overlay) close(); });
   document.addEventListener("keydown", (e)=>{ if(e.key==='Escape') close(); });
-})();
+});
 </script>
+    
 
 </body></html>
