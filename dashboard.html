@@ -485,9 +485,9 @@
 
   <!-- === Sorteos (estilos integrados y espacio compacto) === -->
   <style>
-    .srt-stats{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.5rem;align-items:stretch}
+    .srt-stats{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem;align-items:stretch}
     @media(max-width:900px){.srt-stats{grid-template-columns:1fr}}
-    .srt-card{background:var(--dark-light);border-radius:12px;padding:1.2rem;border:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;min-height:150px}
+    .srt-card{background:var(--dark-light);border-radius:12px;padding:1.2rem;border:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;min-height:140px}
     .srt-card h3{color:var(--text-light);font-size:.9rem;text-transform:uppercase;letter-spacing:.6px;margin-bottom:.5rem}
     .srt-card .val{font-size:1.5rem;font-weight:800;color:var(--text-light)}
     .srt-card.gold{background:linear-gradient(135deg,rgba(255,215,0,.12),rgba(255,215,0,.04))}
@@ -1518,53 +1518,68 @@ overlay.classList.add("show");
 <script>
 (function(){
   const GOAL = 10000;
-  const BRACELET_SKU = 'NUMINA-BRACELET';
+  const BRACELET = 'NUMINA-BRACELET';
+  const TICKET_BY_SKU = {
+    'NUMINA-BRACELET': 1,
+    'ROLEX-126610L': 5,
+    'GOLD-100G': 2,
+    'PLAT-100G': 2
+  };
+  const PRIZE_NAME = {
+    'GOLD-100G':'Lingote 1 kilo de oro fino',
+    'PLAT-100G':'1 kilo de platino fino',
+    'ROLEX-126610L':'Reloj marca Rolex',
+    'NUMINA-BRACELET':'Pulsera Numina'
+  };
 
   async function cargarSorteos(){
-    const supabase = getSupabase();
-    const { data: { user }, error: authErr } = await supabase.auth.getUser();
-    if (authErr || !user) { window.location.href='/login.html'; return; }
+    try{
+      const supabase = getSupabase();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { window.location.href='/login.html'; return; }
 
-    // Tickets activos
-    try {
-      const { data: ur } = await supabase.from('users').select('tickets_count').eq('id', user.id).maybeSingle();
-      document.getElementById('srt-tickets-activos').textContent = (ur?.tickets_count ?? 0).toString();
-    } catch(_){}
+      // una sola query (como tu dashboard): users + purchases nested
+      const { data: ud, error } = await supabase
+        .from('users')
+        .select('id, tickets_count, purchases(id, sku, status, quantity, product_name, created_at)')
+        .eq('id', user.id)
+        .maybeSingle();
+      if (error || !ud) throw error || new Error('No user data');
 
-    // Upgrade Numina
-    let total = 0;
-    try {
-      const { data: rows } = await supabase.from('purchases')
-        .select('sku,status,quantity').eq('user_id', user.id).eq('sku', BRACELET_SKU)
-        .in('status', ['completed','paid','success']);
-      total = (rows||[]).reduce((a,r)=> a + (Number(r.quantity)||1), 0);
-    } catch(_){}
-    const pct = Math.max(0, Math.min(100, (total/GOAL)*100));
-    const fill = document.getElementById('srt-fill');
-    if (fill) fill.style.width = pct+'%';
-    document.getElementById('srt-upgrade-valor').textContent = total.toLocaleString()+' / '+GOAL.toLocaleString();
-    if (total>=2500) document.getElementById('srt-25').classList.add('on');
-    if (total>=5000) document.getElementById('srt-50').classList.add('on');
-    if (total>=10000) document.getElementById('srt-100').classList.add('on');
+      // tickets activos
+      document.getElementById('srt-tickets-activos').textContent = (ud.tickets_count ?? 0).toString();
 
-    // Historial
-    const tbody = document.getElementById('sorteos-tbody');
-    async function load(table, sel){
-      const { data, error } = await supabase.from(table).select(sel).eq('user_id', user.id)
-        .order('created_at',{ascending:false}).limit(50);
-      return error ? null : (data||null);
-    }
-    let entries = await load('raffle_entries','created_at,prize,tickets_used');
-    if (!entries) entries = await load('raffle_participations','created_at,prize,used_tickets');
-    if (!entries || !entries.length){
-      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Sin participaciones</td></tr>';
-    } else {
-      tbody.innerHTML = entries.map(e=>{
-        const f = new Date(e.created_at).toLocaleDateString();
-        const p = e.prize ?? '—';
-        const u = e.tickets_used ?? e.used_tickets ?? 0;
-        return `<tr><td>${f}</td><td>${p}</td><td>${u}</td></tr>`;
-      }).join('');
+      // upgrade from purchases
+      const okStatuses = new Set(['completed','paid','success']);
+      const purchases = Array.isArray(ud.purchases) ? ud.purchases : [];
+      const bracelets = purchases.filter(p => p.sku === BRACELET && okStatuses.has((p.status||'').toLowerCase()));
+      const totalBracelets = bracelets.reduce((acc,p)=> acc + (Number(p.quantity)||1), 0);
+
+      const pct = Math.max(0, Math.min(100, (totalBracelets/GOAL)*100));
+      const fill = document.getElementById('srt-fill');
+      if (fill) fill.style.width = pct + '%';
+      document.getElementById('srt-upgrade-valor').textContent = totalBracelets.toLocaleString() + ' / ' + GOAL.toLocaleString();
+      if (totalBracelets>=2500) document.getElementById('srt-25').classList.add('on');
+      if (totalBracelets>=5000) document.getElementById('srt-50').classList.add('on');
+      if (totalBracelets>=10000) document.getElementById('srt-100').classList.add('on');
+
+      // historial derivado de purchases (sin tablas 404)
+      const tbody = document.getElementById('sorteos-tbody');
+      const rows = purchases
+        .filter(p => TICKET_BY_SKU[p.sku])
+        .sort((a,b)=> new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 50)
+        .map(p => {
+          const fecha = new Date(p.created_at).toLocaleDateString();
+          const nombre = PRIZE_NAME[p.sku] || p.product_name || '—';
+          const used = (TICKET_BY_SKU[p.sku] || 0) * (Number(p.quantity)||1);
+          return `<tr><td>${fecha}</td><td>${nombre}</td><td>${used}</td></tr>`;
+        });
+      tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="3" style="text-align:center;">Sin participaciones</td></tr>';
+    }catch(e){
+      console.error('[Sorteos]', e);
+      const tbody = document.getElementById('sorteos-tbody');
+      if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Error cargando datos</td></tr>';
     }
   }
 
@@ -1578,7 +1593,7 @@ overlay.classList.add("show");
     document.body.classList.add('view-sorteos');
     window.scrollTo(0,0);
     cargarSorteos();
-    // Marcar activo en sidebar
+    // activar sidebar
     document.querySelectorAll('.menu-item').forEach(mi=> mi.classList.remove('active'));
     const menu = document.querySelector('.menu-item[data-target="sorteos"]');
     if (menu) menu.classList.add('active');
@@ -1586,9 +1601,7 @@ overlay.classList.add("show");
 
   document.addEventListener('DOMContentLoaded', ()=>{
     const menu = document.querySelector('.menu-item[data-target="sorteos"]');
-    if (menu){
-      menu.addEventListener('click', showSorteos, { capture:true });
-    }
+    if (menu) menu.addEventListener('click', showSorteos, { capture:true });
   });
 })();
 </script>
