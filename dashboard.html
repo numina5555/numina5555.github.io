@@ -408,10 +408,7 @@
     .btn { background:var(--primary); color:var(--dark); border:none; padding:.6rem 1rem; border-radius:8px; font-weight:600; cursor:pointer; }
     .btn:hover { background:var(--primary-dark); }
     .helper { color:var(--text-light); font-size:.85rem; margin-top:.4rem; }
-  
-/* FIX: compacta espacio superior cuando se muestra una section-content */
-.main-content .section-content{margin-top:0.5rem;}
-</style>
+  </style>
 <style>
   /* === Productos (scoped) === */
   .section-title { color: var(--primary, #ffd700); margin: 0 0 1rem; font-size: 1.3rem; font-weight: 600; display: flex; align-items: center; gap: .8rem; }
@@ -791,57 +788,6 @@
         </div>
       </article>
     </section>
-
-
-<!-- ===== Sección: Sorteos (integrada) ===== -->
-<section class="section-content" id="section-sorteos" style="display:none;">
-  <h2 class="section-title"><i class="fas fa-ticket-alt"></i><span>Sorteo</span></h2>
-
-  <div class="srt-stats">
-    <!-- Tickets activos -->
-    <article class="srt-card gold">
-      <h3>Tickets Activos</h3>
-      <div class="val" id="srt-tickets-activos">--</div>
-    </article>
-
-    <!-- Upgrade Numina con barra e hitos -->
-    <article class="srt-card">
-      <h3>Upgrade Numina</h3>
-      <div class="val" id="srt-upgrade-valor">0 / 10,000</div>
-      <div class="srt-progress" role="progressbar" aria-valuemin="0" aria-valuemax="10000" aria-valuenow="0">
-        <div class="srt-track" id="srt-track">
-          <div class="srt-fill" id="srt-fill"></div>
-          <!-- Hitos -->
-          <span class="srt-hit" style="left:25%" id="srt-25"></span>
-          <span class="srt-hit" style="left:50%" id="srt-50"></span>
-          <span class="srt-hit" style="left:100%" id="srt-100"></span>
-        </div>
-        <div class="srt-marks">
-          <span class="srt-mark" style="left:25%">2,500</span>
-          <span class="srt-mark" style="left:50%">5,000</span>
-          <span class="srt-mark" style="left:100%">10,000</span>
-        </div>
-      </div>
-    </article>
-  </div>
-
-  <h3 class="section-title"><i class="fas fa-history"></i><span>Historial de Participación</span></h3>
-  <div class="table-container">
-    <table id="sorteos-table">
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Sorteo</th>
-          <th>Tickets Utilizados</th>
-        </tr>
-      </thead>
-      <tbody id="sorteos-tbody">
-        <tr><td colspan="3" style="text-align:center;">Cargando...</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-
 </main></div>
 <script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
 <script>
@@ -1531,7 +1477,54 @@ overlay.classList.add("show");
     
 
 
+<!-- ===== Sección: Sorteos (integrada) ===== -->
+<section class="section-content" id="section-sorteos" style="display:none;">
+  <h2 class="section-title"><i class="fas fa-ticket-alt"></i><span>Sorteo</span></h2>
 
+  <div class="srt-stats">
+    <!-- Tickets activos -->
+    <article class="srt-card gold">
+      <h3>Tickets Activos</h3>
+      <div class="val" id="srt-tickets-activos">--</div>
+    </article>
+
+    <!-- Upgrade Numina con barra e hitos -->
+    <article class="srt-card">
+      <h3>Upgrade Numina</h3>
+      <div class="val" id="srt-upgrade-valor">0 / 10,000</div>
+      <div class="srt-progress" role="progressbar" aria-valuemin="0" aria-valuemax="10000" aria-valuenow="0">
+        <div class="srt-track" id="srt-track">
+          <div class="srt-fill" id="srt-fill"></div>
+          <!-- Hitos -->
+          <span class="srt-hit" style="left:25%" id="srt-25"></span>
+          <span class="srt-hit" style="left:50%" id="srt-50"></span>
+          <span class="srt-hit" style="left:100%" id="srt-100"></span>
+        </div>
+        <div class="srt-marks">
+          <span class="srt-mark" style="left:25%">2,500</span>
+          <span class="srt-mark" style="left:50%">5,000</span>
+          <span class="srt-mark" style="left:100%">10,000</span>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <h3 class="section-title"><i class="fas fa-history"></i><span>Historial de Participación</span></h3>
+  <div class="table-container">
+    <table id="sorteos-table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Sorteo</th>
+          <th>Tickets Utilizados</th>
+        </tr>
+      </thead>
+      <tbody id="sorteos-tbody">
+        <tr><td colspan="3" style="text-align:center;">Cargando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
 
 
 <script>
