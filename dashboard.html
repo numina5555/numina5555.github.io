@@ -520,6 +520,15 @@
   body.view-sorteos .main-content{ padding-top:1rem; }
 </style>
 
+
+<style>
+/* === Sorteos: fuerza compactación superior (alta especificidad) === */
+body.view-sorteos .main-content{ padding-top:.25rem !important; margin-top:0 !important; }
+#section-sorteos{ margin-top:0 !important; padding-top:0 !important; }
+#section-sorteos .section-title{ margin-top:.25rem !important; margin-bottom:1rem; }
+body.view-sorteos .main-content > .section-title:first-child{ margin-top:.25rem !important; }
+</style>
+
 </head>
 <body>
 <header class="dashboard-header"><div style="flex-grow:1; text-align:center;"><div class="logo">NUMINA</div></div><div class="user-menu">
@@ -1641,6 +1650,32 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+});
+</script>
+
+
+<script>
+// Reforzar clase de vista y scroll al activar "Sorteos"
+document.addEventListener('DOMContentLoaded', () => {
+  const menu = document.querySelector('.menu-item[data-target="sorteos"]');
+  const section = document.getElementById('section-sorteos');
+  const mainDash = document.getElementById('main-dashboard');
+
+  async function activateSorteos(){
+    if (mainDash) mainDash.style.display = 'none';
+    if (section) section.style.display = 'block';
+    document.body.classList.add('view-sorteos');
+    try { window.scrollTo({top:0, behavior:'instant'}); } catch(_) { window.scrollTo(0,0); }
+  }
+
+  if (menu) {
+    menu.addEventListener('click', activateSorteos, { capture:true });
+  }
+
+  // Si ya está visible por alguna razón (navegación previa), aplicar clase
+  if (section && getComputedStyle(section).display !== 'none') {
+    document.body.classList.add('view-sorteos');
+  }
 });
 </script>
 
