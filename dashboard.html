@@ -483,29 +483,28 @@
 </style>
 
 
-  <!-- === Sorteos (estilos integrados y espacio compacto) === -->
-  <style>
-    .srt-stats{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem;align-items:stretch}
-    @media(max-width:900px){.srt-stats{grid-template-columns:1fr}}
-    .srt-card{background:var(--dark-light);border-radius:12px;padding:1.2rem;border:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;min-height:140px}
-    .srt-card h3{color:var(--text-light);font-size:.9rem;text-transform:uppercase;letter-spacing:.6px;margin-bottom:.5rem}
-    .srt-card .val{font-size:1.5rem;font-weight:800;color:var(--text-light)}
-    .srt-card.gold{background:linear-gradient(135deg,rgba(255,215,0,.12),rgba(255,215,0,.04))}
-    .srt-progress{margin-top:.8rem}
-    .srt-track{position:relative;height:14px;background:linear-gradient(180deg,#1a1a1a,#151515);border:1px solid rgba(255,255,255,.08);border-radius:999px;overflow:hidden}
-    .srt-fill{height:100%;width:0%;background:linear-gradient(90deg,rgba(255,215,0,.85),rgba(255,215,0,1));box-shadow:0 0 12px rgba(255,215,0,.35) inset;transition:width .35s ease}
-    .srt-hit{position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#222;border:2px solid rgba(255,255,255,.25)}
-    .srt-hit.on{background:var(--primary);border-color:var(--primary)}
-    .srt-marks{position:relative;height:20px;margin-top:.45rem}
-    .srt-mark{position:absolute;top:0;transform:translateX(-50%);font-size:.8rem;color:var(--text-light);white-space:nowrap}
-    #sorteos-table th{background:var(--dark-lighter);color:var(--primary);font-weight:600;text-transform:uppercase;font-size:.8rem}
-    #sorteos-table td{color:var(--text-light);border-bottom:1px solid rgba(255,255,255,.05)}
-    /* compactar arriba cuando se ve Sorteos */
-    body.view-sorteos .main-content{padding-top:.5rem !important;margin-top:0 !important}
-    #section-sorteos{margin-top:0 !important;padding-top:0 !important}
-    #section-sorteos .section-title{margin:.4rem 0 1rem !important}
-  </style>
-
+    <!-- === Sorteos CSS v3 === -->
+    <style>
+      .srt-stats{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem;align-items:stretch}
+      @media(max-width:900px){.srt-stats{grid-template-columns:1fr}}
+      .srt-card{background:var(--dark-light);border-radius:12px;padding:1.2rem;border:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;min-height:140px}
+      .srt-card h3{color:var(--text-light);font-size:.9rem;text-transform:uppercase;letter-spacing:.6px;margin-bottom:.5rem}
+      .srt-card .val{font-size:1.5rem;font-weight:800;color:var(--text-light)}
+      .srt-card.gold{background:linear-gradient(135deg,rgba(255,215,0,.12),rgba(255,215,0,.04))}
+      .srt-progress{margin-top:.8rem}
+      .srt-track{position:relative;height:14px;background:linear-gradient(180deg,#1a1a1a,#151515);border:1px solid rgba(255,255,255,.08);border-radius:999px;overflow:hidden}
+      .srt-fill{height:100%;width:0%;background:linear-gradient(90deg,rgba(255,215,0,.85),rgba(255,215,0,1));box-shadow:0 0 12px rgba(255,215,0,.35) inset;transition:width .35s ease}
+      .srt-hit{position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#222;border:2px solid rgba(255,255,255,.25)}
+      .srt-hit.on{background:var(--primary);border-color:var(--primary)}
+      .srt-marks{position:relative;height:20px;margin-top:.45rem}
+      .srt-mark{position:absolute;top:0;transform:translateX(-50%);font-size:.8rem;color:var(--text-light);white-space:nowrap}
+      #sorteos-table th{background:var(--dark-lighter);color:var(--primary);font-weight:600;text-transform:uppercase;font-size:.8rem}
+      #sorteos-table td{color:var(--text-light);border-bottom:1px solid rgba(255,255,255,.05)}
+      body.view-sorteos .main-content{padding-top:.5rem !important;margin-top:0 !important}
+      #section-sorteos{margin-top:0 !important;padding-top:0 !important}
+      #section-sorteos .section-title{margin:.4rem 0 1rem !important}
+    </style>
+    
 </head>
 <body>
 <header class="dashboard-header"><div style="flex-grow:1; text-align:center;"><div class="logo">NUMINA</div></div><div class="user-menu">
@@ -784,48 +783,48 @@
       </article>
     </section>
 
-<!-- ===== Sección: Sorteos ===== -->
-<section class="section-content" id="section-sorteos" style="display:none;">
-  <h2 class="section-title"><i class="fas fa-ticket-alt"></i><span>Sorteo</span></h2>
+    <!-- ===== Sección: Sorteos (v3) ===== -->
+    <section class="section-content" id="section-sorteos" style="display:none;">
+      <h2 class="section-title"><i class="fas fa-ticket-alt"></i><span>Sorteo</span></h2>
 
-  <div class="srt-stats">
-    <article class="srt-card gold">
-      <h3>Tickets Activos</h3>
-      <div class="val" id="srt-tickets-activos">--</div>
-    </article>
+      <div class="srt-stats">
+        <article class="srt-card gold">
+          <h3>Tickets Activos</h3>
+          <div class="val" id="srt-tickets-activos">--</div>
+        </article>
 
-    <article class="srt-card">
-      <h3>Upgrade Numina</h3>
-      <div class="val" id="srt-upgrade-valor">0 / 10,000</div>
-      <div class="srt-progress" role="progressbar" aria-valuemin="0" aria-valuemax="10000" aria-valuenow="0">
-        <div class="srt-track">
-          <div class="srt-fill" id="srt-fill"></div>
-          <span class="srt-hit" style="left:25%" id="srt-25"></span>
-          <span class="srt-hit" style="left:50%" id="srt-50"></span>
-          <span class="srt-hit" style="left:100%" id="srt-100"></span>
-        </div>
-        <div class="srt-marks">
-          <span class="srt-mark" style="left:25%">2,500</span>
-          <span class="srt-mark" style="left:50%">5,000</span>
-          <span class="srt-mark" style="left:100%">10,000</span>
-        </div>
+        <article class="srt-card">
+          <h3>Upgrade Numina</h3>
+          <div class="val" id="srt-upgrade-valor">0 / 10,000</div>
+          <div class="srt-progress" role="progressbar" aria-valuemin="0" aria-valuemax="10000" aria-valuenow="0">
+            <div class="srt-track">
+              <div class="srt-fill" id="srt-fill"></div>
+              <span class="srt-hit" style="left:25%" id="srt-25"></span>
+              <span class="srt-hit" style="left:50%" id="srt-50"></span>
+              <span class="srt-hit" style="left:100%" id="srt-100"></span>
+            </div>
+            <div class="srt-marks">
+              <span class="srt-mark" style="left:25%">2,500</span>
+              <span class="srt-mark" style="left:50%">5,000</span>
+              <span class="srt-mark" style="left:100%">10,000</span>
+            </div>
+          </div>
+        </article>
       </div>
-    </article>
-  </div>
 
-  <h3 class="section-title"><i class="fas fa-history"></i><span>Historial de Participación</span></h3>
-  <div class="table-container">
-    <table id="sorteos-table">
-      <thead>
-        <tr><th>Fecha</th><th>Sorteo</th><th>Tickets Utilizados</th></tr>
-      </thead>
-      <tbody id="sorteos-tbody">
-        <tr><td colspan="3" style="text-align:center;">Cargando...</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-
+      <h3 class="section-title"><i class="fas fa-history"></i><span>Historial de Participación</span></h3>
+      <div class="table-container">
+        <table id="sorteos-table">
+          <thead>
+            <tr><th>Fecha</th><th>Sorteo</th><th>Tickets Utilizados</th></tr>
+          </thead>
+          <tbody id="sorteos-tbody">
+            <tr><td colspan="3" style="text-align:center;">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    
 </main></div>
 <script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
 <script>
@@ -1519,12 +1518,7 @@ overlay.classList.add("show");
 (function(){
   const GOAL = 10000;
   const BRACELET = 'NUMINA-BRACELET';
-  const TICKET_BY_SKU = {
-    'NUMINA-BRACELET': 1,
-    'ROLEX-126610L': 5,
-    'GOLD-100G': 2,
-    'PLAT-100G': 2
-  };
+  const TICKET_BY_SKU = { 'NUMINA-BRACELET':1, 'ROLEX-126610L':5, 'GOLD-100G':2, 'PLAT-100G':2 };
   const PRIZE_NAME = {
     'GOLD-100G':'Lingote 1 kilo de oro fino',
     'PLAT-100G':'1 kilo de platino fino',
@@ -1536,44 +1530,46 @@ overlay.classList.add("show");
     try{
       const supabase = getSupabase();
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { window.location.href='/login.html'; return; }
+      if (!user){ window.location.href='/login.html'; return; }
 
-      // una sola query (como tu dashboard): users + purchases nested
-      const { data: ud, error } = await supabase
-        .from('users')
-        .select('id, tickets_count, purchases(id, sku, status, quantity, product_name, created_at)')
-        .eq('id', user.id)
-        .maybeSingle();
-      if (error || !ud) throw error || new Error('No user data');
+      // users.tickets_count (simple select)
+      try {
+        const { data: ur } = await supabase.from('users').select('tickets_count').eq('id', user.id).maybeSingle();
+        document.getElementById('srt-tickets-activos').textContent = (ur?.tickets_count ?? 0).toString();
+      } catch(_) {}
 
-      // tickets activos
-      document.getElementById('srt-tickets-activos').textContent = (ud.tickets_count ?? 0).toString();
-
-      // upgrade from purchases
+      // purchases del usuario (sin columnas problemáticas)
       const okStatuses = new Set(['completed','paid','success']);
-      const purchases = Array.isArray(ud.purchases) ? ud.purchases : [];
-      const bracelets = purchases.filter(p => p.sku === BRACELET && okStatuses.has((p.status||'').toLowerCase()));
-      const totalBracelets = bracelets.reduce((acc,p)=> acc + (Number(p.quantity)||1), 0);
+      const { data: purchases, error: pErr } = await supabase
+        .from('purchases')
+        .select('id, sku, status, created_at, product_name')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending:false })
+        .limit(100);
+      if (pErr) throw pErr;
+
+      // Upgrade: contar filas de pulsera con estado OK
+      const bracelets = (purchases||[]).filter(p => p.sku === BRACELET && okStatuses.has((p.status||'').toLowerCase()));
+      const totalBracelets = bracelets.length;
 
       const pct = Math.max(0, Math.min(100, (totalBracelets/GOAL)*100));
       const fill = document.getElementById('srt-fill');
       if (fill) fill.style.width = pct + '%';
-      document.getElementById('srt-upgrade-valor').textContent = totalBracelets.toLocaleString() + ' / ' + GOAL.toLocaleString();
+      const upv = document.getElementById('srt-upgrade-valor');
+      if (upv) upv.textContent = totalBracelets.toLocaleString() + ' / ' + GOAL.toLocaleString();
       if (totalBracelets>=2500) document.getElementById('srt-25').classList.add('on');
       if (totalBracelets>=5000) document.getElementById('srt-50').classList.add('on');
       if (totalBracelets>=10000) document.getElementById('srt-100').classList.add('on');
 
-      // historial derivado de purchases (sin tablas 404)
+      // Historial: derivado de purchases y reglas de tickets por SKU
       const tbody = document.getElementById('sorteos-tbody');
-      const rows = purchases
+      const rows = (purchases||[])
         .filter(p => TICKET_BY_SKU[p.sku])
-        .sort((a,b)=> new Date(b.created_at) - new Date(a.created_at))
-        .slice(0, 50)
         .map(p => {
           const fecha = new Date(p.created_at).toLocaleDateString();
-          const nombre = PRIZE_NAME[p.sku] || p.product_name || '—';
-          const used = (TICKET_BY_SKU[p.sku] || 0) * (Number(p.quantity)||1);
-          return `<tr><td>${fecha}</td><td>${nombre}</td><td>${used}</td></tr>`;
+          const name = PRIZE_NAME[p.sku] || p.product_name || '—';
+          const used = TICKET_BY_SKU[p.sku];
+          return `<tr><td>${fecha}</td><td>${name}</td><td>${used}</td></tr>`;
         });
       tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="3" style="text-align:center;">Sin participaciones</td></tr>';
     }catch(e){
@@ -1593,7 +1589,7 @@ overlay.classList.add("show");
     document.body.classList.add('view-sorteos');
     window.scrollTo(0,0);
     cargarSorteos();
-    // activar sidebar
+    // activar item en sidebar
     document.querySelectorAll('.menu-item').forEach(mi=> mi.classList.remove('active'));
     const menu = document.querySelector('.menu-item[data-target="sorteos"]');
     if (menu) menu.classList.add('active');
