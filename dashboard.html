@@ -1381,7 +1381,70 @@ overlay.classList.add("show");
   });
 
   // Botón comprar
-  if (buyBtn) buyBtn.addEventListener('click', () => { if (currentSku) alert('Ir al checkout para ' + currentSku); });
+  
+if (buyBtn) buyBtn.addEventListener('click', async () => {
+  try {
+    if (!currentSku) return;
+    const supa = await getSupabase();
+    const { data: { session } } = await supa.auth.getSession();
+    if (!session) {
+      alert('Inicia sesión para continuar con la compra.');
+      window.location.href = '/login.html';
+      return;
+    }
+    // construir compra
+    const p = cat[currentSku] || {};
+    const price = Number(p.price) || 0;
+    const tickets = Number(p.tickets) || 1;
+
+    const { data: purchase, error: e1 } = await supa
+      .from('purchases')
+      .insert({
+        user_id: session.user.id,
+        product_name: p.name || currentSku,
+        value: price,
+        tickets: tickets,
+        status: 'pending',
+        sku: currentSku,
+        qty: 1,
+        currency: 'USDT',
+        payment_provider: 'nowpayments'
+      })
+      .select('id')
+      .single();
+
+    if (e1) { alert('No se pudo crear la compra: ' + e1.message); return; }
+
+    // llamar a edge function para generar el invoice
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/create-invoice`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        purchase_id: purchase.id,
+        test_amount_usdt: price
+      })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.text();
+      alert('No se pudo iniciar el pago: ' + err);
+      return;
+    }
+    const data = await resp.json();
+    if (data.payment_url) {
+      window.location.href = data.payment_url;
+    } else {
+      alert('Respuesta inesperada del servidor.');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Error inesperado: ' + (err?.message || err));
+  }
+});
+
 
   // Cerrar modal
   if (closeBtn) closeBtn.addEventListener('click', close);
@@ -1392,170 +1455,4 @@ overlay.classList.add("show");
 
     
 
-
-<!-- BEGIN: Numina checkout wiring (injected) -->
-<script>
-(function () {
-  // ====== Config ======
-  const PROJECT_URL = "https://xaeybhscsxpvtnqzpgwj.supabase.co"; // Your Supabase project URL
-  const CREATE_INVOICE_FN = PROJECT_URL + "/functions/v1/create-invoice";
-
-  // Basic helpers
-  function findText(node, selectors) {
-    for (const sel of selectors) {
-      const el = document.querySelector(sel);
-      if (el && el.textContent) return el.textContent.trim();
-    }
-    return "";
-  }
-  function getNumberFromText(txt) {
-    // find first number (int/float) in text
-    const m = (txt || "").replace(',', '.').match(/[-+]?\d*\.?\d+/);
-    return m ? Number(m[0]) : NaN;
-  }
-
-  // Attempt to detect product info from DOM if not provided
-  function detectProductInfo() {
-    // name heuristics
-    const name =
-      (document.querySelector("[data-product-name]") || {}).textContent?.trim() ||
-      findText(document, ["#productName", ".product-title", ".modal h3", ".modal h2", "h1, h2, h3"]);
-
-    // sku heuristics (prefer explicit data-sku)
-    const sku =
-      (document.querySelector("[data-sku]") || {}).getAttribute?.("data-sku") ||
-      (name ? "NUMINA-" + name.replace(/\s+/g, "-").toUpperCase() : "NUMINA-PROD");
-
-    // price heuristics – look for something near the CTA or price blocks
-    let priceText =
-      (document.querySelector("[data-price]") || {}).getAttribute?.("data-price") ||
-      findText(document, [".price", ".product-price", ".modal .price", "#price", "[data-product-price]"]);
-
-    let price = getNumberFromText(priceText);
-    if (!isFinite(price) || price <= 0) {
-      // fallback sensible default so we don't explode; UI will alert if remains invalid
-      price = 30;
-    }
-
-    return { name: name || sku, sku, price_usd: price };
-  }
-
-  // Sweet alert helper (fallback to alert)
-  function notify(msg) {
-    if (window.Swal && Swal.fire) return Swal.fire({ text: msg, icon: "info" });
-    alert(msg);
-  }
-  function notifyErr(msg) {
-    if (window.Swal && Swal.fire) return Swal.fire({ text: msg, icon: "error" });
-    alert(msg);
-  }
-
-  // Ensure global supabase client exists
-  if (typeof window.supabase === "undefined") {
-    console.warn("Supabase client not found. The checkout requires a logged-in session.");
-  }
-
-  async function ensureSession() {
-    try {
-      const { data } = await window.supabase.auth.getSession();
-      return data?.session || null;
-    } catch (e) {
-      console.error(e);
-      return null;
-    }
-  }
-
-  async function startCheckout(opts = {}) {
-    try {
-      const sess = await ensureSession();
-      if (!sess) {
-        return notifyErr("Inicia sesión para continuar con la compra.");
-      }
-      const user = sess.user;
-
-      // Product info
-      const auto = detectProductInfo();
-      const product = {
-        name: opts.name || auto.name,
-        sku: opts.sku || auto.sku,
-        price_usd: Number(opts.price_usd ?? auto.price_usd) || 0,
-      };
-      if (!product.price_usd || product.price_usd <= 0) {
-        return notifyErr("No pude detectar el precio del producto.");
-      }
-
-      // 1) Insert purchase (RLS should allow owner insert)
-      const { data: inserted, error: e1 } = await window.supabase
-        .from("purchases")
-        .insert({
-          user_id: user.id,
-          product_name: product.name,
-          value: product.price_usd,  // USD
-          sku: product.sku,
-          qty: 1,
-          payment_provider: "nowpayments",
-          status: "pending"
-        })
-        .select("id")
-        .single();
-
-      if (e1) {
-        console.error(e1);
-        return notifyErr("Error creando la orden: " + e1.message);
-      }
-
-      // 2) Call Edge Function to create invoice
-      const res = await fetch(CREATE_INVOICE_FN, {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + sess.access_token,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          purchase_id: inserted.id
-          // Puedes enviar test_amount_usdt aquí para pruebas económicas:
-          // , test_amount_usdt: 5
-        })
-      });
-
-      let payload = {};
-      try { payload = await res.json(); } catch {}
-
-      if (!res.ok) {
-        console.error("Edge error", payload);
-        return notifyErr("No pude crear el pago: " + (payload?.nowpayments_error?.message || JSON.stringify(payload)));
-      }
-
-      if (payload.payment_url) {
-        // 3) Redirect to NOWPayments
-        window.location.href = payload.payment_url;
-      } else {
-        notify("Orden creada, pero no recibí URL de pago. Detalle: " + JSON.stringify(payload));
-      }
-    } catch (err) {
-      console.error(err);
-      notifyErr("Ocurrió un error iniciando el checkout.");
-    }
-  }
-
-  // Expose globally in case other scripts want to call it
-  window.startCheckout = startCheckout;
-
-  // Wire default CTA if present
-  const buyBtn = document.querySelector("#nmBuy, [data-action='buy'], .buy-cta");
-  if (buyBtn) {
-    buyBtn.addEventListener("click", function (ev) {
-      ev.preventDefault();
-      // If the button carries data attributes, use them
-      const opts = {
-        name: this.getAttribute("data-name") || undefined,
-        sku: this.getAttribute("data-sku") || undefined,
-        price_usd: this.getAttribute("data-price-usd") ? Number(this.getAttribute("data-price-usd")) : undefined
-      };
-      startCheckout(opts);
-    });
-  }
-})();
-</script>
-<!-- END: Numina checkout wiring (injected) -->
 </body></html>
