@@ -483,51 +483,28 @@
 </style>
 
 
-  <!-- === Sorteos (estilos integrados) === -->
+  <!-- === Sorteos (estilos integrados y espacio compacto) === -->
   <style>
-    /* Tarjetas y layout de Sorteos */
-    .srt-stats { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; margin-bottom:1.5rem; align-items:stretch; }
-    @media (max-width:900px){ .srt-stats{ grid-template-columns:1fr; } }
-    .srt-card{ background:var(--dark-light); border-radius:12px; padding:1.2rem; border:1px solid rgba(255,255,255,.07);
-               display:flex; flex-direction:column; min-height:150px; }
-    .srt-card h3{ color:var(--text-light); font-size:.9rem; text-transform:uppercase; letter-spacing:.6px; margin-bottom:.5rem; }
-    .srt-card .val{ font-size:1.5rem; font-weight:800; color:var(--text-light); }
-    .srt-card.gold{ background:linear-gradient(135deg, rgba(255,215,0,.12), rgba(255,215,0,.04)); }
-
-    /* Progreso Upgrade Numina */
-    .srt-progress{ margin-top:.8rem; }
-    .srt-track{ position:relative; height:14px; background:linear-gradient(180deg,#1a1a1a,#151515);
-                border:1px solid rgba(255,255,255,.08); border-radius:999px; overflow:hidden; }
-    .srt-fill{ height:100%; width:0%; background:linear-gradient(90deg, rgba(255,215,0,.85), rgba(255,215,0,1));
-               box-shadow:0 0 12px rgba(255,215,0,.35) inset; transition:width .35s ease; }
-    .srt-hit{ position:absolute; top:50%; transform:translate(-50%,-50%); width:14px; height:14px; border-radius:50%;
-              background:#222; border:2px solid rgba(255,255,255,.25); }
-    .srt-hit.on{ background:var(--primary); border-color:var(--primary); }
-    .srt-marks{ position:relative; height:20px; margin-top:.45rem; }
-    .srt-mark{ position:absolute; top:0; transform:translateX(-50%); font-size:.8rem; color:var(--text-light); white-space:nowrap; }
-
-    /* Tabla */
-    #sorteos-table th{ background:var(--dark-lighter); color:var(--primary); font-weight:600; text-transform:uppercase; font-size:.8rem; }
-    #sorteos-table td{ color:var(--text-light); border-bottom:1px solid rgba(255,255,255,.05); }
+    .srt-stats{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.5rem;align-items:stretch}
+    @media(max-width:900px){.srt-stats{grid-template-columns:1fr}}
+    .srt-card{background:var(--dark-light);border-radius:12px;padding:1.2rem;border:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;min-height:150px}
+    .srt-card h3{color:var(--text-light);font-size:.9rem;text-transform:uppercase;letter-spacing:.6px;margin-bottom:.5rem}
+    .srt-card .val{font-size:1.5rem;font-weight:800;color:var(--text-light)}
+    .srt-card.gold{background:linear-gradient(135deg,rgba(255,215,0,.12),rgba(255,215,0,.04))}
+    .srt-progress{margin-top:.8rem}
+    .srt-track{position:relative;height:14px;background:linear-gradient(180deg,#1a1a1a,#151515);border:1px solid rgba(255,255,255,.08);border-radius:999px;overflow:hidden}
+    .srt-fill{height:100%;width:0%;background:linear-gradient(90deg,rgba(255,215,0,.85),rgba(255,215,0,1));box-shadow:0 0 12px rgba(255,215,0,.35) inset;transition:width .35s ease}
+    .srt-hit{position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#222;border:2px solid rgba(255,255,255,.25)}
+    .srt-hit.on{background:var(--primary);border-color:var(--primary)}
+    .srt-marks{position:relative;height:20px;margin-top:.45rem}
+    .srt-mark{position:absolute;top:0;transform:translateX(-50%);font-size:.8rem;color:var(--text-light);white-space:nowrap}
+    #sorteos-table th{background:var(--dark-lighter);color:var(--primary);font-weight:600;text-transform:uppercase;font-size:.8rem}
+    #sorteos-table td{color:var(--text-light);border-bottom:1px solid rgba(255,255,255,.05)}
+    /* compactar arriba cuando se ve Sorteos */
+    body.view-sorteos .main-content{padding-top:.5rem !important;margin-top:0 !important}
+    #section-sorteos{margin-top:0 !important;padding-top:0 !important}
+    #section-sorteos .section-title{margin:.4rem 0 1rem !important}
   </style>
-
-
-<style>
-  /* === Sorteos: compactar espacio superior === */
-  #section-sorteos{ margin-top:0; padding-top:0; }
-  #section-sorteos .section-title{ margin:.5rem 0 1rem; }
-  #section-sorteos .table-container{ margin-top:.6rem; }
-  body.view-sorteos .main-content{ padding-top:1rem; }
-</style>
-
-
-<style>
-/* === Sorteos: fuerza compactación superior (alta especificidad) === */
-body.view-sorteos .main-content{ padding-top:.25rem !important; margin-top:0 !important; }
-#section-sorteos{ margin-top:0 !important; padding-top:0 !important; }
-#section-sorteos .section-title{ margin-top:.25rem !important; margin-bottom:1rem; }
-body.view-sorteos .main-content > .section-title:first-child{ margin-top:.25rem !important; }
-</style>
 
 </head>
 <body>
@@ -807,26 +784,19 @@ body.view-sorteos .main-content > .section-title:first-child{ margin-top:.25rem 
       </article>
     </section>
 
-
-<!-- ===== Sección: Sorteos (integrada) ===== -->
 <section class="section-content" id="section-sorteos" style="display:none;">
   <h2 class="section-title"><i class="fas fa-ticket-alt"></i><span>Sorteo</span></h2>
-
   <div class="srt-stats">
-    <!-- Tickets activos -->
     <article class="srt-card gold">
       <h3>Tickets Activos</h3>
       <div class="val" id="srt-tickets-activos">--</div>
     </article>
-
-    <!-- Upgrade Numina con barra e hitos -->
     <article class="srt-card">
       <h3>Upgrade Numina</h3>
       <div class="val" id="srt-upgrade-valor">0 / 10,000</div>
       <div class="srt-progress" role="progressbar" aria-valuemin="0" aria-valuemax="10000" aria-valuenow="0">
-        <div class="srt-track" id="srt-track">
+        <div class="srt-track">
           <div class="srt-fill" id="srt-fill"></div>
-          <!-- Hitos -->
           <span class="srt-hit" style="left:25%" id="srt-25"></span>
           <span class="srt-hit" style="left:50%" id="srt-50"></span>
           <span class="srt-hit" style="left:100%" id="srt-100"></span>
@@ -839,25 +809,16 @@ body.view-sorteos .main-content > .section-title:first-child{ margin-top:.25rem 
       </div>
     </article>
   </div>
-
   <h3 class="section-title"><i class="fas fa-history"></i><span>Historial de Participación</span></h3>
   <div class="table-container">
     <table id="sorteos-table">
       <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Sorteo</th>
-          <th>Tickets Utilizados</th>
-        </tr>
+        <tr><th>Fecha</th><th>Sorteo</th><th>Tickets Utilizados</th></tr>
       </thead>
-      <tbody id="sorteos-tbody">
-        <tr><td colspan="3" style="text-align:center;">Cargando...</td></tr>
-      </tbody>
+      <tbody id="sorteos-tbody"><tr><td colspan="3" style="text-align:center;">Cargando...</td></tr></tbody>
     </table>
   </div>
 </section>
-
-
 
 </main></div>
 <script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
@@ -1549,137 +1510,74 @@ overlay.classList.add("show");
 
 
 <script>
-// ===== Sorteos: carga desde Supabase (users.tickets_count, purchases: NUMINA-BRACELET, historial) =====
 (function(){
   const GOAL = 10000;
   const BRACELET_SKU = 'NUMINA-BRACELET';
 
   async function cargarSorteos(){
-    try{
-      const supabase = getSupabase();
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) { window.location.href = '/login.html'; return; }
+    const supabase = getSupabase();
+    const { data: { user }, error: authErr } = await supabase.auth.getUser();
+    if (authErr || !user) { window.location.href='/login.html'; return; }
 
-      // Tickets activos (campo opcional en users)
-      const { data: userRow } = await supabase
-        .from('users')
-        .select('tickets_count')
-        .eq('id', user.id)
-        .maybeSingle();
-      const ticketsActivos = userRow?.tickets_count ?? 0;
-      const $tickets = document.getElementById('srt-tickets-activos');
-      if ($tickets) $tickets.textContent = ticketsActivos.toString();
+    // tickets activos
+    try {
+      const { data: ur } = await supabase.from('users').select('tickets_count').eq('id', user.id).maybeSingle();
+      document.getElementById('srt-tickets-activos').textContent = (ur?.tickets_count ?? 0).toString();
+    } catch(_){}
 
-      // Upgrade Numina: sumar unidades de pulseras completadas/pagadas (usa quantity si existe)
-      let totalBracelets = 0;
-      try{
-        const { data: rows } = await supabase
-          .from('purchases')
-          .select('sku, status, quantity')
-          .eq('user_id', user.id)
-          .eq('sku', BRACELET_SKU)
-          .in('status', ['completed','paid','success']);
-        totalBracelets = (rows || []).reduce((acc, r)=> acc + (Number(r.quantity)||1), 0);
-      }catch(_){/* noop */}
+    // upgrade numina (pulseras pagadas/completadas)
+    let total = 0;
+    try {
+      const { data: rows } = await supabase.from('purchases')
+        .select('sku,status,quantity').eq('user_id', user.id).eq('sku', BRACELET_SKU)
+        .in('status', ['completed','paid','success']);
+      total = (rows||[]).reduce((a,r)=>a+(Number(r.quantity)||1),0);
+    } catch(_){}
+    const pct = Math.max(0, Math.min(100, (total/GOAL)*100));
+    const fill = document.getElementById('srt-fill');
+    if (fill) fill.style.width = pct+'%';
+    document.getElementById('srt-upgrade-valor').textContent = total.toLocaleString()+' / '+GOAL.toLocaleString();
+    if (total>=2500) document.getElementById('srt-25').classList.add('on');
+    if (total>=5000) document.getElementById('srt-50').classList.add('on');
+    if (total>=10000) document.getElementById('srt-100').classList.add('on');
 
-      const current = totalBracelets;
-      const pct = Math.max(0, Math.min(100, (current/GOAL)*100));
-      const fill = document.getElementById('srt-fill');
-      const label = document.getElementById('srt-upgrade-valor');
-      const bar = document.querySelector('.srt-progress');
-      if (fill) fill.style.width = pct + '%';
-      if (bar) bar.setAttribute('aria-valuenow', String(current));
-      if (label) label.textContent = current.toLocaleString() + ' / ' + GOAL.toLocaleString();
-      if (current >= 2500) document.getElementById('srt-25').classList.add('on');
-      if (current >= 5000) document.getElementById('srt-50').classList.add('on');
-      if (current >= 10000) document.getElementById('srt-100').classList.add('on');
-
-      // Historial de participación: probar dos posibles tablas/campos
-      const tbody = document.getElementById('sorteos-tbody');
-      async function loadFrom(table, select){
-        const { data, error } = await supabase
-          .from(table)
-          .select(select)
-          .eq('user_id', user.id)
-          .order('created_at', { ascending:false })
-          .limit(50);
-        if (error) return null;
-        return data || null;
-      }
-      let entries = await loadFrom('raffle_entries','created_at, prize, tickets_used');
-      if (!entries) entries = await loadFrom('raffle_participations','created_at, prize, used_tickets');
-
-      if (!tbody) return;
-      if (!entries || !entries.length){
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Sin participaciones</td></tr>';
-      } else {
-        tbody.innerHTML = entries.map(e => {
-          const fecha = new Date(e.created_at).toLocaleDateString();
-          const sorteo = e.prize ?? '—';
-          const used = e.tickets_used ?? e.used_tickets ?? 0;
-          return '<tr><td>'+fecha+'</td><td>'+sorteo+'</td><td>'+used+'</td></tr>';
-        }).join('');
-      }
-    }catch(err){ console.error('[Sorteos] error:', err); }
+    // historial
+    const tbody = document.getElementById('sorteos-tbody');
+    async function load(table, sel){
+      const { data, error } = await supabase.from(table).select(sel).eq('user_id', user.id).order('created_at',{ascending:false}).limit(50);
+      return error ? null : (data||null);
+    }
+    let entries = await load('raffle_entries','created_at,prize,tickets_used');
+    if (!entries) entries = await load('raffle_participations','created_at,prize,used_tickets');
+    if (!entries || !entries.length){
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Sin participaciones</td></tr>';
+    } else {
+      tbody.innerHTML = entries.map(e=>{
+        const f = new Date(e.created_at).toLocaleDateString();
+        const p = e.prize ?? '—';
+        const u = e.tickets_used ?? e.used_tickets ?? 0;
+        return `<tr><td>${f}</td><td>${p}</td><td>${u}</td></tr>`;
+      }).join('');
+    }
   }
 
-  // Mostrar sección y cargar datos al hacer click en el menú "Sorteos"
-  document.addEventListener('DOMContentLoaded', () => {
-    const menu = document.querySelector('.menu-item[data-target="sorteos"]');
-    const section = document.getElementById('section-sorteos');
+  function showSorteos(){
     const mainDash = document.getElementById('main-dashboard');
-    if (menu){
-      menu.addEventListener('click', async () => {
-        if (mainDash) mainDash.style.display = 'none';
-        if (section) section.style.display = 'block';
-        await cargarSorteos();
-      });
-    }
+    const sections = document.querySelectorAll('.section-content');
+    sections.forEach(s=> s.style.display='none');
+    if (mainDash) mainDash.style.display='none';
+    const sec = document.getElementById('section-sorteos');
+    if (sec) sec.style.display='block';
+    document.body.classList.add('view-sorteos');
+    window.scrollTo(0,0);
+    try { cargarSorteos(); } catch(_){}
+  }
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const menuSorteos = document.querySelector('.menu-item[data-target="sorteos"]');
+    if (menuSorteos) menuSorteos.addEventListener('click', (e)=>{ e.preventDefault(); showSorteos(); }, {capture:true});
   });
 })();
-</script>
-
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const menuItems = document.querySelectorAll('.menu-item[data-target]');
-  menuItems.forEach(mi => {
-    mi.addEventListener('click', () => {
-      const target = mi.getAttribute('data-target');
-      if (target === 'sorteos') {
-        document.body.classList.add('view-sorteos');
-      } else {
-        document.body.classList.remove('view-sorteos');
-      }
-    });
-  });
-});
-</script>
-
-
-<script>
-// Reforzar clase de vista y scroll al activar "Sorteos"
-document.addEventListener('DOMContentLoaded', () => {
-  const menu = document.querySelector('.menu-item[data-target="sorteos"]');
-  const section = document.getElementById('section-sorteos');
-  const mainDash = document.getElementById('main-dashboard');
-
-  async function activateSorteos(){
-    if (mainDash) mainDash.style.display = 'none';
-    if (section) section.style.display = 'block';
-    document.body.classList.add('view-sorteos');
-    try { window.scrollTo({top:0, behavior:'instant'}); } catch(_) { window.scrollTo(0,0); }
-  }
-
-  if (menu) {
-    menu.addEventListener('click', activateSorteos, { capture:true });
-  }
-
-  // Si ya está visible por alguna razón (navegación previa), aplicar clase
-  if (section && getComputedStyle(section).display !== 'none') {
-    document.body.classList.add('view-sorteos');
-  }
-});
 </script>
 
 </body>
