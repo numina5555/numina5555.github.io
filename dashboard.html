@@ -784,13 +784,16 @@
       </article>
     </section>
 
+<!-- ===== Sección: Sorteos ===== -->
 <section class="section-content" id="section-sorteos" style="display:none;">
   <h2 class="section-title"><i class="fas fa-ticket-alt"></i><span>Sorteo</span></h2>
+
   <div class="srt-stats">
     <article class="srt-card gold">
       <h3>Tickets Activos</h3>
       <div class="val" id="srt-tickets-activos">--</div>
     </article>
+
     <article class="srt-card">
       <h3>Upgrade Numina</h3>
       <div class="val" id="srt-upgrade-valor">0 / 10,000</div>
@@ -809,13 +812,16 @@
       </div>
     </article>
   </div>
+
   <h3 class="section-title"><i class="fas fa-history"></i><span>Historial de Participación</span></h3>
   <div class="table-container">
     <table id="sorteos-table">
       <thead>
         <tr><th>Fecha</th><th>Sorteo</th><th>Tickets Utilizados</th></tr>
       </thead>
-      <tbody id="sorteos-tbody"><tr><td colspan="3" style="text-align:center;">Cargando...</td></tr></tbody>
+      <tbody id="sorteos-tbody">
+        <tr><td colspan="3" style="text-align:center;">Cargando...</td></tr>
+      </tbody>
     </table>
   </div>
 </section>
@@ -1519,19 +1525,19 @@ overlay.classList.add("show");
     const { data: { user }, error: authErr } = await supabase.auth.getUser();
     if (authErr || !user) { window.location.href='/login.html'; return; }
 
-    // tickets activos
+    // Tickets activos
     try {
       const { data: ur } = await supabase.from('users').select('tickets_count').eq('id', user.id).maybeSingle();
       document.getElementById('srt-tickets-activos').textContent = (ur?.tickets_count ?? 0).toString();
     } catch(_){}
 
-    // upgrade numina (pulseras pagadas/completadas)
+    // Upgrade Numina
     let total = 0;
     try {
       const { data: rows } = await supabase.from('purchases')
         .select('sku,status,quantity').eq('user_id', user.id).eq('sku', BRACELET_SKU)
         .in('status', ['completed','paid','success']);
-      total = (rows||[]).reduce((a,r)=>a+(Number(r.quantity)||1),0);
+      total = (rows||[]).reduce((a,r)=> a + (Number(r.quantity)||1), 0);
     } catch(_){}
     const pct = Math.max(0, Math.min(100, (total/GOAL)*100));
     const fill = document.getElementById('srt-fill');
@@ -1541,10 +1547,11 @@ overlay.classList.add("show");
     if (total>=5000) document.getElementById('srt-50').classList.add('on');
     if (total>=10000) document.getElementById('srt-100').classList.add('on');
 
-    // historial
+    // Historial
     const tbody = document.getElementById('sorteos-tbody');
     async function load(table, sel){
-      const { data, error } = await supabase.from(table).select(sel).eq('user_id', user.id).order('created_at',{ascending:false}).limit(50);
+      const { data, error } = await supabase.from(table).select(sel).eq('user_id', user.id)
+        .order('created_at',{ascending:false}).limit(50);
       return error ? null : (data||null);
     }
     let entries = await load('raffle_entries','created_at,prize,tickets_used');
@@ -1561,21 +1568,27 @@ overlay.classList.add("show");
     }
   }
 
-  function showSorteos(){
+  function showSorteos(e){
+    if (e){ e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); }
     const mainDash = document.getElementById('main-dashboard');
-    const sections = document.querySelectorAll('.section-content');
-    sections.forEach(s=> s.style.display='none');
+    document.querySelectorAll('.section-content').forEach(s=> s.style.display='none');
     if (mainDash) mainDash.style.display='none';
     const sec = document.getElementById('section-sorteos');
     if (sec) sec.style.display='block';
     document.body.classList.add('view-sorteos');
     window.scrollTo(0,0);
-    try { cargarSorteos(); } catch(_){}
+    cargarSorteos();
+    // Marcar activo en sidebar
+    document.querySelectorAll('.menu-item').forEach(mi=> mi.classList.remove('active'));
+    const menu = document.querySelector('.menu-item[data-target="sorteos"]');
+    if (menu) menu.classList.add('active');
   }
 
   document.addEventListener('DOMContentLoaded', ()=>{
-    const menuSorteos = document.querySelector('.menu-item[data-target="sorteos"]');
-    if (menuSorteos) menuSorteos.addEventListener('click', (e)=>{ e.preventDefault(); showSorteos(); }, {capture:true});
+    const menu = document.querySelector('.menu-item[data-target="sorteos"]');
+    if (menu){
+      menu.addEventListener('click', showSorteos, { capture:true });
+    }
   });
 })();
 </script>
