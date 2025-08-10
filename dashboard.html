@@ -511,6 +511,15 @@
     #sorteos-table td{ color:var(--text-light); border-bottom:1px solid rgba(255,255,255,.05); }
   </style>
 
+
+<style>
+  /* === Sorteos: compactar espacio superior === */
+  #section-sorteos{ margin-top:0; padding-top:0; }
+  #section-sorteos .section-title{ margin:.5rem 0 1rem; }
+  #section-sorteos .table-container{ margin-top:.6rem; }
+  body.view-sorteos .main-content{ padding-top:1rem; }
+</style>
+
 </head>
 <body>
 <header class="dashboard-header"><div style="flex-grow:1; text-align:center;"><div class="logo">NUMINA</div></div><div class="user-menu">
@@ -1616,6 +1625,23 @@ overlay.classList.add("show");
     }
   });
 })();
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const menuItems = document.querySelectorAll('.menu-item[data-target]');
+  menuItems.forEach(mi => {
+    mi.addEventListener('click', () => {
+      const target = mi.getAttribute('data-target');
+      if (target === 'sorteos') {
+        document.body.classList.add('view-sorteos');
+      } else {
+        document.body.classList.remove('view-sorteos');
+      }
+    });
+  });
+});
 </script>
 
 </body>
