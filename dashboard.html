@@ -1539,17 +1539,24 @@ overlay.classList.add("show");
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) { window.location.href = '/login.html'; return; }
 
-      // Tickets activos (campo opcional en users)
-      const { data: userRow } = await supabase
-        .from('users')
-        .select('tickets_count')
-        .eq('id', user.id)
-        .maybeSingle();
-      const ticketsActivos = userRow?.tickets_count ?? 0;
+      
+// Tickets activos tomados desde tickets_ledger (saldo = SUM(count))
+      let ticketsActivos = 0;
+      try{
+        const { data: ticketsRows, error: tErr } = await supabase
+          .from('tickets_ledger')
+          .select('count')
+          .eq('user_id', user.id);
+        if (!tErr && ticketsRows) {
+          ticketsActivos = ticketsRows.reduce((acc, r) => acc + (Number(r.count) || 0), 0);
+        }
+      }catch(e){
+        console.warn('tickets_ledger sum error', e);
+      }
       const $tickets = document.getElementById('srt-tickets-activos');
       if ($tickets) $tickets.textContent = ticketsActivos.toString();
 
-      // Upgrade Numina: sumar unidades de pulseras completadas/pagadas (usa quantity si existe)
+// Upgrade Numina: sumar unidades de pulseras completadas/pagadas (usa quantity si existe)
       let totalBracelets = 0;
       try{
         const { data: rows } = await supabase
@@ -1585,8 +1592,7 @@ overlay.classList.add("show");
         if (error) return null;
         return data || null;
       }
-      let entries = await loadFrom('raffle_entries','created_at, prize, tickets_used');
-      if (!entries) entries = await loadFrom('raffle_participations','created_at, prize, used_tickets');
+      let entries = await loadFrom('tickets_ledger','created_at, sku, count');
 
       if (!tbody) return;
       if (!entries || !entries.length){
@@ -1594,8 +1600,8 @@ overlay.classList.add("show");
       } else {
         tbody.innerHTML = entries.map(e => {
           const fecha = new Date(e.created_at).toLocaleDateString();
-          const sorteo = e.prize ?? '—';
-          const used = e.tickets_used ?? e.used_tickets ?? 0;
+          const sorteo = e.sku ?? '—';
+          const used = (Number(e.count)||0) < 0 ? Math.abs(Number(e.count)) : 0;
           return '<tr><td>'+fecha+'</td><td>'+sorteo+'</td><td>'+used+'</td></tr>';
         }).join('');
       }
