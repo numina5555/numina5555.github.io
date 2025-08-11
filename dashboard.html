@@ -1561,11 +1561,11 @@ overlay.classList.add("show");
       try{
         const { data: rows } = await supabase
           .from('purchases')
-          .select('sku, status, quantity')
+          .select('sku, status, qty')
           .eq('user_id', user.id)
           .eq('sku', BRACELET_SKU)
           .in('status', ['completed','paid','success']);
-        totalBracelets = (rows || []).reduce((acc, r)=> acc + (Number(r.quantity)||1), 0);
+        totalBracelets = (rows || []).reduce((acc, r)=> acc + (Number(r.qty)||1), 0);
       }catch(_){/* noop */}
 
       const current = totalBracelets;
