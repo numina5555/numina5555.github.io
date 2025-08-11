@@ -662,6 +662,19 @@
 <h4>Dirección</h4>
 <p id="user-address">Cargando...</p>
 </div>
+<div class="info-item">
+  <h4>País</h4>
+  <p id="user-country">Cargando...</p>
+</div>
+<div class="info-item">
+  <h4>Ciudad</h4>
+  <p id="user-city">Cargando...</p>
+</div>
+<div class="info-item">
+  <h4>Código Postal</h4>
+  <p id="user-postal">Cargando...</p>
+</div>
+
 </div>
 <a class="edit-btn" href="#" id="edit-btn">Editar Información</a>
 </div>
@@ -681,6 +694,10 @@
         
         <div class="form-row"><label for="cfg-phone">Teléfono</label><input id="cfg-phone" type="tel" placeholder="+54 11 1234 5678"/></div>
         <div class="form-row"><label for="cfg-address">Dirección</label><input id="cfg-address" type="text" placeholder="Calle, número, ciudad"/></div>
+        <div class="form-row"><label for="cfg-country">País</label><input id="cfg-country" type="text" placeholder="Argentina"/></div>
+        <div class="form-row"><label for="cfg-city">Ciudad</label><input id="cfg-city" type="text" placeholder="Buenos Aires"/></div>
+        <div class="form-row"><label for="cfg-postal">Código Postal</label><input id="cfg-postal" type="text" placeholder="C.P."/></div>
+
       </div>
       <div class="form-actions"><button class="btn" type="submit">Guardar cambios</button></div>
     </form>
@@ -864,6 +881,14 @@
       document.getElementById('user-email').textContent = userData.email || 'No definido';
       document.getElementById('user-phone').textContent = userData.phone || 'No definido';
       document.getElementById('user-address').textContent = userData.address || 'No definido';
+document.getElementById('user-country').textContent = userData.country || 'No definido';
+document.getElementById('user-city').textContent = userData.city || 'No definido';
+document.getElementById('user-postal').textContent = userData.postal_code || 'No definido';
+
+document.getElementById('user-country').textContent = userData.country || 'No definido';
+document.getElementById('user-city').textContent = userData.city || 'No definido';
+document.getElementById('user-postal').textContent = userData.postal_code || 'No definido';
+
 
       // Compras
       const purchasesBody = document.getElementById('purchases-body');
@@ -935,6 +960,10 @@ function prefillConfigForms(userData){
   if ($('cfg-fullname')) $('cfg-fullname').value = d.full_name || '';if ($('cfg-phone'))    $('cfg-phone').value    = d.phone || '';
   if ($('cfg-address'))  $('cfg-address').value  = d.address || '';
   if ($('cfg-lang'))     $('cfg-lang').value     = d.language || 'es';
+  if ($('cfg-country'))  $('cfg-country').value  = d.country || '';
+  if ($('cfg-city'))     $('cfg-city').value     = d.city || '';
+  if ($('cfg-postal'))   $('cfg-postal').value   = d.postal_code || '';
+
 }
 
 function attachConfigHandlers(supabase){
@@ -944,7 +973,10 @@ function attachConfigHandlers(supabase){
     const updates = {
       full_name: (document.getElementById('cfg-fullname').value||'').trim() || null,
       phone:     (document.getElementById('cfg-phone').value||'').trim() || null,
-      address:   (document.getElementById('cfg-address').value||'').trim() || null,
+      address:   (document.getElementById('cfg-address').value||'').trim() || null,,
+      country:   (document.getElementById('cfg-country').value||'').trim() || null,
+      city:      (document.getElementById('cfg-city').value||'').trim() || null,
+      postal_code:(document.getElementById('cfg-postal').value||'').trim() || null,
     };
     // remove undefined keys and keep only provided values (avoid empty update bodies)
     Object.keys(updates).forEach(k => { if (updates[k] === undefined) delete updates[k]; });
@@ -963,6 +995,12 @@ function attachConfigHandlers(supabase){
     (function(){var el=document.getElementById('full-name'); if(el) el.textContent = (res.full_name ?? updates.full_name) || 'No definido';})();
     (function(){var el=document.getElementById('user-phone'); if(el) el.textContent = (res.phone ?? updates.phone) || 'No definido';})();
     (function(){var el=document.getElementById('user-address'); if(el) el.textContent = (res.address ?? updates.address) || 'No definido';})();
+    
+    // Nuevos campos
+    (function(){var el=document.getElementById('user-country'); if(el) el.textContent = (res.country ?? updates.country) || 'No definido';})();
+    (function(){var el=document.getElementById('user-city'); if(el) el.textContent = (res.city ?? updates.city) || 'No definido';})();
+    (function(){var el=document.getElementById('user-postal'); if(el) el.textContent = (res.postal_code ?? updates.postal_code) || 'No definido';})();
+
     // Y forzar re-fetch al volver al Dashboard por si hay cálculos derivados
     if (typeof cargarDashboard === 'function') { try { await cargarDashboard(); } catch(_){} }
   });
