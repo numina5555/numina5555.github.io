@@ -24,7 +24,7 @@
       display:flex;align-items:center;justify-content:center;padding:24px;
     }
     .login-container{
-      width:min(420px,100%);
+      width:min(480px,100%);
       background:linear-gradient(180deg,var(--panel) 0%, var(--panel-2) 100%);
       border:1px solid rgba(255,255,255,.08);
       border-radius:16px;
@@ -39,7 +39,7 @@
       background:linear-gradient(135deg,#4b4300,#8a7a00);
       display:grid;place-items:center;font-weight:900;color:#111;
     }
-    .brand h1{ margin:0; font-size:1.9rem; letter-spacing:1.4px; color:var(--brand); }
+    .brand h2{ margin:0; font-size:1.9rem; letter-spacing:1.4px; color:var(--brand); }
     .tabs{
       display:flex;background:#11151a;border:1px solid rgba(255,255,255,.06);
       border-radius:12px;padding:4px;margin-bottom:16px;
@@ -49,7 +49,7 @@
       font-weight:700;color:var(--muted);cursor:pointer;user-select:none;
     }
     .tab.active{ background:var(--panel); color:var(--text); }
-    h1{display:none} /* oculto el <h1> antiguo del diseño original */
+    h1{display:none} /* oculta el <h1> antiguo */
     input{
       width:100%; background:#0f1318; border:1px solid #232832; border-radius:10px;
       color:var(--text); padding:12px 14px; margin-bottom:14px; font-size:1rem;
@@ -65,17 +65,17 @@
     .toggle-form:hover{ text-decoration:underline; }
     #error-message, #register-error-message{ color:var(--danger); min-height:20px; margin-top:10px; text-align:center; }
     #register-success-message{ color:var(--ok); min-height:20px; margin-top:10px; text-align:center; }
+    .row-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    @media (max-width: 520px){ .row-2{ grid-template-columns:1fr; } }
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    label{ display:block; font-size:.88rem; color:var(--muted); margin:4px 0 6px; }
   </style>
 </head>
 <body>
   <div class="login-container">
     <div class="brand" aria-hidden="true">
       <div class="logo">N</div>
-      <div style="display:flex;flex-direction:column;align-items:center;">
-        <div class="sr-only">NUMINA</div>
-        <h2 style="margin:0;color:var(--brand);letter-spacing:1.4px;">NUMINA</h2>
-      </div>
+      <h2>NUMINA</h2>
     </div>
 
     <!-- Tabs visuales (llaman a toggleForm como el original) -->
@@ -93,11 +93,34 @@
       <a class="toggle-form" onclick="toggleForm()">¿No tienes cuenta? Regístrate</a>
     </div>
 
-    <!-- Formulario de Registro (lógica ORIGINAL) -->
+    <!-- Formulario de Registro (con nuevos campos requeridos) -->
     <div id="register-form" style="display: none;">
+      <label for="register-email">Correo electrónico</label>
       <input type="email" id="register-email" placeholder="Correo electrónico" required />
-      <input type="password" id="register-password" placeholder="Contraseña" required />
+
+      <label for="register-password">Contraseña</label>
+      <input type="password" id="register-password" placeholder="Contraseña (mín. 6)" minlength="6" required />
+
+      <label for="full-name">Nombre completo</label>
       <input type="text" id="full-name" placeholder="Nombre completo" required />
+
+      <div class="row-2">
+        <div>
+          <label for="register-country">País</label>
+          <input type="text" id="register-country" placeholder="País" required />
+        </div>
+        <div>
+          <label for="register-city">Ciudad</label>
+          <input type="text" id="register-city" placeholder="Ciudad" required />
+        </div>
+      </div>
+
+      <label for="register-address">Dirección</label>
+      <input type="text" id="register-address" placeholder="Calle y número" required />
+
+      <label for="register-postal">Código Postal</label>
+      <input type="text" id="register-postal" placeholder="C.P." required />
+
       <button class="login-button" onclick="register()">Crear cuenta</button>
       <p id="register-error-message"></p>
       <p id="register-success-message"></p>
@@ -106,7 +129,7 @@
   </div>
 
   <script>
-    /* ======= LÓGICA ORIGINAL, SIN CAMBIOS EN EL FLUJO ======= */
+    /* ======= LÓGICA ORIGINAL, CONSERVADA ======= */
     const supabaseUrl = "https://xaeybhscsxpvtnqzpgwj.supabase.co";
     const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU";
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
@@ -168,8 +191,12 @@
       const email = document.getElementById("register-email").value;
       const password = document.getElementById("register-password").value;
       const fullName = document.getElementById("full-name").value;
+      const country  = document.getElementById("register-country").value;
+      const city     = document.getElementById("register-city").value;
+      const address  = document.getElementById("register-address").value;
+      const postal   = document.getElementById("register-postal").value;
 
-      const registerBtn = document.querySelector("#register-form button");
+      const registerBtn = document.querySelector("#register-form button.login-button");
       const regErrorMsg = document.getElementById("register-error-message");
       const regSuccessMsg = document.getElementById("register-success-message");
 
@@ -179,6 +206,11 @@
       regSuccessMsg.textContent = "";
 
       try {
+        // Validaciones mínimas (todos obligatorios)
+        if (!email || !password || !fullName || !country || !city || !address || !postal) {
+          throw new Error("Completá todos los campos.");
+        }
+
         const { data, error: signUpError } = await supabaseClient.auth.signUp({
           email,
           password
@@ -193,7 +225,11 @@
           email: email,
           full_name: fullName,
           balance: 0,
-          referral_code: "NUM" + Math.random().toString(36).slice(2, 8).toUpperCase()
+          referral_code: "NUM" + Math.random().toString(36).slice(2, 8).toUpperCase(),
+          country: country,
+          city: city,
+          address: address,
+          postal_code: postal
         }]);
         if (insertError) throw insertError;
 
