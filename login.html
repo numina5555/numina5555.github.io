@@ -162,18 +162,11 @@
 
   document.getElementById('y').textContent = new Date().getFullYear();
 
-  // Redirigir si ya hay sesión y aplicar perfil pendiente si existe
+  // Redirigir si ya hay sesión
   (async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        try {
-          const pending = JSON.parse(localStorage.getItem('pendingProfile') || 'null');
-          if (pending) {
-            await supabase.from('users').update(pending).eq('id', session.user.id);
-            localStorage.removeItem('pendingProfile');
-          }
-        } catch (_) {}
         window.location.replace(DASHBOARD_URL);
       }
     } catch (_) {}
@@ -254,7 +247,7 @@
     }finally{ setLoading(btn, false); }
   });
 
-  // Register handler — usa trigger en DB para crear fila en users (Opción B)
+  // Register handler — confirmación desactivada: registramos, completamos perfil y vamos al dashboard
   $regForm.addEventListener('submit', async (e)=>{
     e.preventDefault();
     $msgReg.textContent = '';
@@ -269,43 +262,38 @@
 
     const btn = qs('#btn-register'); btn.dataset.label = 'Crear cuenta'; setLoading(btn,true);
     try{
-      // 1) alta en Auth (si tu proyecto requiere confirmación por email, mostrar aviso)
+      // Alta en Auth (con confirmación desactivada debería devolver session)
       const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
       if(signUpError) throw signUpError;
 
-      // 2) Si el proyecto NO exige confirmación de email, iniciamos sesión y actualizamos perfil
-      //    Si SÍ exige confirmación, guardamos perfil pendiente y abortamos aquí.
-      if(!data?.user?.confirmed_at){
-        const pending = {
+      // Si por alguna razón no hay sesión, iniciamos sesión manualmente
+      if(!data?.session){
+        const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+        if(loginError) throw loginError;
+      }
+
+      // Obtener user id
+      let userId = data?.user?.id || null;
+      if(!userId){
+        const { data: u } = await supabase.auth.getUser();
+        userId = u?.user?.id || null;
+      }
+
+      // Completar/actualizar datos en tabla users
+      if(userId){
+        await supabase.from('users').upsert({
+          id: userId,
+          email: email,
           full_name: fullName || null,
           country: country || null,
           city: city || null,
           address: address || null,
           postal_code: postal || null,
           referral_code: 'NUM' + Math.random().toString(36).slice(2,8).toUpperCase()
-        };
-        localStorage.setItem('pendingProfile', JSON.stringify(pending));
-        $msgReg.textContent = 'Revisá tu correo para confirmar la cuenta. Al iniciar sesión aplicaremos tus datos de perfil automáticamente.';
-        $msgReg.className = 'msg ok';
-        return; // salir sin loguear
+        }, { onConflict: 'id' });
       }
 
-      const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
-      if(loginError) throw loginError;
-
-      // 3) Completar/actualizar datos en tabla users (ya creada por trigger)
-      const { data: { user } } = await supabase.auth.getUser();
-      if(user){
-        await supabase.from('users').update({
-          full_name: fullName || null,
-          country: country || null,
-          city: city || null,
-          address: address || null,
-          postal_code: postal || null,
-          referral_code: 'NUM' + Math.random().toString(36).slice(2,8).toUpperCase()
-        }).eq('id', user.id);
-      }
-
+      // Ir al dashboard
       window.location.replace(DASHBOARD_URL);
     }catch(err){
       $msgReg.textContent = mapError(err);
