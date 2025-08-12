@@ -2113,184 +2113,269 @@ document.addEventListener('DOMContentLoaded', ()=>{
 </script>
 
 
-<!-- === NUMINA i18n overlay v3.1 (fix infinite reflow / debounced observer) === -->
+
+<!-- === NUMINA i18n overlay v3.2 (robust text-node replace + fuzzy matching) === -->
 <script>
 (function(){
-  if (window.__NUMINA_I18N_V31__) return;
-  window.__NUMINA_I18N_V31__ = true;
+  if (window.__NUMINA_I18N_V32__) return;
+  window.__NUMINA_I18N_V32__ = true;
 
   const LANG_KEY = 'lang';
   const getLang = () => { try{return (localStorage.getItem(LANG_KEY)||'es').slice(0,2);}catch(e){return 'es'} };
   const isES = () => getLang()==='es';
 
-  // guard to avoid observer loops
+  // Guards
   let UPDATING = false;
   let DEBOUNCE = null;
 
   const shouldSkip = (el) => !!el && !!el.closest && !!el.closest('#langDropdown, .lang-dropdown, .lang, [data-lang], [aria-label="Idioma"], [aria-label="Language"]');
 
+  // Normalize helper (diacritics, case, trim, collapse spaces)
+  const norm = (s) => (s||'')
+    .toString()
+    .normalize('NFD').replace(/\p{Diacritic}/gu,'')
+    .replace(/\s+/g,' ')
+    .trim()
+    .toLowerCase();
+
+  // Text dictionaries (keys written in ES base form)
   const TXT = {
     es: {
-      "Catálogo":"Catálogo","Sorteo":"Sorteo","Historial de Participación":"Historial de Participación",
-      "TICKETS ACTIVOS":"TICKETS ACTIVOS","UPGRADE NUMINA":"UPGRADE NUMINA",
-      "Fecha":"Fecha","Sorteo (tabla)":"Sorteo","TICKETS UTILIZADOS":"TICKETS UTILIZADOS",
-      "Sin participaciones":"Sin participaciones","Configuración de la Cuenta":"Configuración de la Cuenta",
-      "Datos Personales":"Datos Personales","Seguridad":"Seguridad","Guardar cambios":"Guardar cambios",
-      "Actualizar contraseña":"Actualizar contraseña","Nombre completo":"Nombre completo","Teléfono":"Teléfono",
-      "Dirección":"Dirección","País":"País","Ciudad":"Ciudad","Código Postal":"Código Postal",
-      "Nombre y apellido":"Nombre y apellido","Calle, número, ciudad":"Calle, número, ciudad","C.P.":"C.P.",
-      "Hacer reclamo":"Hacer reclamo","Compras Activas":"Compras Activas","Historial de Referidos":"Historial de Referidos",
-      "Información de la Cuenta":"Información de la Cuenta","SALDO DISPONIBLE":"SALDO DISPONIBLE",
-      "COMPRAS ACTIVAS":"COMPRAS ACTIVAS","REFERIDOS":"REFERIDOS","TICKETS DE SORTEO":"TICKETS DE SORTEO",
-      "PRODUCTO":"PRODUCTO","FECHA":"FECHA","VALOR":"VALOR","ESTADO":"ESTADO","ACCIONES":"ACCIONES",
-      "Detalles":"Detalles","pendiente":"pendiente"
+      "bienvenido,": "Bienvenido,",
+      "catalogo": "Catálogo",
+      "sorteo": "Sorteo",
+      "historial de participacion": "Historial de Participación",
+      "tickets activos": "TICKETS ACTIVOS",
+      "upgrade numina": "UPGRADE NUMINA",
+      "fecha": "FECHA",
+      "sorteo (tabla)": "SORTEO",
+      "tickets utilizados": "TICKETS UTILIZADOS",
+      "sin participaciones": "Sin participaciones",
+      "configuracion de la cuenta": "Configuración de la Cuenta",
+      "datos personales": "Datos Personales",
+      "seguridad": "Seguridad",
+      "guardar cambios": "Guardar cambios",
+      "actualizar contraseña": "Actualizar contraseña",
+      "nombre completo": "Nombre completo",
+      "telefono": "Teléfono",
+      "direccion": "Dirección",
+      "pais": "País",
+      "ciudad": "Ciudad",
+      "codigo postal": "Código Postal",
+      "nombre y apellido": "Nombre y apellido",
+      "calle, numero, ciudad": "Calle, número, ciudad",
+      "c.p.": "C.P.",
+      "hacer reclamo": "Hacer reclamo",
+      "compras activas": "Compras Activas",
+      "historial de referidos": "Historial de Referidos",
+      "informacion de la cuenta": "Información de la Cuenta",
+      "saldo disponible": "SALDO DISPONIBLE",
+      "compras activas card": "COMPRAS ACTIVAS",
+      "referidos": "REFERIDOS",
+      "tickets de sorteo": "TICKETS DE SORTEO",
+      "producto": "PRODUCTO",
+      "valor": "VALOR",
+      "estado": "ESTADO",
+      "acciones": "ACCIONES",
+      "detalles": "Detalles",
+      "pendiente": "pendiente",
+      "mas informacion": "Más información"
     },
     en: {
-      "Catálogo":"Catalog","Sorteo":"Raffle","Historial de Participación":"Participation History",
-      "TICKETS ACTIVOS":"ACTIVE TICKETS","UPGRADE NUMINA":"NUMINA UPGRADE",
-      "Fecha":"DATE","Sorteo (tabla)":"RAFFLE","TICKETS UTILIZADOS":"USED TICKETS",
-      "Sin participaciones":"No participations","Configuración de la Cuenta":"Account Settings",
-      "Datos Personales":"Personal Data","Seguridad":"Security","Guardar cambios":"Save changes",
-      "Actualizar contraseña":"Update password","Nombre completo":"Full name","Teléfono":"Phone",
-      "Dirección":"Address","País":"Country","Ciudad":"City","Código Postal":"Postal Code",
-      "Nombre y apellido":"Full name","Calle, número, ciudad":"Street, number, city","C.P.":"ZIP/Postal code",
-      "Hacer reclamo":"File claim","Compras Activas":"Active Purchases","Historial de Referidos":"Referral History",
-      "Información de la Cuenta":"Account Information","SALDO DISPONIBLE":"AVAILABLE BALANCE",
-      "COMPRAS ACTIVAS":"ACTIVE PURCHASES","REFERIDOS":"REFERRALS","TICKETS DE SORTEO":"RAFFLE TICKETS",
-      "PRODUCTO":"PRODUCT","FECHA":"DATE","VALOR":"AMOUNT","ESTADO":"STATUS","ACCIONES":"ACTIONS",
-      "Detalles":"Details","pendiente":"pending"
+      "bienvenido,": "Welcome,",
+      "catalogo": "Catalog",
+      "sorteo": "Raffle",
+      "historial de participacion": "Participation History",
+      "tickets activos": "ACTIVE TICKETS",
+      "upgrade numina": "NUMINA UPGRADE",
+      "fecha": "DATE",
+      "sorteo (tabla)": "RAFFLE",
+      "tickets utilizados": "USED TICKETS",
+      "sin participaciones": "No participations",
+      "configuracion de la cuenta": "Account Settings",
+      "datos personales": "Personal Data",
+      "seguridad": "Security",
+      "guardar cambios": "Save changes",
+      "actualizar contraseña": "Update password",
+      "nombre completo": "Full name",
+      "telefono": "Phone",
+      "direccion": "Address",
+      "pais": "Country",
+      "ciudad": "City",
+      "codigo postal": "Postal Code",
+      "nombre y apellido": "Full name",
+      "calle, numero, ciudad": "Street, number, city",
+      "c.p.": "ZIP/Postal code",
+      "hacer reclamo": "File claim",
+      "compras activas": "Active Purchases",
+      "historial de referidos": "Referral History",
+      "informacion de la cuenta": "Account Information",
+      "saldo disponible": "AVAILABLE BALANCE",
+      "compras activas card": "ACTIVE PURCHASES",
+      "referidos": "REFERRALS",
+      "tickets de sorteo": "RAFFLE TICKETS",
+      "producto": "PRODUCT",
+      "valor": "AMOUNT",
+      "estado": "STATUS",
+      "acciones": "ACTIONS",
+      "detalles": "Details",
+      "pendiente": "pending",
+      "mas informacion": "More info"
     },
     pt: {
-      "Catálogo":"Catálogo","Sorteo":"Sorteio","Historial de Participación":"Histórico de Participação",
-      "TICKETS ACTIVOS":"BILHETES ATIVOS","UPGRADE NUMINA":"ATUALIZAÇÃO NUMINA",
-      "Fecha":"DATA","Sorteo (tabla)":"SORTEIO","TICKETS UTILIZADOS":"BILHETES USADOS",
-      "Sin participaciones":"Sem participações","Configuración de la Cuenta":"Configurações da Conta",
-      "Datos Personales":"Dados Pessoais","Seguridad":"Segurança","Guardar cambios":"Salvar alterações",
-      "Actualizar contraseña":"Atualizar senha","Nombre completo":"Nome completo","Teléfono":"Telefone",
-      "Dirección":"Endereço","País":"País","Ciudad":"Cidade","Código Postal":"CEP",
-      "Nombre y apellido":"Nome e sobrenome","Calle, número, ciudad":"Rua, número, cidade","C.P.":"CEP",
-      "Hacer reclamo":"Fazer reclamação","Compras Activas":"Compras Ativas","Historial de Referidos":"Histórico de Indicações",
-      "Información de la Cuenta":"Informações da Conta","SALDO DISPONIBLE":"SALDO DISPONÍVEL",
-      "COMPRAS ACTIVAS":"COMPRAS ATIVAS","REFERIDOS":"INDICAÇÕES","TICKETS DE SORTEO":"BILHETES DO SORTEIO",
-      "PRODUCTO":"PRODUTO","FECHA":"DATA","VALOR":"VALOR","ESTADO":"STATUS","ACCIONES":"AÇÕES",
-      "Detalles":"Detalhes","pendiente":"pendente"
+      "bienvenido,": "Bem-vindo,",
+      "catalogo": "Catálogo",
+      "sorteo": "Sorteio",
+      "historial de participacion": "Histórico de Participação",
+      "tickets activos": "BILHETES ATIVOS",
+      "upgrade numina": "ATUALIZAÇÃO NUMINA",
+      "fecha": "DATA",
+      "sorteo (tabla)": "SORTEIO",
+      "tickets utilizados": "BILHETES USADOS",
+      "sin participaciones": "Sem participações",
+      "configuracion de la cuenta": "Configurações da Conta",
+      "datos personales": "Dados Pessoais",
+      "seguridad": "Segurança",
+      "guardar cambios": "Salvar alterações",
+      "actualizar contraseña": "Atualizar senha",
+      "nombre completo": "Nome completo",
+      "telefono": "Telefone",
+      "direccion": "Endereço",
+      "pais": "País",
+      "ciudad": "Cidade",
+      "codigo postal": "CEP",
+      "nombre y apellido": "Nome e sobrenome",
+      "calle, numero, ciudad": "Rua, número, cidade",
+      "c.p.": "CEP",
+      "hacer reclamo": "Fazer reclamação",
+      "compras activas": "Compras Ativas",
+      "historial de referidos": "Histórico de Indicações",
+      "informacion de la cuenta": "Informações da Conta",
+      "saldo disponible": "SALDO DISPONÍVEL",
+      "compras activas card": "COMPRAS ATIVAS",
+      "referidos": "INDICAÇÕES",
+      "tickets de sorteo": "BILHETES DO SORTEIO",
+      "producto": "PRODUTO",
+      "valor": "VALOR",
+      "estado": "STATUS",
+      "acciones": "AÇÕES",
+      "detalles": "Detalhes",
+      "pendiente": "pendente",
+      "mas informacion": "Mais informações"
     }
   };
 
   const PH = {
-    "Nombre y apellido": {en:"Full name", pt:"Nome e sobrenome"},
-    "Calle, número, ciudad": {en:"Street, number, city", pt:"Rua, número, cidade"},
-    "C.P.": {en:"ZIP/Postal code", pt:"CEP"}
+    "nombre y apellido": {en:"Full name", pt:"Nome e sobrenome"},
+    "calle, numero, ciudad": {en:"Street, number, city", pt:"Rua, número, cidade"},
+    "c.p.": {en:"ZIP/Postal code", pt:"CEP"}
   };
 
+  // Product names & big titles
   const BIG_TITLES = {
-    "Lingote de Oro": { es:"Lingote de Oro", en:"Gold Ingot", pt:"Lingote de Ouro" },
-    "Lingote de Platino": { es:"Lingote de Platino", en:"Platinum Ingot", pt:"Lingote de Platina" }
+    "lingote de oro": { es:"Lingote de Oro", en:"Gold Ingot", pt:"Lingote de Ouro" },
+    "lingote de platino": { es:"Lingote de Platino", en:"Platinum Ingot", pt:"Lingote de Platina" }
   };
-
   const PRODUCTS = {
-    "Lingote 100g Oro Fino": {
+    "lingote 100g oro fino": {
       es:{name:"Lingote 100g Oro Fino", desc:"Oro 999,9 certificado. Ideal para inversión y resguardo de valor."},
       en:{name:"100g Fine Gold Bar", desc:"Certified 999.9 gold. Ideal for investment and store of value."},
       pt:{name:"Barra de Ouro Fino 100g", desc:"Ouro 999,9 certificado. Ideal para investimento e reserva de valor."}
     },
-    "Lingote 100g Platino Fino": {
+    "lingote 100g platino fino": {
       es:{name:"Lingote 100g Platino Fino", desc:"Platino 999,5 certificado. Inversión de alto valor y rareza."},
       en:{name:"100g Fine Platinum Bar", desc:"Certified 999.5 platinum. High-value and rare investment."},
       pt:{name:"Barra de Platina Fina 100g", desc:"Platina 999,5 certificada. Investimento de alto valor e raridade."}
     },
-    "Rolex 126610L": {
+    "rolex 126610l": {
       es:{name:"Rolex 126610L", desc:"Submariner Date con bisel verde y caja Oystersteel. Automático."},
       en:{name:"Rolex Submariner Date 126610LV (Starbucks)", desc:"Submariner Date with green bezel and Oystersteel case. Automatic."},
       pt:{name:"Rolex Submariner Date 126610LV (Starbucks)", desc:"Submariner Date com bezel verde e caixa Oystersteel. Automático."}
     },
-    "Pulsera Numina": {
+    "pulsera numina": {
       es:{name:"Pulsera Numina", desc:"Diseño exclusivo con materiales de alta calidad. Edición limitada."},
       en:{name:"Numina Bracelet", desc:"Exclusive design with premium materials. Limited edition."},
       pt:{name:"Pulseira Numina", desc:"Design exclusivo com materiais de alta qualidade. Edição limitada."}
     }
   };
 
-  function findCatalogRoot(){
-    const titles = Array.from(document.querySelectorAll('h2, h1, .section-title, .page-title'));
-    for(const t of titles){
-      if(shouldSkip(t)) continue;
-      const s = (t.textContent||'').toLowerCase();
-      if (s.includes('catálogo') || s.includes('catalog')){
-        return t.closest('section, .section, .page, main, .content, .container') || document.body;
+  // Replace only text nodes inside element (preserves icons/spans)
+  function replaceTextInNode(el, from, to){
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+    const targets = [];
+    while (walker.nextNode()){
+      const node = walker.currentNode;
+      const n = norm(node.nodeValue);
+      if (n.includes(from)){
+        targets.push(node);
       }
     }
-    const grid = document.querySelector('.cards, .grid, .catalog, .products');
-    return grid || null;
-  }
-
-  function applyBigTitles(root){
-    const lang = getLang();
-    const candidates = (root||document).querySelectorAll('h1,h2,h3');
-    candidates.forEach(el=>{
-      if (shouldSkip(el) || el.children.length) return;
-      const txt = (el.textContent||'').trim();
-      const map = BIG_TITLES[txt];
-      if (map){
-        el.textContent = map[lang] || txt;
-      }
-    });
-  }
-
-  function translateProductsInsideCatalog(){
-    if (isES()) return;
-    const root = findCatalogRoot();
-    if (!root) return;
-    const lang = getLang();
-
-    Object.keys(PRODUCTS).forEach(spName=>{
-      const conf = PRODUCTS[spName][lang];
-      const esConf = PRODUCTS[spName]['es'];
-
-      const titleEls = root.querySelectorAll('h3,h4,.card-title,.product-title');
-      titleEls.forEach(el=>{
-        if (shouldSkip(el)) return;
-        const tx = (el.textContent||'').trim();
-        if (tx===spName || tx===esConf.name || tx===PRODUCTS[spName]['en'].name || tx===PRODUCTS[spName]['pt'].name){
-          el.textContent = conf.name;
-        }
-      });
-
-      const descEls = root.querySelectorAll('p,.card-desc,.product-desc,.description');
-      descEls.forEach(el=>{
-        if (shouldSkip(el)) return;
-        const tx = (el.textContent||'').trim();
-        if (!tx) return;
-        if (tx===esConf.desc ||
-            /999(\.|,)?9?/.test(tx) ||
-            /Oystersteel|Automático|Autom\u00e1tico|Edici\u00f3n limitada|Exclusivo/i.test(tx)){
-          el.textContent = conf.desc;
-        }
+    targets.forEach(node=>{
+      node.nodeValue = node.nodeValue.replace(new RegExp(from, 'i'), (m)=>{
+        // Keep case as original first letter if it looks capitalized
+        return to;
       });
     });
   }
 
-  // exact text replacements
-  const exactKeys = Object.keys(TXT.es);
-  function applyStaticTextI18n(root){
+  function applyDictionary(root){
     const lang = getLang();
     const dict = TXT[lang];
-    const nodes = (root||document).querySelectorAll('h1,h2,h3,h4,th,td,span,div,a,button,label,strong,b,small');
-    nodes.forEach(el=>{
-      if (shouldSkip(el) || el.children.length) return;
-      const t = (el.textContent||'').trim();
-      if (!t) return;
-      let key = exactKeys.includes(t) ? t : null;
-      if (!key && /^sorteo$/i.test(t) && (el.tagName==='TH' || el.closest('table'))) key = "Sorteo (tabla)";
-      if (key && dict[key]) el.textContent = dict[key];
-      if (/^pendiente$/i.test(t) && dict["pendiente"]) el.textContent = dict["pendiente"];
+    const keys = Object.keys(dict);
+    const all = (root||document).querySelectorAll('h1,h2,h3,h4,th,td,span,div,a,button,label,strong,b,small');
+    all.forEach(el=>{
+      if (shouldSkip(el)) return;
+      const ntxt = norm(el.textContent);
+      if (!ntxt) return;
+
+      // Special greeting "Bienvenido, <nombre>"
+      if (ntxt.startsWith('bienvenido,')){
+        replaceTextInNode(el, 'bienvenido,', dict['bienvenido,']);
+      }
+
+      // Generic keys
+      keys.forEach(k=>{
+        if (k==='bienvenido,') return;
+        if (ntxt.includes(k)){
+          replaceTextInNode(el, k, dict[k]);
+        }
+      });
     });
 
-    const inputs = (root||document).querySelectorAll('input[placeholder], textarea[placeholder]');
-    inputs.forEach(el=>{
+    // placeholders
+    (root||document).querySelectorAll('input[placeholder], textarea[placeholder]').forEach(el=>{
       if (shouldSkip(el)) return;
-      const ph = el.getAttribute('placeholder');
+      const ph = norm(el.getAttribute('placeholder'));
       if (PH[ph] && PH[ph][lang]) el.setAttribute('placeholder', PH[ph][lang]);
+    });
+  }
+
+  function translateProducts(){
+    if (isES()) return;
+    const lang = getLang();
+    const titles = document.querySelectorAll('h1,h2,h3,h4,.card-title,.product-title');
+    titles.forEach(el=>{
+      if (shouldSkip(el)) return;
+      const key = norm(el.textContent);
+      if (BIG_TITLES[key]){
+        el.textContent = BIG_TITLES[key][lang] || el.textContent;
+      }
+      const pConf = PRODUCTS[key];
+      if (pConf){
+        el.textContent = pConf[lang].name;
+      }
+    });
+    const descs = document.querySelectorAll('p,.card-desc,.product-desc,.description');
+    descs.forEach(el=>{
+      if (shouldSkip(el)) return;
+      const tx = norm(el.textContent);
+      // match by part of Spanish description
+      for (const spKey in PRODUCTS){
+        const esD = norm(PRODUCTS[spKey].es.desc);
+        if (tx && (tx===esD || tx.includes('999') || tx.includes('oystersteel') || tx.includes('edicion limitada') || tx.includes('edición limitada'))){
+          el.textContent = PRODUCTS[spKey][lang].desc;
+        }
+      }
     });
   }
 
@@ -2298,9 +2383,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (UPDATING) return;
     UPDATING = true;
     try {
-      applyStaticTextI18n(document);
-      applyBigTitles(document);
-      translateProductsInsideCatalog();
+      applyDictionary(document);
+      translateProducts();
     } finally {
       UPDATING = false;
     }
@@ -2309,14 +2393,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
   function schedule(){
     if (UPDATING) return;
     clearTimeout(DEBOUNCE);
-    DEBOUNCE = setTimeout(reapplyAll, 100);
+    DEBOUNCE = setTimeout(reapplyAll, 120);
   }
 
   window.addEventListener('storage', (e)=>{ if(e.key===LANG_KEY) schedule(); });
   window.addEventListener('hashchange', schedule);
 
   const mo = new MutationObserver((list)=>{
-    for(const m of list){
+    for (const m of list){
       if (shouldSkip(m.target)) return;
     }
     schedule();
@@ -2329,6 +2413,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 })();
 </script>
-<!-- === /NUMINA i18n overlay v3.1 === -->
+<!-- === /NUMINA i18n overlay v3.2 === -->
 </body>
 </html>
