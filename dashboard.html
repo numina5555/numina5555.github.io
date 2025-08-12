@@ -2113,30 +2113,161 @@ document.addEventListener('DOMContentLoaded', ()=>{
 </script>
 
 
-<!-- === NUMINA i18n overlay v2 (safe, scoped) === -->
+<!-- === NUMINA i18n overlay v3 (scoped + full labels) === -->
 <script>
 (function(){
-  if (window.__NUMINA_I18N_V2__) return; // avoid double install
-  window.__NUMINA_I18N_V2__ = true;
+  if (window.__NUMINA_I18N_V3__) return;
+  window.__NUMINA_I18N_V3__ = true;
 
   const LANG_KEY = 'lang';
-  function getLang(){
-    try{ return (localStorage.getItem(LANG_KEY) || 'es').slice(0,2); }catch(e){ return 'es'; }
-  }
-  function isSpanish(){ return getLang()==='es'; }
+  const getLang = () => { try{return (localStorage.getItem(LANG_KEY)||'es').slice(0,2);}catch(e){return 'es'} };
+  const isES = () => getLang()==='es';
+  const isEN = () => getLang()==='en';
+  const isPT = () => getLang()==='pt';
 
-  // Small helper to avoid touching language menu or controls
-  function shouldSkip(el){
-    return !!el.closest('#langDropdown, .lang-dropdown, .lang, [data-lang], [aria-label="Idioma"], [aria-label="Language"]');
-  }
+  // No tocamos controles del selector de idioma
+  const shouldSkip = (el) => !!el.closest('#langDropdown, .lang-dropdown, .lang, [data-lang], [aria-label="Idioma"], [aria-label="Language"]');
 
-  // Minimal dictionary for big catalog titles
+  // === Diccionario textual ===
+  const TXT = {
+    es: {
+      "Catálogo":"Catálogo",
+      "Sorteo":"Sorteo",
+      "Historial de Participación":"Historial de Participación",
+      "TICKETS ACTIVOS":"TICKETS ACTIVOS",
+      "UPGRADE NUMINA":"UPGRADE NUMINA",
+      "Fecha":"Fecha",
+      "Sorteo (tabla)":"Sorteo",
+      "TICKETS UTILIZADOS":"TICKETS UTILIZADOS",
+      "Sin participaciones":"Sin participaciones",
+      "Configuración de la Cuenta":"Configuración de la Cuenta",
+      "Datos Personales":"Datos Personales",
+      "Seguridad":"Seguridad",
+      "Guardar cambios":"Guardar cambios",
+      "Actualizar contraseña":"Actualizar contraseña",
+      "Nombre completo":"Nombre completo",
+      "Teléfono":"Teléfono",
+      "Dirección":"Dirección",
+      "País":"País",
+      "Ciudad":"Ciudad",
+      "Código Postal":"Código Postal",
+      "Nombre y apellido":"Nombre y apellido",
+      "Calle, número, ciudad":"Calle, número, ciudad",
+      "C.P.":"C.P.",
+      "Hacer reclamo":"Hacer reclamo",
+      "Catálogo (sidebar)":"Catálogo",
+      "Compras Activas":"Compras Activas",
+      "Historial de Referidos":"Historial de Referidos",
+      "Información de la Cuenta":"Información de la Cuenta",
+      "SALDO DISPONIBLE":"SALDO DISPONIBLE",
+      "COMPRAS ACTIVAS":"COMPRAS ACTIVAS",
+      "REFERIDOS":"REFERIDOS",
+      "TICKETS DE SORTEO":"TICKETS DE SORTEO",
+      "PRODUCTO":"PRODUCTO",
+      "FECHA":"FECHA",
+      "VALOR":"VALOR",
+      "ESTADO":"ESTADO",
+      "ACCIONES":"ACCIONES",
+      "Detalles":"Detalles",
+      "pendiente":"pendiente"
+    },
+    en: {
+      "Catálogo":"Catalog",
+      "Sorteo":"Raffle",
+      "Historial de Participación":"Participation History",
+      "TICKETS ACTIVOS":"ACTIVE TICKETS",
+      "UPGRADE NUMINA":"NUMINA UPGRADE",
+      "Fecha":"DATE",
+      "Sorteo (tabla)":"RAFFLE",
+      "TICKETS UTILIZADOS":"USED TICKETS",
+      "Sin participaciones":"No participations",
+      "Configuración de la Cuenta":"Account Settings",
+      "Datos Personales":"Personal Data",
+      "Seguridad":"Security",
+      "Guardar cambios":"Save changes",
+      "Actualizar contraseña":"Update password",
+      "Nombre completo":"Full name",
+      "Teléfono":"Phone",
+      "Dirección":"Address",
+      "País":"Country",
+      "Ciudad":"City",
+      "Código Postal":"Postal Code",
+      "Nombre y apellido":"Full name",
+      "Calle, número, ciudad":"Street, number, city",
+      "C.P.":"ZIP/Postal code",
+      "Hacer reclamo":"File claim",
+      "Catálogo (sidebar)":"Catalog",
+      "Compras Activas":"Active Purchases",
+      "Historial de Referidos":"Referral History",
+      "Información de la Cuenta":"Account Information",
+      "SALDO DISPONIBLE":"AVAILABLE BALANCE",
+      "COMPRAS ACTIVAS":"ACTIVE PURCHASES",
+      "REFERIDOS":"REFERRALS",
+      "TICKETS DE SORTEO":"RAFFLE TICKETS",
+      "PRODUCTO":"PRODUCT",
+      "FECHA":"DATE",
+      "VALOR":"AMOUNT",
+      "ESTADO":"STATUS",
+      "ACCIONES":"ACTIONS",
+      "Detalles":"Details",
+      "pendiente":"pending"
+    },
+    pt: {
+      "Catálogo":"Catálogo",
+      "Sorteo":"Sorteio",
+      "Historial de Participación":"Histórico de Participação",
+      "TICKETS ACTIVOS":"BILHETES ATIVOS",
+      "UPGRADE NUMINA":"ATUALIZAÇÃO NUMINA",
+      "Fecha":"DATA",
+      "Sorteo (tabla)":"SORTEIO",
+      "TICKETS UTILIZADOS":"BILHETES USADOS",
+      "Sin participaciones":"Sem participações",
+      "Configuración de la Cuenta":"Configurações da Conta",
+      "Datos Personales":"Dados Pessoais",
+      "Seguridad":"Segurança",
+      "Guardar cambios":"Salvar alterações",
+      "Actualizar contraseña":"Atualizar senha",
+      "Nombre completo":"Nome completo",
+      "Teléfono":"Telefone",
+      "Dirección":"Endereço",
+      "País":"País",
+      "Ciudad":"Cidade",
+      "Código Postal":"CEP",
+      "Nombre y apellido":"Nome e sobrenome",
+      "Calle, número, ciudad":"Rua, número, cidade",
+      "C.P.":"CEP",
+      "Hacer reclamo":"Fazer reclamação",
+      "Catálogo (sidebar)":"Catálogo",
+      "Compras Activas":"Compras Ativas",
+      "Historial de Referidos":"Histórico de Indicações",
+      "Información de la Cuenta":"Informações da Conta",
+      "SALDO DISPONIBLE":"SALDO DISPONÍVEL",
+      "COMPRAS ACTIVAS":"COMPRAS ATIVAS",
+      "REFERIDOS":"INDICAÇÕES",
+      "TICKETS DE SORTEO":"BILHETES DO SORTEIO",
+      "PRODUCTO":"PRODUTO",
+      "FECHA":"DATA",
+      "VALOR":"VALOR",
+      "ESTADO":"STATUS",
+      "ACCIONES":"AÇÕES",
+      "Detalles":"Detalhes",
+      "pendiente":"pendente"
+    }
+  };
+
+  // Mapeo de placeholders (exactos)
+  const PH = {
+    "Nombre y apellido": {en:"Full name", pt:"Nome e sobrenome"},
+    "Calle, número, ciudad": {en:"Street, number, city", pt:"Rua, número, cidade"},
+    "C.P.": {en:"ZIP/Postal code", pt:"CEP"}
+  };
+
+  // Catálogo: títulos grandes + productos (igual que v2, con skip seguro)
   const BIG_TITLES = {
     "Lingote de Oro": { es:"Lingote de Oro", en:"Gold Ingot", pt:"Lingote de Ouro" },
     "Lingote de Platino": { es:"Lingote de Platino", en:"Platinum Ingot", pt:"Lingote de Platina" }
   };
 
-  // Product names/descriptions ONLY inside the Catalog section
   const PRODUCTS = {
     "Lingote 100g Oro Fino": {
       es:{name:"Lingote 100g Oro Fino", desc:"Oro 999,9 certificado. Ideal para inversión y resguardo de valor."},
@@ -2188,11 +2319,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 
   function translateProductsInsideCatalog(){
-    if (isSpanish()) return; // en español NO cambiamos productos
+    if (isES()) return;
     const root = findCatalogRoot();
     if (!root) return;
     const lang = getLang();
-
     Object.keys(PRODUCTS).forEach(spName=>{
       const conf = PRODUCTS[spName][lang];
       const esConf = PRODUCTS[spName]['es'];
@@ -2201,47 +2331,76 @@ document.addEventListener('DOMContentLoaded', ()=>{
       titleEls.forEach(el=>{
         if (shouldSkip(el)) return;
         const tx = (el.textContent||'').trim();
-        if (tx === spName || tx === esConf.name || tx === PRODUCTS[spName]['en'].name || tx === PRODUCTS[spName]['pt'].name){
+        if (tx===spName || tx===esConf.name || tx===PRODUCTS[spName]['en'].name || tx===PRODUCTS[spName]['pt'].name){
           el.textContent = conf.name;
         }
       });
 
-      const descEls = root.querySelectorAll('p,.card-desc,.product-desc, .description');
+      const descEls = root.querySelectorAll('p,.card-desc,.product-desc,.description');
       descEls.forEach(el=>{
         if (shouldSkip(el)) return;
         const tx = (el.textContent||'').trim();
         if (!tx) return;
         if (tx===esConf.desc ||
             /999(\.|,)?9?/.test(tx) ||
-            /Oystersteel|Automático|Automático|Edición limitada|Exclusivo/i.test(tx)){
+            /Oystersteel|Automático|Autom\u00e1tico|Edici\u00f3n limitada|Exclusivo/i.test(tx)){
           el.textContent = conf.desc;
         }
       });
     });
   }
 
-  function reapply(){
+  // Traducción generica de textos exactos (títulos, headers, labels)
+  const exactKeys = Object.keys(TXT.es);
+  function applyStaticTextI18n(root){
+    const lang = getLang();
+    const dict = TXT[lang];
+    const nodes = root.querySelectorAll('h1,h2,h3,h4,th,td,span,div,a,button,label,strong,b,small');
+    nodes.forEach(el=>{
+      if (shouldSkip(el)) return;
+      if (el.children.length>0) return;
+      const t = (el.textContent||'').trim();
+      if (!t) return;
+      // Resolver colisiones: "Sorteo" que es header de tabla lo llamamos "Sorteo (tabla)" si coincide con el th
+      let key = exactKeys.includes(t) ? t : null;
+      if (!key && /^sorteo$/i.test(t) && (el.tagName==='TH' || el.closest('table'))) key = "Sorteo (tabla)";
+      if (key && dict[key]) el.textContent = dict[key];
+      // Estado "pendiente" en badge
+      if (/^pendiente$/i.test(t) && dict["pendiente"]) el.textContent = dict["pendiente"];
+    });
+
+    // Placeholders
+    const inputs = root.querySelectorAll('input[placeholder], textarea[placeholder]');
+    inputs.forEach(el=>{
+      if (shouldSkip(el)) return;
+      const ph = el.getAttribute('placeholder');
+      if (PH[ph] && PH[ph][lang]) el.setAttribute('placeholder', PH[ph][lang]);
+    });
+  }
+
+  function reapplyAll(){
+    applyStaticTextI18n(document);
     applyBigTitles(document);
     translateProductsInsideCatalog();
   }
 
-  window.addEventListener('storage', (e)=>{ if(e.key===LANG_KEY) reapply(); });
-  window.addEventListener('hashchange', reapply);
+  window.addEventListener('storage', (e)=>{ if(e.key===LANG_KEY) reapplyAll(); });
+  window.addEventListener('hashchange', reapplyAll);
 
   const mo = new MutationObserver((list)=>{
     for(const m of list){
       if (m.target && shouldSkip(m.target)) return;
     }
-    reapply();
+    reapplyAll();
   });
   mo.observe(document.body, {childList:true, subtree:true});
 
   document.addEventListener('DOMContentLoaded', ()=>{
-    setTimeout(reapply, 60);
-    setTimeout(reapply, 400);
+    setTimeout(reapplyAll, 80);
+    setTimeout(reapplyAll, 400);
   });
 })();
 </script>
-<!-- === /NUMINA i18n overlay v2 === -->
+<!-- === /NUMINA i18n overlay v3 === -->
 </body>
 </html>
