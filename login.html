@@ -4,10 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NUMINA | Acceso</title>
+  <!-- Tipografías: se respeta Montserrat -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <style>
     :root{
+      /* Se respetan tus variables de color */
       --bg:#0f1113; --panel:#16181c; --panel-2:#1d2025; --text:#fff; --muted:#a7aeb8;
       --brand:#ffd700; --brand-2:#e6c200; --danger:#ff6b6b; --ok:#44d07b;
     }
@@ -31,59 +33,55 @@
       box-shadow:0 20px 45px rgba(0,0,0,.45);
       position:relative;
     }
-    .topbar{
-      display:flex;align-items:center;justify-content:flex-end;margin-bottom:6px;
-    }
-    /* === Yellow pill selector === */
-    .lang{
-      display:inline-flex;align-items:center;gap:8px;
+    .topbar{ display:flex;align-items:center;justify-content:flex-end;margin-bottom:6px; }
+
+    /* =====================
+       NUEVO: Dropdown de idioma (respeta tu "pill" amarilla)
+       ===================== */
+    .lang-dropdown{ position:relative; display:inline-block; }
+    .lang-btn{
       background:var(--brand);
-      border:0;
-      border-radius:999px;
-      padding:2px;
+      border:0; border-radius:999px; padding:6px 14px; cursor:pointer;
+      color:#111; font-weight:900; display:inline-flex; align-items:center; gap:8px;
       box-shadow:inset 0 -2px 0 rgba(0,0,0,.15), 0 2px 8px rgba(0,0,0,.25);
     }
-    .lang label{ font-size:.82rem; color:#111; margin:0; }
-    .lang select{
-      /* make the select look like centered text inside the pill */
-      background:transparent;
-      border:0;
-      color:#111;
-      font-weight:800;
-      cursor:pointer;
-      padding:6px 14px;
-      border-radius:999px;
-      min-width:110px;
-      text-align:center;
-      text-align-last:center;          /* center selected value (Chromium/Edge/Firefox) */
-      -moz-text-align-last:center;
-      -ms-text-align-last:center;
-      appearance:auto;
-      outline:none;
+    .lang-btn:focus{ outline: none; box-shadow:0 0 0 3px rgba(255,215,0,.3); }
+    .lang-btn .chevron{ width:12px; height:12px; fill:none; stroke:#111; stroke-width:2px; transition:transform .18s ease; }
+    .lang-dropdown.open .lang-btn .chevron{ transform:rotate(180deg); }
+
+    .lang-menu{
+      position:absolute; top:110%; right:0; z-index:20;
+      background:#fff; color:#111; border-radius:12px; padding:6px 0; margin:8px 0 0;
+      box-shadow:0 12px 28px rgba(0,0,0,.25), 0 2px 8px rgba(0,0,0,.2);
+      min-width:180px; list-style:none; display:none; max-height:260px; overflow:auto;
     }
-    .lang select option{
-      color:#111;
-      background:#fff;                 /* dropdown list stays legible */
+    .lang-dropdown.open .lang-menu{ display:block; }
+    .lang-item{
+      display:flex; align-items:center; gap:10px; padding:10px 14px; cursor:pointer;
+      font-weight:700; user-select:none; white-space:nowrap;
     }
-    .brand{
-      display:flex;gap:10px;align-items:center;justify-content:center;margin:8px 0 16px;
+    .lang-item:hover, .lang-item[aria-selected="true"]{
+      background:var(--brand); color:#111;
     }
+    .lang-flag{ width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; }
+
+    /* Accesibilidad: utilidades */
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+    .brand{ display:flex;gap:10px;align-items:center;justify-content:center;margin:8px 0 16px; }
     .brand .logo{
       width:38px;height:38px;border-radius:10px;
       background:linear-gradient(135deg,#4b4300,#8a7a00);
       display:grid;place-items:center;font-weight:900;color:#111;
     }
     .brand h2{ margin:0; font-size:1.9rem; letter-spacing:1.4px; color:var(--brand); }
-    .tabs{
-      display:flex;background:#11151a;border:1px solid rgba(255,255,255,.06);
-      border-radius:12px;padding:4px;margin-bottom:16px;
-    }
-    .tab{
-      flex:1;text-align:center;padding:10px 12px;border-radius:8px;
-      font-weight:700;color:var(--muted);cursor:pointer;user-select:none;
-    }
+
+    .tabs{ display:flex;background:#11151a;border:1px solid rgba(255,255,255,.06); border-radius:12px;padding:4px;margin-bottom:16px; }
+    .tab{ flex:1;text-align:center;padding:10px 12px;border-radius:8px; font-weight:700;color:var(--muted);cursor:pointer;user-select:none; }
     .tab.active{ background:var(--panel); color:var(--text); }
+
     h1{display:none}
+    label{ display:block; font-size:.88rem; color:var(--muted); margin:4px 0 6px; }
     input{
       width:100%; background:#0f1318; border:1px solid #232832; border-radius:10px;
       color:var(--text); padding:12px 14px; margin-bottom:14px; font-size:1rem;
@@ -101,20 +99,30 @@
     #register-success-message{ color:var(--ok); min-height:20px; margin-top:10px; text-align:center; }
     .row-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
     @media (max-width: 520px){ .row-2{ grid-template-columns:1fr; } }
-    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-    label{ display:block; font-size:.88rem; color:var(--muted); margin:4px 0 6px; }
   </style>
 </head>
 <body>
   <div class="login-container">
     <div class="topbar">
-      <div class="lang">
-        <label id="lang-label" class="sr-only" data-i18n="lang.label">Idioma</label>
-        <select id="lang-select" aria-labelledby="lang-label">
-          <option value="es" data-i18n-option="lang.es">Español</option>
-          <option value="en" data-i18n-option="lang.en">English</option>
-          <option value="pt" data-i18n-option="lang.pt">Português</option>
-        </select>
+      <!-- Dropdown accesible de idioma en formato pill -->
+      <div class="lang-dropdown" id="langDropdown">
+        <button class="lang-btn" id="langBtn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="langBtnLabel">
+          <span class="sr-only" id="langBtnLabel" data-i18n="lang.label">Idioma</span>
+          <span aria-hidden="true">🌐</span>
+          <span id="langCurrentText" data-i18n="lang.es">Español</span>
+          <svg class="chevron" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
+        </button>
+        <ul class="lang-menu" id="langMenu" role="listbox" aria-label="Idioma">
+          <li class="lang-item" role="option" data-lang="es" aria-selected="true">
+            <span class="lang-flag">🇪🇸</span><span data-i18n="lang.es">Español</span>
+          </li>
+          <li class="lang-item" role="option" data-lang="en" aria-selected="false">
+            <span class="lang-flag">🇬🇧</span><span data-i18n="lang.en">English</span>
+          </li>
+          <li class="lang-item" role="option" data-lang="pt" aria-selected="false">
+            <span class="lang-flag">🇧🇷</span><span data-i18n="lang.pt">Português</span>
+          </li>
+        </ul>
       </div>
     </div>
 
@@ -171,6 +179,7 @@
   </div>
 
   <script>
+    /* ===== i18n (respeta tu estructura previa) ===== */
     const I18N = {
       es: {
         'aria.tablist': 'Cambiar entre iniciar sesión y crear cuenta',
@@ -282,6 +291,8 @@
         try{ localStorage.setItem('lang', lang); }catch(e){}
         document.documentElement.setAttribute('lang', lang);
         this.apply();
+        // actualiza texto visible del botón y el marcado del menú
+        updateLangUI(lang);
       },
       apply(){
         document.querySelectorAll('[data-i18n]').forEach(el=>{
@@ -293,11 +304,6 @@
         document.querySelectorAll('[data-i18n-aria-label]').forEach(el=>{
           el.setAttribute('aria-label', this.t(el.getAttribute('data-i18n-aria-label')));
         });
-        document.querySelectorAll('[data-i18n-option]').forEach(el=>{
-          el.textContent = this.t(el.getAttribute('data-i18n-option'));
-        });
-        const regBtn = document.querySelector('#register-form button.login-button');
-        if(regBtn && !regBtn.disabled){ regBtn.textContent = this.t('register.submit'); }
       }
     };
 
@@ -306,15 +312,67 @@
       const preferred = (navigator.language || 'es').toLowerCase();
       const initial = saved || (preferred.startsWith('en') ? 'en' : preferred.startsWith('pt') ? 'pt' : 'es');
       i18n.set(initial);
-      const select = document.getElementById('lang-select');
-      select.value = i18n.current;
-      select.addEventListener('change', (e)=> i18n.set(e.target.value));
     })();
 
-    const supabaseUrl = "https://xaeybhscsxpvtnqzpgwj.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU";
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+    /* ===== Dropdown idioma: lógica accesible ===== */
+    const dropdown = document.getElementById('langDropdown');
+    const btn = document.getElementById('langBtn');
+    const menu = document.getElementById('langMenu');
 
+    function updateLangUI(lang){
+      const currentSpan = document.getElementById('langCurrentText');
+      const labelKey = lang === 'en' ? 'lang.en' : lang === 'pt' ? 'lang.pt' : 'lang.es';
+      currentSpan.textContent = I18N[lang][labelKey];
+      // marcar seleccionado
+      menu.querySelectorAll('.lang-item').forEach(li=>{
+        const sel = (li.dataset.lang === lang);
+        li.setAttribute('aria-selected', sel ? 'true' : 'false');
+      });
+    }
+
+    function openMenu(){ dropdown.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
+    function closeMenu(){ dropdown.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const isOpen = dropdown.classList.contains('open');
+      isOpen ? closeMenu() : openMenu();
+    });
+
+    // Selección de idioma
+    menu.querySelectorAll('.lang-item').forEach(item=>{
+      item.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        const lang = item.dataset.lang;
+        i18n.set(lang);
+        closeMenu();
+      });
+      // Teclado dentro de opciones
+      item.tabIndex = -1;
+      item.addEventListener('keydown', (ev)=>{
+        if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); item.click(); }
+      });
+    });
+
+    // Navegación por teclado en el botón
+    btn.addEventListener('keydown', (ev)=>{
+      if((ev.key === 'ArrowDown' || ev.key === 'Enter' || ev.key === ' ') && !dropdown.classList.contains('open')){
+        ev.preventDefault();
+        openMenu();
+        const first = menu.querySelector('.lang-item');
+        if(first) first.focus();
+      } else if(ev.key === 'Escape'){
+        closeMenu();
+        btn.focus();
+      }
+    });
+
+    // Cerrar al hacer click fuera
+    document.addEventListener('click', (e)=>{
+      if(!dropdown.contains(e.target)) closeMenu();
+    });
+
+    // Tabs Login/Register
     function toggleForm() {
       const loginForm = document.getElementById("login-form");
       const registerForm = document.getElementById("register-form");
@@ -347,6 +405,11 @@
       const rf = document.getElementById("register-form");
       if (rf.style.display === "none") toggleForm();
     });
+
+    // ===== Supabase =====
+    const supabaseUrl = "https://xaeybhscsxpvtnqzpgwj.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU";
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
     async function login() {
       const email = document.getElementById("email").value;
