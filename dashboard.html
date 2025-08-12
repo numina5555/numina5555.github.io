@@ -587,35 +587,35 @@
 </section>
 <div class="stats-grid">
 <div class="stat-card">
-<h3>Saldo Disponible</h3>
+<h3 data-i18n="stats.balance">Saldo Disponible</h3>
 <div class="value" id="balance-value">$---</div>
 <div class="change positive">
 <i class="fas fa-arrow-up"></i>
-<span>Cargando...</span>
+<span data-i18n="loading">Cargando...</span>
 </div>
 </div>
 <div class="stat-card">
-<h3>Compras Activas</h3>
+<h3 data-i18n="stats.active">Compras Activas</h3>
 <div class="value" id="purchases-value">--</div>
 <div class="change positive">
 <i class="fas fa-arrow-up"></i>
-<span>Cargando...</span>
+<span data-i18n="loading">Cargando...</span>
 </div>
 </div>
 <div class="stat-card">
-<h3>Referidos</h3>
+<h3 data-i18n="stats.referrals">Referidos</h3>
 <div class="value" id="referrals-value">--</div>
 <div class="change positive">
 <i class="fas fa-arrow-up"></i>
-<span>Cargando...</span>
+<span data-i18n="loading">Cargando...</span>
 </div>
 </div>
 <div class="stat-card">
-<h3>Tickets de Sorteo</h3>
+<h3 data-i18n="stats.tickets">Tickets de Sorteo</h3>
 <div class="value" id="tickets-value">--</div>
 <div class="change negative">
 <i class="fas fa-arrow-down"></i>
-<span>Cargando...</span>
+<span data-i18n="loading">Cargando...</span>
 </div>
 </div>
 </div>
@@ -1667,8 +1667,12 @@ const DB_I18N = {
       comprasActivas: "Compras Activas",
       referidosHist: "Historial de Referidos",
       accountInfo: "Información de la Cuenta"
-    }
-  },
+    },
+        "stats.balance": "Saldo disponible",
+        "stats.active": "Compras activas",
+        "stats.referrals": "Referidos",
+        "stats.tickets": "Tickets de sorteo"
+},
   en: {
     sidebar: {
       dashboard: "Dashboard",
@@ -1685,8 +1689,12 @@ const DB_I18N = {
       comprasActivas: "Active Purchases",
       referidosHist: "Referral History",
       accountInfo: "Account Information"
-    }
-  },
+    },
+        "stats.balance": "Available balance",
+        "stats.active": "Active purchases",
+        "stats.referrals": "Referrals",
+        "stats.tickets": "Raffle tickets"
+},
   pt: {
     sidebar: {
       dashboard: "Painel",
@@ -1703,8 +1711,12 @@ const DB_I18N = {
       comprasActivas: "Compras Ativas",
       referidosHist: "Histórico de Indicações",
       accountInfo: "Informações da Conta"
-    }
-  }
+    },
+        "stats.balance": "Saldo disponível",
+        "stats.active": "Compras ativas",
+        "stats.referrals": "Indicados",
+        "stats.tickets": "Bilhetes do sorteio"
+}
 };
 
 const dI18n = {
