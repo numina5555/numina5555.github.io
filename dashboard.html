@@ -2113,118 +2113,30 @@ document.addEventListener('DOMContentLoaded', ()=>{
 </script>
 
 
-<!-- === BEGIN: i18n full overlay (non-destructive) === -->
+<!-- === NUMINA i18n overlay v2 (safe, scoped) === -->
 <script>
 (function(){
+  if (window.__NUMINA_I18N_V2__) return; // avoid double install
+  window.__NUMINA_I18N_V2__ = true;
+
   const LANG_KEY = 'lang';
-  const I18N = {
-    es:{
-      "sidebar.dashboard":"Dashboard",
-      "sidebar.purchases":"Mis Compras",
-      "sidebar.raffles":"Sorteos",
-      "sidebar.referrals":"Referidos",
-      "sidebar.catalog":"Catálogo",
-      "sidebar.settings":"Configuración",
-      "sidebar.signout":"Cerrar Sesión",
-      "welcome.title":"Bienvenido, {{name}}",
-      "cards.balance":"SALDO DISPONIBLE",
-      "cards.activePurchases":"COMPRAS ACTIVAS",
-      "cards.referrals":"REFERIDOS",
-      "cards.raffleTickets":"TICKETS DE SORTEO",
-      "sections.activePurchases":"Compras Activas",
-      "sections.referralsHistory":"Historial de Referidos",
-      "sections.accountInfo":"Información de la Cuenta",
-      "table.product":"PRODUCTO",
-      "table.date":"FECHA",
-      "table.value":"VALOR",
-      "table.status":"ESTADO",
-      "table.actions":"ACCIONES",
-      "buttons.copy":"Copiar",
-      "buttons.details":"Detalles",
-      "buttons.moreInfo":"Más información",
-      "empty.purchases":"Sin participaciones",
-      "empty.referrals":"No hay referidos",
-      "loading.purchases":"Cargando compras...",
-      "loading.referrals":"Cargando referidos...",
-      "status.pending":"pending",
-      "status.pending.ui":"pendiente",
-      "status.active":"active",
-      "status.active.ui":"activa",
-      "status.completed":"completed",
-      "status.completed.ui":"completada"
-    },
-    en:{
-      "sidebar.dashboard":"Dashboard",
-      "sidebar.purchases":"My Purchases",
-      "sidebar.raffles":"Raffles",
-      "sidebar.referrals":"Referrals",
-      "sidebar.catalog":"Catalog",
-      "sidebar.settings":"Settings",
-      "sidebar.signout":"Sign out",
-      "welcome.title":"Welcome, {{name}}",
-      "cards.balance":"AVAILABLE BALANCE",
-      "cards.activePurchases":"ACTIVE PURCHASES",
-      "cards.referrals":"REFERRALS",
-      "cards.raffleTickets":"RAFFLE TICKETS",
-      "sections.activePurchases":"Active Purchases",
-      "sections.referralsHistory":"Referrals History",
-      "sections.accountInfo":"Account Information",
-      "table.product":"PRODUCT",
-      "table.date":"DATE",
-      "table.value":"AMOUNT",
-      "table.status":"STATUS",
-      "table.actions":"ACTIONS",
-      "buttons.copy":"Copy",
-      "buttons.details":"Details",
-      "buttons.moreInfo":"More info",
-      "empty.purchases":"No participations",
-      "empty.referrals":"No referrals",
-      "loading.purchases":"Loading purchases...",
-      "loading.referrals":"Loading referrals...",
-      "status.pending":"pending",
-      "status.pending.ui":"pending",
-      "status.active":"active",
-      "status.active.ui":"active",
-      "status.completed":"completed",
-      "status.completed.ui":"completed"
-    },
-    pt:{
-      "sidebar.dashboard":"Dashboard",
-      "sidebar.purchases":"Minhas Compras",
-      "sidebar.raffles":"Sorteios",
-      "sidebar.referrals":"Indicações",
-      "sidebar.catalog":"Catálogo",
-      "sidebar.settings":"Configurações",
-      "sidebar.signout":"Sair",
-      "welcome.title":"Bem-vindo, {{name}}",
-      "cards.balance":"SALDO DISPONÍVEL",
-      "cards.activePurchases":"COMPRAS ATIVAS",
-      "cards.referrals":"INDICAÇÕES",
-      "cards.raffleTickets":"BILHETES DO SORTEIO",
-      "sections.activePurchases":"Compras Ativas",
-      "sections.referralsHistory":"Histórico de Indicações",
-      "sections.accountInfo":"Informações da Conta",
-      "table.product":"PRODUTO",
-      "table.date":"DATA",
-      "table.value":"VALOR",
-      "table.status":"STATUS",
-      "table.actions":"AÇÕES",
-      "buttons.copy":"Copiar",
-      "buttons.details":"Detalhes",
-      "buttons.moreInfo":"Mais informações",
-      "empty.purchases":"Sem participações",
-      "empty.referrals":"Sem indicações",
-      "loading.purchases":"Carregando compras...",
-      "loading.referrals":"Carregando indicações...",
-      "status.pending":"pending",
-      "status.pending.ui":"pendente",
-      "status.active":"active",
-      "status.active.ui":"ativa",
-      "status.completed":"completed",
-      "status.completed.ui":"concluída"
-    }
+  function getLang(){
+    try{ return (localStorage.getItem(LANG_KEY) || 'es').slice(0,2); }catch(e){ return 'es'; }
+  }
+  function isSpanish(){ return getLang()==='es'; }
+
+  // Small helper to avoid touching language menu or controls
+  function shouldSkip(el){
+    return !!el.closest('#langDropdown, .lang-dropdown, .lang, [data-lang], [aria-label="Idioma"], [aria-label="Language"]');
+  }
+
+  // Minimal dictionary for big catalog titles
+  const BIG_TITLES = {
+    "Lingote de Oro": { es:"Lingote de Oro", en:"Gold Ingot", pt:"Lingote de Ouro" },
+    "Lingote de Platino": { es:"Lingote de Platino", en:"Platinum Ingot", pt:"Lingote de Platina" }
   };
 
+  // Product names/descriptions ONLY inside the Catalog section
   const PRODUCTS = {
     "Lingote 100g Oro Fino": {
       es:{name:"Lingote 100g Oro Fino", desc:"Oro 999,9 certificado. Ideal para inversión y resguardo de valor."},
@@ -2248,118 +2160,88 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   };
 
-  const textMapToKeys = new Map([
-    ["Dashboard","sidebar.dashboard"],
-    ["Mis Compras","sidebar.purchases"],
-    ["My Purchases","sidebar.purchases"],
-    ["Sorteos","sidebar.raffles"],
-    ["Raffles","sidebar.raffles"],
-    ["Referidos","sidebar.referrals"],
-    ["Referrals","sidebar.referrals"],
-    ["Catálogo","sidebar.catalog"],
-    ["Catalog","sidebar.catalog"],
-    ["Configuración","sidebar.settings"],
-    ["Settings","sidebar.settings"],
-    ["Cerrar Sesión","sidebar.signout"],
-    ["Sign out","sidebar.signout"],
-    ["SALDO DISPONIBLE","cards.balance"],
-    ["COMPRAS ACTIVAS","cards.activePurchases"],
-    ["REFERIDOS","cards.referrals"],
-    ["TICKETS DE SORTEO","cards.raffleTickets"],
-    ["Compras Activas","sections.activePurchases"],
-    ["Active Purchases","sections.activePurchases"],
-    ["Historial de Referidos","sections.referralsHistory"],
-    ["Información de la Cuenta","sections.accountInfo"],
-    ["PRODUCTO","table.product"],
-    ["FECHA","table.date"],
-    ["VALOR","table.value"],
-    ["ESTADO","table.status"],
-    ["ACCIONES","table.actions"],
-    ["Producto","table.product"],
-    ["Fecha","table.date"],
-    ["Valor","table.value"],
-    ["Estado","table.status"],
-    ["Acciones","table.actions"],
-    ["Copiar","buttons.copy"],
-    ["Copy","buttons.copy"],
-    ["Detalles","buttons.details"],
-    ["Details","buttons.details"],
-    ["Más información","buttons.moreInfo"],
-    ["More info","buttons.moreInfo"],
-    ["Sin participaciones","empty.purchases"],
-    ["No hay referidos","empty.referrals"],
-    ["Cargando compras...","loading.purchases"],
-    ["Cargando referidos...","loading.referrals"]
-  ]);
+  function findCatalogRoot(){
+    const titles = Array.from(document.querySelectorAll('h2, h1, .section-title, .page-title'));
+    for(const t of titles){
+      if(shouldSkip(t)) continue;
+      const s = (t.textContent||'').toLowerCase();
+      if (s.includes('catálogo') || s.includes('catalog')){
+        return t.closest('section, .section, .page, main, .content, .container') || document.body;
+      }
+    }
+    const grid = document.querySelector('.cards, .grid, .catalog, .products');
+    return grid || null;
+  }
 
-  function currentLang(){
-    const saved = (()=>{ try{return localStorage.getItem(LANG_KEY)}catch(e){return null} })();
-    if(saved) return saved;
-    const pref=(navigator.language||'es').toLowerCase();
-    return pref.startsWith('en')?'en':(pref.startsWith('pt')?'pt':'es');
-  }
-  function t(key){
-    const lang = currentLang();
-    return (I18N[lang] && I18N[lang][key]) || (I18N['en'] && I18N['en'][key]) || key;
-  }
-  function translateNode(el){
-    const key = el.getAttribute('data-i18n');
-    if(key){ el.textContent = t(key); }
-  }
-  function walkAndAutoTranslate(root){
-    root.querySelectorAll('[data-i18n]').forEach(translateNode);
-    const candidates = root.querySelectorAll('h1,h2,h3,h4,th,td,button,span,a,div');
+  function applyBigTitles(root){
+    if (!root) root = document;
+    const lang = getLang();
+    const candidates = root.querySelectorAll('h1,h2,h3');
     candidates.forEach(el=>{
-      if(el.children.length>0) return;
-      const raw = (el.textContent||'').trim();
-      if(!raw) return;
-      const key = textMapToKeys.get(raw);
-      if(key){
-        el.textContent = t(key);
-      }else{
-        const status = raw.toLowerCase();
-        if(status==="pending" || status==="pendiente"){
-          el.textContent = t('status.pending.ui');
-        }else if(status==="active" || status==="activa"){
-          el.textContent = t('status.active.ui');
-        }else if(status==="completed" || status==="completada"){
-          el.textContent = t('status.completed.ui');
-        }
+      if (shouldSkip(el)) return;
+      const txt = (el.textContent||'').trim();
+      const map = BIG_TITLES[txt];
+      if (map){
+        el.textContent = map[lang] || txt;
       }
     });
-    const lang = currentLang();
-    Object.keys(PRODUCTS).forEach(spTitle=>{
-      const conf = PRODUCTS[spTitle][lang];
-      root.querySelectorAll('*').forEach(el=>{
-        if(el.children.length>0) return;
+  }
+
+  function translateProductsInsideCatalog(){
+    if (isSpanish()) return; // en español NO cambiamos productos
+    const root = findCatalogRoot();
+    if (!root) return;
+    const lang = getLang();
+
+    Object.keys(PRODUCTS).forEach(spName=>{
+      const conf = PRODUCTS[spName][lang];
+      const esConf = PRODUCTS[spName]['es'];
+
+      const titleEls = root.querySelectorAll('h3,h4,.card-title,.product-title');
+      titleEls.forEach(el=>{
+        if (shouldSkip(el)) return;
         const tx = (el.textContent||'').trim();
-        if(tx === spTitle || tx === PRODUCTS[spTitle]['es'].name || tx === PRODUCTS[spTitle]['en'].name || tx === PRODUCTS[spTitle]['pt'].name){
-          if(/rolex/i.test(tx) || /Lingote/i.test(tx) || /Numina/i.test(tx)){
-            el.textContent = conf.name;
-          }
+        if (tx === spName || tx === esConf.name || tx === PRODUCTS[spName]['en'].name || tx === PRODUCTS[spName]['pt'].name){
+          el.textContent = conf.name;
         }
-        const dES = PRODUCTS[spTitle]['es'].desc;
-        if(dES && tx && (dES===tx || tx.includes('999') || /Oystersteel|Automático|Automático/i.test(tx) || /Edición limitada|Exclusivo/i.test(tx))){
-          if(el.tagName!=='H1' && el.tagName!=='H2' && el.tagName!=='H3') el.textContent = conf.desc;
+      });
+
+      const descEls = root.querySelectorAll('p,.card-desc,.product-desc, .description');
+      descEls.forEach(el=>{
+        if (shouldSkip(el)) return;
+        const tx = (el.textContent||'').trim();
+        if (!tx) return;
+        if (tx===esConf.desc ||
+            /999(\.|,)?9?/.test(tx) ||
+            /Oystersteel|Automático|Automático|Edición limitada|Exclusivo/i.test(tx)){
+          el.textContent = conf.desc;
         }
       });
     });
   }
-  function applyI18n(){
-    document.documentElement.setAttribute('lang', currentLang());
-    walkAndAutoTranslate(document);
+
+  function reapply(){
+    applyBigTitles(document);
+    translateProductsInsideCatalog();
   }
-  window.addEventListener('storage', (e)=>{ if(e.key===LANG_KEY){ applyI18n(); } });
-  window.addEventListener('hashchange', applyI18n);
-  window.__applyDashboardI18n = applyI18n;
+
+  window.addEventListener('storage', (e)=>{ if(e.key===LANG_KEY) reapply(); });
+  window.addEventListener('hashchange', reapply);
+
+  const mo = new MutationObserver((list)=>{
+    for(const m of list){
+      if (m.target && shouldSkip(m.target)) return;
+    }
+    reapply();
+  });
+  mo.observe(document.body, {childList:true, subtree:true});
+
   document.addEventListener('DOMContentLoaded', ()=>{
-    applyI18n();
-    setTimeout(applyI18n, 250);
-    setTimeout(applyI18n, 800);
+    setTimeout(reapply, 60);
+    setTimeout(reapply, 400);
   });
 })();
 </script>
-<!-- === END: i18n overlay === -->
-
+<!-- === /NUMINA i18n overlay v2 === -->
 </body>
 </html>
