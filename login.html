@@ -30,9 +30,22 @@
       border-radius:16px;
       padding:24px;
       box-shadow:0 20px 45px rgba(0,0,0,.45);
+      position:relative;
+    }
+    .topbar{
+      display:flex;align-items:center;justify-content:flex-end;margin-bottom:6px;
+    }
+    .lang{
+      display:flex;align-items:center;gap:8px;
+      background:#0f1318;border:1px solid #232832;border-radius:999px;padding:6px 10px;
+    }
+    .lang label{ font-size:.85rem; color:var(--muted); margin:0; }
+    .lang select{
+      background:transparent;border:0;color:var(--text);font-weight:800;cursor:pointer;
+      padding:0 2px; outline:none; appearance:none;
     }
     .brand{
-      display:flex;gap:10px;align-items:center;justify-content:center;margin:4px 0 16px;
+      display:flex;gap:10px;align-items:center;justify-content:center;margin:8px 0 16px;
     }
     .brand .logo{
       width:38px;height:38px;border-radius:10px;
@@ -73,62 +86,192 @@
 </head>
 <body>
   <div class="login-container">
+    <!-- Idioma -->
+    <div class="topbar">
+      <div class="lang">
+        <label id="lang-label" class="sr-only" data-i18n="lang.label">Idioma</label>
+        <select id="lang-select" aria-labelledby="lang-label">
+          <option value="es" data-i18n-option="lang.es">ES</option>
+          <option value="en" data-i18n-option="lang.en">EN</option>
+        </select>
+      </div>
+    </div>
+
     <div class="brand" aria-hidden="true">
       <div class="logo">N</div>
       <h2>NUMINA</h2>
     </div>
 
     <!-- Tabs visuales (llaman a toggleForm como el original) -->
-    <div class="tabs" role="tablist" aria-label="Cambiar entre iniciar sesión y crear cuenta">
-      <div id="tab-login" class="tab active" role="tab" aria-selected="true" tabindex="0">Iniciar sesión</div>
-      <div id="tab-register" class="tab" role="tab" aria-selected="false" tabindex="-1">Crear cuenta</div>
+    <div class="tabs" role="tablist" data-i18n-aria-label="aria.tablist" aria-label="Cambiar entre iniciar sesión y crear cuenta">
+      <div id="tab-login" class="tab active" role="tab" aria-selected="true" tabindex="0" data-i18n="tabs.login">Iniciar sesión</div>
+      <div id="tab-register" class="tab" role="tab" aria-selected="false" tabindex="-1" data-i18n="tabs.register">Crear cuenta</div>
     </div>
 
     <!-- Formulario de Login (lógica ORIGINAL) -->
     <div id="login-form">
-      <input type="email" id="email" placeholder="Correo electrónico" required />
-      <input type="password" id="password" placeholder="Contraseña" required />
-      <button class="login-button" onclick="login()">Ingresar</button>
+      <input type="email" id="email" placeholder="Correo electrónico" required data-i18n-placeholder="login.email.placeholder" />
+      <input type="password" id="password" placeholder="Contraseña" required data-i18n-placeholder="login.password.placeholder" />
+      <button class="login-button" onclick="login()" data-i18n="login.submit">Ingresar</button>
       <p id="error-message"></p>
-      <a class="toggle-form" onclick="toggleForm()">¿No tienes cuenta? Regístrate</a>
+      <a class="toggle-form" onclick="toggleForm()" data-i18n="login.toggle">¿No tienes cuenta? Regístrate</a>
     </div>
 
     <!-- Formulario de Registro (con nuevos campos requeridos) -->
     <div id="register-form" style="display: none;">
-      <label for="register-email">Correo electrónico</label>
-      <input type="email" id="register-email" placeholder="Correo electrónico" required />
+      <label for="register-email" data-i18n="register.email.label">Correo electrónico</label>
+      <input type="email" id="register-email" placeholder="Correo electrónico" required data-i18n-placeholder="register.email.placeholder" />
 
-      <label for="register-password">Contraseña</label>
-      <input type="password" id="register-password" placeholder="Contraseña (mín. 6)" minlength="6" required />
+      <label for="register-password" data-i18n="register.password.label">Contraseña</label>
+      <input type="password" id="register-password" placeholder="Contraseña (mín. 6)" minlength="6" required data-i18n-placeholder="register.password.placeholder" />
 
-      <label for="full-name">Nombre completo</label>
-      <input type="text" id="full-name" placeholder="Nombre completo" required />
+      <label for="full-name" data-i18n="register.fullname.label">Nombre completo</label>
+      <input type="text" id="full-name" placeholder="Nombre completo" required data-i18n-placeholder="register.fullname.placeholder" />
 
       <div class="row-2">
         <div>
-          <label for="register-country">País</label>
-          <input type="text" id="register-country" placeholder="País" required />
+          <label for="register-country" data-i18n="register.country.label">País</label>
+          <input type="text" id="register-country" placeholder="País" required data-i18n-placeholder="register.country.placeholder" />
         </div>
         <div>
-          <label for="register-city">Ciudad</label>
-          <input type="text" id="register-city" placeholder="Ciudad" required />
+          <label for="register-city" data-i18n="register.city.label">Ciudad</label>
+          <input type="text" id="register-city" placeholder="Ciudad" required data-i18n-placeholder="register.city.placeholder" />
         </div>
       </div>
 
-      <label for="register-address">Dirección</label>
-      <input type="text" id="register-address" placeholder="Calle y número" required />
+      <label for="register-address" data-i18n="register.address.label">Dirección</label>
+      <input type="text" id="register-address" placeholder="Calle y número" required data-i18n-placeholder="register.address.placeholder" />
 
-      <label for="register-postal">Código Postal</label>
-      <input type="text" id="register-postal" placeholder="C.P." required />
+      <label for="register-postal" data-i18n="register.postal.label">Código Postal</label>
+      <input type="text" id="register-postal" placeholder="C.P." required data-i18n-placeholder="register.postal.placeholder" />
 
-      <button class="login-button" onclick="register()">Crear cuenta</button>
+      <button class="login-button" onclick="register()" data-i18n="register.submit">Crear cuenta</button>
       <p id="register-error-message"></p>
       <p id="register-success-message"></p>
-      <a class="toggle-form" onclick="toggleForm()">¿Ya tienes cuenta? Inicia sesión</a>
+      <a class="toggle-form" onclick="toggleForm()" data-i18n="register.toggle">¿Ya tienes cuenta? Inicia sesión</a>
     </div>
   </div>
 
   <script>
+    /* ======= I18N ======= */
+    const I18N = {
+      es: {
+        'aria.tablist': 'Cambiar entre iniciar sesión y crear cuenta',
+        'tabs.login': 'Iniciar sesión',
+        'tabs.register': 'Crear cuenta',
+        'login.email.placeholder': 'Correo electrónico',
+        'login.password.placeholder': 'Contraseña',
+        'login.submit': 'Ingresar',
+        'login.toggle': '¿No tienes cuenta? Regístrate',
+        'register.email.label': 'Correo electrónico',
+        'register.email.placeholder': 'Correo electrónico',
+        'register.password.label': 'Contraseña',
+        'register.password.placeholder': 'Contraseña (mín. 6)',
+        'register.fullname.label': 'Nombre completo',
+        'register.fullname.placeholder': 'Nombre completo',
+        'register.country.label': 'País',
+        'register.country.placeholder': 'País',
+        'register.city.label': 'Ciudad',
+        'register.city.placeholder': 'Ciudad',
+        'register.address.label': 'Dirección',
+        'register.address.placeholder': 'Calle y número',
+        'register.postal.label': 'Código Postal',
+        'register.postal.placeholder': 'C.P.',
+        'register.submit': 'Crear cuenta',
+        'register.toggle': '¿Ya tienes cuenta? Inicia sesión',
+        'register.creating': 'Creando cuenta...',
+        'register.createdRedirect': '¡Cuenta creada! Redirigiendo...',
+        'errors.fillAll': 'Completá todos los campos.',
+        'errors.fillEmailPass': 'Por favor completa todos los campos.',
+        'lang.label': 'Idioma',
+        'lang.es': 'Español',
+        'lang.en': 'Inglés'
+      },
+      en: {
+        'aria.tablist': 'Switch between sign in and sign up',
+        'tabs.login': 'Sign in',
+        'tabs.register': 'Create account',
+        'login.email.placeholder': 'Email',
+        'login.password.placeholder': 'Password',
+        'login.submit': 'Sign in',
+        'login.toggle': "Don't have an account? Sign up",
+        'register.email.label': 'Email',
+        'register.email.placeholder': 'Email',
+        'register.password.label': 'Password',
+        'register.password.placeholder': 'Password (min. 6)',
+        'register.fullname.label': 'Full name',
+        'register.fullname.placeholder': 'Full name',
+        'register.country.label': 'Country',
+        'register.country.placeholder': 'Country',
+        'register.city.label': 'City',
+        'register.city.placeholder': 'City',
+        'register.address.label': 'Address',
+        'register.address.placeholder': 'Street and number',
+        'register.postal.label': 'Postal Code',
+        'register.postal.placeholder': 'ZIP/Postal code',
+        'register.submit': 'Create account',
+        'register.toggle': 'Already have an account? Sign in',
+        'register.creating': 'Creating account...',
+        'register.createdRedirect': 'Account created! Redirecting...',
+        'errors.fillAll': 'Please fill out all fields.',
+        'errors.fillEmailPass': 'Please complete all fields.',
+        'lang.label': 'Language',
+        'lang.es': 'Spanish',
+        'lang.en': 'English'
+      }
+    };
+
+    const i18n = {
+      current: 'es',
+      t(key){
+        return (I18N[this.current] && I18N[this.current][key]) || key;
+      },
+      set(lang){
+        if(!I18N[lang]) return;
+        this.current = lang;
+        try{ localStorage.setItem('lang', lang); }catch(e){}
+        document.documentElement.setAttribute('lang', lang);
+        this.apply();
+      },
+      apply(){
+        // text nodes
+        document.querySelectorAll('[data-i18n]').forEach(el=>{
+          const key = el.getAttribute('data-i18n');
+          el.textContent = this.t(key);
+        });
+        // placeholders
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+          const key = el.getAttribute('data-i18n-placeholder');
+          el.setAttribute('placeholder', this.t(key));
+        });
+        // aria-labels
+        document.querySelectorAll('[data-i18n-aria-label]').forEach(el=>{
+          const key = el.getAttribute('data-i18n-aria-label');
+          el.setAttribute('aria-label', this.t(key));
+        });
+        // select option labels (for accessibility menus that show text)
+        document.querySelectorAll('[data-i18n-option]').forEach(el=>{
+          const key = el.getAttribute('data-i18n-option');
+          el.textContent = this.t(key);
+        });
+
+        // buttons whose text can change depending on state:
+        const regBtn = document.querySelector('#register-form button.login-button');
+        if(regBtn && !regBtn.disabled){
+          regBtn.textContent = this.t('register.submit');
+        }
+      }
+    };
+
+    (function initLang(){
+      const saved = (()=>{ try{return localStorage.getItem('lang')}catch(e){ return null } })();
+      const lang = saved || (navigator.language||'es').toLowerCase().startsWith('en') ? 'en' : 'es';
+      i18n.set(lang);
+      const select = document.getElementById('lang-select');
+      select.value = i18n.current;
+      select.addEventListener('change', (e)=> i18n.set(e.target.value));
+    })();
+
     /* ======= LÓGICA ORIGINAL, CONSERVADA ======= */
     const supabaseUrl = "https://xaeybhscsxpvtnqzpgwj.supabase.co";
     const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU";
@@ -155,6 +298,9 @@
       tReg.setAttribute("aria-selected", String(!goLogin));
       tLogin.tabIndex = goLogin ? 0 : -1;
       tReg.tabIndex   = goLogin ? -1 : 0;
+
+      // volver a aplicar traducciones (por si cambia el texto visible)
+      i18n.apply();
     }
 
     // tabs clickeables (estética, usa toggleForm original)
@@ -174,13 +320,14 @@
       errorMsg.textContent = "";
 
       if (!email || !password) {
-        errorMsg.textContent = "Por favor completa todos los campos.";
+        errorMsg.textContent = i18n.t('errors.fillEmailPass');
         return;
       }
 
       const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
       if (error) {
+        // mostramos el mensaje que devuelve supabase (suele venir en inglés)
         errorMsg.textContent = error.message;
       } else {
         window.location.href = "dashboard.html";
@@ -201,14 +348,14 @@
       const regSuccessMsg = document.getElementById("register-success-message");
 
       registerBtn.disabled = true;
-      registerBtn.textContent = "Creando cuenta...";
+      registerBtn.textContent = i18n.t('register.creating');
       regErrorMsg.textContent = "";
       regSuccessMsg.textContent = "";
 
       try {
         // Validaciones mínimas (todos obligatorios)
         if (!email || !password || !fullName || !country || !city || !address || !postal) {
-          throw new Error("Completá todos los campos.");
+          throw new Error(i18n.t('errors.fillAll'));
         }
 
         const { data, error: signUpError } = await supabaseClient.auth.signUp({
@@ -218,7 +365,7 @@
         if (signUpError) throw signUpError;
 
         const userId = data?.user?.id;
-        if (!userId) throw new Error("No se pudo obtener el ID del usuario.");
+        if (!userId) throw new Error("No user ID.");
 
         const { error: insertError } = await supabaseClient.from("users").insert([{
           id: userId,
@@ -236,14 +383,14 @@
         const { error: loginError } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (loginError) throw loginError;
 
-        regSuccessMsg.textContent = "¡Cuenta creada! Redirigiendo...";
+        regSuccessMsg.textContent = i18n.t('register.createdRedirect');
         setTimeout(() => window.location.href = "dashboard.html", 2000);
 
       } catch (error) {
         regErrorMsg.textContent = error.message;
       } finally {
         registerBtn.disabled = false;
-        registerBtn.textContent = "Crear cuenta";
+        registerBtn.textContent = i18n.t('register.submit');
       }
     }
   </script>
