@@ -1,14 +1,3 @@
-
-    // Update stat card titles
-    (function(){
-      const cards = document.querySelectorAll('.stat-card h3');
-      if (cards && cards.length) {
-        const map = [dI18n.t('cards.balance'), dI18n.t('cards.active'), dI18n.t('cards.referrals'), dI18n.t('cards.tickets')];
-        for (let i = 0; i < Math.min(cards.length, map.length); i++) {
-          cards[i].textContent = map[i];
-        }
-      }
-    })();
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -2132,6 +2121,25 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // Initial apply
   dI18n.apply();
 })();
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('[i18n] Updating stat card titles');
+    const cards = document.querySelectorAll('.stat-card h3');
+    if (cards && cards.length) {
+        const translations = [
+            dI18n.t('cards.balance'),
+            dI18n.t('cards.active'),
+            dI18n.t('cards.referrals'),
+            dI18n.t('cards.tickets')
+        ];
+        for (let i = 0; i < Math.min(cards.length, translations.length); i++) {
+            cards[i].textContent = translations[i];
+        }
+    }
+});
 </script>
 
 </body>
