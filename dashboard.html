@@ -1008,7 +1008,7 @@ function attachConfigHandlers(supabase){
     const updates = {
       full_name: (document.getElementById('cfg-fullname').value||'').trim() || null,
       phone:     (document.getElementById('cfg-phone').value||'').trim() || null,
-      address:   (document.getElementById('cfg-address').value||'').trim() || null,,
+      address:   (document.getElementById('cfg-address').value||'').trim() || null,
       country:   (document.getElementById('cfg-country').value||'').trim() || null,
       city:      (document.getElementById('cfg-city').value||'').trim() || null,
       postal_code:(document.getElementById('cfg-postal').value||'').trim() || null,
@@ -2022,6 +2022,92 @@ document.addEventListener('DOMContentLoaded', ()=>{
   };
 
   // Re-apply right away (in case user already had page open)
+  dI18n.apply();
+})();
+</script>
+
+
+<script>
+// === Stronger phrase-level translations for dashboard widgets ===
+(function(){
+  if (!window.DB_I18N || !window.dI18n) return;
+
+  const Phrases = {
+    es: {
+      'Sorteo': 'Sorteo',
+      'Historial de Participación': 'Historial de Participación',
+      'Tickets Activos': 'Tickets Activos',
+      'TICKETS ACTIVOS': 'TICKETS ACTIVOS',
+      'Tickets Utilizados': 'Tickets Utilizados',
+      'TICKETS UTILIZADOS': 'TICKETS UTILIZADOS',
+      'Upgrade Numina': 'Upgrade Numina',
+      'Sin participaciones': 'Sin participaciones',
+      'SORTEO': 'SORTEO',
+      'FECHA': 'FECHA',
+      'VALOR': 'VALOR'
+    },
+    en: {
+      'Sorteo': 'Raffle',
+      'Historial de Participación': 'Participation History',
+      'Tickets Activos': 'Active Tickets',
+      'TICKETS ACTIVOS': 'ACTIVE TICKETS',
+      'Tickets Utilizados': 'Tickets Used',
+      'TICKETS UTILIZADOS': 'TICKETS USED',
+      'Upgrade Numina': 'Numina Upgrade',
+      'Sin participaciones': 'No entries',
+      'SORTEO': 'RAFFLE',
+      'FECHA': 'DATE',
+      'VALOR': 'AMOUNT'
+    },
+    pt: {
+      'Sorteo': 'Sorteio',
+      'Historial de Participación': 'Histórico de Participação',
+      'Tickets Activos': 'Bilhetes Ativos',
+      'TICKETS ACTIVOS': 'BILHETES ATIVOS',
+      'Tickets Utilizados': 'Bilhetes Utilizados',
+      'TICKETS UTILIZADOS': 'BILHETES UTILIZADOS',
+      'Upgrade Numina': 'Upgrade Numina',
+      'Sin participaciones': 'Sem participações',
+      'SORTEO': 'SORTEIO',
+      'FECHA': 'DATA',
+      'VALOR': 'VALOR'
+    }
+  };
+
+  function translatePhrases(root){
+    const dict = Phrases[dI18n.current];
+    if (!dict) return;
+    // Elements where labels commonly live
+    const selectors = [
+      'h1','h2','h3','.section-title','th','td','label','span','div','button','a'
+    ];
+    document.querySelectorAll(selectors.join(',')).forEach(el => {
+      // Preserve numbers like "0 / 10.000"
+      const txt = (el.textContent || '').trim();
+      if (!txt) return;
+      if (dict[txt] !== undefined){
+        el.textContent = dict[txt];
+        return;
+      }
+      // Case-insensitive variants (e.g., lowercase/uppercase)
+      const lower = txt.toLowerCase();
+      for (const key in dict){
+        if (key.toLowerCase() === lower){
+          el.textContent = dict[key];
+          break;
+        }
+      }
+    });
+  }
+
+  // Patch dI18n.apply to also translate phrases
+  const originalApply = dI18n.apply.bind(dI18n);
+  dI18n.apply = function(){
+    originalApply();
+    translatePhrases(document);
+  };
+
+  // Initial apply
   dI18n.apply();
 })();
 </script>
