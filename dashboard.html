@@ -2124,7 +2124,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 
 <script>
-/* === i18n observer patch v4: broader selectors + extra synonyms === */
+/* === i18n observer patch v5: prefers fallback when a non-ES lang returns ES strings === */
 (function(){
   if (!window.dI18n) {
     window.dI18n = {
@@ -2140,16 +2140,31 @@ document.addEventListener('DOMContentLoaded', ()=>{
     pt: { balance: "Saldo Disponível", purchases: "Compras Ativas", referrals: "Histórico de Indicados", tickets: "Bilhetes do Sorteio" }
   };
 
+  const ES_SOURCE = new Set([
+    "Saldo Disponible",
+    "Compras Activas",
+    "Referidos",
+    "Historial de Referidos",
+    "Tickets de Sorteo"
+  ]);
+
   function getLang(){
     const d = window.dI18n || {};
     return d.lang || d.current || (function(){ try { return localStorage.getItem("lang"); } catch(_) { return null; } })() || "es";
   }
 
   function tOrFallback(key, fallback){
+    const lang = getLang();
     try {
       const hasT = (window.dI18n && typeof dI18n.t === "function");
       const v = hasT ? dI18n.t(key) : null;
-      if (v && typeof v === "string" && v.trim() && v.toLowerCase() !== key.toLowerCase()) return v;
+      if (v && typeof v === "string" && v.trim()) {
+        // If it's exactly the key -> missing -> use fallback
+        if (v.toLowerCase() === key.toLowerCase()) return fallback;
+        // If current language is not Spanish but translation came back in Spanish -> prefer fallback
+        if (lang !== "es" && ES_SOURCE.has(v.trim())) return fallback;
+        return v;
+      }
     } catch(_){}
     return fallback;
   }
@@ -2171,26 +2186,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
       .replace(/\s+/g, " ")
       .trim()
       .toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // strip accents
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
   const SEED = {
-    // Spanish
     "saldo disponible": "balance",
-    "saldo  disponible": "balance",
     "tickets de sorteo": "tickets",
-    "ticket de sorteo": "tickets",
-    "tickets sorteo": "tickets",
     "compras activas": "purchases",
     "referidos": "referrals",
     "historial de referidos": "referrals",
-    // English
     "available balance": "balance",
     "active purchases": "purchases",
     "referrals": "referrals",
     "referral history": "referrals",
     "raffle tickets": "tickets",
-    // Keys/variants
     "stats.balance": "balance",
     "stats.purchases": "purchases",
     "stats.referrals": "referrals",
@@ -2212,7 +2221,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     ].join(","));
     candidates.forEach(el => {
       if (el.hasAttribute("data-i18n-key")) return;
-      // Only label-like nodes (ignore ones that contain numbers/values)
       const text = (el.textContent || "").trim();
       if (!text) return;
       const isNumber = /^[$€£]?\s*\d+([.,]\d+)?/.test(text);
