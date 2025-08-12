@@ -83,12 +83,18 @@
       padding:12px 14px; font-weight:900; cursor:pointer; transition:.18s transform;
     }
     .login-button:hover{ transform:translateY(-1px); }
-    .toggle-form{ display:block; margin-top:14px; color:var(--brand); cursor:pointer; text-align:center; }
+    .toggle-form{ display:block; margin-top:10px; color:var(--brand); cursor:pointer; text-align:center; }
     .toggle-form:hover{ text-decoration:underline; }
-    #error-message, #register-error-message{ color:var(--danger); min-height:20px; margin-top:10px; text-align:center; }
-    #register-success-message{ color:var(--ok); min-height:20px; margin-top:10px; text-align:center; }
+    #error-message, #register-error-message, #reset-error, #reset-success, #newpass-error, #newpass-success{
+      min-height:20px; margin-top:10px; text-align:center;
+    }
+    #error-message, #register-error-message, #reset-error, #newpass-error{ color:var(--danger); }
+    #register-success-message, #reset-success, #newpass-success{ color:var(--ok); }
     .row-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
     @media (max-width: 520px){ .row-2{ grid-template-columns:1fr; } }
+    .muted { color: var(--muted); font-size:.88rem; text-align:center; margin-top:8px; }
+    .link { color: var(--brand); cursor:pointer; }
+    .link:hover{ text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -96,8 +102,7 @@
     <div class="topbar">
       <!-- Dropdown accesible de idioma en formato pill -->
       <div class="lang-dropdown" id="langDropdown">
-        <button class="lang-btn" id="langBtn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="langBtnLabel">
-         
+        <button class="lang-btn" id="langBtn" aria-haspopup="listbox" aria-expanded="false">
           <span aria-hidden="true">🌐</span>
           <span id="langCurrentText" data-i18n="lang.es">Español</span>
           <svg class="chevron" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
@@ -126,14 +131,17 @@
       <div id="tab-register" class="tab" role="tab" aria-selected="false" tabindex="-1" data-i18n="tabs.register">Crear cuenta</div>
     </div>
 
+    <!-- LOGIN -->
     <div id="login-form">
       <input type="email" id="email" placeholder="Correo electrónico" required data-i18n-placeholder="login.email.placeholder" />
       <input type="password" id="password" placeholder="Contraseña" required data-i18n-placeholder="login.password.placeholder" />
       <button class="login-button" onclick="login()" data-i18n="login.submit">Ingresar</button>
       <p id="error-message"></p>
+      <div class="muted"><span id="forgot-link" class="link" data-i18n="forgot.link">¿Olvidaste tu contraseña?</span></div>
       <a class="toggle-form" id="to-register" data-i18n="login.toggle">¿No tienes cuenta? Regístrate</a>
     </div>
 
+    <!-- REGISTRO -->
     <div id="register-form" style="display: none;">
       <label for="register-email" data-i18n="register.email.label">Correo electrónico</label>
       <input type="email" id="register-email" placeholder="Correo electrónico" required data-i18n-placeholder="register.email.placeholder" />
@@ -166,6 +174,29 @@
       <p id="register-success-message"></p>
       <a class="toggle-form" id="to-login" data-i18n="register.toggle">¿Ya tienes cuenta? Inicia sesión</a>
     </div>
+
+    <!-- RECUPERAR CONTRASEÑA: PEDIR EMAIL -->
+    <div id="reset-form" style="display:none;">
+      <label for="reset-email" data-i18n="reset.email.label">Correo electrónico</label>
+      <input type="email" id="reset-email" placeholder="Correo electrónico" required data-i18n-placeholder="reset.email.placeholder"/>
+      <button class="login-button" id="reset-btn" data-i18n="reset.submit">Enviar enlace de recuperación</button>
+      <p id="reset-error"></p>
+      <p id="reset-success"></p>
+      <a class="toggle-form" id="to-login-from-reset" data-i18n="reset.back">Volver a iniciar sesión</a>
+    </div>
+
+    <!-- NUEVA CONTRASEÑA (cuando viene del email) -->
+    <div id="newpass-form" style="display:none;">
+      <label for="newpass" data-i18n="newpass.password.label">Nueva contraseña</label>
+      <input type="password" id="newpass" placeholder="Contraseña (mín. 6)" minlength="6" required data-i18n-placeholder="newpass.password.placeholder"/>
+      <label for="newpass2" data-i18n="newpass.password2.label">Repetir nueva contraseña</label>
+      <input type="password" id="newpass2" placeholder="Repite la contraseña" minlength="6" required data-i18n-placeholder="newpass.password2.placeholder"/>
+      <button class="login-button" id="newpass-btn" data-i18n="newpass.submit">Actualizar contraseña</button>
+      <p id="newpass-error"></p>
+      <p id="newpass-success"></p>
+      <a class="toggle-form" id="to-login-from-newpass" data-i18n="newpass.back">Volver al login</a>
+    </div>
+
   </div>
 
   <script>
@@ -199,10 +230,22 @@
         'register.createdRedirect': '¡Cuenta creada! Redirigiendo...',
         'errors.fillAll': 'Completá todos los campos.',
         'errors.fillEmailPass': 'Por favor completa todos los campos.',
-        'lang.label': 'Idioma',
-        'lang.es': 'Español',
-        'lang.en': 'Inglés',
-        'lang.pt': 'Portugués'
+        'lang.es': 'Español', 'lang.en': 'Inglés', 'lang.pt': 'Portugués',
+        'forgot.link': '¿Olvidaste tu contraseña?',
+        'reset.email.label':'Correo electrónico',
+        'reset.email.placeholder':'Correo electrónico',
+        'reset.submit':'Enviar enlace de recuperación',
+        'reset.sent':'Te enviamos un enlace de recuperación. Revisá tu correo.',
+        'reset.error':'No pudimos enviar el correo. Verifica el email o inténtalo más tarde.',
+        'reset.back':'Volver a iniciar sesión',
+        'newpass.password.label':'Nueva contraseña',
+        'newpass.password.placeholder':'Contraseña (mín. 6)',
+        'newpass.password2.label':'Repetir nueva contraseña',
+        'newpass.password2.placeholder':'Repite la contraseña',
+        'newpass.submit':'Actualizar contraseña',
+        'newpass.updated':'¡Contraseña actualizada! Ya podés iniciar sesión.',
+        'newpass.mismatch':'Las contraseñas no coinciden.',
+        'newpass.error':'No pudimos actualizar la contraseña.'
       },
       en: {
         'aria.tablist': 'Switch between sign in and sign up',
@@ -232,10 +275,22 @@
         'register.createdRedirect': 'Account created! Redirecting...',
         'errors.fillAll': 'Please fill out all fields.',
         'errors.fillEmailPass': 'Please complete all fields.',
-        'lang.label': 'Language',
-        'lang.es': 'Spanish',
-        'lang.en': 'English',
-        'lang.pt': 'Portuguese'
+        'lang.es': 'Spanish', 'lang.en': 'English', 'lang.pt': 'Portuguese',
+        'forgot.link': 'Forgot your password?',
+        'reset.email.label':'Email',
+        'reset.email.placeholder':'Email',
+        'reset.submit':'Send recovery link',
+        'reset.sent':'We sent you a recovery link. Check your email.',
+        'reset.error':'We could not send the email. Verify the address or try later.',
+        'reset.back':'Back to sign in',
+        'newpass.password.label':'New password',
+        'newpass.password.placeholder':'Password (min. 6)',
+        'newpass.password2.label':'Repeat new password',
+        'newpass.password2.placeholder':'Repeat the password',
+        'newpass.submit':'Update password',
+        'newpass.updated':'Password updated! You can sign in now.',
+        'newpass.mismatch':'Passwords do not match.',
+        'newpass.error':'We could not update the password.'
       },
       pt: {
         'aria.tablist': 'Alternar entre entrar e criar conta',
@@ -265,14 +320,26 @@
         'register.createdRedirect': 'Conta criada! Redirecionando...',
         'errors.fillAll': 'Preencha todos os campos.',
         'errors.fillEmailPass': 'Por favor, complete todos os campos.',
-        'lang.label': 'Idioma',
-        'lang.es': 'Espanhol',
-        'lang.en': 'Inglês',
-        'lang.pt': 'Português'
+        'lang.es': 'Espanhol', 'lang.en': 'Inglês', 'lang.pt': 'Português',
+        'forgot.link': 'Esqueceu sua senha?',
+        'reset.email.label':'E-mail',
+        'reset.email.placeholder':'E-mail',
+        'reset.submit':'Enviar link de recuperação',
+        'reset.sent':'Enviamos um link de recuperação. Verifique seu e-mail.',
+        'reset.error':'Não foi possível enviar o e-mail. Verifique o endereço ou tente mais tarde.',
+        'reset.back':'Voltar para entrar',
+        'newpass.password.label':'Nova senha',
+        'newpass.password.placeholder':'Senha (mín. 6)',
+        'newpass.password2.label':'Repetir nova senha',
+        'newpass.password2.placeholder':'Repita a senha',
+        'newpass.submit':'Atualizar senha',
+        'newpass.updated':'Senha atualizada! Você já pode entrar.',
+        'newpass.mismatch':'As senhas não coincidem.',
+        'newpass.error':'Não foi possível atualizar a senha.'
       }
     };
 
-    // Motor i18n (no toca el DOM fuera de DOMContentLoaded)
+    // Motor i18n
     const i18n = {
       current: 'es',
       t(key){ return (I18N[this.current] && I18N[this.current][key]) || key; },
@@ -303,7 +370,6 @@
       i18n.set(initial);
     })();
 
-    // ===== Todo lo que toca el DOM va acá =====
     document.addEventListener('DOMContentLoaded', () => {
       // Dropdown idioma
       const dropdown = document.getElementById('langDropdown');
@@ -313,70 +379,50 @@
       function updateLangUI(lang){
         const currentSpan = document.getElementById('langCurrentText');
         if (currentSpan && I18N[lang]) {
-          const labelKey = lang === 'en' ? 'lang.en' : (lang === 'pt' ? 'lang.pt' : 'lang.es');
-          currentSpan.textContent = I18N[lang][labelKey];
+          const key = lang === 'en' ? 'lang.en' : (lang === 'pt' ? 'lang.pt' : 'lang.es');
+          currentSpan.textContent = I18N[lang][key];
         }
-        if (menu) {
-          menu.querySelectorAll('.lang-item').forEach(li=>{
-            li.setAttribute('aria-selected', li.dataset.lang === lang ? 'true' : 'false');
-          });
-        }
+        if (menu) { menu.querySelectorAll('.lang-item').forEach(li=> li.setAttribute('aria-selected', li.dataset.lang === lang ? 'true' : 'false')); }
       }
 
       function openMenu(){ dropdown.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
       function closeMenu(){ dropdown.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
 
       if (btn) {
-        btn.addEventListener('click', (e)=>{
-          e.stopPropagation();
-          dropdown.classList.contains('open') ? closeMenu() : openMenu();
-        });
+        btn.addEventListener('click', (e)=>{ e.stopPropagation(); dropdown.classList.contains('open') ? closeMenu() : openMenu(); });
         btn.addEventListener('keydown', (ev)=>{
           if ((ev.key === 'ArrowDown' || ev.key === 'Enter' || ev.key === ' ') && !dropdown.classList.contains('open')){
-            ev.preventDefault(); openMenu();
-            const first = menu && menu.querySelector('.lang-item'); if(first) first.focus();
+            ev.preventDefault(); openMenu(); const first = menu && menu.querySelector('.lang-item'); if(first) first.focus();
           } else if (ev.key === 'Escape'){ closeMenu(); btn.focus(); }
         });
       }
-
       if (menu) {
         menu.querySelectorAll('.lang-item').forEach(item=>{
           item.tabIndex = -1;
-          item.addEventListener('click', (e)=>{
-            e.stopPropagation();
-            const lang = item.dataset.lang;
-            i18n.set(lang);
-            updateLangUI(lang);
-            closeMenu();
-          });
-          item.addEventListener('keydown', (ev)=>{
-            if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); item.click(); }
-          });
+          item.addEventListener('click', (e)=>{ e.stopPropagation(); i18n.set(item.dataset.lang); updateLangUI(i18n.current); closeMenu(); });
+          item.addEventListener('keydown', (ev)=>{ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); item.click(); } });
         });
       }
-
       document.addEventListener('click', (e)=>{ if(!dropdown.contains(e.target)) closeMenu(); });
       updateLangUI(i18n.current);
 
-      // Tabs login/register
+      // Vistas
+      const loginForm = document.getElementById("login-form");
+      const registerForm = document.getElementById("register-form");
+      const resetForm = document.getElementById("reset-form");
+      const newpassForm = document.getElementById("newpass-form");
+
+      function show(view){
+        for(const el of [loginForm, registerForm, resetForm, newpassForm]){ if(el) el.style.display = 'none'; }
+        view.style.display = 'block';
+      }
+
       function toggleForm() {
-        const loginForm = document.getElementById("login-form");
-        const registerForm = document.getElementById("register-form");
+        const loginVisible = loginForm && loginForm.style.display !== "none";
+        show(loginVisible ? registerForm : loginForm);
         const tLogin = document.getElementById("tab-login");
         const tReg   = document.getElementById("tab-register");
-
-        const em = document.getElementById("error-message");
-        const rem = document.getElementById("register-error-message");
-        const rsm = document.getElementById("register-success-message");
-        if (em) em.textContent = "";
-        if (rem) rem.textContent = "";
-        if (rsm) rsm.textContent = "";
-
-        const loginVisible = loginForm && loginForm.style.display !== "none";
-        if (loginForm)   loginForm.style.display   = loginVisible ? "none" : "block";
-        if (registerForm)registerForm.style.display= loginVisible ? "block" : "none";
-
-        const goLogin = !loginVisible;
+        const goLogin = loginVisible ? false : true;
         if (tLogin && tReg){
           tLogin.classList.toggle("active", goLogin);
           tReg.classList.toggle("active", !goLogin);
@@ -389,104 +435,141 @@
       }
       window.toggleForm = toggleForm;
 
-      const tabLogin = document.getElementById("tab-login");
-      const tabReg   = document.getElementById("tab-register");
-      if (tabLogin) tabLogin.addEventListener("click", () => {
-        const lf = document.getElementById("login-form");
-        if (lf && lf.style.display === "none") toggleForm();
-      });
-      if (tabReg) tabReg.addEventListener("click", () => {
-        const rf = document.getElementById("register-form");
-        if (rf && rf.style.display === "none") toggleForm();
-      });
+      document.getElementById("tab-login").addEventListener("click", () => { if (loginForm.style.display === "none") toggleForm(); });
+      document.getElementById("tab-register").addEventListener("click", () => { if (registerForm.style.display === "none") toggleForm(); });
+      document.getElementById("to-register").addEventListener('click', toggleForm);
+      document.getElementById("to-login").addEventListener('click', toggleForm);
 
-      const toReg = document.getElementById("to-register");
-      const toLogin = document.getElementById("to-login");
-      if (toReg) toReg.addEventListener('click', toggleForm);
-      if (toLogin) toLogin.addEventListener('click', toggleForm);
+      // Forgot -> Reset email view
+      document.getElementById('forgot-link').addEventListener('click', ()=> show(resetForm));
+      document.getElementById('to-login-from-reset').addEventListener('click', ()=> show(loginForm));
+      document.getElementById('to-login-from-newpass').addEventListener('click', ()=> show(loginForm));
 
-      // --- Autotests básicos (consola) ---
-      (function selfTests(){
-        console.groupCollapsed('NUMINA login: self-tests');
-        console.assert(!!dropdown, '#langDropdown existe');
-        console.assert(!!btn, '#langBtn existe');
-        console.assert(!!menu, '#langMenu existe');
-        console.assert(document.getElementById('tab-login') && document.getElementById('tab-register'), 'Tabs existen');
-        const emailInput = document.querySelector('#login-form input[type="email"]');
-        console.assert(!!emailInput, 'Input email existe');
-        const phBefore = emailInput ? emailInput.getAttribute('placeholder') : '';
-        i18n.set(i18n.current === 'es' ? 'en' : 'es');
-        const phAfter = emailInput ? emailInput.getAttribute('placeholder') : '';
-        console.assert(phBefore !== phAfter, 'i18n.apply() actualiza placeholders');
-        i18n.set(i18n.current === 'es' ? 'en' : 'es');
-        console.groupEnd();
-      })();
-    });
+      // ===== Supabase =====
+      const supabaseUrl = "https://xaeybhscsxpvtnqzpgwj.supabase.co";
+      const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU";
+      const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-    // ===== Supabase =====
-    const supabaseUrl = "https://xaeybhscsxpvtnqzpgwj.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU";
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-
-    async function login() {
-      const email = document.getElementById("email")?.value;
-      const password = document.getElementById("password")?.value;
-      const errorMsg = document.getElementById("error-message");
-      if (errorMsg) errorMsg.textContent = "";
-      if (!email || !password) {
-        if (errorMsg) errorMsg.textContent = i18n.t('errors.fillEmailPass');
-        return;
+      // Login y registro
+      async function login() {
+        const email = document.getElementById("email")?.value;
+        const password = document.getElementById("password")?.value;
+        const errorMsg = document.getElementById("error-message");
+        if (errorMsg) errorMsg.textContent = "";
+        if (!email || !password) { if (errorMsg) errorMsg.textContent = i18n.t('errors.fillEmailPass'); return; }
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) { if (errorMsg) errorMsg.textContent = error.message; }
+        else { window.location.href = "dashboard.html"; }
       }
-      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-      if (error) { if (errorMsg) errorMsg.textContent = error.message; }
-      else { window.location.href = "dashboard.html"; }
-    }
+      window.login = login;
 
-    async function register() {
-      const email = document.getElementById("register-email")?.value;
-      const password = document.getElementById("register-password")?.value;
-      const fullName = document.getElementById("full-name")?.value;
-      const country  = document.getElementById("register-country")?.value;
-      const city     = document.getElementById("register-city")?.value;
-      const address  = document.getElementById("register-address")?.value;
-      const postal   = document.getElementById("register-postal")?.value;
+      async function register() {
+        const email = document.getElementById("register-email")?.value;
+        const password = document.getElementById("register-password")?.value;
+        const fullName = document.getElementById("full-name")?.value;
+        const country  = document.getElementById("register-country")?.value;
+        const city     = document.getElementById("register-city")?.value;
+        const address  = document.getElementById("register-address")?.value;
+        const postal   = document.getElementById("register-postal")?.value;
 
-      const registerBtn = document.querySelector("#register-form button.login-button");
-      const regErrorMsg = document.getElementById("register-error-message");
-      const regSuccessMsg = document.getElementById("register-success-message");
+        const registerBtn = document.querySelector("#register-form button.login-button");
+        const regErrorMsg = document.getElementById("register-error-message");
+        const regSuccessMsg = document.getElementById("register-success-message");
 
-      if (registerBtn){ registerBtn.disabled = true; registerBtn.textContent = i18n.t('register.creating'); }
-      if (regErrorMsg) regErrorMsg.textContent = "";
-      if (regSuccessMsg) regSuccessMsg.textContent = "";
+        if (registerBtn){ registerBtn.disabled = true; registerBtn.textContent = i18n.t('register.creating'); }
+        if (regErrorMsg) regErrorMsg.textContent = "";
+        if (regSuccessMsg) regSuccessMsg.textContent = "";
 
-      try {
-        if (!email || !password || !fullName || !country || !city || !address || !postal) {
-          throw new Error(i18n.t('errors.fillAll'));
+        try {
+          if (!email || !password || !fullName || !country || !city || !address || !postal) {
+            throw new Error(i18n.t('errors.fillAll'));
+          }
+          const { data, error: signUpError } = await supabaseClient.auth.signUp({ email, password });
+          if (signUpError) throw signUpError;
+
+          const userId = data?.user?.id;
+          if (!userId) throw new Error("No user ID.");
+
+          const { error: insertError } = await supabaseClient.from("users").insert([{
+            id: userId, email, full_name: fullName, balance: 0,
+            referral_code: "NUM" + Math.random().toString(36).slice(2, 8).toUpperCase(),
+            country, city, address, postal_code: postal
+          }]);
+          if (insertError) throw insertError;
+
+          const { error: loginError } = await supabaseClient.auth.signInWithPassword({ email, password });
+          if (loginError) throw loginError;
+
+          if (regSuccessMsg) regSuccessMsg.textContent = i18n.t('register.createdRedirect');
+          setTimeout(() => window.location.href = "dashboard.html", 2000);
+        } catch (error) {
+          if (regErrorMsg) regErrorMsg.textContent = error.message;
+        } finally {
+          if (registerBtn){ registerBtn.disabled = false; registerBtn.textContent = i18n.t('register.submit'); }
         }
-        const { data, error: signUpError } = await supabaseClient.auth.signUp({ email, password });
-        if (signUpError) throw signUpError;
-
-        const userId = data?.user?.id;
-        if (!userId) throw new Error("No user ID.");
-
-        const { error: insertError } = await supabaseClient.from("users").insert([{
-          id: userId, email, full_name: fullName, balance: 0,
-          referral_code: "NUM" + Math.random().toString(36).slice(2, 8).toUpperCase(),
-          country, city, address, postal_code: postal
-        }]);
-        if (insertError) throw insertError;
-
-        const { error: loginError } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (loginError) throw loginError;
-
-        if (regSuccessMsg) regSuccessMsg.textContent = i18n.t('register.createdRedirect');
-        setTimeout(() => window.location.href = "dashboard.html", 2000);
-      } catch (error) {
-        if (regErrorMsg) regErrorMsg.textContent = error.message;
-      } finally {
-        if (registerBtn){ registerBtn.disabled = false; registerBtn.textContent = i18n.t('register.submit'); }
       }
-    }
+      window.register = register;
+
+      // ===== Flujo de recuperación =====
+      const resetBtn = document.getElementById('reset-btn');
+      const resetEmail = document.getElementById('reset-email');
+      const resetError = document.getElementById('reset-error');
+      const resetSuccess = document.getElementById('reset-success');
+
+      resetBtn.addEventListener('click', async ()=>{
+        resetError.textContent = ""; resetSuccess.textContent = "";
+        const email = resetEmail.value;
+        if (!email){ resetError.textContent = i18n.t('reset.error'); return; }
+
+        // URL a donde te redirige el email para establecer nueva contraseña
+        // Debe apuntar a esta misma página o a otra que tenga el bloque "newpass-form".
+        const redirectTo = window.location.origin + window.location.pathname; // mismo archivo
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo });
+        if (error){ resetError.textContent = error.message || i18n.t('reset.error'); }
+        else { resetSuccess.textContent = i18n.t('reset.sent'); }
+      });
+
+      // Si llegamos desde el email (type=recovery en el hash), mostramos el form de nueva contraseña
+      const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+      if (hash.get('type') === 'recovery'){
+        show(newpassForm);
+      }
+
+      const newpassBtn = document.getElementById('newpass-btn');
+      const newpass = document.getElementById('newpass');
+      const newpass2 = document.getElementById('newpass2');
+      const newpassError = document.getElementById('newpass-error');
+      const newpassSuccess = document.getElementById('newpass-success');
+
+      newpassBtn.addEventListener('click', async ()=>{
+        newpassError.textContent = ""; newpassSuccess.textContent = "";
+        if (newpass.value !== newpass2.value){ newpassError.textContent = i18n.t('newpass.mismatch'); return; }
+        try{
+          const { data: sess } = await supabaseClient.auth.getSession();
+          if (!sess || !sess.session){ throw new Error('No session'); }
+          const { error } = await supabaseClient.auth.updateUser({ password: newpass.value });
+          if (error) throw error;
+          newpassSuccess.textContent = i18n.t('newpass.updated');
+        }catch(err){
+          newpassError.textContent = err.message || i18n.t('newpass.error');
+        }
+      });
+
+      // Autotests en consola
+      console.groupCollapsed('NUMINA login+reset self-tests');
+      console.assert(document.getElementById('forgot-link'), 'Existe link "olvidaste tu contraseña"');
+      console.assert(document.getElementById('reset-form'), 'Existe formulario de reset');
+      console.assert(document.getElementById('newpass-form'), 'Existe formulario de nueva contraseña');
+      console.groupEnd();
+    });
   </script>
+
+  <!--
+    Notas:
+    - Para que el enlace de Supabase funcione, añadimos redirectTo a esta misma página.
+    - Cuando el usuario entra desde el correo, Supabase crea una sesión temporal y la deja en el hash (type=recovery).
+    - En ese caso, mostramos el form "newpass-form" y llamamos a supabase.auth.updateUser({ password }).
+    - Todo el flujo está traducido (ES/EN/PT) y usa el mismo selector de idioma del login.
+  -->
 </body>
 </html>
