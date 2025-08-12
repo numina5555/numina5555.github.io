@@ -2124,20 +2124,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 
 <script>
-/* === i18n observer patch v2: also handles keys like STATS.BALANCE === */
+/* === i18n observer patch v3: persistent tagging + more synonyms === */
 (function(){
   if (!window.dI18n) {
     window.dI18n = {
       lang: (function(){ try { return localStorage.getItem("lang") || "es"; } catch(_) { return "es"; } })(),
-      t: function(k){ return k; }, // if no dictionary, return the key; we'll fallback below
+      t: function(k){ return k; },
       apply: function(){}
     };
   }
 
   const FALLBACKS = {
-    es: { balance: "Saldo Disponible", purchases: "Compras Activas", referrals: "Referidos", tickets: "Tickets de Sorteo" },
-    en: { balance: "Available Balance", purchases: "Active Purchases", referrals: "Referrals", tickets: "Raffle Tickets" },
-    pt: { balance: "Saldo Disponível", purchases: "Compras Ativas", referrals: "Indicados", tickets: "Bilhetes do Sorteio" }
+    es: { balance: "Saldo Disponible", purchases: "Compras Activas", referrals: "Historial de Referidos", tickets: "Tickets de Sorteo" },
+    en: { balance: "Available Balance", purchases: "Active Purchases", referrals: "Referrals History", tickets: "Raffle Tickets" },
+    pt: { balance: "Saldo Disponível", purchases: "Compras Ativas", referrals: "Histórico de Indicados", tickets: "Bilhetes do Sorteio" }
   };
 
   function getLang(){
@@ -2149,10 +2149,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     try {
       const hasT = (window.dI18n && typeof dI18n.t === "function");
       const v = hasT ? dI18n.t(key) : null;
-      // If translation equals the key (common when missing) — fall back
-      if (v && typeof v === "string" && v.trim() && v.toLowerCase() !== key.toLowerCase()) {
-        return v;
-      }
+      if (v && typeof v === "string" && v.trim() && v.toLowerCase() !== key.toLowerCase()) return v;
     } catch(_){}
     return fallback;
   }
@@ -2170,12 +2167,21 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   function norm(s){ return (s || "").toString().trim().toLowerCase().replace(/\s+/g," "); }
 
-  // Known source strings that can appear in the DOM
-  const KNOWN = {
+  // Map any seen string to a semantic key (first pass only)
+  const SEED = {
+    // Spanish
     "saldo disponible": "balance",
     "compras activas": "purchases",
     "referidos": "referrals",
+    "historial de referidos": "referrals",
     "tickets de sorteo": "tickets",
+    // English
+    "available balance": "balance",
+    "active purchases": "purchases",
+    "referrals": "referrals",
+    "referrals history": "referrals",
+    "raffle tickets": "tickets",
+    // Keys/variants
     "stats.balance": "balance",
     "stats.purchases": "purchases",
     "stats.referrals": "referrals",
@@ -2186,46 +2192,54 @@ document.addEventListener('DOMContentLoaded', ()=>{
     "stats tickets": "tickets"
   };
 
-  function translateStatLabels(root){
-    const labels = resolvedLabels();
+  // Tag elements one-time with data-i18n-key so we can translate later regardless of current content
+  function seedTagging(root=document){
     const candidates = root.querySelectorAll("h1, h2, h3, .section-title span, .stat-card h3, .stat-card span, .card h3, .card span, [data-i18n], [data-i18n-extra]");
     candidates.forEach(el => {
-      const original = norm(el.textContent);
-      const key = KNOWN[original];
-      if (!key) return;
-      const target = labels[key];
-      if (!target || el.textContent === target) return;
-      if (el.__i18nTranslated === target) return;
-      el.textContent = target;
-      el.__i18nTranslated = target;
-      el.setAttribute("data-i18n-extra", "stats");
+      if (el.hasAttribute("data-i18n-key")) return;
+      const key = SEED[norm(el.textContent)];
+      if (key) {
+        el.setAttribute("data-i18n-key", key);
+      }
     });
   }
 
+  function applyTranslations(root=document){
+    const L = resolvedLabels();
+    root.querySelectorAll("[data-i18n-key]").forEach(el => {
+      const key = el.getAttribute("data-i18n-key");
+      if (!key) return;
+      const val = L[key];
+      if (val && el.textContent !== val) {
+        el.textContent = val;
+      }
+    });
+  }
+
+  // Observe dynamic changes
   let scheduled = false;
-  function scheduleApply(){
+  function schedule(){
     if (scheduled) return;
     scheduled = true;
-    requestAnimationFrame(() => {
-      try { translateStatLabels(document); } finally { scheduled = false; }
+    requestAnimationFrame(()=>{
+      try { seedTagging(document); applyTranslations(document); } finally { scheduled = false; }
     });
   }
 
-  const obs = new MutationObserver(mutations => {
-    for (const m of mutations) {
-      if (m.type === "childList" || m.type === "characterData") {
-        scheduleApply(); break;
-      }
+  const obs = new MutationObserver(muts => {
+    for (const m of muts) {
+      if (m.type === "childList" || m.type === "characterData") { schedule(); break; }
     }
   });
 
   function start(){
-    translateStatLabels(document);
-    try { obs.observe(document.body, { childList: true, characterData: true, subtree: true }); } catch(_){}
+    seedTagging(document);
+    applyTranslations(document);
+    try { obs.observe(document.body, { childList:true, characterData:true, subtree:true }); } catch(_){}
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", start, { once: true });
+    document.addEventListener("DOMContentLoaded", start, { once:true });
   } else {
     start();
   }
@@ -2235,14 +2249,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const _setLang = dI18n.setLang && dI18n.setLang.bind(dI18n);
     dI18n.setLang = function(lang){
       if (_setLang) _setLang(lang); else dI18n.lang = lang;
-      translateStatLabels(document);
+      schedule();
     };
     const _apply = dI18n.apply && dI18n.apply.bind(dI18n);
     dI18n.apply = function(){
       if (_apply) _apply();
-      translateStatLabels(document);
+      schedule();
     };
   }
+
 })();
 </script>
 </body>
