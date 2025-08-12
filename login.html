@@ -4,12 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NUMINA | Acceso</title>
-  <!-- Tipografías: se respeta Montserrat -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <style>
     :root{
-      /* Se respetan tus variables de color */
       --bg:#0f1113; --panel:#16181c; --panel-2:#1d2025; --text:#fff; --muted:#a7aeb8;
       --brand:#ffd700; --brand-2:#e6c200; --danger:#ff6b6b; --ok:#44d07b;
     }
@@ -35,9 +33,7 @@
     }
     .topbar{ display:flex;align-items:center;justify-content:flex-end;margin-bottom:6px; }
 
-    /* =====================
-       NUEVO: Dropdown de idioma (respeta tu "pill" amarilla)
-       ===================== */
+    /* Dropdown idioma (pill amarilla) */
     .lang-dropdown{ position:relative; display:inline-block; }
     .lang-btn{
       background:var(--brand);
@@ -45,10 +41,9 @@
       color:#111; font-weight:900; display:inline-flex; align-items:center; gap:8px;
       box-shadow:inset 0 -2px 0 rgba(0,0,0,.15), 0 2px 8px rgba(0,0,0,.25);
     }
-    .lang-btn:focus{ outline: none; box-shadow:0 0 0 3px rgba(255,215,0,.3); }
+    .lang-btn:focus{ outline:none; box-shadow:0 0 0 3px rgba(255,215,0,.3); }
     .lang-btn .chevron{ width:12px; height:12px; fill:none; stroke:#111; stroke-width:2px; transition:transform .18s ease; }
     .lang-dropdown.open .lang-btn .chevron{ transform:rotate(180deg); }
-
     .lang-menu{
       position:absolute; top:110%; right:0; z-index:20;
       background:#fff; color:#111; border-radius:12px; padding:6px 0; margin:8px 0 0;
@@ -60,13 +55,8 @@
       display:flex; align-items:center; gap:10px; padding:10px 14px; cursor:pointer;
       font-weight:700; user-select:none; white-space:nowrap;
     }
-    .lang-item:hover, .lang-item[aria-selected="true"]{
-      background:var(--brand); color:#111;
-    }
+    .lang-item:hover, .lang-item[aria-selected="true"]{ background:var(--brand); color:#111; }
     .lang-flag{ width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; }
-
-    /* Accesibilidad: utilidades */
-    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
     .brand{ display:flex;gap:10px;align-items:center;justify-content:center;margin:8px 0 16px; }
     .brand .logo{
@@ -141,7 +131,7 @@
       <input type="password" id="password" placeholder="Contraseña" required data-i18n-placeholder="login.password.placeholder" />
       <button class="login-button" onclick="login()" data-i18n="login.submit">Ingresar</button>
       <p id="error-message"></p>
-      <a class="toggle-form" onclick="toggleForm()" data-i18n="login.toggle">¿No tienes cuenta? Regístrate</a>
+      <a class="toggle-form" id="to-register" data-i18n="login.toggle">¿No tienes cuenta? Regístrate</a>
     </div>
 
     <div id="register-form" style="display: none;">
@@ -174,12 +164,12 @@
       <button class="login-button" onclick="register()" data-i18n="register.submit">Crear cuenta</button>
       <p id="register-error-message"></p>
       <p id="register-success-message"></p>
-      <a class="toggle-form" onclick="toggleForm()" data-i18n="register.toggle">¿Ya tienes cuenta? Inicia sesión</a>
+      <a class="toggle-form" id="to-login" data-i18n="register.toggle">¿Ya tienes cuenta? Inicia sesión</a>
     </div>
   </div>
 
   <script>
-    /* ===== i18n (respeta tu estructura previa) ===== */
+    // ===== i18n dictionaries =====
     const I18N = {
       es: {
         'aria.tablist': 'Cambiar entre iniciar sesión y crear cuenta',
@@ -282,6 +272,7 @@
       }
     };
 
+    // Motor i18n (no toca el DOM fuera de DOMContentLoaded)
     const i18n = {
       current: 'es',
       t(key){ return (I18N[this.current] && I18N[this.current][key]) || key; },
@@ -291,8 +282,6 @@
         try{ localStorage.setItem('lang', lang); }catch(e){}
         document.documentElement.setAttribute('lang', lang);
         this.apply();
-        // actualiza texto visible del botón y el marcado del menú
-        updateLangUI(lang);
       },
       apply(){
         document.querySelectorAll('[data-i18n]').forEach(el=>{
@@ -314,96 +303,124 @@
       i18n.set(initial);
     })();
 
-    /* ===== Dropdown idioma: lógica accesible ===== */
-    const dropdown = document.getElementById('langDropdown');
-    const btn = document.getElementById('langBtn');
-    const menu = document.getElementById('langMenu');
+    // ===== Todo lo que toca el DOM va acá =====
+    document.addEventListener('DOMContentLoaded', () => {
+      // Dropdown idioma
+      const dropdown = document.getElementById('langDropdown');
+      const btn      = document.getElementById('langBtn');
+      const menu     = document.getElementById('langMenu');
 
-    function updateLangUI(lang){
-      const currentSpan = document.getElementById('langCurrentText');
-      const labelKey = lang === 'en' ? 'lang.en' : lang === 'pt' ? 'lang.pt' : 'lang.es';
-      currentSpan.textContent = I18N[lang][labelKey];
-      // marcar seleccionado
-      menu.querySelectorAll('.lang-item').forEach(li=>{
-        const sel = (li.dataset.lang === lang);
-        li.setAttribute('aria-selected', sel ? 'true' : 'false');
-      });
-    }
-
-    function openMenu(){ dropdown.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
-    function closeMenu(){ dropdown.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
-
-    btn.addEventListener('click', (e)=>{
-      e.stopPropagation();
-      const isOpen = dropdown.classList.contains('open');
-      isOpen ? closeMenu() : openMenu();
-    });
-
-    // Selección de idioma
-    menu.querySelectorAll('.lang-item').forEach(item=>{
-      item.addEventListener('click', (e)=>{
-        e.stopPropagation();
-        const lang = item.dataset.lang;
-        i18n.set(lang);
-        closeMenu();
-      });
-      // Teclado dentro de opciones
-      item.tabIndex = -1;
-      item.addEventListener('keydown', (ev)=>{
-        if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); item.click(); }
-      });
-    });
-
-    // Navegación por teclado en el botón
-    btn.addEventListener('keydown', (ev)=>{
-      if((ev.key === 'ArrowDown' || ev.key === 'Enter' || ev.key === ' ') && !dropdown.classList.contains('open')){
-        ev.preventDefault();
-        openMenu();
-        const first = menu.querySelector('.lang-item');
-        if(first) first.focus();
-      } else if(ev.key === 'Escape'){
-        closeMenu();
-        btn.focus();
+      function updateLangUI(lang){
+        const currentSpan = document.getElementById('langCurrentText');
+        if (currentSpan && I18N[lang]) {
+          const labelKey = lang === 'en' ? 'lang.en' : (lang === 'pt' ? 'lang.pt' : 'lang.es');
+          currentSpan.textContent = I18N[lang][labelKey];
+        }
+        if (menu) {
+          menu.querySelectorAll('.lang-item').forEach(li=>{
+            li.setAttribute('aria-selected', li.dataset.lang === lang ? 'true' : 'false');
+          });
+        }
       }
-    });
 
-    // Cerrar al hacer click fuera
-    document.addEventListener('click', (e)=>{
-      if(!dropdown.contains(e.target)) closeMenu();
-    });
+      function openMenu(){ dropdown.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
+      function closeMenu(){ dropdown.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
 
-    // Tabs Login/Register
-    function toggleForm() {
-      const loginForm = document.getElementById("login-form");
-      const registerForm = document.getElementById("register-form");
-      document.getElementById("error-message").textContent = "";
-      document.getElementById("register-error-message").textContent = "";
-      document.getElementById("register-success-message").textContent = "";
+      if (btn) {
+        btn.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          dropdown.classList.contains('open') ? closeMenu() : openMenu();
+        });
+        btn.addEventListener('keydown', (ev)=>{
+          if ((ev.key === 'ArrowDown' || ev.key === 'Enter' || ev.key === ' ') && !dropdown.classList.contains('open')){
+            ev.preventDefault(); openMenu();
+            const first = menu && menu.querySelector('.lang-item'); if(first) first.focus();
+          } else if (ev.key === 'Escape'){ closeMenu(); btn.focus(); }
+        });
+      }
 
-      const loginVisible = loginForm.style.display !== "none";
-      loginForm.style.display = loginVisible ? "none" : "block";
-      registerForm.style.display = loginVisible ? "block" : "none";
+      if (menu) {
+        menu.querySelectorAll('.lang-item').forEach(item=>{
+          item.tabIndex = -1;
+          item.addEventListener('click', (e)=>{
+            e.stopPropagation();
+            const lang = item.dataset.lang;
+            i18n.set(lang);
+            updateLangUI(lang);
+            closeMenu();
+          });
+          item.addEventListener('keydown', (ev)=>{
+            if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); item.click(); }
+          });
+        });
+      }
 
-      const tLogin = document.getElementById("tab-login");
-      const tReg   = document.getElementById("tab-register");
-      const goLogin = !loginVisible;
-      tLogin.classList.toggle("active", goLogin);
-      tReg.classList.toggle("active", !goLogin);
-      tLogin.setAttribute("aria-selected", String(goLogin));
-      tReg.setAttribute("aria-selected", String(!goLogin));
-      tLogin.tabIndex = goLogin ? 0 : -1;
-      tReg.tabIndex   = goLogin ? -1 : 0;
+      document.addEventListener('click', (e)=>{ if(!dropdown.contains(e.target)) closeMenu(); });
+      updateLangUI(i18n.current);
 
-      i18n.apply();
-    }
+      // Tabs login/register
+      function toggleForm() {
+        const loginForm = document.getElementById("login-form");
+        const registerForm = document.getElementById("register-form");
+        const tLogin = document.getElementById("tab-login");
+        const tReg   = document.getElementById("tab-register");
 
-    document.getElementById("tab-login").addEventListener("click", () => {
-      const lf = document.getElementById("login-form");
-      if (lf.style.display === "none") toggleForm();
-    });
-    document.getElementById("tab-register").addEventListener("click", () => {
-      const rf = document.getElementById("register-form");
-      if (rf.style.display === "none") toggleForm();
+        const em = document.getElementById("error-message");
+        const rem = document.getElementById("register-error-message");
+        const rsm = document.getElementById("register-success-message");
+        if (em) em.textContent = "";
+        if (rem) rem.textContent = "";
+        if (rsm) rsm.textContent = "";
+
+        const loginVisible = loginForm && loginForm.style.display !== "none";
+        if (loginForm)   loginForm.style.display   = loginVisible ? "none" : "block";
+        if (registerForm)registerForm.style.display= loginVisible ? "block" : "none";
+
+        const goLogin = !loginVisible;
+        if (tLogin && tReg){
+          tLogin.classList.toggle("active", goLogin);
+          tReg.classList.toggle("active", !goLogin);
+          tLogin.setAttribute("aria-selected", String(goLogin));
+          tReg.setAttribute("aria-selected", String(!goLogin));
+          tLogin.tabIndex = goLogin ? 0 : -1;
+          tReg.tabIndex   = goLogin ? -1 : 0;
+        }
+        i18n.apply();
+      }
+      window.toggleForm = toggleForm;
+
+      const tabLogin = document.getElementById("tab-login");
+      const tabReg   = document.getElementById("tab-register");
+      if (tabLogin) tabLogin.addEventListener("click", () => {
+        const lf = document.getElementById("login-form");
+        if (lf && lf.style.display === "none") toggleForm();
+      });
+      if (tabReg) tabReg.addEventListener("click", () => {
+        const rf = document.getElementById("register-form");
+        if (rf && rf.style.display === "none") toggleForm();
+      });
+
+      const toReg = document.getElementById("to-register");
+      const toLogin = document.getElementById("to-login");
+      if (toReg) toReg.addEventListener('click', toggleForm);
+      if (toLogin) toLogin.addEventListener('click', toggleForm);
+
+      // --- Autotests básicos (consola) ---
+      (function selfTests(){
+        console.groupCollapsed('NUMINA login: self-tests');
+        console.assert(!!dropdown, '#langDropdown existe');
+        console.assert(!!btn, '#langBtn existe');
+        console.assert(!!menu, '#langMenu existe');
+        console.assert(document.getElementById('tab-login') && document.getElementById('tab-register'), 'Tabs existen');
+        const emailInput = document.querySelector('#login-form input[type="email"]');
+        console.assert(!!emailInput, 'Input email existe');
+        const phBefore = emailInput ? emailInput.getAttribute('placeholder') : '';
+        i18n.set(i18n.current === 'es' ? 'en' : 'es');
+        const phAfter = emailInput ? emailInput.getAttribute('placeholder') : '';
+        console.assert(phBefore !== phAfter, 'i18n.apply() actualiza placeholders');
+        i18n.set(i18n.current === 'es' ? 'en' : 'es');
+        console.groupEnd();
+      })();
     });
 
     // ===== Supabase =====
@@ -412,47 +429,40 @@
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
     async function login() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+      const email = document.getElementById("email")?.value;
+      const password = document.getElementById("password")?.value;
       const errorMsg = document.getElementById("error-message");
-      errorMsg.textContent = "";
-
+      if (errorMsg) errorMsg.textContent = "";
       if (!email || !password) {
-        errorMsg.textContent = i18n.t('errors.fillEmailPass');
+        if (errorMsg) errorMsg.textContent = i18n.t('errors.fillEmailPass');
         return;
       }
-
       const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-      if (error) {
-        errorMsg.textContent = error.message;
-      } else {
-        window.location.href = "dashboard.html";
-      }
+      if (error) { if (errorMsg) errorMsg.textContent = error.message; }
+      else { window.location.href = "dashboard.html"; }
     }
 
     async function register() {
-      const email = document.getElementById("register-email").value;
-      const password = document.getElementById("register-password").value;
-      const fullName = document.getElementById("full-name").value;
-      const country  = document.getElementById("register-country").value;
-      const city     = document.getElementById("register-city").value;
-      const address  = document.getElementById("register-address").value;
-      const postal   = document.getElementById("register-postal").value;
+      const email = document.getElementById("register-email")?.value;
+      const password = document.getElementById("register-password")?.value;
+      const fullName = document.getElementById("full-name")?.value;
+      const country  = document.getElementById("register-country")?.value;
+      const city     = document.getElementById("register-city")?.value;
+      const address  = document.getElementById("register-address")?.value;
+      const postal   = document.getElementById("register-postal")?.value;
 
       const registerBtn = document.querySelector("#register-form button.login-button");
       const regErrorMsg = document.getElementById("register-error-message");
       const regSuccessMsg = document.getElementById("register-success-message");
 
-      registerBtn.disabled = true;
-      registerBtn.textContent = i18n.t('register.creating');
-      regErrorMsg.textContent = "";
-      regSuccessMsg.textContent = "";
+      if (registerBtn){ registerBtn.disabled = true; registerBtn.textContent = i18n.t('register.creating'); }
+      if (regErrorMsg) regErrorMsg.textContent = "";
+      if (regSuccessMsg) regSuccessMsg.textContent = "";
 
       try {
         if (!email || !password || !fullName || !country || !city || !address || !postal) {
           throw new Error(i18n.t('errors.fillAll'));
         }
-
         const { data, error: signUpError } = await supabaseClient.auth.signUp({ email, password });
         if (signUpError) throw signUpError;
 
@@ -460,29 +470,21 @@
         if (!userId) throw new Error("No user ID.");
 
         const { error: insertError } = await supabaseClient.from("users").insert([{
-          id: userId,
-          email: email,
-          full_name: fullName,
-          balance: 0,
+          id: userId, email, full_name: fullName, balance: 0,
           referral_code: "NUM" + Math.random().toString(36).slice(2, 8).toUpperCase(),
-          country: country,
-          city: city,
-          address: address,
-          postal_code: postal
+          country, city, address, postal_code: postal
         }]);
         if (insertError) throw insertError;
 
         const { error: loginError } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (loginError) throw loginError;
 
-        regSuccessMsg.textContent = i18n.t('register.createdRedirect');
+        if (regSuccessMsg) regSuccessMsg.textContent = i18n.t('register.createdRedirect');
         setTimeout(() => window.location.href = "dashboard.html", 2000);
-
       } catch (error) {
-        regErrorMsg.textContent = error.message;
+        if (regErrorMsg) regErrorMsg.textContent = error.message;
       } finally {
-        registerBtn.disabled = false;
-        registerBtn.textContent = i18n.t('register.submit');
+        if (registerBtn){ registerBtn.disabled = false; registerBtn.textContent = i18n.t('register.submit'); }
       }
     }
   </script>
