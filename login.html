@@ -526,8 +526,8 @@
         // === CONFIGURABLE: adonde debe volver el link del email ===
 const RESET_REDIRECT_URL = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
   ? (window.location.origin + window.location.pathname)          // dev local
-  : 'https://numina.vip/login.html';                              // PRODUCCIÓN (ajústalo si usas otra ruta)
-const redirectTo = RESET_REDIRECT_URL;
+  : 'https://numina.vip/reset-password.html';                              // PRODUCCIÓN (ajústalo si usas otra ruta)
+const redirectTo = RESET_REDIRECT_URL; // -> en producción envía al formulario dedicado reset-password.html
         const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo });
         if (error){ resetError.textContent = error.message || i18n.t('reset.error'); }
         else { resetSuccess.textContent = i18n.t('reset.sent'); }
