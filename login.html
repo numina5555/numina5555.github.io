@@ -91,8 +91,9 @@
       <div class="lang">
         <label id="lang-label" class="sr-only" data-i18n="lang.label">Idioma</label>
         <select id="lang-select" aria-labelledby="lang-label">
-          <option value="es" data-i18n-option="lang.es">ES</option>
-          <option value="en" data-i18n-option="lang.en">EN</option>
+          <option value="es" data-i18n-option="lang.es">Español</option>
+          <option value="en" data-i18n-option="lang.en">English</option>
+          <option value="pt" data-i18n-option="lang.pt">Português</option>
         </select>
       </div>
     </div>
@@ -185,7 +186,8 @@
         'errors.fillEmailPass': 'Por favor completa todos los campos.',
         'lang.label': 'Idioma',
         'lang.es': 'Español',
-        'lang.en': 'Inglés'
+        'lang.en': 'Inglés',
+        'lang.pt': 'Portugués'
       },
       en: {
         'aria.tablist': 'Switch between sign in and sign up',
@@ -217,7 +219,41 @@
         'errors.fillEmailPass': 'Please complete all fields.',
         'lang.label': 'Language',
         'lang.es': 'Spanish',
-        'lang.en': 'English'
+        'lang.en': 'English',
+        'lang.pt': 'Portuguese'
+      },
+      pt: {
+        'aria.tablist': 'Alternar entre entrar e criar conta',
+        'tabs.login': 'Entrar',
+        'tabs.register': 'Criar conta',
+        'login.email.placeholder': 'E-mail',
+        'login.password.placeholder': 'Senha',
+        'login.submit': 'Entrar',
+        'login.toggle': 'Não tem uma conta? Cadastre-se',
+        'register.email.label': 'E-mail',
+        'register.email.placeholder': 'E-mail',
+        'register.password.label': 'Senha',
+        'register.password.placeholder': 'Senha (mín. 6)',
+        'register.fullname.label': 'Nome completo',
+        'register.fullname.placeholder': 'Nome completo',
+        'register.country.label': 'País',
+        'register.country.placeholder': 'País',
+        'register.city.label': 'Cidade',
+        'register.city.placeholder': 'Cidade',
+        'register.address.label': 'Endereço',
+        'register.address.placeholder': 'Rua e número',
+        'register.postal.label': 'CEP',
+        'register.postal.placeholder': 'CEP',
+        'register.submit': 'Criar conta',
+        'register.toggle': 'Já tem uma conta? Entrar',
+        'register.creating': 'Criando conta...',
+        'register.createdRedirect': 'Conta criada! Redirecionando...',
+        'errors.fillAll': 'Preencha todos os campos.',
+        'errors.fillEmailPass': 'Por favor, complete todos os campos.',
+        'lang.label': 'Idioma',
+        'lang.es': 'Espanhol',
+        'lang.en': 'Inglês',
+        'lang.pt': 'Português'
       }
     };
 
@@ -249,13 +285,13 @@
           const key = el.getAttribute('data-i18n-aria-label');
           el.setAttribute('aria-label', this.t(key));
         });
-        // select option labels (for accessibility menus that show text)
+        // select option labels
         document.querySelectorAll('[data-i18n-option]').forEach(el=>{
           const key = el.getAttribute('data-i18n-option');
           el.textContent = this.t(key);
         });
 
-        // buttons whose text can change depending on state:
+        // buttons that can change their text depending on state:
         const regBtn = document.querySelector('#register-form button.login-button');
         if(regBtn && !regBtn.disabled){
           regBtn.textContent = this.t('register.submit');
@@ -265,8 +301,9 @@
 
     (function initLang(){
       const saved = (()=>{ try{return localStorage.getItem('lang')}catch(e){ return null } })();
-      const lang = saved || (navigator.language||'es').toLowerCase().startsWith('en') ? 'en' : 'es';
-      i18n.set(lang);
+      const preferred = (navigator.language || 'es').toLowerCase();
+      const initial = saved || (preferred.startsWith('en') ? 'en' : preferred.startsWith('pt') ? 'pt' : 'es');
+      i18n.set(initial);
       const select = document.getElementById('lang-select');
       select.value = i18n.current;
       select.addEventListener('change', (e)=> i18n.set(e.target.value));
