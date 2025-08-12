@@ -2124,86 +2124,122 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 
 <script>
-/* === Minimal i18n extender: only handles the 4 stat cards === */
+/* === i18n observer patch: handles dynamic updates from Supabase or app scripts === */
 (function(){
-  if (!window.dI18n) return;
+  if (!window.dI18n) {
+    // Create a minimal shim if not present, so we can still translate with fallbacks.
+    window.dI18n = {
+      lang: (function(){ try { return localStorage.getItem("lang") || "es"; } catch(_) { return "es"; } })(),
+      t: function(k){ return null; },
+      apply: function(){}
+    };
+  }
 
-  // Fallback translations if the page's dictionary doesn't expose keys for these labels
   const FALLBACKS = {
     es: { balance: "Saldo Disponible", purchases: "Compras Activas", referrals: "Referidos", tickets: "Tickets de Sorteo" },
     en: { balance: "Available Balance", purchases: "Active Purchases", referrals: "Referrals", tickets: "Raffle Tickets" },
     pt: { balance: "Saldo Disponível", purchases: "Compras Ativas", referrals: "Indicados", tickets: "Bilhetes do Sorteio" }
   };
 
-  const origApply = (typeof dI18n.apply === "function") ? dI18n.apply.bind(dI18n) : function(){};
-  const origSetLang = (typeof dI18n.setLang === "function") ? dI18n.setLang.bind(dI18n) : function(lang){ dI18n.lang = lang; };
-
   function getLang(){
-    return dI18n.lang || dI18n.current || (function(){ try { return localStorage.getItem("lang"); } catch(_) { return null; } })() || "es";
+    const d = window.dI18n || {};
+    return d.lang || d.current || (function(){ try { return localStorage.getItem("lang"); } catch(_) { return null; } })() || "es";
   }
 
-  // Try to pull strings from existing dictionaries if possible, else use FALLBACKS
-  function resolveTexts(){
+  function tt(key, fallback){
+    try {
+      const v = (window.dI18n && typeof dI18n.t === "function") ? dI18n.t(key) : null;
+      if (v && typeof v === "string" && v.trim()) return v;
+    } catch(_){}
+    return fallback;
+  }
+
+  function resolvedLabels(){
     const lang = getLang();
     const fb = FALLBACKS[lang] || FALLBACKS.es;
-    const t = (typeof dI18n.t === "function") ? dI18n.t : null;
-    function prefer(key, fallback){
-      try {
-        if (t) {
-          const v = t(key);
-          if (v && typeof v === "string" && v.trim()) return v;
-        }
-      } catch(_){}
-      return fallback;
-    }
-    // Heuristics for common key names used in dashboards
     return {
-      balance:  prefer("stats.balance", fb.balance),
-      purchases: prefer("stats.purchases", prefer("sections.comprasActivas", fb.purchases)),
-      referrals: prefer("stats.referrals", prefer("sections.referidosHist", fb.referrals)),
-      tickets:   prefer("stats.tickets", fb.tickets)
+      balance:  tt("stats.balance", fb.balance),
+      purchases: tt("stats.purchases", tt("sections.comprasActivas", fb.purchases)),
+      referrals: tt("stats.referrals", tt("sections.referidosHist", fb.referrals)),
+      tickets:   tt("stats.tickets", fb.tickets)
     };
   }
 
-  function applyExtra(root=document){
-    const L = resolveTexts();
-    const map = new Map([
-      ["saldo disponible", L.balance],
-      ["compras activas", L.purchases],
-      ["referidos", L.referrals],
-      ["tickets de sorteo", L.tickets]
-    ]);
+  // Normalize text helper
+  function norm(s){ return (s || "").toString().trim().toLowerCase().replace(/\s+/g," "); }
 
-    const candidates = root.querySelectorAll("h1, h2, h3, .section-title span, .stat-card h3, .stat-card span, .card h3, .card span");
+  const KNOWN = {
+    "saldo disponible": "balance",
+    "compras activas": "purchases",
+    "referidos": "referrals",
+    "tickets de sorteo": "tickets"
+  };
+
+  function translateStatLabels(root){
+    const labels = resolvedLabels();
+    // Candidate nodes: allow common patterns used in dashboards
+    const candidates = root.querySelectorAll("h1, h2, h3, .section-title span, .stat-card h3, .stat-card span, .card h3, .card span, [data-i18n], [data-i18n-extra]");
     candidates.forEach(el => {
-      const txt = (el.textContent || "").trim().toLowerCase();
-      if (map.has(txt)) {
-        el.textContent = map.get(txt);
-        el.setAttribute("data-i18n-extra", "stats");
-      }
+      const original = norm(el.textContent);
+      const key = KNOWN[original];
+      if (!key) return;
+
+      const target = labels[key];
+      if (!target || el.textContent === target) return;
+
+      // Mark to avoid infinite loops
+      if (el.__i18nTranslated === target) return;
+
+      el.textContent = target;
+      el.__i18nTranslated = target;
+      el.setAttribute("data-i18n-extra", "stats");
     });
   }
 
-  dI18n.apply = function(){
-    try { origApply(); } catch(_){}
-    applyExtra(document);
-  };
+  // Observe any dynamic changes and re-translate throttled
+  let scheduled = false;
+  function scheduleApply(){
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      try { translateStatLabels(document); } finally { scheduled = false; }
+    });
+  }
 
-  dI18n.setLang = function(lang){
-    try { origSetLang(lang); } catch(_){ dI18n.lang = lang; }
-    // Re-apply to cover the stat cards too
-    if (typeof dI18n.apply === "function") {
-      dI18n.apply();
-    } else {
-      applyExtra(document);
+  const obs = new MutationObserver(mutations => {
+    for (const m of mutations) {
+      if (m.type === "childList" || m.type === "characterData") {
+        scheduleApply();
+        break;
+      }
     }
-  };
+  });
 
-  // Initial run (also covers hard refresh when already logged in)
+  function start(){
+    translateStatLabels(document);
+    try {
+      obs.observe(document.body, { childList: true, characterData: true, subtree: true });
+    } catch(_){}
+  }
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => (dI18n.apply ? dI18n.apply() : applyExtra(document)));
+    document.addEventListener("DOMContentLoaded", start, { once: true });
   } else {
-    (dI18n.apply ? dI18n.apply() : applyExtra(document));
+    start();
+  }
+
+  // Also hook language changes
+  if (window.dI18n) {
+    const _setLang = dI18n.setLang && dI18n.setLang.bind(dI18n);
+    dI18n.setLang = function(lang){
+      if (_setLang) _setLang(lang); else dI18n.lang = lang;
+      translateStatLabels(document);
+    };
+    const _apply = dI18n.apply && dI18n.apply.bind(dI18n);
+    dI18n.apply = function(){
+      if (_apply) _apply();
+      translateStatLabels(document);
+    };
   }
 })();
 </script>
