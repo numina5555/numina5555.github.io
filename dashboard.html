@@ -2124,13 +2124,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 
 <script>
-/* === i18n observer patch: handles dynamic updates from Supabase or app scripts === */
+/* === i18n observer patch v2: also handles keys like STATS.BALANCE === */
 (function(){
   if (!window.dI18n) {
-    // Create a minimal shim if not present, so we can still translate with fallbacks.
     window.dI18n = {
       lang: (function(){ try { return localStorage.getItem("lang") || "es"; } catch(_) { return "es"; } })(),
-      t: function(k){ return null; },
+      t: function(k){ return k; }, // if no dictionary, return the key; we'll fallback below
       apply: function(){}
     };
   }
@@ -2146,10 +2145,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
     return d.lang || d.current || (function(){ try { return localStorage.getItem("lang"); } catch(_) { return null; } })() || "es";
   }
 
-  function tt(key, fallback){
+  function tOrFallback(key, fallback){
     try {
-      const v = (window.dI18n && typeof dI18n.t === "function") ? dI18n.t(key) : null;
-      if (v && typeof v === "string" && v.trim()) return v;
+      const hasT = (window.dI18n && typeof dI18n.t === "function");
+      const v = hasT ? dI18n.t(key) : null;
+      // If translation equals the key (common when missing) — fall back
+      if (v && typeof v === "string" && v.trim() && v.toLowerCase() !== key.toLowerCase()) {
+        return v;
+      }
     } catch(_){}
     return fallback;
   }
@@ -2158,45 +2161,47 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const lang = getLang();
     const fb = FALLBACKS[lang] || FALLBACKS.es;
     return {
-      balance:  tt("stats.balance", fb.balance),
-      purchases: tt("stats.purchases", tt("sections.comprasActivas", fb.purchases)),
-      referrals: tt("stats.referrals", tt("sections.referidosHist", fb.referrals)),
-      tickets:   tt("stats.tickets", fb.tickets)
+      balance:  tOrFallback("stats.balance", fb.balance),
+      purchases: tOrFallback("stats.purchases", tOrFallback("sections.comprasActivas", fb.purchases)),
+      referrals: tOrFallback("stats.referrals", tOrFallback("sections.referidosHist", fb.referrals)),
+      tickets:   tOrFallback("stats.tickets", fb.tickets)
     };
   }
 
-  // Normalize text helper
   function norm(s){ return (s || "").toString().trim().toLowerCase().replace(/\s+/g," "); }
 
+  // Known source strings that can appear in the DOM
   const KNOWN = {
     "saldo disponible": "balance",
     "compras activas": "purchases",
     "referidos": "referrals",
-    "tickets de sorteo": "tickets"
+    "tickets de sorteo": "tickets",
+    "stats.balance": "balance",
+    "stats.purchases": "purchases",
+    "stats.referrals": "referrals",
+    "stats.tickets": "tickets",
+    "stats balance": "balance",
+    "stats purchases": "purchases",
+    "stats referrals": "referrals",
+    "stats tickets": "tickets"
   };
 
   function translateStatLabels(root){
     const labels = resolvedLabels();
-    // Candidate nodes: allow common patterns used in dashboards
     const candidates = root.querySelectorAll("h1, h2, h3, .section-title span, .stat-card h3, .stat-card span, .card h3, .card span, [data-i18n], [data-i18n-extra]");
     candidates.forEach(el => {
       const original = norm(el.textContent);
       const key = KNOWN[original];
       if (!key) return;
-
       const target = labels[key];
       if (!target || el.textContent === target) return;
-
-      // Mark to avoid infinite loops
       if (el.__i18nTranslated === target) return;
-
       el.textContent = target;
       el.__i18nTranslated = target;
       el.setAttribute("data-i18n-extra", "stats");
     });
   }
 
-  // Observe any dynamic changes and re-translate throttled
   let scheduled = false;
   function scheduleApply(){
     if (scheduled) return;
@@ -2209,17 +2214,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const obs = new MutationObserver(mutations => {
     for (const m of mutations) {
       if (m.type === "childList" || m.type === "characterData") {
-        scheduleApply();
-        break;
+        scheduleApply(); break;
       }
     }
   });
 
   function start(){
     translateStatLabels(document);
-    try {
-      obs.observe(document.body, { childList: true, characterData: true, subtree: true });
-    } catch(_){}
+    try { obs.observe(document.body, { childList: true, characterData: true, subtree: true }); } catch(_){}
   }
 
   if (document.readyState === "loading") {
@@ -2228,7 +2230,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     start();
   }
 
-  // Also hook language changes
+  // Hook language changes
   if (window.dI18n) {
     const _setLang = dI18n.setLang && dI18n.setLang.bind(dI18n);
     dI18n.setLang = function(lang){
