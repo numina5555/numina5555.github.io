@@ -511,9 +511,44 @@
     #sorteos-table td{ color:var(--text-light); border-bottom:1px solid rgba(255,255,255,.05); }
   </style>
 
+
+<style>
+/* === NUMINA: Pill de idioma en header === */
+.lang-dropdown{ position:relative; display:inline-block; margin-right:.75rem; }
+.lang-btn{ background:#ffd700; border:0; border-radius:999px; padding:6px 12px; cursor:pointer;
+  color:#111; font-weight:800; display:inline-flex; align-items:center; gap:8px;
+  box-shadow:inset 0 -2px 0 rgba(0,0,0,.15), 0 2px 8px rgba(0,0,0,.25); }
+.lang-btn:focus{ outline:none; box-shadow:0 0 0 3px rgba(255,215,0,.3); }
+.lang-btn .chevron{ width:12px; height:12px; fill:none; stroke:#111; stroke-width:2px; transition:transform .18s ease; }
+.lang-dropdown.open .chevron{ transform:rotate(180deg); }
+.lang-menu{ position:absolute; top:110%; right:0; z-index:100; background:#fff; color:#111; border-radius:12px; padding:6px 0; margin:8px 0 0;
+  box-shadow:0 12px 28px rgba(0,0,0,.25), 0 2px 8px rgba(0,0,0,.2); min-width:170px; list-style:none; display:none; max-height:260px; overflow:auto; }
+.lang-dropdown.open .lang-menu{ display:block; }
+.lang-item{ display:flex; align-items:center; gap:10px; padding:10px 14px; cursor:pointer; font-weight:700; user-select:none; white-space:nowrap; }
+.lang-item:hover, .lang-item[aria-selected="true"]{ background:#ffd700; color:#111; }
+.lang-flag{ width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; }
+@media (max-width: 600px){
+  .lang-dropdown{ margin-right:.35rem; }
+}
+</style>
+
 </head>
 <body>
 <header class="dashboard-header"><div style="flex-grow:1; text-align:center;"><div class="logo">NUMINA</div></div><div class="user-menu">
+
+<div class="lang-dropdown" id="langDropdown">
+  <button class="lang-btn" id="langBtn" aria-haspopup="listbox" aria-expanded="false">
+    <span aria-hidden="true">🌐</span>
+    <span id="langCurrentText">Español</span>
+    <svg class="chevron" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
+  </button>
+  <ul class="lang-menu" id="langMenu" role="listbox" aria-label="Language">
+    <li class="lang-item" role="option" data-lang="es" aria-selected="true"><span class="lang-flag">🇪🇸</span><span>Español</span></li>
+    <li class="lang-item" role="option" data-lang="en" aria-selected="false"><span class="lang-flag">🇬🇧</span><span>English</span></li>
+    <li class="lang-item" role="option" data-lang="pt" aria-selected="false"><span class="lang-flag">🇧🇷</span><span>Português</span></li>
+  </ul>
+</div>
+
 <div class="user-avatar" id="user-avatar">US</div>
 </div>
 </header>
@@ -538,7 +573,7 @@
 </li>
 <li class="menu-item" data-target="productos">
 <i class="fas fa-box"></i>
-<span>Productos</span>
+<span id="sidebar-productos-text">Catálogo</span>
 </li>
 <li class="menu-item" data-target="configuracion">
 <i class="fas fa-cog"></i>
@@ -742,7 +777,7 @@
 </section>
 <section class="section-content" id="section-productos" style="display:none;">
   <div class="products-wrap">
-    <h2 class="section-title"><i class="fas fa-box"></i><span>Productos</span></h2>
+    <h2 class="section-title"><i class="fas fa-box"></i><span id="sidebar-productos-text">Catálogo</span></h2>
     <section class="products-grid">
       <!-- Oro -->
       <article class="product-card">
@@ -1660,6 +1695,172 @@ overlay.classList.add("show");
     }
   });
 })();
+</script>
+
+
+<script>
+// === NUMINA Dashboard i18n (ES/EN/PT) ===
+const DB_I18N = {
+  es: {
+    sidebar: {
+      dashboard: "Dashboard",
+      compras: "Mis Compras",
+      sorteos: "Sorteos",
+      referidos: "Referidos",
+      catalogo: "Catálogo",
+      config: "Configuración",
+      logout: "Cerrar Sesión"
+    },
+    actions: { copy: "Copiar", copied: "¡Copiado!" },
+    sections: {
+      comprasActivas: "Compras Activas",
+      referidosHist: "Historial de Referidos",
+      accountInfo: "Información de la Cuenta"
+    }
+  },
+  en: {
+    sidebar: {
+      dashboard: "Dashboard",
+      compras: "My Purchases",
+      sorteos: "Raffles",
+      referidos: "Referrals",
+      catalogo: "Catalog",
+      config: "Settings",
+      logout: "Sign out"
+    },
+    actions: { copy: "Copy", copied: "Copied!" },
+    sections: {
+      comprasActivas: "Active Purchases",
+      referidosHist: "Referral History",
+      accountInfo: "Account Information"
+    }
+  },
+  pt: {
+    sidebar: {
+      dashboard: "Painel",
+      compras: "Minhas Compras",
+      sorteos: "Sorteios",
+      referidos: "Indicados",
+      catalogo: "Catálogo",
+      config: "Configurações",
+      logout: "Sair"
+    },
+    actions: { copy: "Copiar", copied: "Copiado!" },
+    sections: {
+      comprasActivas: "Compras Ativas",
+      referidosHist: "Histórico de Indicações",
+      accountInfo: "Informações da Conta"
+    }
+  }
+};
+
+const dI18n = {
+  current: 'es',
+  set(lang){
+    if(!DB_I18N[lang]) return;
+    this.current = lang;
+    try{ localStorage.setItem('dash_lang', lang); }catch(e){}
+    document.documentElement.setAttribute('lang', lang);
+    this.apply();
+  },
+  t(path){
+    // simple dot path e.g. 'sidebar.catalogo'
+    const parts = path.split('.'); let obj = DB_I18N[this.current];
+    for (const p of parts){ if (!obj) return path; obj = obj[p]; }
+    return obj || path;
+  },
+  apply(){
+    // Sidebar
+    const map = {
+      dashboard: '.menu-item[data-target="dashboard"] span',
+      compras:   '.menu-item[data-target="compras"] span',
+      sorteos:   '.menu-item[data-target="sorteos"] span',
+      referidos: '.menu-item[data-target="referidos"] span',
+      catalogo:  '#sidebar-productos-text',
+      config:    '.menu-item[data-target="configuracion"] span',
+      logout:    '.menu-item[data-target="logout"] span'
+    };
+    Object.entries(map).forEach(([k, sel]) => {
+      const el = document.querySelector(sel);
+      if (el) el.textContent = dI18n.t('sidebar.'+k);
+    });
+    // Copy button
+    const copyBtn = document.getElementById('copy-btn');
+    if (copyBtn) copyBtn.textContent = dI18n.t('actions.copy');
+    // Section titles (if present)
+    const s1 = document.querySelector('h2.section-title i.fa-shopping-bag + span');
+    if (s1) s1.textContent = dI18n.t('sections.comprasActivas');
+    const s2 = document.querySelector('h2.section-title i.fa-users + span');
+    if (s2) s2.textContent = dI18n.t('sections.referidosHist');
+    const s3 = document.querySelector('h2.section-title i.fa-user-circle + span');
+    if (s3) s3.textContent = dI18n.t('sections.accountInfo');
+  }
+};
+
+(function initDashLang(){
+  const saved = (()=>{ try{return localStorage.getItem('dash_lang')}catch(e){ return null } })();
+  const preferred = (navigator.language || 'es').toLowerCase();
+  const initial = saved || (preferred.startsWith('en') ? 'en' : preferred.startsWith('pt') ? 'pt' : 'es');
+  dI18n.set(initial);
+})();
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Language pill bindings
+  const dropdown = document.getElementById('langDropdown');
+  const btn = document.getElementById('langBtn');
+  const menu = document.getElementById('langMenu');
+  const currentSpan = document.getElementById('langCurrentText');
+
+  function openMenu(){ dropdown.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
+  function closeMenu(){ dropdown.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+
+  function updateLabel(){
+    const label = dI18n.current==='en'?'English': dI18n.current==='pt'?'Português':'Español';
+    if (currentSpan) currentSpan.textContent = label;
+  }
+
+  updateLabel();
+  dI18n.apply();
+
+  btn?.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    dropdown.classList.contains('open') ? closeMenu() : openMenu();
+  });
+  menu?.querySelectorAll('.lang-item').forEach(item=>{
+    item.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const lang = item.dataset.lang;
+      dI18n.set(lang);
+      updateLabel();
+      // update selected
+      menu.querySelectorAll('.lang-item').forEach(li=> li.setAttribute('aria-selected', li.dataset.lang===lang?'true':'false'));
+      closeMenu();
+    });
+  });
+  document.addEventListener('click', (e)=>{ if (!dropdown.contains(e.target)) closeMenu(); });
+
+  // Hook copy button text change on success to language
+  const copyBtn = document.getElementById('copy-btn');
+  if (copyBtn) {
+    const setCopied = ()=>{ copyBtn.textContent = dI18n.t('actions.copied'); setTimeout(()=> copyBtn.textContent = dI18n.t('actions.copy'), 2000); };
+    // If an existing handler changes it, we still ensure fallback translation with a custom event
+    copyBtn.addEventListener('copied-i18n', setCopied);
+  }
+});
+</script>
+
+
+<script>
+// Patch: after existing copy logic, ensure label matches current language
+document.addEventListener('DOMContentLoaded', ()=>{
+  const btn = document.getElementById('copy-btn');
+  if (!btn) return;
+  const orig = btn.onclick;
+  // If inline not used, attach listener to ensure we set translated 'copied' text
+  btn.addEventListener('click', ()=>{
+    try{ btn.dispatchEvent(new Event('copied-i18n')); }catch(_){}
+  });
+});
 </script>
 
 </body>
