@@ -1,14 +1,3 @@
-
-    // Update stat card titles
-    (function(){
-      const cards = document.querySelectorAll('.stat-card h3');
-      if (cards && cards.length) {
-        const map = [dI18n.t('cards.balance'), dI18n.t('cards.active'), dI18n.t('cards.referrals'), dI18n.t('cards.tickets')];
-        for (let i = 0; i < Math.min(cards.length, map.length); i++) {
-          cards[i].textContent = map[i];
-        }
-      }
-    })();
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1911,8 +1900,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         referidos: "Referidos",
         configuracion: "Configuración",
         dashboard: "Dashboard"
-      },
-      cards: { balance: "Saldo Disponível", active: "Compras Ativas", referrals: "Indicados", tickets: "Bilhetes do sorteio" }
+      }
     },
     en: {
       labels: {
@@ -2135,117 +2123,66 @@ document.addEventListener('DOMContentLoaded', ()=>{
 </script>
 
 
-<!-- i18n card titles fix: ensure keys exist and update on lang changes -->
 <script>
-(function() {
-  // Safety: create a tiny accessor that gracefully returns the key if missing
-  function t(key){
-    try{
-      if (window.dI18n && typeof dI18n.t === 'function'){
-        var v = dI18n.t(key);
-        return (v && typeof v === 'string') ? v : key;
-      }
-    }catch(e){}
-    // fallback plain dictionary if exposed as I18N/currentLang
-    try{
-      var lang = (window.dI18n && dI18n.current) || document.documentElement.getAttribute('lang') || 'es';
-      if (window.I18N && I18N[lang] && I18N[lang][key]) return I18N[lang][key];
-    }catch(e){}
-    return key;
-  }
-
-  // Ensure the 4 card keys exist across locales even if they weren't defined inside the main I18N object
-  try{
-    var langs = ['es','en','pt'];
-    var dict = {
-      es: {
-        'cards.balance':'Saldo disponible',
-        'cards.active':'Compras activas',
-        'cards.referrals':'Referidos',
-        'cards.tickets':'Tickets de sorteo'
-      },
-      en: {
-        'cards.balance':'Available balance',
-        'cards.active':'Active purchases',
-        'cards.referrals':'Referrals',
-        'cards.tickets':'Raffle tickets'
-      },
-      pt: {
-        'cards.balance':'Saldo disponível',
-        'cards.active':'Compras ativas',
-        'cards.referrals':'Indicações',
-        'cards.tickets':'Bilhetes do sorteio'
-      }
-    };
-    if (window.I18N){
-      langs.forEach(function(l){
-        I18N[l] = I18N[l] || {};
-        Object.assign(I18N[l], dict[l]);
-      });
-    }
-  }catch(e){ console.warn('[i18n] card keys merge warning', e); }
-
-  function findStatCardH3s(){
-    // Prefer an explicit class if it exists, else common patterns
-    var list = document.querySelectorAll('.stat-card h3');
-    if (list && list.length >= 4) return Array.from(list).slice(0,4);
-
-    // Fallback: any top-level dashboard cards row
-    list = document.querySelectorAll('.cards h3, .dashboard-cards h3, section .card h3');
-    if (list && list.length >= 4) return Array.from(list).slice(0,4);
-
-    // Last resort: scan all h3s and heuristically map to the four stat cards by their current text
-    var all = Array.from(document.querySelectorAll('h3'));
-    var pick = new Array(4);
-    var map = [
-      [/saldo|balance/i, 0],   // balance
-      [/compras|active/i, 1],  // active purchases
-      [/referid|referral|indic/i, 2], // referrals
-      [/ticket/i, 3]           // tickets
-    ];
-    all.forEach(function(h3){
-      var txt = (h3.textContent || '').trim();
-      map.forEach(function(m){
-        if (!pick[m[1]] && m[0].test(txt)) pick[m[1]] = h3;
-      });
-    });
-    return pick.filter(Boolean);
-  }
+// === I18N: add stat-card keys and auto-translate the 4 top tiles ===
+(function(){
+  if (!window.DB_I18N) return;
+  // Non-destructive merge
+  function merge(obj, add){ for (const k in add){ obj[k] = obj[k] || add[k]; } }
+  DB_I18N.es = DB_I18N.es || {}; DB_I18N.en = DB_I18N.en || {}; DB_I18N.pt = DB_I18N.pt || {};
+  merge(DB_I18N.es, {
+    'cards.balance':'Saldo disponible',
+    'cards.active':'Compras activas',
+    'cards.referrals':'Referidos',
+    'cards.tickets':'Tickets de sorteo'
+  });
+  merge(DB_I18N.en, {
+    'cards.balance':'Available balance',
+    'cards.active':'Active purchases',
+    'cards.referrals':'Referrals',
+    'cards.tickets':'Raffle tickets'
+  });
+  merge(DB_I18N.pt, {
+    'cards.balance':'Saldo disponível',
+    'cards.active':'Compras ativas',
+    'cards.referrals':'Indicações',
+    'cards.tickets':'Bilhetes do sorteio'
+  });
 
   function updateStatCardTitles(){
-    var cards = findStatCardH3s();
-    if (!cards || cards.length < 4) { return; }
-    var labels = [ t('cards.balance'), t('cards.active'), t('cards.referrals'), t('cards.tickets') ];
-    for (var i = 0; i < 4; i++){
-      cards[i].textContent = labels[i];
+    if (!window.dI18n) return;
+    const m = {
+      'cards.balance': ['SALDO DISPONIBLE','Saldo disponible','CARDS.BALANCE','cards.balance'],
+      'cards.active': ['COMPRAS ACTIVAS','Compras activas','CARDS.ACTIVE','cards.active'],
+      'cards.referrals': ['REFERIDOS','Referidos','CARDS.REFERRALS','cards.referrals'],
+      'cards.tickets': ['TICKETS DE SORTEO','Tickets de sorteo','CARDS.TICKETS','cards.tickets']
+    };
+    const h3s = Array.from(document.querySelectorAll('h3'));
+    let n=0;
+    for (const h of h3s){
+      const txt = (h.textContent||'').trim();
+      for (const key in m){
+        if (m[key].some(v => v.toLowerCase() === txt.toLowerCase())){
+          if (h.getAttribute('data-i18n') !== key) h.setAttribute('data-i18n', key);
+          h.textContent = dI18n.t(key);
+          n++;
+          break;
+        }
+      }
     }
-    console.log('[i18n] updated stat card titles ->', labels.join(' | '));
+    try{ console.log('[i18n] stat-card titles refreshed:', n); }catch(e){}
   }
+  window.updateStatCardTitles = updateStatCardTitles;
+  document.addEventListener('DOMContentLoaded', updateStatCardTitles);
+  setTimeout(updateStatCardTitles, 80);
 
-  // Run when DOM is ready
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', function(){
-      setTimeout(updateStatCardTitles, 0);
-      setTimeout(updateStatCardTitles, 150); // in case cards render a tick later
-    });
-  } else {
-    setTimeout(updateStatCardTitles, 0);
+  // Hook into i18n apply so it refreshes on language change
+  if (window.dI18n && typeof dI18n.apply === 'function'){
+    const _apply = dI18n.apply.bind(dI18n);
+    dI18n.apply = function(){ const r = _apply(); try{ updateStatCardTitles(); }catch(e){} return r; };
   }
-
-  // Re-run when the language changes. Many implementations toggle <html lang=".."> or localStorage('lang')
-  // Observe changes to the html[lang] attribute
-  try{
-    var obs = new MutationObserver(function(muts){
-      muts.forEach(function(m){
-        if (m.attributeName === 'lang') updateStatCardTitles();
-      });
-    });
-    obs.observe(document.documentElement, { attributes:true, attributeFilter:['lang'] });
-  }catch(e){}
-
-  // Also listen to a custom event if your i18n engine dispatches one
-  window.addEventListener('numina:lang-changed', updateStatCardTitles);
 })();
 </script>
+
 </body>
 </html>
