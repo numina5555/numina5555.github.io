@@ -2124,47 +2124,43 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 
 <script>
-/* === i18n observer patch v8: deterministic h3 rewrite for .stats-grid cards === */
+/* === i18n observer patch v9 (final): deterministic, multi-trigger, no dropdown interference === */
 (function(){
-  if (!window.dI18n) {
-    window.dI18n = {
-      current: (function(){ try { return localStorage.getItem("dash_lang") || "es"; } catch(_) { return "es"; } })(),
-      t: function(k){ return k; },
-      apply: function(){},
-      set: function(lang){ this.current = lang; try{ localStorage.setItem("dash_lang", lang);}catch(_){}},
-    };
+  // Safe accessors
+  function getStore(k, fb){ try { var v = localStorage.getItem(k); return v==null?fb:v; } catch(_){ return fb; } }
+
+  // Resolve current language from multiple sources
+  function currentLang(){
+    var d = window.dI18n || {};
+    return d.current || d.lang || getStore('dash_lang', getStore('lang', 'es')) || 'es';
   }
 
-  const FALLBACKS = {
-    es: { balance: "Saldo Disponible", purchases: "Compras Activas", referrals: "Historial de Referidos", tickets: "Tickets de Sorteo" },
-    en: { balance: "Available Balance", purchases: "Active Purchases", referrals: "Referral History", tickets: "Raffle Tickets" },
-    pt: { balance: "Saldo Disponível", purchases: "Compras Ativas", referrals: "Histórico de Indicados", tickets: "Bilhetes do Sorteio" }
+  // Translation with smart fallbacks
+  var FALLBACKS = {
+    es: { balance:"Saldo Disponible", purchases:"Compras Activas", referrals:"Historial de Referidos", tickets:"Tickets de Sorteo" },
+    en: { balance:"Available Balance", purchases:"Active Purchases", referrals:"Referral History", tickets:"Raffle Tickets" },
+    pt: { balance:"Saldo Disponível", purchases:"Compras Ativas", referrals:"Histórico de Indicados", tickets:"Bilhetes do Sorteio" }
   };
+  var ES_SET = new Set(Object.values(FALLBACKS.es));
 
-  const ES_SOURCE = new Set(["Saldo Disponible","Compras Activas","Referidos","Historial de Referidos","Tickets de Sorteo"]);
-
-  function getLang(){
-    const d = window.dI18n || {};
-    return d.current || d.lang || (function(){ try { return localStorage.getItem("dash_lang") || localStorage.getItem("lang"); } catch(_) { return null; } })() || "es";
-  }
-
-  function tOrFallback(key, fallback){
-    const lang = getLang();
+  function tOrFallback(key, fb){
+    var lang = currentLang();
     try {
-      const hasT = (window.dI18n && typeof dI18n.t === "function");
-      const v = hasT ? dI18n.t(key) : null;
-      if (v && typeof v === "string" && v.trim()) {
-        if (v.toLowerCase() === key.toLowerCase()) return fallback;  // got the key back
-        if (lang !== "es" && ES_SOURCE.has(v.trim())) return fallback; // ES while not ES
-        return v;
+      if (window.dI18n && typeof dI18n.t === "function") {
+        var v = dI18n.t(key);
+        if (typeof v === "string" && v.trim()) {
+          if (v.toLowerCase() === key.toLowerCase()) return fb;     // returned key itself
+          if (lang !== "es" && ES_SET.has(v.trim())) return fb;      // fell back to ES while not ES
+          return v;
+        }
       }
     } catch(_){}
-    return fallback;
+    return fb;
   }
 
-  function labels(){
-    const lang = getLang();
-    const fb = FALLBACKS[lang] || FALLBACKS.es;
+  function getLabels(){
+    var lang = currentLang();
+    var fb = FALLBACKS[lang] || FALLBACKS.es;
     return [
       tOrFallback("stats.balance", fb.balance),
       tOrFallback("stats.purchases", tOrFallback("sections.comprasActivas", fb.purchases)),
@@ -2173,40 +2169,75 @@ document.addEventListener('DOMContentLoaded', ()=>{
     ];
   }
 
-  function rewriteCardHeaders(){
-    const grid = document.querySelector(".stats-grid");
-    if (!grid) return;
-    const L = labels();
-    const cards = Array.from(grid.querySelectorAll(":scope > .stat-card"));
-    for (let i=0; i<4 && i<cards.length; i++){
-      const h = cards[i].querySelector("h1,h2,h3,h4,h5,h6");
+  function rewrite() {
+    var grid = document.querySelector(".stats-grid");
+    if (!grid) return false;
+    var cards = grid.querySelectorAll(":scope > .stat-card");
+    if (!cards || cards.length < 4) return false;
+    var L = getLabels();
+    var changed = false;
+    for (var i=0; i<4; i++){
+      var h = cards[i].querySelector("h1,h2,h3,h4,h5,h6,.label,.title,[data-label]");
       if (!h) continue;
-      if (h.textContent !== L[i]) h.textContent = L[i];
+      if (h.textContent !== L[i]) { h.textContent = L[i]; changed = true; }
+      // mark once so we can also catch later via attribute selector if needed
+      h.setAttribute("data-i18n-key", ["balance","purchases","referrals","tickets"][i]);
     }
+    return changed;
   }
 
-  function tick(){ rewriteCardHeaders(); }
-
-  let scheduled = false;
-  function schedule(){ if (scheduled) return; scheduled = true; requestAnimationFrame(()=>{ try{ tick(); } finally { scheduled=false; } }); }
-
-  const obs = new MutationObserver(muts=>{
-    for (const m of muts){ if (m.type === "childList" || m.type === "characterData") { schedule(); break; } }
-  });
-
-  function start(){
-    schedule();
-    try { obs.observe(document.body, { childList:true, characterData:true, subtree:true }); } catch(_){}
+  // Kick strategy: run now + a few frames + after small delays to defeat late renders
+  var burstTimer = null;
+  function burst(){
+    if (burstTimer) return;
+    var runs = 0;
+    function step(){
+      rewrite();
+      runs++;
+      if (runs < 8) burstTimer = setTimeout(step, runs < 3 ? 0 : (runs < 6 ? 50 : 120));
+      else burstTimer = null;
+    }
+    step();
   }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, { once:true });
-  else start();
+  // Initial
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", burst, { once: true });
+  } else {
+    burst();
+  }
 
+  // Observe DOM changes (Supabase renders)
+  try {
+    var mo = new MutationObserver(function(muts){
+      for (var i=0;i<muts.length;i++){
+        var m = muts[i];
+        if (m.type === "childList" || m.type === "characterData") { burst(); break; }
+      }
+    });
+    mo.observe(document.body, { childList:true, characterData:true, subtree:true });
+  } catch(_){}
+
+  // Observe <html lang=""> changes (some themes toggle this)
+  try {
+    var langObs = new MutationObserver(function(){ burst(); });
+    langObs.observe(document.documentElement, { attributes:true, attributeFilter:["lang"] });
+  } catch(_){}
+
+  // Listen to any click on elements declaring a target language
+  document.addEventListener("click", function(e){
+    var n = e.target.closest("[data-lang]");
+    if (!n) return;
+    // Let your own handler run first, then burst a moment later
+    setTimeout(burst, 0);
+  }, true); // capture = true to ensure we catch it
+
+  // Also re-run when dI18n.apply or set are called
   if (window.dI18n) {
-    const _set = dI18n.set && dI18n.set.bind(dI18n);
-    dI18n.set = function(lang){ if (_set) _set(lang); else { dI18n.current = lang; } schedule(); };
-    const _apply = dI18n.apply && dI18n.apply.bind(dI18n);
-    dI18n.apply = function(){ if (_apply) _apply(); schedule(); };
+    var _apply = typeof dI18n.apply === "function" ? dI18n.apply.bind(dI18n) : null;
+    dI18n.apply = function(){ if (_apply) _apply(); burst(); };
+    var _set = typeof dI18n.set === "function" ? dI18n.set.bind(dI18n) : null;
+    dI18n.set = function(lang){ if (_set) _set(lang); burst(); };
   }
 })();
 </script>
