@@ -2124,7 +2124,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 
 <script>
-/* === i18n observer patch v7: target .stats-grid > .stat-card explicitly + hook dI18n.set === */
+/* === i18n observer patch v8: deterministic h3 rewrite for .stats-grid cards === */
 (function(){
   if (!window.dI18n) {
     window.dI18n = {
@@ -2145,7 +2145,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   function getLang(){
     const d = window.dI18n || {};
-    return d.lang || d.current || (function(){ try { return localStorage.getItem("dash_lang") || localStorage.getItem("lang"); } catch(_) { return null; } })() || "es";
+    return d.current || d.lang || (function(){ try { return localStorage.getItem("dash_lang") || localStorage.getItem("lang"); } catch(_) { return null; } })() || "es";
   }
 
   function tOrFallback(key, fallback){
@@ -2154,8 +2154,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const hasT = (window.dI18n && typeof dI18n.t === "function");
       const v = hasT ? dI18n.t(key) : null;
       if (v && typeof v === "string" && v.trim()) {
-        if (v.toLowerCase() === key.toLowerCase()) return fallback;          // translation returned the key -> missing
-        if (lang !== "es" && ES_SOURCE.has(v.trim())) return fallback;       // translation fell back to ES while in EN/PT
+        if (v.toLowerCase() === key.toLowerCase()) return fallback;  // got the key back
+        if (lang !== "es" && ES_SOURCE.has(v.trim())) return fallback; // ES while not ES
         return v;
       }
     } catch(_){}
@@ -2165,84 +2165,33 @@ document.addEventListener('DOMContentLoaded', ()=>{
   function labels(){
     const lang = getLang();
     const fb = FALLBACKS[lang] || FALLBACKS.es;
-    return {
-      balance:  tOrFallback("stats.balance", fb.balance),
-      purchases: tOrFallback("stats.purchases", tOrFallback("sections.comprasActivas", fb.purchases)),
-      referrals: tOrFallback("stats.referrals", tOrFallback("sections.referidosHist", fb.referrals)),
-      tickets:   tOrFallback("stats.tickets", fb.tickets)
-    };
+    return [
+      tOrFallback("stats.balance", fb.balance),
+      tOrFallback("stats.purchases", tOrFallback("sections.comprasActivas", fb.purchases)),
+      tOrFallback("stats.referrals", tOrFallback("sections.referidosHist", fb.referrals)),
+      tOrFallback("stats.tickets", fb.tickets)
+    ];
   }
 
-  function seedByGrid(){
+  function rewriteCardHeaders(){
     const grid = document.querySelector(".stats-grid");
-    if (!grid) return 0;
-    const cards = Array.from(grid.children).filter(n => n.classList && n.classList.contains("stat-card"));
-    const keys = ["balance","purchases","referrals","tickets"];
-    let c = 0;
-    for (let i=0; i<Math.min(4, cards.length); i++){
-      const label = cards[i].querySelector("h3, .label, .title, [data-label]");
-      if (!label) continue;
-      if (!label.hasAttribute("data-i18n-key")) {
-        label.setAttribute("data-i18n-key", keys[i]);
-        c++;
-      }
-    }
-    return c;
-  }
-
-  function seedByContent(){
-    const map = {
-      "saldo disponible": "balance",
-      "compras activas": "purchases",
-      "referidos": "referrals",
-      "historial de referidos": "referrals",
-      "tickets de sorteo": "tickets",
-      "available balance": "balance",
-      "active purchases": "purchases",
-      "referral history": "referrals",
-      "raffle tickets": "tickets",
-      "stats.balance": "balance",
-      "stats.purchases": "purchases",
-      "stats.referrals": "referrals",
-      "stats.tickets": "tickets"
-    };
-    const norm = s => (s||"").toString().trim().toLowerCase().replace(/\s+/g," ");
-    const nodes = document.querySelectorAll("h1,h2,h3,h4,h5,h6,span,p,small,strong,div,.card *, .stat-card *");
-    let c=0;
-    nodes.forEach(el=>{
-      if (el.hasAttribute("data-i18n-key")) return;
-      const t = norm(el.textContent);
-      if (map[t]) { el.setAttribute("data-i18n-key", map[t]); c++; }
-    });
-    return c;
-  }
-
-  function applyAll(){
+    if (!grid) return;
     const L = labels();
-    document.querySelectorAll("[data-i18n-key]").forEach(el=>{
-      const key = el.getAttribute("data-i18n-key");
-      const val = L[key];
-      if (val && el.textContent !== val) el.textContent = val;
-    });
+    const cards = Array.from(grid.querySelectorAll(":scope > .stat-card"));
+    for (let i=0; i<4 && i<cards.length; i++){
+      const h = cards[i].querySelector("h1,h2,h3,h4,h5,h6");
+      if (!h) continue;
+      if (h.textContent !== L[i]) h.textContent = L[i];
+    }
   }
 
-  function tick(){
-    seedByGrid();       // deterministic by position
-    seedByContent();    // best-effort by text
-    applyAll();
-  }
+  function tick(){ rewriteCardHeaders(); }
 
   let scheduled = false;
-  function schedule(){
-    if (scheduled) return;
-    scheduled = true;
-    requestAnimationFrame(()=>{ try { tick(); } finally { scheduled=false; } });
-  }
+  function schedule(){ if (scheduled) return; scheduled = true; requestAnimationFrame(()=>{ try{ tick(); } finally { scheduled=false; } }); }
 
   const obs = new MutationObserver(muts=>{
-    for (const m of muts) {
-      if (m.type === "childList" || m.type === "characterData") { schedule(); break; }
-    }
+    for (const m of muts){ if (m.type === "childList" || m.type === "characterData") { schedule(); break; } }
   });
 
   function start(){
@@ -2250,23 +2199,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
     try { obs.observe(document.body, { childList:true, characterData:true, subtree:true }); } catch(_){}
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", start, { once:true });
-  } else {
-    start();
-  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, { once:true });
+  else start();
 
   if (window.dI18n) {
     const _set = dI18n.set && dI18n.set.bind(dI18n);
-    dI18n.set = function(lang){
-      if (_set) _set(lang); else { dI18n.current = lang; }
-      schedule();
-    };
+    dI18n.set = function(lang){ if (_set) _set(lang); else { dI18n.current = lang; } schedule(); };
     const _apply = dI18n.apply && dI18n.apply.bind(dI18n);
-    dI18n.apply = function(){
-      if (_apply) _apply();
-      schedule();
-    };
+    dI18n.apply = function(){ if (_apply) _apply(); schedule(); };
   }
 })();
 </script>
