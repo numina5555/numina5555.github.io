@@ -2416,3 +2416,270 @@ document.addEventListener('DOMContentLoaded', ()=>{
 <!-- === /NUMINA i18n overlay v3.2 === -->
 </body>
 </html>
+
+<!-- NUMINA i18n hardening patch v3.3 -->
+<script>
+(function(){
+  const VER = "NUMINA i18n v3.3";
+  const dbg = (...a)=>{ try{console.log(...a)}catch(_){}};
+
+  // === Dictionaries ===
+  // Keep only the strings we actually override by content/role.
+  const DICT = {
+    es:{
+      _welcome:"Bienvenido,",
+      _balance:"SALDO DISPONIBLE",
+      _actPurchCard:"COMPRAS ACTIVAS",
+      _refsCard:"REFERIDOS",
+      _raffleTickets:"TICKETS DE SORTEO",
+      _product:"PRODUCTO",
+      _date:"FECHA",
+      _amount:"VALOR",
+      _status:"ESTADO",
+      _actions:"ACCIONES",
+      _claim:"Hacer reclamo",
+      _details:"Detalles",
+      _more:"Más información",
+      _accountCfg:"Configuración de la Cuenta",
+      _personalData:"Datos Personales",
+      _security:"Seguridad",
+      _noRefs:"No hay referidos",
+      _noEntries:"Sin participaciones",
+      // placeholders
+      ph_fullname:"Nombre y apellido",
+      ph_address:"Calle, número, ciudad",
+      ph_zip:"C.P.",
+      // catalog fixed titles/desc
+      p_gold_ingot:"Lingote de Oro",
+      p_plat_ingot:"Lingote de Platino",
+      p_rolex:"Rolex 126610L",
+      p_bracelet:"Pulsera Numina",
+      p_gold_100:"Lingote 100g Oro Fino",
+      p_plat_100:"Lingote 100g Platino Fino",
+      d_gold:"Oro 999,9 certificado. Ideal para inversión y resguardo de valor.",
+      d_plat:"Platino 999,5 certificado. Inversión de alto valor y rareza.",
+      d_rolex:"Submariner Date con bisel verde y caja Oystersteel. Automático.",
+      d_bracelet:"Diseño exclusivo con materiales de alta calidad. Edición limitada."
+    },
+    en:{
+      _welcome:"Welcome,",
+      _balance:"AVAILABLE BALANCE",
+      _actPurchCard:"ACTIVE PURCHASES",
+      _refsCard:"REFERRALS",
+      _raffleTickets:"RAFFLE TICKETS",
+      _product:"PRODUCT",
+      _date:"DATE",
+      _amount:"AMOUNT",
+      _status:"STATUS",
+      _actions:"ACTIONS",
+      _claim:"File claim",
+      _details:"Details",
+      _more:"More info",
+      _accountCfg:"Account Configuration",
+      _personalData:"Personal Data",
+      _security:"Security",
+      _noRefs:"No referrals",
+      _noEntries:"No entries",
+      // placeholders
+      ph_fullname:"Full name",
+      ph_address:"Street, number, city",
+      ph_zip:"ZIP/Postal code",
+      // catalog
+      p_gold_ingot:"Gold Ingot",
+      p_plat_ingot:"Platinum Ingot",
+      p_rolex:"Rolex 126610L",
+      p_bracelet:"Numina Bracelet",
+      p_gold_100:"100g Fine Gold Ingot",
+      p_plat_100:"100g Fine Platinum Ingot",
+      d_gold:"999.9 certified gold. Ideal for investment and store of value.",
+      d_plat:"999.5 certified platinum. High value and rarity investment.",
+      d_rolex:"Submariner Date with green bezel and Oystersteel case. Automatic.",
+      d_bracelet:"Exclusive design with high-quality materials. Limited edition."
+    },
+    pt:{
+      _welcome:"Bem-vindo,",
+      _balance:"SALDO DISPONÍVEL",
+      _actPurchCard:"COMPRAS ATIVAS",
+      _refsCard:"INDICAÇÕES",
+      _raffleTickets:"BILHETES DO SORTEIO",
+      _product:"PRODUTO",
+      _date:"DATA",
+      _amount:"VALOR",
+      _status:"STATUS",
+      _actions:"AÇÕES",
+      _claim:"Fazer reclamação",
+      _details:"Detalhes",
+      _more:"Mais informações",
+      _accountCfg:"Configuração da Conta",
+      _personalData:"Dados Pessoais",
+      _security:"Segurança",
+      _noRefs:"Sem indicações",
+      _noEntries:"Sem participações",
+      // placeholders
+      ph_fullname:"Nome e sobrenome",
+      ph_address:"Rua, número, cidade",
+      ph_zip:"CEP",
+      // catalog
+      p_gold_ingot:"Lingote de Ouro",
+      p_plat_ingot:"Lingote de Platina",
+      p_rolex:"Rolex 126610L",
+      p_bracelet:"Pulseira Numina",
+      p_gold_100:"Lingote 100g Ouro Fino",
+      p_plat_100:"Lingote 100g Platina Fina",
+      d_gold:"Ouro 999,9 certificado. Ideal para investimento e reserva de valor.",
+      d_plat:"Platina 999,5 certificada. Investimento de alto valor e raridade.",
+      d_rolex:"Submariner Date com aro verde e caixa Oystersteel. Automático.",
+      d_bracelet:"Design exclusivo com materiais de alta qualidade. Edição limitada."
+    }
+  };
+
+  // Normalizer for fuzzy matching
+  const norm = s => (s||'')
+    .toString()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu,'')
+    .replace(/\s+/g,' ')
+    .trim()
+    .toLowerCase();
+
+  const getLang = () => {
+    try { return (localStorage.getItem('lang') || document.documentElement.getAttribute('lang') || 'es').slice(0,2); }
+    catch(e) { return 'es'; }
+  };
+
+  // Replace only text nodes inside an element (keeps icons)
+  function setTextNodeOnly(el, txt){
+    if(!el) return;
+    let changed=false;
+    const tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+    const nodes=[]; while(tw.nextNode()) nodes.push(tw.currentNode);
+    nodes.forEach(n=>{
+      if(n.nodeValue && n.nodeValue.trim()){
+        n.nodeValue = txt;
+        changed = true;
+      }
+    });
+    if(!changed) el.textContent = txt;
+  }
+
+  function applyWelcome(t){
+    document.querySelectorAll('h1,h2,h3').forEach(h=>{
+      const raw = (h.textContent||'').trim();
+      const n = norm(raw);
+      if(/^bienvenido[, ]|^welcome[, ]|^bem-vindo[, ]/.test(n)){
+        const parts = raw.split(',');
+        const suffix = parts.length>1 ? (','+parts.slice(1).join(',')).replace(/\s+/g,' ') : '';
+        setTextNodeOnly(h, t._welcome + suffix);
+      }
+    });
+  }
+
+  function applyKpiLabels(t){
+    const targets = Array.from(document.querySelectorAll('div,span,strong,header,section'));
+    targets.forEach(el=>{
+      const n = norm(el.textContent);
+      if(n==='saldo disponible') setTextNodeOnly(el, t._balance);
+      if(n==='compras activas') setTextNodeOnly(el, t._actPurchCard);
+      if(n==='referidos') setTextNodeOnly(el, t._refsCard);
+      if(n==='tickets de sorteo') setTextNodeOnly(el, t._raffleTickets);
+      if(n==='configuracion de la cuenta') setTextNodeOnly(el, t._accountCfg);
+      if(n==='datos personales') setTextNodeOnly(el, t._personalData);
+      if(n==='seguridad') setTextNodeOnly(el, t._security);
+      if(n==='no hay referidos' || n==='no referrals' || n==='sem indicacoes') setTextNodeOnly(el, t._noRefs);
+      if(n==='sin participaciones' || n==='no entries' || n==='sem participacoes') setTextNodeOnly(el, t._noEntries);
+    });
+  }
+
+  function applyTableHeaders(t){
+    document.querySelectorAll('th, td').forEach(th=>{
+      const n = norm(th.textContent);
+      if(n==='producto' || n==='product' || n==='produto') setTextNodeOnly(th, t._product);
+      if(n==='fecha' || n==='date' || n==='data') setTextNodeOnly(th, t._date);
+      if(n==='valor' || n==='amount') setTextNodeOnly(th, t._amount);
+      if(n==='estado' || n==='status') setTextNodeOnly(th, t._status);
+      if(n==='acciones' || n==='actions' || n==='acoes') setTextNodeOnly(th, t._actions);
+    });
+  }
+
+  function applyButtons(t){
+    document.querySelectorAll('button, a').forEach(b=>{
+      const n = norm(b.textContent);
+      if(n==='hacer reclamo' || n==='file claim' || n==='fazer reclamacao' || n==='fazer reclamação') setTextNodeOnly(b, t._claim);
+      if(n==='detalles' || n==='details' || n==='detalhes') setTextNodeOnly(b, t._details);
+      if(n==='mas informacion' || n==='más informacion' || n==='more info' || n==='mais informacoes' || n==='mais informações')
+        setTextNodeOnly(b, t._more);
+    });
+  }
+
+  // Catalog items: map titles & descriptions
+  function applyCatalog(t){
+    const mapTitles = {
+      'lingote de oro': t.p_gold_ingot,
+      'lingote de platino': t.p_plat_ingot,
+      'rolex 126610l': t.p_rolex,
+      'pulsera numina': t.p_bracelet,
+      'lingote 100g oro fino': t.p_gold_100,
+      'lingote 100g platino fino': t.p_plat_100
+    };
+    const mapDesc = {
+      [norm(DICT.es.d_gold)]: t.d_gold,
+      [norm(DICT.es.d_plat)]: t.d_plat,
+      [norm(DICT.es.d_rolex)]: t.d_rolex,
+      [norm(DICT.es.d_bracelet)]: t.d_bracelet
+    };
+    // Titles: look for big headings inside product cards
+    document.querySelectorAll('h1,h2,h3, .card-title, .product-title, .title').forEach(el=>{
+      const n = norm(el.textContent);
+      if(mapTitles[n]) setTextNodeOnly(el, mapTitles[n]);
+    });
+    // Descriptions
+    document.querySelectorAll('p, .description, .product-desc').forEach(p=>{
+      const n = norm(p.textContent);
+      if(mapDesc[n]) setTextNodeOnly(p, mapDesc[n]);
+    });
+  }
+
+  function applyPlaceholders(t){
+    const pmap = {
+      [norm(DICT.es.ph_fullname)]: { es: DICT.es.ph_fullname, en: t.ph_fullname, pt: t.ph_fullname },
+      [norm(DICT.es.ph_address)]:  { es: DICT.es.ph_address,  en: t.ph_address,  pt: t.ph_address },
+      [norm(DICT.es.ph_zip)]:      { es: DICT.es.ph_zip,      en: t.ph_zip,      pt: t.ph_zip }
+    };
+    document.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(i=>{
+      const n = norm(i.getAttribute('placeholder'));
+      const curr = getLang();
+      if(pmap[n]) i.setAttribute('placeholder', pmap[n][curr] || i.getAttribute('placeholder'));
+    });
+  }
+
+  let lastLang = null;
+  function applyAll(){
+    const lang = getLang();
+    if(lastLang === lang) return; // reduce work in MO bursts
+    lastLang = lang;
+    const t = DICT[lang] || DICT.es;
+    applyWelcome(t);
+    applyKpiLabels(t);
+    applyTableHeaders(t);
+    applyButtons(t);
+    applyCatalog(t);
+    applyPlaceholders(t);
+  }
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    dbg(VER, 'loaded');
+    applyAll();
+  });
+  window.addEventListener('hashchange', applyAll);
+  window.addEventListener('storage', (e)=>{ if(e.key==='lang'){ lastLang=null; applyAll(); }});
+
+  // Debounced observer
+  let to=null;
+  new MutationObserver(()=>{ clearTimeout(to); to=setTimeout(()=>{ lastLang=null; applyAll(); }, 120); })
+    .observe(document.body, {childList:true, subtree:true});
+
+  // Expose for manual test
+  window.__numinaForceI18n = ()=>{ lastLang=null; applyAll(); };
+})();
+</script>
+<!-- /NUMINA i18n hardening patch v3.3 -->
