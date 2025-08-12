@@ -2124,9 +2124,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 
 <script>
-// === NUMINA: Robust i18n patch for stat cards & language menu ===
+// === NUMINA i18n patch (safe: does NOT touch your dropdown logic) ===
 (function(){
-  // --- Simple i18n engine (merges with existing dI18n if present) ---
   const DICT = {
     es: {
       stats: { balance: "Saldo Disponible", purchases: "Compras Activas", referrals: "Referidos", tickets: "Tickets de Sorteo" },
@@ -2149,7 +2148,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     try { return path.split('.').reduce((o,k)=>o && o[k], obj) ?? fb; } catch { return fb; }
   }
 
-  // keep existing dI18n if the page already defines it (we won't break your other translations)
   const base = (typeof window.dI18n === "object" && window.dI18n) ? window.dI18n : {};
   const current = localStorage.getItem("lang") || base.lang || "es";
 
@@ -2164,14 +2162,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
       dI18n.apply();
     },
     apply(root=document){
-      // Map static Spanish texts to keys (only once)
+      // map known texts to keys once
       const STATIC_MAP = {
         "saldo disponible": "stats.balance",
         "compras activas": "stats.purchases",
         "referidos": "stats.referrals",
         "tickets de sorteo": "stats.tickets"
       };
-      // Tag the matching nodes with data-i18n the first time we see them
       const tagCandidates = root.querySelectorAll("h3, .section-title span");
       tagCandidates.forEach(el => {
         const txt = (el.textContent || "").trim().toLowerCase();
@@ -2179,25 +2176,17 @@ document.addEventListener('DOMContentLoaded', ()=>{
           el.setAttribute("data-i18n", STATIC_MAP[txt]);
         }
       });
-
-      // Now translate anything that has data-i18n
       root.querySelectorAll("[data-i18n]").forEach(el => {
         const key = el.getAttribute("data-i18n");
-        if (!key) return;
         const translated = dI18n.t(key);
-        if (translated && typeof translated === "string") {
-          el.textContent = translated;
-        }
+        if (translated) el.textContent = translated;
       });
 
-      // Keep "Bienvenido," synced (if your code already updates it, we just re-prefix)
       const wt = document.getElementById("welcome-title");
       if (wt) {
         const name = (window.__lastUserName || "").toString().trim();
         if (name) wt.textContent = dI18n.t("labels.welcome") + " " + name;
       }
-
-      // Update header current language text if present
       const langCurrent = document.getElementById("langCurrentText");
       if (langCurrent) {
         langCurrent.textContent = dI18n.t("langName");
@@ -2205,35 +2194,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   });
 
-  // --- Wire up the menu if present ---
-  function bindLangMenu(){
-    const dropdown = document.getElementById("langDropdown");
-    const btn = document.getElementById("langBtn");
-    const items = document.querySelectorAll(".lang-item[data-lang]");
-
-    if (btn && dropdown) {
-      btn.addEventListener("click", () => dropdown.classList.toggle("open"));
-      document.addEventListener("click", (e) => {
-        if (!dropdown.contains(e.target)) dropdown.classList.remove("open");
-      });
+  // SAFETY: Do not change any dropdown open/close logic.
+  // Only listen for clicks on elements that declare a target language.
+  document.addEventListener("click", (e) => {
+    const langNode = e.target.closest("[data-lang]");
+    if (!langNode) return;
+    const lang = langNode.getAttribute("data-lang");
+    if (lang && dI18n.dict[lang]) {
+      dI18n.setLang(lang);
     }
-    items.forEach(li => {
-      li.addEventListener("click", () => {
-        const lang = li.getAttribute("data-lang");
-        // ARIA states
-        document.querySelectorAll(".lang-item[aria-selected]").forEach(n => n.setAttribute("aria-selected", "false"));
-        li.setAttribute("aria-selected", "true");
-        dI18n.setLang(lang);
-      });
-    });
-  }
+  }, false);
 
-  document.addEventListener("DOMContentLoaded", () => {
-    bindLangMenu();
-    dI18n.apply();
-  });
-
-  // Expose for other scripts
+  document.addEventListener("DOMContentLoaded", () => dI18n.apply());
   window.dI18n = dI18n;
 })();
 </script>
