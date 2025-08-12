@@ -2184,5 +2184,53 @@ document.addEventListener('DOMContentLoaded', ()=>{
 })();
 </script>
 
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    function translateGlobos() {
+        const translations = {
+            'es': {
+                'Saldo Disponible': 'Saldo Disponible',
+                'Compras Activas': 'Compras Activas',
+                'Referidos': 'Referidos',
+                'Tickets Activos': 'Tickets Activos'
+            },
+            'en': {
+                'Saldo Disponible': 'Available Balance',
+                'Compras Activas': 'Active Purchases',
+                'Referidos': 'Referrals',
+                'Tickets Activos': 'Active Tickets'
+            },
+            'pt': {
+                'Saldo Disponible': 'Saldo Disponível',
+                'Compras Activas': 'Compras Ativas',
+                'Referidos': 'Indicados',
+                'Tickets Activos': 'Tickets Ativos'
+            }
+        };
+
+        const lang = document.documentElement.lang || 'es';
+
+        // Select the globos containers
+        document.querySelectorAll(".globo-title").forEach(el => {
+            const original = el.getAttribute("data-original") || el.textContent.trim();
+            if (!el.getAttribute("data-original")) {
+                el.setAttribute("data-original", original);
+            }
+            if (translations[lang] && translations[lang][original]) {
+                el.textContent = translations[lang][original];
+            }
+        });
+    }
+
+    // Run on load
+    translateGlobos();
+
+    // Re-run when language changes
+    const observer = new MutationObserver(translateGlobos);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+});
+</script>
+
 </body>
 </html>
