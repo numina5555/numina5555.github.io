@@ -2124,7 +2124,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 
 <script>
-/* === i18n observer patch v5: prefers fallback when a non-ES lang returns ES strings === */
+/* === i18n observer patch v6: positional tagging of 4 stat cards === */
 (function(){
   if (!window.dI18n) {
     window.dI18n = {
@@ -2140,13 +2140,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     pt: { balance: "Saldo Disponível", purchases: "Compras Ativas", referrals: "Histórico de Indicados", tickets: "Bilhetes do Sorteio" }
   };
 
-  const ES_SOURCE = new Set([
-    "Saldo Disponible",
-    "Compras Activas",
-    "Referidos",
-    "Historial de Referidos",
-    "Tickets de Sorteo"
-  ]);
+  const ES_SOURCE = new Set(["Saldo Disponible","Compras Activas","Referidos","Historial de Referidos","Tickets de Sorteo"]);
 
   function getLang(){
     const d = window.dI18n || {};
@@ -2159,9 +2153,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const hasT = (window.dI18n && typeof dI18n.t === "function");
       const v = hasT ? dI18n.t(key) : null;
       if (v && typeof v === "string" && v.trim()) {
-        // If it's exactly the key -> missing -> use fallback
         if (v.toLowerCase() === key.toLowerCase()) return fallback;
-        // If current language is not Spanish but translation came back in Spanish -> prefer fallback
         if (lang !== "es" && ES_SOURCE.has(v.trim())) return fallback;
         return v;
       }
@@ -2169,7 +2161,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     return fallback;
   }
 
-  function resolvedLabels(){
+  function resolved(){
     const lang = getLang();
     const fb = FALLBACKS[lang] || FALLBACKS.es;
     return {
@@ -2180,76 +2172,82 @@ document.addEventListener('DOMContentLoaded', ()=>{
     };
   }
 
-  function norm(s){
-    return (s || "").toString()
-      .replace(/[^\S\r\n]+/g, " ")
-      .replace(/\s+/g, " ")
-      .trim()
-      .toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  function tagByContent(root=document){
+    // As before: try to tag by text content when possible
+    const map = {
+      "saldo disponible": "balance",
+      "tickets de sorteo": "tickets",
+      "compras activas": "purchases",
+      "referidos": "referrals",
+      "historial de referidos": "referrals",
+      "available balance": "balance",
+      "active purchases": "purchases",
+      "referral history": "referrals",
+      "raffle tickets": "tickets",
+      "stats.balance": "balance",
+      "stats.purchases": "purchases",
+      "stats.referrals": "referrals",
+      "stats.tickets": "tickets"
+    };
+    const norm = s => (s||"").toString().trim().toLowerCase().replace(/\s+/g," ");
+    const nodes = root.querySelectorAll("h1,h2,h3,h4,h5,h6,span,p,small,strong,div,.card *, .stat-card *");
+    nodes.forEach(el=>{
+      if (el.hasAttribute("data-i18n-key")) return;
+      const t = norm(el.textContent);
+      if (map[t]) el.setAttribute("data-i18n-key", map[t]);
+    });
   }
 
-  const SEED = {
-    "saldo disponible": "balance",
-    "tickets de sorteo": "tickets",
-    "compras activas": "purchases",
-    "referidos": "referrals",
-    "historial de referidos": "referrals",
-    "available balance": "balance",
-    "active purchases": "purchases",
-    "referrals": "referrals",
-    "referral history": "referrals",
-    "raffle tickets": "tickets",
-    "stats.balance": "balance",
-    "stats.purchases": "purchases",
-    "stats.referrals": "referrals",
-    "stats.tickets": "tickets",
-    "stats balance": "balance",
-    "stats purchases": "purchases",
-    "stats referrals": "referrals",
-    "stats tickets": "tickets"
-  };
+  function tagByPosition(root=document){
+    // Find four cards by structure: .stat-card or .card, visible
+    const cards = Array.from(root.querySelectorAll(".stat-card, .card")).filter(c=>{
+      const style = window.getComputedStyle(c);
+      return style && style.display !== "none" && c.offsetParent !== null;
+    }).slice(0, 8); // in case there are many, we'll still scan enough
 
-  function seedTagging(root=document){
-    const candidates = root.querySelectorAll([
-      "h1","h2","h3","h4","h5","h6",
-      "span","p","small","strong","div",
-      ".section-title span",
-      ".stat-card *",
-      ".card *",
-      "[data-i18n]","[data-i18n-extra]"
-    ].join(","));
-    candidates.forEach(el => {
-      if (el.hasAttribute("data-i18n-key")) return;
-      const text = (el.textContent || "").trim();
-      if (!text) return;
-      const isNumber = /^[$€£]?\s*\d+([.,]\d+)?/.test(text);
-      if (isNumber) return;
-      const key = SEED[norm(text)];
-      if (key) el.setAttribute("data-i18n-key", key);
+    // Map positions 0..3 to keys if not already tagged
+    const posKeys = ["balance","purchases","referrals","tickets"];
+    let taggedCount = 0;
+
+    cards.forEach((card, idx)=>{
+      if (idx>3) return;
+      // find a label element inside the card: prefer header-like nodes
+      const label = card.querySelector("h1,h2,h3,h4,h5,h6,.section-title span, .label, .title, .card-header, span, p, small, strong");
+      if (!label) return;
+      if (!label.hasAttribute("data-i18n-key")) {
+        label.setAttribute("data-i18n-key", posKeys[idx]);
+        taggedCount++;
+      }
     });
+
+    return taggedCount;
   }
 
   function applyTranslations(root=document){
-    const L = resolvedLabels();
-    root.querySelectorAll("[data-i18n-key]").forEach(el => {
+    const L = resolved();
+    root.querySelectorAll("[data-i18n-key]").forEach(el=>{
       const key = el.getAttribute("data-i18n-key");
-      if (!key) return;
       const val = L[key];
       if (val && el.textContent !== val) el.textContent = val;
     });
+  }
+
+  function tick(){
+    // Try both strategies each tick
+    tagByContent(document);
+    let newly = tagByPosition(document);
+    applyTranslations(document);
+    return newly;
   }
 
   let scheduled = false;
   function schedule(){
     if (scheduled) return;
     scheduled = true;
-    requestAnimationFrame(()=>{
-      try { seedTagging(document); applyTranslations(document); } finally { scheduled = false; }
-    });
+    requestAnimationFrame(()=>{ try { tick(); } finally { scheduled=false; } });
   }
 
-  const obs = new MutationObserver(muts => {
+  const obs = new MutationObserver(muts=>{
     for (const m of muts) {
       if (m.type === "childList" || m.type === "characterData") { schedule(); break; }
     }
