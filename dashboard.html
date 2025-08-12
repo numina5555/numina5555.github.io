@@ -2124,7 +2124,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 
 <script>
-/* === i18n observer patch v3: persistent tagging + more synonyms === */
+/* === i18n observer patch v4: broader selectors + extra synonyms === */
 (function(){
   if (!window.dI18n) {
     window.dI18n = {
@@ -2136,7 +2136,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   const FALLBACKS = {
     es: { balance: "Saldo Disponible", purchases: "Compras Activas", referrals: "Historial de Referidos", tickets: "Tickets de Sorteo" },
-    en: { balance: "Available Balance", purchases: "Active Purchases", referrals: "Referrals History", tickets: "Raffle Tickets" },
+    en: { balance: "Available Balance", purchases: "Active Purchases", referrals: "Referral History", tickets: "Raffle Tickets" },
     pt: { balance: "Saldo Disponível", purchases: "Compras Ativas", referrals: "Histórico de Indicados", tickets: "Bilhetes do Sorteio" }
   };
 
@@ -2165,21 +2165,30 @@ document.addEventListener('DOMContentLoaded', ()=>{
     };
   }
 
-  function norm(s){ return (s || "").toString().trim().toLowerCase().replace(/\s+/g," "); }
+  function norm(s){
+    return (s || "").toString()
+      .replace(/[^\S\r\n]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // strip accents
+  }
 
-  // Map any seen string to a semantic key (first pass only)
   const SEED = {
     // Spanish
     "saldo disponible": "balance",
+    "saldo  disponible": "balance",
+    "tickets de sorteo": "tickets",
+    "ticket de sorteo": "tickets",
+    "tickets sorteo": "tickets",
     "compras activas": "purchases",
     "referidos": "referrals",
     "historial de referidos": "referrals",
-    "tickets de sorteo": "tickets",
     // English
     "available balance": "balance",
     "active purchases": "purchases",
     "referrals": "referrals",
-    "referrals history": "referrals",
+    "referral history": "referrals",
     "raffle tickets": "tickets",
     // Keys/variants
     "stats.balance": "balance",
@@ -2192,15 +2201,24 @@ document.addEventListener('DOMContentLoaded', ()=>{
     "stats tickets": "tickets"
   };
 
-  // Tag elements one-time with data-i18n-key so we can translate later regardless of current content
   function seedTagging(root=document){
-    const candidates = root.querySelectorAll("h1, h2, h3, .section-title span, .stat-card h3, .stat-card span, .card h3, .card span, [data-i18n], [data-i18n-extra]");
+    const candidates = root.querySelectorAll([
+      "h1","h2","h3","h4","h5","h6",
+      "span","p","small","strong","div",
+      ".section-title span",
+      ".stat-card *",
+      ".card *",
+      "[data-i18n]","[data-i18n-extra]"
+    ].join(","));
     candidates.forEach(el => {
       if (el.hasAttribute("data-i18n-key")) return;
-      const key = SEED[norm(el.textContent)];
-      if (key) {
-        el.setAttribute("data-i18n-key", key);
-      }
+      // Only label-like nodes (ignore ones that contain numbers/values)
+      const text = (el.textContent || "").trim();
+      if (!text) return;
+      const isNumber = /^[$€£]?\s*\d+([.,]\d+)?/.test(text);
+      if (isNumber) return;
+      const key = SEED[norm(text)];
+      if (key) el.setAttribute("data-i18n-key", key);
     });
   }
 
@@ -2210,13 +2228,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const key = el.getAttribute("data-i18n-key");
       if (!key) return;
       const val = L[key];
-      if (val && el.textContent !== val) {
-        el.textContent = val;
-      }
+      if (val && el.textContent !== val) el.textContent = val;
     });
   }
 
-  // Observe dynamic changes
   let scheduled = false;
   function schedule(){
     if (scheduled) return;
@@ -2233,8 +2248,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 
   function start(){
-    seedTagging(document);
-    applyTranslations(document);
+    schedule();
     try { obs.observe(document.body, { childList:true, characterData:true, subtree:true }); } catch(_){}
   }
 
@@ -2244,7 +2258,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     start();
   }
 
-  // Hook language changes
   if (window.dI18n) {
     const _setLang = dI18n.setLang && dI18n.setLang.bind(dI18n);
     dI18n.setLang = function(lang){
@@ -2257,7 +2270,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
       schedule();
     };
   }
-
 })();
 </script>
 </body>
