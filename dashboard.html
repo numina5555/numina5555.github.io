@@ -1150,7 +1150,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function cargarDashboard() {
     console.log("[cargarDashboard] Ejecutando");
 
-    document.getElementById('welcome-title').textContent = 'Cargando datos...';
+    document.getElementById('welcome-title').textContent = dI18n.t('labels.loading');
     document.getElementById('referral-code').textContent = '---';
     document.getElementById('balance-value').textContent = '$---';
     document.getElementById('purchases-value').textContent = '--';
@@ -1177,7 +1177,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!userData) return;
 
     document.getElementById('user-avatar').textContent = userData.full_name?.charAt(0).toUpperCase() || 'U';
-    document.getElementById('welcome-title').textContent = 'Bienvenido, ' + (userData.full_name || userData.email);
+    window.__lastUserName = (userData.full_name || userData.email);
+    document.getElementById('welcome-title').textContent = dI18n.t('labels.welcome') + ' ' + window.__lastUserName;
     document.getElementById('referral-code').textContent = userData.referral_code || '---';
     document.getElementById('balance-value').textContent = '$' + (userData.balance?.toFixed(2) || '0.00');
     document.getElementById('purchases-value').textContent = userData.active_purchases || '0';
@@ -1712,6 +1713,7 @@ const DB_I18N = {
       logout: "Cerrar Sesión"
     },
     actions: { copy: "Copiar", copied: "¡Copiado!" },
+    labels: { welcome: "Bienvenido,", loading: "Cargando datos..." },
     sections: {
       comprasActivas: "Compras Activas",
       referidosHist: "Historial de Referidos",
@@ -1729,6 +1731,7 @@ const DB_I18N = {
       logout: "Sign out"
     },
     actions: { copy: "Copy", copied: "Copied!" },
+    labels: { welcome: "Welcome,", loading: "Loading data..." },
     sections: {
       comprasActivas: "Active Purchases",
       referidosHist: "Referral History",
@@ -1746,6 +1749,7 @@ const DB_I18N = {
       logout: "Sair"
     },
     actions: { copy: "Copiar", copied: "Copiado!" },
+    labels: { welcome: "Bem-vindo,", loading: "Carregando dados..." },
     sections: {
       comprasActivas: "Compras Ativas",
       referidosHist: "Histórico de Indicações",
@@ -1794,6 +1798,12 @@ const dI18n = {
     if (s2) s2.textContent = dI18n.t('sections.referidosHist');
     const s3 = document.querySelector('h2.section-title i.fa-user-circle + span');
     if (s3) s3.textContent = dI18n.t('sections.accountInfo');
+    const wt = document.getElementById('welcome-title');
+    if (wt) {
+      const nm = (window.__lastUserName || '').trim();
+      wt.textContent = dI18n.t('labels.welcome') + (nm ? ' ' + nm : '');
+    }
+
   }
 };
 
