@@ -1863,5 +1863,168 @@ document.addEventListener('DOMContentLoaded', ()=>{
 });
 </script>
 
+
+<script>
+// === Enhance i18n to include common content labels and table headers ===
+(function(){
+  // Extend dictionaries
+  if (!window.DB_I18N) return;
+  const ext = {
+    es: {
+      labels: {
+        moreInfo: "Más información",
+        price: "Precio",
+        claim: "Hacer reclamo",
+        product: "Producto",
+        date: "Fecha",
+        value: "Valor",
+        status: "Estado",
+        complaint: "Reclamo",
+        noData: "Sin datos",
+      },
+      statuses: { pending: "pendiente", paid: "pagado", canceled: "cancelado", disputed: "en disputa" },
+      sectionsTitles: {
+        catalogo: "Catálogo",
+        compras: "Mis Compras",
+        sorteos: "Sorteos",
+        referidos: "Referidos",
+        configuracion: "Configuración",
+        dashboard: "Dashboard"
+      }
+    },
+    en: {
+      labels: {
+        moreInfo: "More info",
+        price: "Price",
+        claim: "Make a claim",
+        product: "Product",
+        date: "Date",
+        value: "Amount",
+        status: "Status",
+        complaint: "Claim",
+        noData: "No data",
+      },
+      statuses: { pending: "pending", paid: "paid", canceled: "canceled", disputed: "disputed" },
+      sectionsTitles: {
+        catalogo: "Catalog",
+        compras: "My Purchases",
+        sorteos: "Raffles",
+        referidos: "Referrals",
+        configuracion: "Settings",
+        dashboard: "Dashboard"
+      }
+    },
+    pt: {
+      labels: {
+        moreInfo: "Mais informações",
+        price: "Preço",
+        claim: "Fazer reclamação",
+        product: "Produto",
+        date: "Data",
+        value: "Valor",
+        status: "Status",
+        complaint: "Reclamação",
+        noData: "Sem dados",
+      },
+      statuses: { pending: "pendente", paid: "pago", canceled: "cancelado", disputed: "em disputa" },
+      sectionsTitles: {
+        catalogo: "Catálogo",
+        compras: "Minhas Compras",
+        sorteos: "Sorteios",
+        referidos: "Indicados",
+        configuracion: "Configurações",
+        dashboard: "Painel"
+      }
+    }
+  };
+  // Deep merge
+  for (const lang of Object.keys(ext)){
+    DB_I18N[lang] = DB_I18N[lang] || {};
+    for (const k of Object.keys(ext[lang])){
+      DB_I18N[lang][k] = Object.assign({}, DB_I18N[lang][k] || {}, ext[lang][k]);
+    }
+  }
+
+  // Monkey-patch apply to also translate content if present
+  const origApply = dI18n.apply.bind(dI18n);
+  dI18n.apply = function(){
+    origApply();
+
+    const dict = DB_I18N[this.current];
+
+    // Section title (icon + span.section-title) if present
+    const knownTitles = new Map([
+      ['Catálogo', dict.sectionsTitles.catalogo],
+      ['Catalog', dict.sectionsTitles.catalogo],
+      ['Mis Compras', dict.sectionsTitles.compras],
+      ['My Purchases', dict.sectionsTitles.compras],
+      ['Sorteos', dict.sectionsTitles.sorteos],
+      ['Raffles', dict.sectionsTitles.sorteos],
+      ['Referidos', dict.sectionsTitles.referidos],
+      ['Referrals', dict.sectionsTitles.referidos],
+      ['Configuración', dict.sectionsTitles.configuracion],
+      ['Settings', dict.sectionsTitles.configuracion],
+      ['Dashboard', dict.sectionsTitles.dashboard],
+      ['Painel', dict.sectionsTitles.dashboard]
+    ]);
+    document.querySelectorAll('h1 span, h2 span, h3 span, .section-title span').forEach(sp=>{
+      const txt = sp.textContent.trim();
+      if (knownTitles.has(txt)) sp.textContent = knownTitles.get(txt);
+    });
+
+    // Table headers common mapping
+    const thMap = new Map([
+      ['Producto', dict.labels.product],
+      ['Product', dict.labels.product],
+      ['Fecha', dict.labels.date],
+      ['Date', dict.labels.date],
+      ['Valor', dict.labels.value],
+      ['Amount', dict.labels.value],
+      ['Estado', dict.labels.status],
+      ['Status', dict.labels.status],
+      ['Reclamo', dict.labels.complaint],
+      ['Claim', dict.labels.complaint]
+    ]);
+    document.querySelectorAll('th').forEach(th=>{
+      const t = th.textContent.trim();
+      if (thMap.has(t)) th.textContent = thMap.get(t);
+    });
+
+    // Translate "Más información" buttons inside cards
+    const candidates = Array.from(document.querySelectorAll('button, a.button, .btn, .button')).filter(el=>{
+      const t = el.textContent.trim();
+      return t === 'Más información' || t === 'More info' || t === 'Mais informações';
+    });
+    candidates.forEach(el=> el.textContent = dict.labels.moreInfo);
+
+    // Translate "Hacer reclamo" buttons
+    const claimBtns = Array.from(document.querySelectorAll('button, a')).filter(el=>{
+      const t = el.textContent.trim();
+      return t === 'Hacer reclamo' || t === 'Make a claim' || t === 'Fazer reclamação';
+    });
+    claimBtns.forEach(el=> el.textContent = dict.labels.claim);
+
+    // Status chips
+    const statusMap = new Map([
+      ['pending', dict.statuses.pending],
+      ['pendiente', dict.statuses.pending],
+      ['paid', dict.statuses.paid],
+      ['pagado', dict.statuses.paid],
+      ['canceled', dict.statuses.canceled],
+      ['cancelado', dict.statuses.canceled],
+      ['disputed', dict.statuses.disputed],
+      ['en disputa', dict.statuses.disputed]
+    ]);
+    document.querySelectorAll('.status, .badge, .chip, td, span').forEach(el=>{
+      const t = el.textContent.trim().toLowerCase();
+      if (statusMap.has(t)) el.textContent = statusMap.get(t);
+    });
+  };
+
+  // Re-apply right away (in case user already had page open)
+  dI18n.apply();
+})();
+</script>
+
 </body>
 </html>
