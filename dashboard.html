@@ -2124,13 +2124,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 
 <script>
-/* === i18n observer patch v6: positional tagging of 4 stat cards === */
+/* === i18n observer patch v7: target .stats-grid > .stat-card explicitly + hook dI18n.set === */
 (function(){
   if (!window.dI18n) {
     window.dI18n = {
-      lang: (function(){ try { return localStorage.getItem("lang") || "es"; } catch(_) { return "es"; } })(),
+      current: (function(){ try { return localStorage.getItem("dash_lang") || "es"; } catch(_) { return "es"; } })(),
       t: function(k){ return k; },
-      apply: function(){}
+      apply: function(){},
+      set: function(lang){ this.current = lang; try{ localStorage.setItem("dash_lang", lang);}catch(_){}},
     };
   }
 
@@ -2144,7 +2145,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   function getLang(){
     const d = window.dI18n || {};
-    return d.lang || d.current || (function(){ try { return localStorage.getItem("lang"); } catch(_) { return null; } })() || "es";
+    return d.lang || d.current || (function(){ try { return localStorage.getItem("dash_lang") || localStorage.getItem("lang"); } catch(_) { return null; } })() || "es";
   }
 
   function tOrFallback(key, fallback){
@@ -2153,15 +2154,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const hasT = (window.dI18n && typeof dI18n.t === "function");
       const v = hasT ? dI18n.t(key) : null;
       if (v && typeof v === "string" && v.trim()) {
-        if (v.toLowerCase() === key.toLowerCase()) return fallback;
-        if (lang !== "es" && ES_SOURCE.has(v.trim())) return fallback;
+        if (v.toLowerCase() === key.toLowerCase()) return fallback;          // translation returned the key -> missing
+        if (lang !== "es" && ES_SOURCE.has(v.trim())) return fallback;       // translation fell back to ES while in EN/PT
         return v;
       }
     } catch(_){}
     return fallback;
   }
 
-  function resolved(){
+  function labels(){
     const lang = getLang();
     const fb = FALLBACKS[lang] || FALLBACKS.es;
     return {
@@ -2172,14 +2173,30 @@ document.addEventListener('DOMContentLoaded', ()=>{
     };
   }
 
-  function tagByContent(root=document){
-    // As before: try to tag by text content when possible
+  function seedByGrid(){
+    const grid = document.querySelector(".stats-grid");
+    if (!grid) return 0;
+    const cards = Array.from(grid.children).filter(n => n.classList && n.classList.contains("stat-card"));
+    const keys = ["balance","purchases","referrals","tickets"];
+    let c = 0;
+    for (let i=0; i<Math.min(4, cards.length); i++){
+      const label = cards[i].querySelector("h3, .label, .title, [data-label]");
+      if (!label) continue;
+      if (!label.hasAttribute("data-i18n-key")) {
+        label.setAttribute("data-i18n-key", keys[i]);
+        c++;
+      }
+    }
+    return c;
+  }
+
+  function seedByContent(){
     const map = {
       "saldo disponible": "balance",
-      "tickets de sorteo": "tickets",
       "compras activas": "purchases",
       "referidos": "referrals",
       "historial de referidos": "referrals",
+      "tickets de sorteo": "tickets",
       "available balance": "balance",
       "active purchases": "purchases",
       "referral history": "referrals",
@@ -2190,42 +2207,19 @@ document.addEventListener('DOMContentLoaded', ()=>{
       "stats.tickets": "tickets"
     };
     const norm = s => (s||"").toString().trim().toLowerCase().replace(/\s+/g," ");
-    const nodes = root.querySelectorAll("h1,h2,h3,h4,h5,h6,span,p,small,strong,div,.card *, .stat-card *");
+    const nodes = document.querySelectorAll("h1,h2,h3,h4,h5,h6,span,p,small,strong,div,.card *, .stat-card *");
+    let c=0;
     nodes.forEach(el=>{
       if (el.hasAttribute("data-i18n-key")) return;
       const t = norm(el.textContent);
-      if (map[t]) el.setAttribute("data-i18n-key", map[t]);
+      if (map[t]) { el.setAttribute("data-i18n-key", map[t]); c++; }
     });
+    return c;
   }
 
-  function tagByPosition(root=document){
-    // Find four cards by structure: .stat-card or .card, visible
-    const cards = Array.from(root.querySelectorAll(".stat-card, .card")).filter(c=>{
-      const style = window.getComputedStyle(c);
-      return style && style.display !== "none" && c.offsetParent !== null;
-    }).slice(0, 8); // in case there are many, we'll still scan enough
-
-    // Map positions 0..3 to keys if not already tagged
-    const posKeys = ["balance","purchases","referrals","tickets"];
-    let taggedCount = 0;
-
-    cards.forEach((card, idx)=>{
-      if (idx>3) return;
-      // find a label element inside the card: prefer header-like nodes
-      const label = card.querySelector("h1,h2,h3,h4,h5,h6,.section-title span, .label, .title, .card-header, span, p, small, strong");
-      if (!label) return;
-      if (!label.hasAttribute("data-i18n-key")) {
-        label.setAttribute("data-i18n-key", posKeys[idx]);
-        taggedCount++;
-      }
-    });
-
-    return taggedCount;
-  }
-
-  function applyTranslations(root=document){
-    const L = resolved();
-    root.querySelectorAll("[data-i18n-key]").forEach(el=>{
+  function applyAll(){
+    const L = labels();
+    document.querySelectorAll("[data-i18n-key]").forEach(el=>{
       const key = el.getAttribute("data-i18n-key");
       const val = L[key];
       if (val && el.textContent !== val) el.textContent = val;
@@ -2233,11 +2227,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 
   function tick(){
-    // Try both strategies each tick
-    tagByContent(document);
-    let newly = tagByPosition(document);
-    applyTranslations(document);
-    return newly;
+    seedByGrid();       // deterministic by position
+    seedByContent();    // best-effort by text
+    applyAll();
   }
 
   let scheduled = false;
@@ -2265,9 +2257,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 
   if (window.dI18n) {
-    const _setLang = dI18n.setLang && dI18n.setLang.bind(dI18n);
-    dI18n.setLang = function(lang){
-      if (_setLang) _setLang(lang); else dI18n.lang = lang;
+    const _set = dI18n.set && dI18n.set.bind(dI18n);
+    dI18n.set = function(lang){
+      if (_set) _set(lang); else { dI18n.current = lang; }
       schedule();
     };
     const _apply = dI18n.apply && dI18n.apply.bind(dI18n);
