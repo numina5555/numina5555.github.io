@@ -937,7 +937,7 @@ document.getElementById('user-postal').textContent = userData.postal_code || 'No
               <td><button class="action-btn">Detalles</button></td>
             </tr>
           `).join('')
-        : `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay compras')}</td></tr>`;
+        : '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
 
       // Referidos
       const referralsBody = document.getElementById('referrals-body');
@@ -951,7 +951,7 @@ document.getElementById('user-postal').textContent = userData.postal_code || 'No
               <td>$${(r.commission ?? 0).toFixed(2)}</td>
             </tr>
           `).join('')
-        : `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay referidos')}</td></tr>`;
+        : '<tr><td colspan="5" style="text-align: center;">No hay referidos</td></tr>';
 
       // --- NUEVO: Prefill y handlers de Configuración ---
       try { prefillConfigForms(userData); } catch(e) {}
@@ -1160,8 +1160,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('user-email').textContent = 'Cargando...';
     document.getElementById('user-phone').textContent = 'Cargando...';
     document.getElementById('user-address').textContent = 'Cargando...';
-    document.getElementById('purchases-body').innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('Cargando compras...')}</td></tr>`;
-    document.getElementById('referrals-body').innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('Cargando referidos...')}</td></tr>`;
+    document.getElementById('purchases-body').innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando compras...</td></tr>';
+    document.getElementById('referrals-body').innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando referidos...</td></tr>';
 
     const supabase = getSupabase();
 
@@ -1203,7 +1203,7 @@ document.addEventListener("DOMContentLoaded", () => {
         purchasesBody.innerHTML += row;
       });
     } else {
-      purchasesBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay compras')}</td></tr>`;
+      purchasesBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
     }
 
     const referralsBody = document.getElementById('referrals-body');
@@ -1221,7 +1221,7 @@ document.addEventListener("DOMContentLoaded", () => {
         referralsBody.innerHTML += row;
       });
     } else {
-      referralsBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay referidos')}</td></tr>`;
+      referralsBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay referidos</td></tr>';
     }
   }
 
@@ -1277,11 +1277,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const tbody = document.getElementById('miscompras-body');
         if (purchaseError || !purchases) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay compras')}</td></tr>`;
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
           return;
         }
         if (purchases.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay compras')}</td></tr>`;
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
           return;
         }
         tbody.innerHTML = purchases.map(p => `
@@ -2055,13 +2055,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       'SORTEO': 'SORTEO',
       'FECHA': 'FECHA',
       'VALOR': 'VALOR'
-          'No hay referidos': 'No hay referidos',
-      'No hay compras': 'No hay compras',
-      'Cargando referidos...': 'Cargando referidos...',
-      'Cargando compras...': 'Cargando compras...',
-      'Activo': 'Activo',
-      'Inactivo': 'Inactivo',
-},
+    },
     en: {
       'Sorteo': 'Raffle',
       'Historial de Participación': 'Participation History',
@@ -2074,13 +2068,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       'SORTEO': 'RAFFLE',
       'FECHA': 'DATE',
       'VALOR': 'AMOUNT'
-          'No hay referidos': 'No referrals',
-      'No hay compras': 'No purchases',
-      'Cargando referidos...': 'Loading referrals...',
-      'Cargando compras...': 'Loading purchases...',
-      'Activo': 'Active',
-      'Inactivo': 'Inactive',
-},
+    },
     pt: {
       'Sorteo': 'Sorteio',
       'Historial de Participación': 'Histórico de Participação',
@@ -2093,13 +2081,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       'SORTEO': 'SORTEIO',
       'FECHA': 'DATA',
       'VALOR': 'VALOR'
-          'No hay referidos': 'Sem referidos',
-      'No hay compras': 'Sem compras',
-      'Cargando referidos...': 'Carregando referidos...',
-      'Cargando compras...': 'Carregando compras...',
-      'Activo': 'Ativo',
-      'Inactivo': 'Inativo',
-}
+    }
   };
 
   function translatePhrases(root){
@@ -2643,5 +2625,49 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 })();
 </script>
+
+<script>
+// === Live i18n for dynamic empty rows (referrals/purchases) ===
+(function(){
+  function getStore(k, fb){ try { var v = localStorage.getItem(k); return v==null?fb:v; } catch(_){ return fb; } }
+  function lang(){ var d = window.dI18n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
+
+  var MAP = {
+    es: { 'No hay referidos':'No hay referidos', 'No hay compras':'No hay compras', 'Cargando referidos...':'Cargando referidos...', 'Cargando compras...':'Cargando compras...' },
+    en: { 'No hay referidos':'No referrals',      'No hay compras':'No purchases',   'Cargando referidos...':'Loading referrals...', 'Cargando compras...':'Loading purchases...' },
+    pt: { 'No hay referidos':'Sem referidos',     'No hay compras':'Sem compras',    'Cargando referidos...':'Carregando referidos...', 'Cargando compras...':'Carregando compras...' }
+  };
+
+  function translateDynamic(){
+    var L = MAP[lang()] || MAP.es;
+    var nodes = document.querySelectorAll('#referrals-table td, #purchases-table td, #referrals-body td, #purchases-body td');
+    nodes.forEach(function(td){
+      var txt = (td.textContent||'').trim();
+      if (!txt) return;
+      if (Object.prototype.hasOwnProperty.call(L, txt)){
+        td.textContent = L[txt];
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', translateDynamic, {once:true});
+  else translateDynamic();
+
+  try{
+    var mo = new MutationObserver(function(m){
+      for (var i=0;i<m.length;i++){
+        if (m[i].type==='childList' || m[i].type==='characterData'){ translateDynamic(); break; }
+      }
+    });
+    mo.observe(document.body, {subtree:true, childList:true, characterData:true});
+  }catch(_){}
+
+  if (window.dI18n){
+    var _set = typeof dI18n.set==='function' ? dI18n.set.bind(dI18n) : null;
+    dI18n.set = function(l){ if (_set) _set(l); translateDynamic(); };
+  }
+})();
+</script>
+
 </body>
 </html>
