@@ -850,6 +850,65 @@
     window.__supabaseClient = _client; return _client;
   };
 })();
+
+<script>
+// ===== i18n helpers for status badges =====
+(function(){
+  window.DB_I18N = window.DB_I18N || {};
+  // Ensure status keys exist
+  DB_I18N.es = Object.assign({},{statuses:{active:'Activo',pending:'Pendiente',completed:'Completado',cancelled:'Cancelado',canceled:'Cancelado',inactive:'Inactivo',paid:'Pagado',disputed:'En disputa'}}, DB_I18N.es||{});
+  DB_I18N.en = Object.assign({},{statuses:{active:'Active',pending:'Pending',completed:'Completed',cancelled:'Cancelled',canceled:'Cancelled',inactive:'Inactive',paid:'Paid',disputed:'Disputed'}}, DB_I18N.en||{});
+  DB_I18N.pt = Object.assign({},{statuses:{active:'Ativo',pending:'Pendente',completed:'Concluído',cancelled:'Cancelado',canceled:'Cancelado',inactive:'Inativo',paid:'Pago',disputed:'Em disputa'}}, DB_I18N.pt||{});
+
+  function canon(l){ if(!l) return 'es'; l=String(l).toLowerCase(); return l.startsWith('en')?'en':l.startsWith('pt')?'pt':'es'; }
+
+  function t(path){
+    try{
+      var lang = canon((window.dI18n && (dI18n.current||dI18n.lang)) || (localStorage.getItem('dash_lang')||'es'));
+      var obj = (window.DB_I18N && DB_I18N[lang]) || {};
+      var parts = String(path).split('.');
+      for (var i=0;i<parts.length;i++){ obj = obj[parts[i]]; if (obj == null) return path; }
+      return obj;
+    }catch(e){ return path; }
+  }
+  window._i18nStatusText = function(key){
+    var k = String(key||'').toLowerCase();
+    if (k==='true') k = 'active';
+    if (k==='false') k = 'inactive';
+    return t('statuses.'+k) || key;
+  };
+  window.statusBadge = function(state){
+    var s = String(state||'').toLowerCase();
+    var key = (s==='true' || s==='active' || s==='activo' || s==='ativo') ? 'active'
+            : (s==='pending' || s==='pendiente' || s==='pendente') ? 'pending'
+            : (s==='completed' || s==='complete' || s==='completado' || s==='concluído' || s==='concluido') ? 'completed'
+            : (s==='cancelled' || s==='canceled' || s==='cancelado') ? 'cancelled'
+            : (s==='paid' || s==='pagado' || s==='pago') ? 'paid'
+            : (s==='inactive' || s==='inactivo' || s==='inativo') ? 'inactive'
+            : 'pending';
+    return '<span class="status '+key+'">'+_i18nStatusText(key)+'</span>';
+  };
+  window.updateStatusBadges = function(){
+    document.querySelectorAll('.status.active,.status.pending,.status.completed,.status.cancelled,.status.canceled,.status.inactive,.status.paid').forEach(function(el){
+      var key = 'pending';
+      if (el.classList.contains('active')) key='active';
+      else if (el.classList.contains('completed')) key='completed';
+      else if (el.classList.contains('cancelled') || el.classList.contains('canceled')) key='cancelled';
+      else if (el.classList.contains('inactive')) key='inactive';
+      else if (el.classList.contains('paid')) key='paid';
+      el.textContent = _i18nStatusText(key);
+    });
+  };
+  // Patch dI18n.apply/set to refresh badges
+  if (window.dI18n){
+    var __apply = (typeof dI18n.apply==='function') ? dI18n.apply.bind(dI18n) : function(){};
+    dI18n.apply = function(){ __apply(); try{ updateStatusBadges(); }catch(_){}};
+    var __set = (typeof dI18n.set==='function') ? dI18n.set.bind(dI18n) : function(l){ dI18n.current=l; };
+    dI18n.set = function(l){ __set(l); try{ updateStatusBadges(); }catch(_){}};
+  }
+  document.addEventListener('DOMContentLoaded', function(){ try{ updateStatusBadges(); }catch(_){}});
+})();
+</script>
 </script>
 <script>
   // 1. VERIFICACIÓN DE CARGA DE SUPABASE
@@ -917,12 +976,14 @@ document.getElementById('user-postal').textContent = userData.postal_code || dI1
 
 
       // i18n status helper
-      const statusLabel = (s) => {
+      const statusLabel = (s) => { return _i18nStatusText(s); /* patched */ }; /* original removed */
+// original removed
+function __unused() {
         const v = String(s||'').toLowerCase();
-        if (v === 'active' || v === 'activo') return ((window.dI18n && window.dI18n.t) ? dI18n8n.t('Activo') : 'Activo');
-        if (v === 'inactive' || v === 'inactivo') return ((window.dI18n && window.dI18n.t) ? dI18n8n.t('Inactivo') : 'Inactivo');
-        if (v === 'pending' || v === 'pendiente') return ((window.dI18n && window.dI18n.t) ? dI18n8n.t('Pendiente') : 'Pendiente');
-        if (v === 'completed' || v === 'completado' || v === 'complete') return ((window.dI18n && window.dI18n.t) ? dI18n8n.t('Completado') : 'Completado');
+        if (v === 'active' || v === 'activo') return ((window.dI18n && window.dI18n.t) ? dI18n.t('Activo') : 'Activo');
+        if (v === 'inactive' || v === 'inactivo') return ((window.dI18n && window.dI18n.t) ? dI18n.t('Inactivo') : 'Inactivo');
+        if (v === 'pending' || v === 'pendiente') return ((window.dI18n && window.dI18n.t) ? dI18n.t('Pendiente') : 'Pendiente');
+        if (v === 'completed' || v === 'completado' || v === 'complete') return ((window.dI18n && window.dI18n.t) ? dI18n.t('Completado') : 'Completado');
         return s;
       };
 
@@ -934,7 +995,7 @@ document.getElementById('user-postal').textContent = userData.postal_code || dI1
               <td>${p.product_name}</td>
               <td>${new Date(p.created_at).toLocaleDateString()}</td>
               <td>${(p.value ?? 0).toFixed(2)}</td>
-              <td><span class="status ${p.status}">${statusLabel(p.status)}</span></td>
+              <td>${statusBadge(p.status)}</td>
               <td><button class="action-btn">Detalles</button></td>
             </tr>
           `).join('')
@@ -948,7 +1009,7 @@ document.getElementById('user-postal').textContent = userData.postal_code || dI1
               <td>${r.referred_email}</td>
               <td>${new Date(r.created_at).toLocaleDateString()}</td>
               <td>${r.purchases_count || '0'}</td>
-              <td><span class="status ${r.is_active ? 'active' : 'inactive'}">${r.is_active ? 'Activo' : 'Inactivo'}</span></td>
+              <td>${statusBadge(r.is_active ? 'active' : 'inactive')}</td>
               <td>${(r.commission ?? 0).toFixed(2)}</td>
             </tr>
           `).join('')
@@ -1149,7 +1210,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function cargarDashboard() {
     console.log("[cargarDashboard] Ejecutando");
 
-    document.getElementById('welcome-title').textContent = dI18n8n.t('labels.loading');
+    document.getElementById('welcome-title').textContent = dI18n.t('labels.loading');
     document.getElementById('referral-code').textContent = '---';
     document.getElementById('balance-value').textContent = '$---';
     document.getElementById('purchases-value').textContent = '--';
@@ -1177,7 +1238,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById('user-avatar').textContent = userData.full_name?.charAt(0).toUpperCase() || 'U';
     window.__lastUserName = (userData.full_name || userData.email);
-    document.getElementById('welcome-title').textContent = dI18n8n.t('labels.welcome') + ' ' + window.__lastUserName;
+    document.getElementById('welcome-title').textContent = dI18n.t('labels.welcome') + ' ' + window.__lastUserName;
     document.getElementById('referral-code').textContent = userData.referral_code || '---';
     document.getElementById('balance-value').textContent = '$' + (userData.balance?.toFixed(2) || '0.00');
     document.getElementById('purchases-value').textContent = userData.active_purchases || '0';
@@ -1196,7 +1257,7 @@ document.addEventListener("DOMContentLoaded", () => {
           '<td>' + p.product_name + '</td>' +
           '<td>' + new Date(p.created_at).toLocaleDateString() + '</td>' +
           '<td>$' + (p.value?.toFixed(2) || '0.00') + '</td>' +
-          '<td><span class="status ' + p.status + '\">' + statusLabel(p.status) + '</span></td>' +
+          '<td>' + statusBadge(p.status) + '</td>' +
           '<td><button class="action-btn">Detalles</button></td>' +
           '</tr>';
         purchasesBody.innerHTML += row;
@@ -1214,7 +1275,7 @@ document.addEventListener("DOMContentLoaded", () => {
           '<td>' + new Date(r.created_at).toLocaleDateString() + '</td>' +
           '<td>' + (r.purchases_count || '0') + '</td>' +
           '<td><span class="status ' + (r.is_active ? 'active' : 'inactive') + '">' +
-          ((window.dI18n && window.dI18n.t) ? (r.is_active ? dI18n8n.t('Activo') : dI18n8n.t('Inactivo')) : (r.is_active ? 'Activo' : 'Inactivo')) + '</span></td>' +
+          ((window.dI18n && window.dI18n.t) ? (r.is_active ? dI18n.t('Activo') : dI18n.t('Inactivo')) : (r.is_active ? 'Activo' : 'Inactivo')) + '</span></td>' +
           '<td>$' + (r.commission?.toFixed(2) || '0.00') + '</td>' +
           '</tr>';
         referralsBody.innerHTML += row;
@@ -1286,8 +1347,8 @@ document.addEventListener("DOMContentLoaded", () => {
             <td>${p.product_name}</td>
             <td>${new Date(p.created_at).toLocaleDateString()}</td>
             <td>${(p.value ?? 0).toFixed(2)}</td>
-            <td><span class="status ${p.status}">${statusLabel(p.status)}</span></td>
-            <td><button class="action-btn" disabled>${dI18n8n.t('Hacer reclamo')}</button></td>
+            <td>${statusBadge(p.status)}</td>
+            <td><button class="action-btn" disabled>${dI18n.t('Hacer reclamo')}</button></td>
           </tr>
         `).join('');
       } catch (e) {
@@ -1821,7 +1882,7 @@ const DB_I18N = {
 }
 };
 
-const dI18n8n = {
+const dI18n = {
   current: 'es',
   set(lang){
     if(!DB_I18N[lang]) return;
@@ -1849,28 +1910,28 @@ const dI18n8n = {
     };
     Object.entries(map).forEach(([k, sel]) => {
       const el = document.querySelector(sel);
-      if (el) el.textContent = dI18n8n.t('sidebar.'+k);
+      if (el) el.textContent = dI18n.t('sidebar.'+k);
     });
     // Copy button
     const copyBtn = document.getElementById('copy-btn');
-    if (copyBtn) copyBtn.textContent = dI18n8n.t('actions.copy');
+    if (copyBtn) copyBtn.textContent = dI18n.t('actions.copy');
     // Section titles (if present)
     const s1 = document.querySelector('h2.section-title i.fa-shopping-bag + span');
-    if (s1) s1.textContent = dI18n8n.t('sections.comprasActivas');
+    if (s1) s1.textContent = dI18n.t('sections.comprasActivas');
     const s2 = document.querySelector('h2.section-title i.fa-users + span');
-    if (s2) s2.textContent = dI18n8n.t('sections.referidosHist');
+    if (s2) s2.textContent = dI18n.t('sections.referidosHist');
     const s3 = document.querySelector('h2.section-title i.fa-user-circle + span');
-    if (s3) s3.textContent = dI18n8n.t('sections.accountInfo');
+    if (s3) s3.textContent = dI18n.t('sections.accountInfo');
     const wt = document.getElementById('welcome-title');
     if (wt) {
       const nm = (window.__lastUserName || '').trim();
-      wt.textContent = dI18n8n.t('labels.welcome') + (nm ? ' ' + nm : '');
+      wt.textContent = dI18n.t('labels.welcome') + (nm ? ' ' + nm : '');
     }
 
   }
 };
 // Alias unificado: toda la app usa el mismo objeto i18n
-window.dI18n = dI18n8n;
+window.dI18n = dI18n;
 
 
 (function initDashLang(){
@@ -1918,7 +1979,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Hook copy button text change on success to language
   const copyBtn = document.getElementById('copy-btn');
   if (copyBtn) {
-    const setCopied = ()=>{ copyBtn.textContent = dI18n8n.t('actions.copied'); setTimeout(()=> copyBtn.textContent = dI18n8n.t('actions.copy'), 2000); };
+    const setCopied = ()=>{ copyBtn.textContent = dI18n.t('actions.copied'); setTimeout(()=> copyBtn.textContent = dI18n.t('actions.copy'), 2000); };
     // If an existing handler changes it, we still ensure fallback translation with a custom event
     copyBtn.addEventListener('copied-i18n', setCopied);
   }
@@ -2018,7 +2079,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 
   // Monkey-patch apply to also translate content if present
-  const origApply = dI18n.apply.bind(dI18n8n);
+  const origApply = dI18n.apply.bind(dI18n);
   dI18n.apply = function(){
     origApply();
 
@@ -2072,7 +2133,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     // Translate "Hacer reclamo" buttons
     const claimBtns = Array.from(document.querySelectorAll('button, a')).filter(el=>{
       const t = el.textContent.trim();
-      return t === (dI18n8n.t ? dI18n8n.t('Hacer reclamo') : 'Hacer reclamo') || t === 'Make a claim' || t === 'Fazer reclamação';
+      return t === (dI18n.t ? dI18n.t('Hacer reclamo') : 'Hacer reclamo') || t === 'Make a claim' || t === 'Fazer reclamação';
     });
     claimBtns.forEach(el=> el.textContent = dict.labels.claim);
 
@@ -2180,7 +2241,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 
   // Patch dI18n.apply to also translate phrases
-  const originalApply = dI18n.apply.bind(dI18n8n);
+  const originalApply = dI18n.apply.bind(dI18n);
   dI18n.apply = function(){
     originalApply();
     translatePhrases(document);
@@ -2213,8 +2274,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   function tOrFallback(key, fb){
     var lang = currentLang();
     try {
-      if (window.dI18n && typeof dI18n8n.t === "function") {
-        var v = dI18n8n.t(key);
+      if (window.dI18n && typeof dI18n.t === "function") {
+        var v = dI18n.t(key);
         if (typeof v === "string" && v.trim()) {
           if (v.toLowerCase() === key.toLowerCase()) return fb;     // returned key itself
           if (lang !== "es" && ES_SET.has(v.trim())) return fb;      // fell back to ES while not ES
@@ -2301,9 +2362,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // Also re-run when dI18n.apply or set are called
   if (window.dI18n) {
-    var _apply = typeof dI18n.apply === "function" ? dI18n.apply.bind(dI18n8n) : null;
+    var _apply = typeof dI18n.apply === "function" ? dI18n.apply.bind(dI18n) : null;
     dI18n.apply = function(){ if (_apply) _apply(); burst(); };
-    var _set = typeof dI18n.set === "function" ? dI18n.set.bind(dI18n8n) : null;
+    var _set = typeof dI18n.set === "function" ? dI18n.set.bind(dI18n) : null;
     dI18n.set = function(lang){ if (_set) _set(lang); burst(); };
   }
 })();
@@ -2330,8 +2391,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   function tOr(key, fb){
     try {
-      if (window.dI18n && typeof dI18n8n.t === "function") {
-        var v = dI18n8n.t(key);
+      if (window.dI18n && typeof dI18n.t === "function") {
+        var v = dI18n.t(key);
         if (typeof v === "string" && v.trim()) {
           if (v.toLowerCase() === key.toLowerCase()) return fb;     // returned key itself
           if (lang() !== "es" && ES_SET.has(v.trim())) return fb;   // fell back to ES in non-ES
@@ -2429,9 +2490,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // Hook your i18n
   if (window.dI18n){
-    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n8n) : null;
+    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
     dI18n.apply = function(){ if (_apply) _apply(); burst(); };
-    var _set   = typeof dI18n.set==="function"   ? dI18n.set.bind(dI18n8n)   : null;
+    var _set   = typeof dI18n.set==="function"   ? dI18n.set.bind(dI18n)   : null;
     dI18n.set = function(l){ if (_set) _set(l); burst(); };
   }
 
@@ -2457,8 +2518,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   function tOr(key, fb){
     try {
-      if (window.dI18n && typeof dI18n8n.t === "function") {
-        var v = dI18n8n.t(key);
+      if (window.dI18n && typeof dI18n.t === "function") {
+        var v = dI18n.t(key);
         if (typeof v === "string" && v.trim()) {
           if (v.toLowerCase() === key.toLowerCase()) return fb;
           if (lang() !== "es" && ES_SET.has(v.trim())) return fb;
@@ -2534,9 +2595,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }catch(_){}
 
   if (window.dI18n){
-    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n8n) : null;
+    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
     dI18n.apply = function(){ if (_apply) _apply(); burst(); };
-    var _set = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n8n) : null;
+    var _set = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
     dI18n.set = function(l){ if (_set) _set(l); burst(); };
   }
 })();
@@ -2557,8 +2618,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   function tOr(key, fb){
     try {
-      if (window.dI18n && typeof dI18n8n.t === "function") {
-        var v = dI18n8n.t(key);
+      if (window.dI18n && typeof dI18n.t === "function") {
+        var v = dI18n.t(key);
         if (typeof v === "string" && v.trim()) {
           if (v.toLowerCase() === key.toLowerCase()) return fb;
           if (lang() !== "es" && ES_SET.has(v.trim())) return fb;
@@ -2630,9 +2691,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }catch(_){}
 
   if (window.dI18n){
-    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n8n) : null;
+    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
     dI18n.apply = function(){ if (_apply) _apply(); burst(); };
-    var _set = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n8n) : null;
+    var _set = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
     dI18n.set = function(l){ if (_set) _set(l); burst(); };
   }
 })();
@@ -2655,26 +2716,26 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   function updateCopyBtn(){
     var btn = document.getElementById("copy-btn");
-    if (btn) btn.textContent = dI18n8n.t("actions.copy");
+    if (btn) btn.textContent = dI18n.t("actions.copy");
   }
   function wireCopiedEvent(){
     var btn = document.getElementById("copy-btn");
-    if (!btn || btn.__wiredCopiedI18n8n) return;
-    btn.__wiredCopiedI18n8n = true;
+    if (!btn || btn.__wiredCopiedI18n) return;
+    btn.__wiredCopiedI18n = true;
     btn.addEventListener("copied-i18n", function(){
-      btn.textContent = dI18n8n.t("actions.copied");
+      btn.textContent = dI18n.t("actions.copied");
       setTimeout(updateCopyBtn, 1400);
     });
   }
 
   // Patch dI18n.apply and set
-  var _apply = (typeof dI18n.apply === "function") ? dI18n.apply.bind(dI18n8n) : null;
+  var _apply = (typeof dI18n.apply === "function") ? dI18n.apply.bind(dI18n) : null;
   dI18n.apply = function(){
     if (_apply) _apply();
     updateCopyBtn();
     wireCopiedEvent();
   };
-  var _set = (typeof dI18n.set === "function") ? dI18n.set.bind(dI18n8n) : null;
+  var _set = (typeof dI18n.set === "function") ? dI18n.set.bind(dI18n) : null;
   dI18n.set = function(lang){
     if (_set) _set(lang);
     updateCopyBtn();
@@ -2699,8 +2760,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     money(v){
       try{
         const n = Number(v||0);
-        // Usa el idioma actual si existe dI18n8n, default ES
-        const lang = (window.dI18n && (dI18n.current||dI18n8n.lang)) || 'es';
+        // Usa el idioma actual si existe dI18n, default ES
+        const lang = (window.dI18n && (dI18n.current||dI18n.lang)) || 'es';
         const currency = 'USD'; // si tu backend usa otra moneda, ajustar aquí
         return new Intl.NumberFormat(lang, { style:'currency', currency }).format(isFinite(n)?n:0);
       }catch(_){ return '$' + (v||'0'); }
@@ -2724,7 +2785,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const i18n = {
     statusLabel(s){
       const v = String(s||'').toLowerCase();
-      const t = (window.dI18n && window.dI18n.t) ? dI18n8n.t : (k)=>k;
+      const t = (window.dI18n && window.dI18n.t) ? dI18n.t : (k)=>k;
       if (v === 'active' || v === 'activo') return t('Activo') || 'Activo';
       if (v === 'inactive' || v === 'inactivo') return t('Inactivo') || 'Inactivo';
       if (v === 'pending' || v === 'pendiente') return t('Pendiente') || 'Pendiente';
@@ -2737,7 +2798,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // Render helpers: pequeñas utilidades para futuras refactors
   const render = {
     emptyRow(messageKey){
-      const t = (window.dI18n && window.dI18n.t) ? dI18n8n.t(messageKey) : messageKey;
+      const t = (window.dI18n && window.dI18n.t) ? dI18n.t(messageKey) : messageKey;
       return `<tr><td colspan="5" style="text-align: center;">${t}</td></tr>`;
     },
     statusPill(status){
@@ -2819,7 +2880,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 
   function t(key, fb){
-    try{ return (window.dI18n && dI18n8n.t) ? (dI18n8n.t(key)||fb||key) : (fb||key); }catch(_){ return fb||key; }
+    try{ return (window.dI18n && dI18n.t) ? (dI18n.t(key)||fb||key) : (fb||key); }catch(_){ return fb||key; }
   }
 
   function wireCopy(){
@@ -2923,7 +2984,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     window.__NUMINA_BTN_I18N__ = true;
     function applyBtnI18n(){
       try{
-        var t = (window.dI18n && window.dI18n.t) ? dI18n8n.t : (k)=>k;
+        var t = (window.dI18n && window.dI18n.t) ? dI18n.t : (k)=>k;
         document.querySelectorAll('button').forEach(function(b){
           var x = (b.textContent||'').trim();
           if (!x) return;
@@ -2938,7 +2999,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyBtnI18n, {once:true});
     else applyBtnI18n();
     if (window.dI18n){
-      var _set = (window.dI18n && typeof dI18n.set==='function') ? dI18n.set.bind(dI18n8n) : null;
+      var _set = (window.dI18n && typeof dI18n.set==='function') ? dI18n.set.bind(dI18n) : null;
       dI18n.set = function(l){ if (_set) _set(l); applyBtnI18n(); };
     }
   }
@@ -2951,7 +3012,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   window.__NUMINA_LOADERS__ = true;
 
   function t(key, fb){
-    try{ return (window.dI18n && dI18n8n.t) ? (dI18n8n.t(key)||fb||key) : (fb||key); }catch(_){ return fb||key; }
+    try{ return (window.dI18n && dI18n.t) ? (dI18n.t(key)||fb||key) : (fb||key); }catch(_){ return fb||key; }
   }
 
   // Helpers de UI para estados
@@ -3436,7 +3497,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 </script>
 
 <script>
-// === NUMINA password labels i18n bridge (supports dI18n and dI18n8n) ===
+// === NUMINA password labels i18n bridge (supports dI18n and dI18n) ===
 (function(){
   const MAP = {
     "accountForm.labels.newPassword": { es: "Nueva contraseña", en: "New password", pt: "Nova senha" },
@@ -3495,10 +3556,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
     try { obj.apply(); } catch(_){}
   }
   function install(){
-    if (window.dI18n8n) wrap(window.dI18n8n);
+    if (window.dI18n) wrap(window.dI18n);
     if (window.dI18n) wrap(window.dI18n);
     // If neither exists yet, try again later
-    return !!(window.dI18n8n || window.dI18n);
+    return !!(window.dI18n || window.dI18n);
   }
   if (!install()){
     const iv = setInterval(function(){ if (install()) clearInterval(iv); }, 100);
@@ -3509,7 +3570,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     document.querySelectorAll('.lang-menu .lang-item[data-lang]').forEach(function(it){
       it.addEventListener('click', function(){
         var code = it.getAttribute('data-lang') || 'es';
-        if (window.dI18n8n) window.dI18n8n.set(code);
+        if (window.dI18n) window.dI18n.set(code);
         else if (window.dI18n) window.dI18n.set(code);
       });
     });
@@ -3542,7 +3603,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (!el) return;
     let lang = 'es';
     try {
-      if (window.dI18n8n && dI18n8n.lang) lang = dI18n8n.lang;
+      if (window.dI18n && dI18n.lang) lang = dI18n.lang;
       else if (window.dI18n && dI18n.lang) lang = dI18n.lang;
       else {
         const sel = document.querySelector('.lang-menu .lang-item[aria-selected="true"]');
@@ -3556,7 +3617,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // Also after any i18n apply if available
   const tryHook = () => {
     try {
-      const base = window.dI18n8n || window.dI18n;
+      const base = window.dI18n || window.dI18n;
       if (base && typeof base.apply === 'function') {
         const orig = base.apply.bind(base);
         base.apply = function(){ try{ orig(); }catch(_){ } renderTitle(); };
@@ -3617,7 +3678,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       if (btn) return canon(btn.textContent || btn.innerText);
     }catch(_){}
     try{
-      if (window.dI18n8n && dI18n8n.lang) return canon(dI18n8n.lang);
+      if (window.dI18n && dI18n.lang) return canon(dI18n.lang);
       if (window.dI18n && dI18n.lang) return canon(dI18n.lang);
     }catch(_){}
     return 'es';
