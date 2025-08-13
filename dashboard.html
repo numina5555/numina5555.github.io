@@ -646,6 +646,110 @@
   }
 </style>
 
+
+<style>
+  /* === Antiflicker de alineación al cambiar idioma === */
+  :root {
+    --tbl-col-product: 42%;
+    --tbl-col-date: 16%;
+    --tbl-col-value: 14%;
+    --tbl-col-status: 14%;
+    --tbl-col-actions: 14%;
+  }
+
+  /* Tablas con ancho estable */
+  #purchases-table,
+  #referrals-table,
+  #sorteos-table {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  /* Anchos fijos por columna (purchases & referrals comparten estructura) */
+  #purchases-table th:nth-child(1), #purchases-table td:nth-child(1),
+  #referrals-table th:nth-child(1), #referrals-table td:nth-child(1) {
+    width: var(--tbl-col-product);
+  }
+  #purchases-table th:nth-child(2), #purchases-table td:nth-child(2),
+  #referrals-table th:nth-child(2), #referrals-table td:nth-child(2) {
+    width: var(--tbl-col-date);
+    white-space: nowrap;
+  }
+  #purchases-table th:nth-child(3), #purchases-table td:nth-child(3),
+  #referrals-table th:nth-child(3), #referrals-table td:nth-child(3) {
+    width: var(--tbl-col-value);
+    white-space: nowrap;
+  }
+  #purchases-table th:nth-child(4), #purchases-table td:nth-child(4),
+  #referrals-table th:nth-child(4), #referrals-table td:nth-child(4) {
+    width: var(--tbl-col-status);
+  }
+  #purchases-table th:nth-child(5), #purchases-table td:nth-child(5),
+  #referrals-table th:nth-child(5), #referrals-table td:nth-child(5) {
+    width: var(--tbl-col-actions);
+  }
+
+  /* Rifa: 3 columnas */
+  #sorteos-table th:nth-child(1), #sorteos-table td:nth-child(1) { width: 28%; white-space: nowrap; }
+  #sorteos-table th:nth-child(2), #sorteos-table td:nth-child(2) { width: 52%; }
+  #sorteos-table th:nth-child(3), #sorteos-table td:nth-child(3) { width: 20%; white-space: nowrap; }
+
+  /* Evitar “saltitos” por longitud del texto */
+  #purchases-table td, #purchases-table th,
+  #referrals-table td, #referrals-table th,
+  #sorteos-table td, #sorteos-table th {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Badges y botones con anchura estable entre idiomas */
+  .status {
+    display: inline-block;
+    text-align: center;
+    min-width: 10ch;     /* Pendiente / Pending / Pendente */
+    white-space: nowrap;
+  }
+
+  .action-btn {
+    min-width: 9ch;      /* Detalles / Details / Detalhes */
+    text-align: center;
+  }
+
+  /* Dropdown de idioma con ancho estable */
+  .lang-dropdown .dropdown-toggle,
+  #langDropdown .dropdown-toggle {
+    min-width: 10ch;     /* Español / English / Português */
+    justify-content: space-between;
+  }
+
+  /* Evitar reflujo en el banner de bienvenida */
+  .welcome-banner {
+    align-items: center;
+  }
+  .welcome-text h2 {
+    white-space: nowrap;
+    min-height: 1.6em;   /* estabiliza la altura si cambia traducción */
+    display: flex;
+    align-items: center;
+  }
+
+  /* En pantallas pequeñas, mantener consistencia aún cuando haya wrap */
+  @media (max-width: 992px) {
+    #purchases-table, #referrals-table, #sorteos-table {
+      table-layout: auto;   /* permitir wrap en móviles */
+    }
+    .action-btn { min-width: auto; }
+    .status { min-width: auto; }
+  }
+</style>
+
+
+<style>
+  /* Forzar scrollbar vertical para evitar "salto" horizontal cuando la página pasa de no-scroll a scroll */
+  html { overflow-y: scroll; }
+</style>
+
 </head>
 <body>
 <header class="dashboard-header"><div style="flex-grow:1; text-align:center;"><div class="logo">NUMINA</div></div><div class="user-menu">
