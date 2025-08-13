@@ -2489,5 +2489,211 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 })();
 </script>
+
+<script>
+/* === Settings section i18n (Configuración de la Cuenta) === */
+(function(){
+  function getStore(k, fb){ try{ var v=localStorage.getItem(k); return v==null?fb:v; }catch(_){ return fb; } }
+  function curLang(){ var d=window.dI18n||{}; return d.current||d.lang||getStore('dash_lang', getStore('lang','es'))||'es'; }
+
+  // Map with safe fallbacks; we try dI18n.t('settings.*') first if available
+  var MAP = {
+    es: {
+      title: "Configuración de la Cuenta",
+      personal: "Datos Personales",
+      security: "Seguridad",
+      fields: {
+        fullname: "Nombre completo",
+        phone: "Teléfono",
+        address: "Dirección",
+        country: "País",
+        city: "Ciudad",
+        postal: "Código Postal",
+        pass1: "Nueva contraseña",
+        pass2: "Repetir contraseña"
+      },
+      buttons: {
+        save: "Guardar cambios",
+        updatePass: "Actualizar contraseña"
+      },
+      ph: {
+        fullname: "Nombre y apellido",
+        phone: "+54 11 1234 5678",
+        address: "Calle, número, ciudad",
+        country: "Argentina",
+        city: "Buenos Aires",
+        postal: "C.P.",
+        pass: "********"
+      }
+    },
+    en: {
+      title: "Account Settings",
+      personal: "Personal Information",
+      security: "Security",
+      fields: {
+        fullname: "Full Name",
+        phone: "Phone",
+        address: "Address",
+        country: "Country",
+        city: "City",
+        postal: "Zip Code",
+        pass1: "New password",
+        pass2: "Confirm password"
+      },
+      buttons: {
+        save: "Save changes",
+        updatePass: "Update password"
+      },
+      ph: {
+        fullname: "Full name",
+        phone: "+1 555 555 5555",
+        address: "Street, number, city",
+        country: "Country",
+        city: "City",
+        postal: "ZIP",
+        pass: "********"
+      }
+    },
+    pt: {
+      title: "Configurações da Conta",
+      personal: "Dados Pessoais",
+      security: "Segurança",
+      fields: {
+        fullname: "Nome completo",
+        phone: "Telefone",
+        address: "Endereço",
+        country: "País",
+        city: "Cidade",
+        postal: "CEP",
+        pass1: "Nova senha",
+        pass2: "Confirmar senha"
+      },
+      buttons: {
+        save: "Salvar alterações",
+        updatePass: "Atualizar senha"
+      },
+      ph: {
+        fullname: "Nome e sobrenome",
+        phone: "+55 11 91234 5678",
+        address: "Rua, número, cidade",
+        country: "País",
+        city: "Cidade",
+        postal: "CEP",
+        pass: "********"
+      }
+    }
+  };
+
+  function tOr(key, fb){
+    try{
+      if (window.dI18n && typeof dI18n.t === "function") {
+        var v = dI18n.t(key);
+        if (typeof v === "string" && v.trim() && v.toLowerCase() !== key.toLowerCase()) return v;
+      }
+    }catch(_){}
+    return fb;
+  }
+
+  function L(){
+    var lang = curLang();
+    var base = MAP[lang] || MAP.es;
+    // try to resolve from your dictionary first; fallback to base
+    return {
+      title:    tOr("settings.title", base.title),
+      personal: tOr("settings.personal", base.personal),
+      security: tOr("settings.security", base.security),
+      fields: {
+        fullname: tOr("settings.fields.fullname", base.fields.fullname),
+        phone:    tOr("settings.fields.phone",    base.fields.phone),
+        address:  tOr("settings.fields.address",  base.fields.address),
+        country:  tOr("settings.fields.country",  base.fields.country),
+        city:     tOr("settings.fields.city",     base.fields.city),
+        postal:   tOr("settings.fields.postal",   base.fields.postal),
+        pass1:    tOr("settings.fields.pass1",    base.fields.pass1),
+        pass2:    tOr("settings.fields.pass2",    base.fields.pass2)
+      },
+      buttons: {
+        save:       tOr("settings.buttons.save",       base.buttons.save),
+        updatePass: tOr("settings.buttons.updatePass", base.buttons.updatePass)
+      },
+      ph: base.ph
+    };
+  }
+
+  function applySettings(){
+    var sec = document.getElementById("section-configuracion");
+    if (!sec) return;
+    var lang = curLang();
+    var labels = L();
+
+    // Title
+    var t = sec.querySelector(".section-title span");
+    if (t) t.textContent = labels.title;
+
+    // Card titles
+    var cards = sec.querySelectorAll(".settings-card > h3");
+    if (cards[0]) cards[0].childNodes[cards[0].childNodes.length-1].textContent = " " + labels.personal;
+    if (cards[1]) cards[1].childNodes[cards[1].childNodes.length-1].textContent = " " + labels.security;
+
+    // Field labels
+    var mapLab = {
+      "cfg-fullname": labels.fields.fullname,
+      "cfg-phone":    labels.fields.phone,
+      "cfg-address":  labels.fields.address,
+      "cfg-country":  labels.fields.country,
+      "cfg-city":     labels.fields.city,
+      "cfg-postal":   labels.fields.postal,
+      "cfg-pass1":    labels.fields.pass1,
+      "cfg-pass2":    labels.fields.pass2
+    };
+    Object.keys(mapLab).forEach(function(fid){
+      var lab = sec.querySelector('label[for="'+fid+'"]');
+      if (lab) lab.textContent = mapLab[fid];
+    });
+
+    // Placeholders
+    var ph = labels.ph;
+    var phMap = {
+      "cfg-fullname": ph.fullname,
+      "cfg-phone":    ph.phone,
+      "cfg-address":  ph.address,
+      "cfg-country":  ph.country,
+      "cfg-city":     ph.city,
+      "cfg-postal":   ph.postal,
+      "cfg-pass1":    ph.pass,
+      "cfg-pass2":    ph.pass
+    };
+    Object.keys(phMap).forEach(function(fid){
+      var input = sec.querySelector("#"+fid);
+      if (input && phMap[fid]) input.setAttribute("placeholder", phMap[fid]);
+    });
+
+    // Buttons
+    var btnSave = sec.querySelector("#config-datos-form .form-actions .btn");
+    if (btnSave) btnSave.textContent = labels.buttons.save;
+    var btnPass = sec.querySelector("#config-pass-form .form-actions .btn");
+    if (btnPass) btnPass.textContent = labels.buttons.updatePass;
+  }
+
+  // Run and observe that section only
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", applySettings, {once:true});
+  else applySettings();
+
+  try{
+    var target = document.getElementById("section-configuracion");
+    if (target){
+      var mo = new MutationObserver(function(){ applySettings(); });
+      mo.observe(target, {subtree:true, childList:true, characterData:true, attributes:true});
+    }
+  }catch(_){}
+
+  if (window.dI18n){
+    var _a = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
+    dI18n.apply = function(){ if (_a) _a(); applySettings(); };
+    var _s = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
+    dI18n.set = function(l){ if (_s) _s(l); applySettings(); };
+  }
+})();
+</script>
 </body>
 </html>
