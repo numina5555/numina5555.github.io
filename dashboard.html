@@ -927,17 +927,17 @@
       document.getElementById('purchases-value').textContent = userData.active_purchases || '0';
       document.getElementById('referrals-value').textContent = userData.referrals_count || '0';
       document.getElementById('tickets-value').textContent = userData.tickets_count || '0';
-      document.getElementById('full-name').textContent = userData.full_name || 'No definido';
-      document.getElementById('user-email').textContent = userData.email || 'No definido';
-      document.getElementById('user-phone').textContent = userData.phone || 'No definido';
-      document.getElementById('user-address').textContent = userData.address || 'No definido';
-document.getElementById('user-country').textContent = userData.country || 'No definido';
-document.getElementById('user-city').textContent = userData.city || 'No definido';
-document.getElementById('user-postal').textContent = userData.postal_code || 'No definido';
+      document.getElementById('full-name').textContent = userData.full_name || dI18n.t('placeholders.undefined');
+      document.getElementById('user-email').textContent = userData.email || dI18n.t('placeholders.undefined');
+      document.getElementById('user-phone').textContent = userData.phone || dI18n.t('placeholders.undefined');
+      document.getElementById('user-address').textContent = userData.address || dI18n.t('placeholders.undefined');
+document.getElementById('user-country').textContent = userData.country || dI18n.t('placeholders.undefined');
+document.getElementById('user-city').textContent = userData.city || dI18n.t('placeholders.undefined');
+document.getElementById('user-postal').textContent = userData.postal_code || dI18n.t('placeholders.undefined');
 
-document.getElementById('user-country').textContent = userData.country || 'No definido';
-document.getElementById('user-city').textContent = userData.city || 'No definido';
-document.getElementById('user-postal').textContent = userData.postal_code || 'No definido';
+document.getElementById('user-country').textContent = userData.country || dI18n.t('placeholders.undefined');
+document.getElementById('user-city').textContent = userData.city || dI18n.t('placeholders.undefined');
+document.getElementById('user-postal').textContent = userData.postal_code || dI18n.t('placeholders.undefined');
 
 
 
@@ -1053,14 +1053,14 @@ function attachConfigHandlers(supabase){
     alert('Cambios guardados');
     const res = data || updates;
     // Refrescar en dashboard inmediatamente
-    (function(){var el=document.getElementById('full-name'); if(el) el.textContent = (res.full_name ?? updates.full_name) || 'No definido';})();
-    (function(){var el=document.getElementById('user-phone'); if(el) el.textContent = (res.phone ?? updates.phone) || 'No definido';})();
-    (function(){var el=document.getElementById('user-address'); if(el) el.textContent = (res.address ?? updates.address) || 'No definido';})();
+    (function(){var el=document.getElementById('full-name'); if(el) el.textContent = (res.full_name ?? updates.full_name) || dI18n.t('placeholders.undefined');})();
+    (function(){var el=document.getElementById('user-phone'); if(el) el.textContent = (res.phone ?? updates.phone) || dI18n.t('placeholders.undefined');})();
+    (function(){var el=document.getElementById('user-address'); if(el) el.textContent = (res.address ?? updates.address) || dI18n.t('placeholders.undefined');})();
     
     // Nuevos campos
-    (function(){var el=document.getElementById('user-country'); if(el) el.textContent = (res.country ?? updates.country) || 'No definido';})();
-    (function(){var el=document.getElementById('user-city'); if(el) el.textContent = (res.city ?? updates.city) || 'No definido';})();
-    (function(){var el=document.getElementById('user-postal'); if(el) el.textContent = (res.postal_code ?? updates.postal_code) || 'No definido';})();
+    (function(){var el=document.getElementById('user-country'); if(el) el.textContent = (res.country ?? updates.country) || dI18n.t('placeholders.undefined');})();
+    (function(){var el=document.getElementById('user-city'); if(el) el.textContent = (res.city ?? updates.city) || dI18n.t('placeholders.undefined');})();
+    (function(){var el=document.getElementById('user-postal'); if(el) el.textContent = (res.postal_code ?? updates.postal_code) || dI18n.t('placeholders.undefined');})();
 
     // Y forzar re-fetch al volver al Dashboard por si hay cálculos derivados
     if (typeof cargarDashboard === 'function') { try { await cargarDashboard(); } catch(_){} }
@@ -1210,10 +1210,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('purchases-value').textContent = userData.active_purchases || '0';
     document.getElementById('referrals-value').textContent = userData.referrals_count || '0';
     document.getElementById('tickets-value').textContent = userData.tickets_count || '0';
-    document.getElementById('full-name').textContent = userData.full_name || 'No definido';
-    document.getElementById('user-email').textContent = userData.email || 'No definido';
-    document.getElementById('user-phone').textContent = userData.phone || 'No definido';
-    document.getElementById('user-address').textContent = userData.address || 'No definido';
+    document.getElementById('full-name').textContent = userData.full_name || dI18n.t('placeholders.undefined');
+    document.getElementById('user-email').textContent = userData.email || dI18n.t('placeholders.undefined');
+    document.getElementById('user-phone').textContent = userData.phone || dI18n.t('placeholders.undefined');
+    document.getElementById('user-address').textContent = userData.address || dI18n.t('placeholders.undefined');
 
     const purchasesBody = document.getElementById('purchases-body');
     if (userData.purchases?.length > 0) {
@@ -1745,7 +1745,9 @@ const DB_I18N = {
       referidosHist: "Historial de Referidos",
       accountInfo: "Información de la Cuenta"
     }
-  },
+  ,
+    placeholders: { undefined: 'No definido' }
+},
   en: {
     sidebar: {
       dashboard: "Dashboard",
@@ -1763,7 +1765,9 @@ const DB_I18N = {
       referidosHist: "Referral History",
       accountInfo: "Account Information"
     }
-  },
+  ,
+    placeholders: { undefined: 'Undefined' }
+},
   pt: {
     sidebar: {
       dashboard: "Painel",
@@ -1781,7 +1785,9 @@ const DB_I18N = {
       referidosHist: "Histórico de Indicações",
       accountInfo: "Informações da Conta"
     }
-  }
+  ,
+    placeholders: { undefined: 'Não definido' }
+}
 };
 
 const dI18n8n = {
