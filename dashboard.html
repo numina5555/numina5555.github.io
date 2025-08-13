@@ -735,8 +735,8 @@
 <h3><i class="fas fa-shield-alt"></i> Seguridad</h3>
 <form id="config-pass-form">
 <div class="form-grid">
-<div class="form-row"><label for="cfg-pass1"><span data-i18n="accountForm.labels.newPassword">Nueva contraseña</span></label><input id="cfg-pass1" placeholder="********" type="password"/></div>
-<div class="form-row"><label for="cfg-pass2"><span data-i18n="accountForm.labels.repeatPassword">Repetir contraseña</span></label><input id="cfg-pass2" placeholder="********" type="password"/></div>
+<div class="form-row"><label for="cfg-pass1"><span data-i18n="accountForm.labels.newPassword"></span></label><input id="cfg-pass1" placeholder="********" type="password"/></div>
+<div class="form-row"><label for="cfg-pass2"><span data-i18n="accountForm.labels.repeatPassword"></span></label><input id="cfg-pass2" placeholder="********" type="password"/></div>
 </div>
 <div class="form-actions"><button class="btn" type="submit">Actualizar contraseña</button></div>
 </form>
@@ -1241,7 +1241,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   mainDashboard.style.display = "block";
   cargarDashboard();
-  try { if (window.dI18n && typeof dI18n.apply==="function") dI18n.apply(); } catch(e) {}
 });
 </script>
 <script>
@@ -1303,7 +1302,7 @@ document.addEventListener("DOMContentLoaded", () => {
     menuConfig.addEventListener("click", () => {
       if (mainDashboard) mainDashboard.style.display = "none";
       if (sectionCompras) sectionCompras.style.display = "none";
-      if (sectionConfig) sectionConfig.style.display = "block"; try { if (window.dI18n && typeof dI18n.apply==="function") dI18n.apply(); } catch(e) {}
+      if (sectionConfig) sectionConfig.style.display = "block";
       try { prefillConfigForms(window._userData || {}); } catch(e) {}
     });
   }
@@ -3437,42 +3436,52 @@ document.addEventListener('DOMContentLoaded', ()=>{
 </script>
 
 <script>
-// Sync password labels/placeholders when language changes (independent fallback)
 (function(){
-  const PASS_I18N = {
-    es: { label1: "Nueva contraseña", label2: "Repetir contraseña", ph1: "********", ph2: "********" },
-    en: { label1: "New password",     label2: "Repeat password",    ph1: "********", ph2: "********" },
-    pt: { label1: "Nova senha",       label2: "Repetir senha",      ph1: "********", ph2: "********" }
+  const MAP = {
+    "accountForm.labels.newPassword": { es: "Nueva contraseña", en: "New password", pt: "Nova senha" },
+    "accountForm.labels.repeatPassword": { es: "Repetir contraseña", en: "Repeat password", pt: "Repetir senha" },
+    "accountForm.ph.newPassword": { es: "********", en: "********", pt: "********" },
+    "accountForm.ph.repeatPassword": { es: "********", en: "********", pt: "********" }
   };
-  function setPassLabels(lang){
-    var dict = PASS_I18N[lang] || PASS_I18N.es;
-    var l1 = document.querySelector('label[for="cfg-pass1"] span');
-    var l2 = document.querySelector('label[for="cfg-pass2"] span');
-    var i1 = document.getElementById('cfg-pass1');
-    var i2 = document.getElementById('cfg-pass2');
-    if (l1) l1.textContent = dict.label1;
-    if (l2) l2.textContent = dict.label2;
-    if (i1) i1.setAttribute('placeholder', dict.ph1);
-    if (i2) i2.setAttribute('placeholder', dict.ph2);
+
+  function install(){
+    if (!window.dI18n) return false;
+    const origT = (typeof dI18n.t === "function") ? dI18n.t.bind(dI18n) : (k)=>k;
+    const origApply = (typeof dI18n.apply === "function") ? dI18n.apply.bind(dI18n) : function(){};
+
+    dI18n.t = function(key){
+      if (MAP[key]) {
+        const lang = (dI18n.lang || "es").toLowerCase();
+        return MAP[key][lang] || MAP[key].es;
+      }
+      return origT(key);
+    };
+
+    dI18n.apply = function(){
+      // Primero deja que el i18n real haga lo suyo
+      try { origApply(); } catch(_) {}
+      // Luego aplicamos placeholders de inputs con data-i18n-ph
+      try {
+        document.querySelectorAll("[data-i18n-ph]").forEach(function(el){
+          const k = el.getAttribute("data-i18n-ph");
+          const val = dI18n.t(k);
+          if (val) el.setAttribute("placeholder", val);
+        });
+      } catch(_) {}
+    };
+
+    // Llamada inicial por si ya hay contenido renderizado
+    try { dI18n.apply(); } catch(_) {}
+    return true;
   }
-  // Initial set based on current marker in dropdown
-  document.addEventListener('DOMContentLoaded', function(){
-    try {
-      var selected = document.querySelector('.lang-menu .lang-item[aria-selected="true"]');
-      var lang = selected ? selected.getAttribute('data-lang') : (window.dI18n && dI18n.lang) || 'es';
-      setPassLabels(lang);
-    } catch(_) { setPassLabels('es'); }
-    // Hook into language menu selections
-    var items = document.querySelectorAll('.lang-menu .lang-item[data-lang]');
-    items.forEach(function(it){
-      it.addEventListener('click', function(){
-        var lang = it.getAttribute('data-lang') || 'es';
-        setPassLabels(lang);
-      });
-    });
-  });
-  // Also expose for external i18n switchers if needed
-  window.__applyPassLabels = setPassLabels;
+
+  // Intenta instalar ahora; si no, reintenta hasta que cargue el i18n real
+  if (!install()) {
+    const iv = setInterval(function(){
+      if (install()) clearInterval(iv);
+    }, 100);
+    setTimeout(function(){ try{ clearInterval(iv); }catch(_){ } }, 6000);
+  }
 })();
 </script>
 
