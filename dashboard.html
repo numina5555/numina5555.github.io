@@ -782,7 +782,7 @@
 <h3 class="product-title"><span data-i18n="raffles.activeTickets"></span></h3>
 <p class="product-desc">Oro 999.9 certificado. Ideal para inversión y resguardo de valor.</p>
 <span class="price">US$ 13,500</span>
-<button class="btn btn-primary" data-action="more" data-sku="GOLD-100G">Más información</button>
+<button class="btn btn-primary" data-action="more" data-sku="GOLD-100G"><span data-i18n="catalog.moreInfo">Más información</span></button>
 </div>
 </article>
 <!-- Platino -->
@@ -797,7 +797,7 @@
 <h3 class="product-title"><span data-i18n="raffles.activeTickets"></span></h3>
 <p class="product-desc">Platino 999.5 certificado. Inversión de alto valor y rareza.</p>
 <span class="price">US$ 6,500</span>
-<button class="btn btn-primary" data-action="more" data-sku="PLAT-100G">Más información</button>
+<button class="btn btn-primary" data-action="more" data-sku="PLAT-100G"><span data-i18n="catalog.moreInfo">Más información</span></button>
 </div>
 </article>
 <!-- Rolex -->
@@ -812,7 +812,7 @@
 <h3 class="product-title"><span data-i18n="raffles.activeTickets"></span></h3>
 <p class="product-desc">Submariner Date con bisel verde y caja Oystersteel. Automático.</p>
 <span class="price">US$ 19,600</span>
-<button class="btn btn-primary" data-action="more" data-sku="ROLEX-126610L">Más información</button>
+<button class="btn btn-primary" data-action="more" data-sku="ROLEX-126610L"><span data-i18n="catalog.moreInfo">Más información</span></button>
 </div>
 </article>
 <!-- Pulsera -->
@@ -827,7 +827,7 @@
 <h3 class="product-title"><span data-i18n="raffles.activeTickets"></span></h3>
 <p class="product-desc">Diseño exclusivo con materiales de alta calidad. Edición limitada.</p>
 <span class="price">US$ 35</span>
-<button class="btn btn-primary" data-action="more" data-sku="NUMINA-BRACELET">Más información</button>
+<button class="btn btn-primary" data-action="more" data-sku="NUMINA-BRACELET"><span data-i18n="catalog.moreInfo">Más información</span></button>
 </div>
 </article>
 </section>
@@ -3589,6 +3589,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     save: { es: "Guardar cambios", en: "Save changes", pt: "Salvar alterações" },
     updatePassword: { es: "Actualizar contraseña", en: "Update password", pt: "Atualizar senha" },
     catalog: { es: "Catálogo", en: "Catalog", pt: "Catálogo" },
+    moreInfo: { es: "Más información", en: "More info", pt: "Mais informações" },
     label1: { es: "Nueva contraseña", en: "New password", pt: "Nova senha" },
     label2: { es: "Repetir contraseña", en: "Repeat password", pt: "Repetir senha" },
     ph1: { es: "********", en: "********", pt: "********" },
@@ -3628,6 +3629,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const up = document.querySelector('button span[data-i18n="account.settings.updatePassword"]');
     if (up) up.textContent = MAP.updatePassword[lang] || MAP.updatePassword.es;
     document.querySelectorAll('[data-i18n="catalog.title"]').forEach(function(cat){ cat.textContent = MAP.catalog[lang] || MAP.catalog.es; });
+    document.querySelectorAll('button [data-i18n="catalog.moreInfo"]').forEach(function(mi){ mi.textContent = MAP.moreInfo[lang] || MAP.moreInfo.es; });
     const l1 = document.querySelector('label[for="cfg-pass1"] span[data-i18n="accountForm.labels.newPassword"]');
     const l2 = document.querySelector('label[for="cfg-pass2"] span[data-i18n="accountForm.labels.repeatPassword"]');
     if (l1) l1.textContent = MAP.label1[lang] || MAP.label1.es;
