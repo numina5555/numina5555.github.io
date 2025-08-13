@@ -2745,5 +2745,73 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 })();
 </script>
+
+<script>
+/* === NUMINA i18n: sorteos (participation history) table === */
+(function(){
+  function getStore(k, fb){ try{ var v=localStorage.getItem(k); return v==null?fb:v; }catch(_){ return fb; } }
+  function lang(){ var d=window.dI18n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
+
+  var LBL = {
+    es: { date:"Fecha", raffle:"Sorteo", tickets_used:"Tickets Utilizados", loading:"Cargando...", empty:"Sin participaciones" },
+    en: { date:"Date",  raffle:"Raffle", tickets_used:"Tickets Used",       loading:"Loading...",   empty:"No entries" },
+    pt: { date:"Data",  raffle:"Sorteio", tickets_used:"Bilhetes Utilizados", loading:"Carregando...", empty:"Sem participações" }
+  };
+
+  function labels(){ return LBL[lang()] || LBL.es; }
+
+  function tagHeaders(){
+    var ths = document.querySelectorAll("#sorteos-table thead tr:first-child th");
+    if (!ths.length) return;
+    var keys = ["date","raffle","tickets_used"];
+    ths.forEach(function(th, idx){
+      if (!th.hasAttribute("data-i18n-col")) th.setAttribute("data-i18n-col", keys[idx] || "");
+    });
+  }
+
+  function applyHeaders(){
+    var L = labels();
+    document.querySelectorAll("#sorteos-table thead th[data-i18n-col]").forEach(function(th){
+      var k = th.getAttribute("data-i18n-col");
+      var v = L[k];
+      if (v && th.textContent !== v) th.textContent = v;
+    });
+  }
+
+  function applyBodyMessages(){
+    var L = labels();
+    var tbody = document.getElementById("sorteos-tbody");
+    if (!tbody) return;
+    var td = tbody.querySelector("td[colspan]");
+    if (!td) return;
+    var t = (td.textContent || "").trim().toLowerCase();
+    if (["cargando...", "loading...", "carregando..."].indexOf(t) !== -1) td.textContent = L.loading;
+    if (["sin participaciones", "no entries", "sem participacoes", "sem participações"].indexOf(t) !== -1) td.textContent = L.empty;
+  }
+
+  function burst(){
+    var n=0;
+    (function step(){
+      tagHeaders(); applyHeaders(); applyBodyMessages();
+      if (++n < 6) setTimeout(step, n<3?0:60);
+    })();
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", burst, {once:true});
+  else burst();
+
+  try{
+    var mo = new MutationObserver(function(m){ for (var i=0;i<m.length;i++){ if (m[i].type==="childList"||m[i].type==="characterData"){ burst(); break; } } });
+    mo.observe(document.getElementById("sorteos-table") || document.body, { subtree:true, childList:true, characterData:true });
+  }catch(_){}
+
+  if (window.dI18n){
+    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
+    dI18n.apply = function(){ if (_apply) _apply(); burst(); };
+    var _set = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
+    dI18n.set = function(l){ if (_set) _set(l); burst(); };
+  }
+})();
+</script>
 </body>
 </html>
