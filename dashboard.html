@@ -935,7 +935,7 @@ document.getElementById('user-postal').textContent = userData.postal_code || dI1
               <td>${new Date(p.created_at).toLocaleDateString()}</td>
               <td>${(p.value ?? 0).toFixed(2)}</td>
               <td><span class="status ${p.status}">${statusLabel(p.status)}</span></td>
-              <td><button class="action-btn">Detalles</button></td>
+              <td><button class="action-btn"><span data-i18n="actions.details">Detalles</span></button></td>
             </tr>
           `).join('')
         : '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
@@ -1197,7 +1197,7 @@ document.addEventListener("DOMContentLoaded", () => {
           '<td>' + new Date(p.created_at).toLocaleDateString() + '</td>' +
           '<td>$' + (p.value?.toFixed(2) || '0.00') + '</td>' +
           '<td><span class="status ' + p.status + '\">' + statusLabel(p.status) + '</span></td>' +
-          '<td><button class="action-btn">Detalles</button></td>' +
+          '<td><button class="action-btn"><span data-i18n="actions.details">Detalles</span></button></td>' +
           '</tr>';
         purchasesBody.innerHTML += row;
       });
@@ -1945,6 +1945,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     es: {
       labels: {
         moreInfo: "Más información",
+        details: "Detalles",
         price: "Precio",
         claim: "Hacer reclamo",
         product: "Producto",
@@ -1967,6 +1968,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     en: {
       labels: {
         moreInfo: "More info",
+        details: "Details",
         price: "Price",
         claim: "Make a claim",
         product: "Product",
@@ -1989,6 +1991,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     pt: {
       labels: {
         moreInfo: "Mais informações",
+        details: "Detalhes",
         price: "Preço",
         claim: "Fazer reclamação",
         product: "Produto",
@@ -2063,6 +2066,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
     });
 
     // Translate "Más información" buttons inside cards
+    // Translate "Detalles" action buttons
+    Array.from(document.querySelectorAll('button, a.button, .btn, .button, .action-btn')).forEach(el=>{
+      const t = el.textContent.trim();
+      if (t === 'Detalles' || t === 'Details' || t === 'Detalhes') el.textContent = dict.labels.details;
+    });
     const candidates = Array.from(document.querySelectorAll('button, a.button, .btn, .button')).filter(el=>{
       const t = el.textContent.trim();
       return t === 'Más información' || t === 'More info' || t === 'Mais informações';
@@ -3116,7 +3124,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
             '<td>'+date+'</td>' +
             '<td>'+value+'</td>' +
             '<td><span class="status pending">'+st+'</span></td>' +
-            '<td><button class="action-btn">'+t('Detalles','Detalles')+'</button></td>' +
+            '<td><button class=\"action-btn\"><span data-i18n=\"actions.details\">Detalles</span></button></td> +
           '</tr>'
         );
       }).join('');
