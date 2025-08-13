@@ -2067,6 +2067,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     // Translate "Más información" buttons inside cards
     // Translate "Detalles" action buttons
+    // RAW_KEY_FIX_DETAILS: Replace raw 'actions.details' text if present
+    Array.from(document.querySelectorAll('[data-i18n="actions.details"]')).forEach(el=>{
+      if (el.textContent.trim() === 'actions.details') el.textContent = dict.labels.details;
+    });
     Array.from(document.querySelectorAll('button, a.button, .btn, .button, .action-btn')).forEach(el=>{
       const t = el.textContent.trim();
       if (t === 'Detalles' || t === 'Details' || t === 'Detalhes') el.textContent = dict.labels.details;
