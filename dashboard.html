@@ -1230,10 +1230,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('purchases-value').textContent = '--';
     document.getElementById('referrals-value').textContent = '--';
     document.getElementById('tickets-value').textContent = '--';
-    setText('full-name', userData.full_name);
-    setText('user-email', userData.email);
-    setText('user-phone', userData.phone);
-    setText('user-address', userData.address);
+    setText('full-name', '');
+    setText('user-email', '');
+    setText('user-phone', '');
+    setText('user-address', '');
     document.getElementById('purchases-body').innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando compras...</td></tr>';
     document.getElementById('referrals-body').innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando referidos...</td></tr>';
 
@@ -1258,10 +1258,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('purchases-value').textContent = userData.active_purchases || '0';
     document.getElementById('referrals-value').textContent = (typeof userData.referrals_count !== 'undefined' ? userData.referrals_count : (userData.referrals?.length || '0'));
     document.getElementById('tickets-value').textContent = userData.tickets_count || '0';
-    setText('full-name', userData.full_name);
-    setText('user-email', userData.email);
-    setText('user-phone', userData.phone);
-    setText('user-address', userData.address);
+    setText('full-name', '');
+    setText('user-email', '');
+    setText('user-phone', '');
+    setText('user-address', '');
 
     const purchasesBody = document.getElementById('purchases-body');
     if (userData.purchases?.length > 0) {
