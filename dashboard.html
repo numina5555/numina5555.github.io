@@ -3713,5 +3713,70 @@ document.addEventListener('DOMContentLoaded', ()=>{
 })();
 </script>
 
+
+<script>
+// Dedicated updater for actions.details that runs on load, i18n apply, language change, and table mutations
+(function(){
+  const LABELS = {
+    es: "Detalles",
+    en: "Details",
+    pt: "Detalhes"
+  };
+  function canon(lang){
+    if (!lang) return 'es';
+    const s = String(lang).toLowerCase();
+    if (s.startsWith('en') || s.includes('english')) return 'en';
+    if (s.startsWith('pt') || s.includes('port')) return 'pt';
+    if (s.startsWith('es') || s.includes('espa')) return 'es';
+    return 'es';
+  }
+  function currentLang(){
+    try{
+      if (window.dI18n8n && dI18n8n.lang) return canon(dI18n8n.lang);
+      if (window.dI18n && dI18n.lang) return canon(dI18n.lang);
+    }catch(_){}
+    const pill = document.getElementById('langCurrentText');
+    if (pill) return canon(pill.textContent||'');
+    return 'es';
+  }
+  function applyDetails(){
+    const lang = currentLang();
+    document.querySelectorAll('[data-i18n="actions.details"]').forEach(el=>{
+      el.textContent = LABELS[lang] || LABELS.es;
+    });
+  }
+  // Run on load
+  document.addEventListener('DOMContentLoaded', applyDetails);
+  // Hook into i18n apply
+  (function tryHook(){
+    try{
+      const base = window.dI18n8n || window.dI18n;
+      if (base && typeof base.apply === 'function'){
+        const orig = base.apply.bind(base);
+        base.apply = function(){ try{ orig(); }catch(_){ } applyDetails(); };
+        return;
+      }
+    }catch(_){}
+    setTimeout(tryHook, 150);
+  })();
+  // Language menu clicks
+  document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('#langMenu .lang-item').forEach(it=>{
+      it.addEventListener('click', ()=> setTimeout(applyDetails, 0));
+    });
+  });
+  // Observe table bodies for new rows
+  document.addEventListener('DOMContentLoaded', function(){
+    const targets = ['#purchases-body', '#miscompras-body', '#referrals-body'];
+    const opts = { childList: true, subtree: true };
+    targets.map(sel=> document.querySelector(sel)).filter(Boolean).forEach(node=>{
+      try {
+        new MutationObserver(applyDetails).observe(node, opts);
+      } catch(_) {}
+    });
+  });
+})();
+</script>
+
 </body>
 </html>
