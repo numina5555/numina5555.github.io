@@ -738,7 +738,7 @@
 <div class="form-row"><label for="cfg-pass1"><span data-i18n="accountForm.labels.newPassword"></span></label><input id="cfg-pass1" placeholder="********" type="password"/></div>
 <div class="form-row"><label for="cfg-pass2"><span data-i18n="accountForm.labels.repeatPassword"></span></label><input id="cfg-pass2" placeholder="********" type="password"/></div>
 </div>
-<div class="form-actions"><button class="btn" type="submit">Actualizar contraseña</button></div>
+<div class="form-actions"><button class="btn" type="submit"><span data-i18n="account.settings.updatePassword">Actualizar contraseña</span></button></div>
 </form>
 </div>
 </section>
@@ -3587,6 +3587,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     security: { es: "Seguridad", en: "Security", pt: "Segurança" },
     personal: { es: "Datos Personales", en: "Personal Data", pt: "Dados Pessoais" },
     save: { es: "Guardar cambios", en: "Save changes", pt: "Salvar alterações" },
+    updatePassword: { es: "Actualizar contraseña", en: "Update password", pt: "Atualizar senha" },
     label1: { es: "Nueva contraseña", en: "New password", pt: "Nova senha" },
     label2: { es: "Repetir contraseña", en: "Repeat password", pt: "Repetir senha" },
     ph1: { es: "********", en: "********", pt: "********" },
@@ -3623,6 +3624,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (pd) pd.textContent = MAP.personal[lang] || MAP.personal.es;
     const sv = document.querySelector('button span[data-i18n="account.settings.save"]');
     if (sv) sv.textContent = MAP.save[lang] || MAP.save.es;
+    const up = document.querySelector('button span[data-i18n="account.settings.updatePassword"]');
+    if (up) up.textContent = MAP.updatePassword[lang] || MAP.updatePassword.es;
     const l1 = document.querySelector('label[for="cfg-pass1"] span[data-i18n="accountForm.labels.newPassword"]');
     const l2 = document.querySelector('label[for="cfg-pass2"] span[data-i18n="accountForm.labels.repeatPassword"]');
     if (l1) l1.textContent = MAP.label1[lang] || MAP.label1.es;
