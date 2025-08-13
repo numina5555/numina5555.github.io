@@ -2476,5 +2476,102 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 })();
 </script>
+
+<script>
+/* === NUMINA i18n: account info labels (Nombre/Correo/Teléfono/Dirección/País/Ciudad/Código Postal) === */
+(function(){
+  function getStore(k, fb){ try { var v = localStorage.getItem(k); return v==null?fb:v; } catch(_){ return fb; } }
+  function lang(){ var d = window.dI18n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
+  function norm(s){ return (s||"").toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
+
+  var LBL = {
+    es: { fullname:"Nombre Completo", email:"Correo Electrónico", phone:"Teléfono", address:"Dirección", country:"País", city:"Ciudad", postal:"Código Postal" },
+    en: { fullname:"Full Name",       email:"Email",              phone:"Phone",   address:"Address",   country:"Country", city:"City",   postal:"Zip Code" },
+    pt: { fullname:"Nome Completo",   email:"Email",              phone:"Telefone",address:"Endereço",  country:"País",    city:"Cidade", postal:"CEP" }
+  };
+  var ES_SET = new Set(Object.values(LBL.es));
+
+  function tOr(key, fb){
+    try {
+      if (window.dI18n && typeof dI18n.t === "function") {
+        var v = dI18n.t(key);
+        if (typeof v === "string" && v.trim()) {
+          if (v.toLowerCase() === key.toLowerCase()) return fb;
+          if (lang() !== "es" && ES_SET.has(v.trim())) return fb;
+          return v;
+        }
+      }
+    } catch(_){}
+    return fb;
+  }
+
+  function labels(){
+    var base = LBL[lang()] || LBL.es;
+    return {
+      fullname: tOr("account.fullname", base.fullname),
+      email:    tOr("account.email",    base.email),
+      phone:    tOr("account.phone",    base.phone),
+      address:  tOr("account.address",  base.address),
+      country:  tOr("account.country",  base.country),
+      city:     tOr("account.city",     base.city),
+      postal:   tOr("account.postal",   base.postal)
+    };
+  }
+
+  var SEED = {
+    "nombre completo":"fullname",
+    "correo electronico":"email","correo electrónico":"email",
+    "telefono":"phone","teléfono":"phone",
+    "direccion":"address","dirección":"address",
+    "pais":"country","país":"country",
+    "ciudad":"city",
+    "codigo postal":"postal","código postal":"postal",
+    // EN/PT
+    "full name":"fullname","email":"email","phone":"phone","address":"address","country":"country","city":"city","zip code":"postal","cep":"postal","nome completo":"fullname","telefone":"phone","endereco":"address","endereço":"address","pais":"country"
+  };
+
+  function tag(){
+    var ths = Array.from(document.querySelectorAll("#account-info-grid .info-item h4"));
+    ths.forEach(function(h4, idx){
+      if (h4.hasAttribute("data-i18n-field")) return;
+      var key = SEED[norm(h4.textContent)] || ["fullname","email","phone","address","country","city","postal"][idx];
+      if (key) h4.setAttribute("data-i18n-field", key);
+    });
+  }
+
+  function applyAll(){
+    var L = labels();
+    document.querySelectorAll("#account-info-grid .info-item h4[data-i18n-field]").forEach(function(h4){
+      var k = h4.getAttribute("data-i18n-field");
+      var v = L[k];
+      if (v && h4.textContent !== v) h4.textContent = v;
+    });
+  }
+
+  var timer=null, runs=0;
+  function burst(){
+    runs=0;
+    function step(){ tag(); applyAll(); runs++; if (runs<6) timer=setTimeout(step, runs<3?0:60); else timer=null; }
+    if (!timer) step();
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", burst, {once:true});
+  else burst();
+
+  try{
+    var mo = new MutationObserver(function(m){
+      for (var i=0;i<m.length;i++){ if (m[i].type === "childList" || m[i].type === "characterData") { burst(); break; } }
+    });
+    mo.observe(document.body, {subtree:true, childList:true, characterData:true});
+  }catch(_){}
+
+  if (window.dI18n){
+    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
+    dI18n.apply = function(){ if (_apply) _apply(); burst(); };
+    var _set = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
+    dI18n.set = function(l){ if (_set) _set(l); burst(); };
+  }
+})();
+</script>
 </body>
 </html>
