@@ -3578,5 +3578,72 @@ document.addEventListener('DOMContentLoaded', ()=>{
 })();
 </script>
 
+
+<script>
+// Reactive updater that watches the language selector and updates specific texts
+(function(){
+  const MAP = {
+    title: { es: "Configuración de la Cuenta", en: "Account Settings", pt: "Configurações da Conta" },
+    label1: { es: "Nueva contraseña", en: "New password", pt: "Nova senha" },
+    label2: { es: "Repetir contraseña", en: "Repeat password", pt: "Repetir senha" },
+    ph1: { es: "********", en: "********", pt: "********" },
+    ph2: { es: "********", en: "********", pt: "********" }
+  };
+  function canon(lang){
+    if (!lang) return 'es';
+    const s = String(lang).toLowerCase().trim();
+    if (s.startsWith('en') || s.includes('english')) return 'en';
+    if (s.startsWith('pt') || s.includes('portugu')) return 'pt';
+    if (s.startsWith('es') || s.includes('espa')) return 'es';
+    return 'es';
+  }
+  function currentLang(){
+    try{
+      const selected = document.querySelector('#langMenu .lang-item[aria-selected="true"]');
+      if (selected) return canon(selected.getAttribute('data-lang') || selected.textContent);
+      const btn = document.getElementById('langCurrentText');
+      if (btn) return canon(btn.textContent || btn.innerText);
+    }catch(_){}
+    try{
+      if (window.dI18n8n && dI18n8n.lang) return canon(dI18n8n.lang);
+      if (window.dI18n && dI18n.lang) return canon(dI18n.lang);
+    }catch(_){}
+    return 'es';
+  }
+  function applyTexts(){
+    const lang = currentLang();
+    const t = document.querySelector('h2.section-title span[data-i18n="account.settings.title"]');
+    if (t) t.textContent = MAP.title[lang] || MAP.title.es;
+    const l1 = document.querySelector('label[for="cfg-pass1"] span[data-i18n="accountForm.labels.newPassword"]');
+    const l2 = document.querySelector('label[for="cfg-pass2"] span[data-i18n="accountForm.labels.repeatPassword"]');
+    if (l1) l1.textContent = MAP.label1[lang] || MAP.label1.es;
+    if (l2) l2.textContent = MAP.label2[lang] || MAP.label2.es;
+    const i1 = document.getElementById('cfg-pass1');
+    const i2 = document.getElementById('cfg-pass2');
+    if (i1) i1.setAttribute('placeholder', MAP.ph1[lang] || MAP.ph1.es);
+    if (i2) i2.setAttribute('placeholder', MAP.ph2[lang] || MAP.ph2.es);
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    applyTexts();
+    // Click listeners on menu items
+    document.querySelectorAll('#langMenu .lang-item').forEach(function(li){
+      li.addEventListener('click', function(){ setTimeout(applyTexts, 0); });
+    });
+    // Observe aria-selected changes in menu
+    const menu = document.getElementById('langMenu');
+    if (menu && window.MutationObserver){
+      const mo = new MutationObserver(() => applyTexts());
+      mo.observe(menu, { attributes: true, subtree: true, attributeFilter: ['aria-selected'] });
+    }
+    // Observe label text in the pill as a fallback
+    const cur = document.getElementById('langCurrentText');
+    if (cur && window.MutationObserver){
+      const mo2 = new MutationObserver(() => applyTexts());
+      mo2.observe(cur, { characterData: true, subtree: true, childList: true });
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
