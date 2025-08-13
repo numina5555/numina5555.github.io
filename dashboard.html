@@ -2626,33 +2626,79 @@ document.addEventListener('DOMContentLoaded', ()=>{
 })();
 </script>
 
+
+
+
 <script>
-// === Live i18n for dynamic empty rows (referrals/purchases) ===
+// === Live i18n for dynamic content (tables, account info, statuses, buttons) ===
 (function(){
   function getStore(k, fb){ try { var v = localStorage.getItem(k); return v==null?fb:v; } catch(_){ return fb; } }
   function lang(){ var d = window.dI18n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
 
+  // Base map (keys in ES). We keep keys in ES para detectar cuando fueron insertados por código.
   var MAP = {
-    es: { 'No hay referidos':'No hay referidos', 'No hay compras':'No hay compras', 'Cargando referidos...':'Cargando referidos...', 'Cargando compras...':'Cargando compras...' },
-    en: { 'No hay referidos':'No referrals',      'No hay compras':'No purchases',   'Cargando referidos...':'Loading referrals...', 'Cargando compras...':'Loading purchases...' },
-    pt: { 'No hay referidos':'Sem referidos',     'No hay compras':'Sem compras',    'Cargando referidos...':'Carregando referidos...', 'Cargando compras...':'Carregando compras...' }
+    es: {
+      'No hay referidos':'No hay referidos', 'No hay compras':'No hay compras',
+      'Cargando referidos...':'Cargando referidos...', 'Cargando compras...':'Cargando compras...',
+      'Activo':'Activo', 'Inactivo':'Inactivo',
+      'No definido':'No definido',
+      'Hacer reclamo':'Hacer reclamo', 'Detalles':'Detalles'
+    },
+    en: {
+      'No hay referidos':'No referrals', 'No hay compras':'No purchases',
+      'Cargando referidos...':'Loading referrals...', 'Cargando compras...':'Loading purchases...',
+      'Activo':'Active', 'Inactivo':'Inactive',
+      'No definido':'Not set',
+      'Hacer reclamo':'Open claim', 'Detalles':'Details'
+    },
+    pt: {
+      'No hay referidos':'Sem referidos', 'No hay compras':'Sem compras',
+      'Cargando referidos...':'Carregando referidos...', 'Cargando compras...':'Carregando compras...',
+      'Activo':'Ativo', 'Inactivo':'Inativo',
+      'No definido':'Não definido',
+      'Hacer reclamo':'Abrir reclamação', 'Detalles':'Detalhes'
+    }
   };
 
+  // Take translations from global Phrases if available and merge over our fallback MAP
+  function dict(){
+    var L = lang();
+    var base = Object.assign({}, MAP[L] || MAP['es']);
+    try{
+      if (window.Phrases && Phrases[L]){
+        for (var k in Phrases[L]){ if (Object.prototype.hasOwnProperty.call(Phrases[L], k)) base[k] = Phrases[L][k]; }
+      }
+    }catch(_){}
+    return base;
+  }
+
   function translateDynamic(){
-    var L = MAP[lang()] || MAP.es;
-    var nodes = document.querySelectorAll('#referrals-table td, #purchases-table td, #referrals-body td, #purchases-body td');
-    nodes.forEach(function(td){
-      var txt = (td.textContent||'').trim();
-      if (!txt) return;
-      if (Object.prototype.hasOwnProperty.call(L, txt)){
-        td.textContent = L[txt];
+    var D = dict();
+    // Areas we need to keep translated even when DOM changes
+    var selectors = [
+      '#referrals-table td', '#purchases-table td', '#miscompras-table td',
+      '#referrals-body td', '#purchases-body td', '#miscompras-body td',
+      '#account-info-grid p', '.status', '.action-btn'
+    ];
+    var nodes = document.querySelectorAll(selectors.join(','));
+    nodes.forEach(function(el){
+      var t = (el.textContent||'').trim();
+      if (!t) return;
+      if (Object.prototype.hasOwnProperty.call(D, t)) {
+        el.textContent = D[t];
+      } else {
+        // allow case-insensitive match
+        var lower = t.toLowerCase();
+        for (var k in D){ if (k.toLowerCase() === lower){ el.textContent = D[k]; break; } }
       }
     });
   }
 
+  // Initial translate
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', translateDynamic, {once:true});
   else translateDynamic();
 
+  // Observe DOM changes
   try{
     var mo = new MutationObserver(function(m){
       for (var i=0;i<m.length;i++){
@@ -2662,9 +2708,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
     mo.observe(document.body, {subtree:true, childList:true, characterData:true});
   }catch(_){}
 
+  // Re-translate when language changes via dI18n.set
   if (window.dI18n){
-    var _set = typeof dI18n.set==='function' ? dI18n.set.bind(dI18n) : null;
-    dI18n.set = function(l){ if (_set) _set(l); translateDynamic(); };
+    var _origSet = typeof dI18n.set==='function' ? dI18n.set.bind(dI18n) : null;
+    dI18n.set = function(l){ if (_origSet) _origSet(l); translateDynamic(); };
   }
 })();
 </script>
