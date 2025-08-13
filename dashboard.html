@@ -705,23 +705,23 @@
 <p id="user-email">Cargando...</p>
 </div>
 <div class="info-item">
-<h4>Teléfono</h4>
+<h4><span data-i18n="accountForm.labels.phone"></span></h4>
 <p id="user-phone">Cargando...</p>
 </div>
 <div class="info-item">
-<h4>Dirección</h4>
+<h4><span data-i18n="accountForm.labels.address"></span></h4>
 <p id="user-address">Cargando...</p>
 </div>
 <div class="info-item">
-  <h4>País</h4>
+  <h4><span data-i18n="accountForm.labels.country"></span></h4>
   <p id="user-country">Cargando...</p>
 </div>
 <div class="info-item">
-  <h4>Ciudad</h4>
+  <h4><span data-i18n="accountForm.labels.city"></span></h4>
   <p id="user-city">Cargando...</p>
 </div>
 <div class="info-item">
-  <h4>Código Postal</h4>
+  <h4><span data-i18n="accountForm.labels.zip"></span></h4>
   <p id="user-postal">Cargando...</p>
 </div>
 
@@ -740,13 +740,13 @@
       <div class="form-grid">
       <!-- Nota: El campo de correo electrónico se eliminó de este formulario porque se gestiona únicamente desde el proveedor de autenticación (Supabase Auth). Si en el futuro se habilita su edición, puede reinsertarse un campo de solo lectura o un enlace a la sección correspondiente. Esta nota existe solo como documentación para el equipo y no se muestra al usuario. -->
 
-        <div class="form-row"><label for="cfg-fullname">Nombre completo</label><input id="cfg-fullname" type="text" placeholder="Nombre y apellido"/></div>
+        <div class="form-row"><label for="cfg-fullname"><span data-i18n="accountForm.labels.fullName"></span></label><input id="cfg-fullname" type="text" /></div>
         
-        <div class="form-row"><label for="cfg-phone">Teléfono</label><input id="cfg-phone" type="tel" placeholder="+54 11 1234 5678"/></div>
-        <div class="form-row"><label for="cfg-address">Dirección</label><input id="cfg-address" type="text" placeholder="Calle, número, ciudad"/></div>
-        <div class="form-row"><label for="cfg-country">País</label><input id="cfg-country" type="text" placeholder="Argentina"/></div>
-        <div class="form-row"><label for="cfg-city">Ciudad</label><input id="cfg-city" type="text" placeholder="Buenos Aires"/></div>
-        <div class="form-row"><label for="cfg-postal">Código Postal</label><input id="cfg-postal" type="text" placeholder="C.P."/></div>
+        <div class="form-row"><label for="cfg-phone"><span data-i18n="accountForm.labels.phone"></span></label><input id="cfg-phone" type="tel" /></div>
+        <div class="form-row"><label for="cfg-address"><span data-i18n="accountForm.labels.address"></span></label><input id="cfg-address" type="text" /></div>
+        <div class="form-row"><label for="cfg-country"><span data-i18n="accountForm.labels.country"></span></label><input id="cfg-country" type="text" /></div>
+        <div class="form-row"><label for="cfg-city"><span data-i18n="accountForm.labels.city"></span></label><input id="cfg-city" type="text" /></div>
+        <div class="form-row"><label for="cfg-postal"><span data-i18n="accountForm.labels.zip"></span></label><input id="cfg-postal" type="text" /></div>
 
       </div>
       <div class="form-actions"><button class="btn" type="submit">Guardar cambios</button></div>
@@ -3443,6 +3443,31 @@ document.addEventListener('DOMContentLoaded', ()=>{
     })(),
     writable: false
   });
+})();
+</script>
+
+
+<script>
+(function(){
+  function translateAll(){
+    if (!(window.dI18n && typeof dI18n.t === 'function')) return false;
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      var k = el.getAttribute('data-i18n'); if(!k) return;
+      try{ el.textContent = dI18n.t(k); }catch(e){ el.textContent = k; }
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach(function(el){
+      var k = el.getAttribute('data-i18n-ph'); if(!k) return;
+      try{ el.setAttribute('placeholder', dI18n.t(k)); }catch(e){ el.setAttribute('placeholder', k); }
+    });
+    return true;
+  }
+  function ready(n){
+    if (translateAll()) return;
+    if (n<=0) return;
+    setTimeout(function(){ ready(n-1); }, 100);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ ready(20); }); else ready(20);
+  try{ var _a = dI18n.apply.bind(dI18n); dI18n.apply = function(){ _a(); translateAll(); }; }catch(_){}
 })();
 </script>
 
