@@ -2573,5 +2573,57 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 })();
 </script>
+
+<script>
+/* === Copy button i18n fix (adds PT + ensures updates on set/apply/click) === */
+(function(){
+  if (!window.DB_I18N || !window.dI18n) return;
+
+  // Ensure locales exist
+  DB_I18N.en = DB_I18N.en || {};
+  DB_I18N.pt = DB_I18N.pt || {};
+
+  // Merge default actions if missing
+  DB_I18N.en.actions = Object.assign({ copy: "Copy",    copied: "Copied!"  }, DB_I18N.en.actions || {});
+  DB_I18N.pt.actions = Object.assign({ copy: "Copiar",  copied: "Copiado!" }, DB_I18N.pt.actions || {});
+  // Keep Spanish too (in case it was missing in some builds)
+  DB_I18N.es = DB_I18N.es || {};
+  DB_I18N.es.actions = Object.assign({ copy: "Copiar",  copied: "¡Copiado!" }, DB_I18N.es.actions || {});
+
+  function updateCopyBtn(){
+    var btn = document.getElementById("copy-btn");
+    if (btn) btn.textContent = dI18n.t("actions.copy");
+  }
+  function wireCopiedEvent(){
+    var btn = document.getElementById("copy-btn");
+    if (!btn || btn.__wiredCopiedI18n) return;
+    btn.__wiredCopiedI18n = true;
+    btn.addEventListener("copied-i18n", function(){
+      btn.textContent = dI18n.t("actions.copied");
+      setTimeout(updateCopyBtn, 1400);
+    });
+  }
+
+  // Patch dI18n.apply and set
+  var _apply = (typeof dI18n.apply === "function") ? dI18n.apply.bind(dI18n) : null;
+  dI18n.apply = function(){
+    if (_apply) _apply();
+    updateCopyBtn();
+    wireCopiedEvent();
+  };
+  var _set = (typeof dI18n.set === "function") ? dI18n.set.bind(dI18n) : null;
+  dI18n.set = function(lang){
+    if (_set) _set(lang);
+    updateCopyBtn();
+  };
+
+  // Initial
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function(){ updateCopyBtn(); wireCopiedEvent(); }, { once: true });
+  } else {
+    updateCopyBtn(); wireCopiedEvent();
+  }
+})();
+</script>
 </body>
 </html>
