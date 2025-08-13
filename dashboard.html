@@ -581,16 +581,47 @@
     if (s==='disputed' || s==='disputado' || s==='disputa') return 'disputed';
     return 'pending';
   }
+  // Robust status label resolver with fallback maps
+  function lang2(){
+    try { return (localStorage.getItem('lang') || (navigator.language||'es')).slice(0,2).toLowerCase(); }
+    catch(_) { return 'es'; }
+  }
+  const STATUS_FALLBACK = {
+    es: { active:'Activo', pending:'Pendiente', completed:'Completado', cancelled:'Cancelado', inactive:'Inactivo', paid:'Pagado', disputed:'En disputa' },
+    en: { active:'Active',  pending:'Pending',  completed:'Completed',  cancelled:'Cancelled', inactive:'Inactive', paid:'Paid',  disputed:'Disputed' },
+    pt: { active:'Ativo',   pending:'Pendente', completed:'Concluído',  cancelled:'Cancelado', inactive:'Inativo',  paid:'Pago', disputed:'Em disputa' }
+  };
+  function statusLabel(key){
+    // Try dI18n first
+    try {
+      if (window.dI18n && typeof dI18n.t === 'function') {
+        const r = dI18n.t('status.'+key);
+        if (r && r !== ('status.'+key)) return r;
+      }
+    } catch(_){}
+    // Fallback map by language
+    const L = lang2();
+    return (STATUS_FALLBACK[L] && STATUS_FALLBACK[L][key]) || STATUS_FALLBACK.es[key] || key;
+  }
+  function normalizeStatus(x){
+    const s = String(x ?? '').toLowerCase();
+    if (s==='true' || s==='activo' || s==='active') return 'active';
+    if (s==='completed' || s==='completado' || s==='complete') return 'completed';
+    if (s==='cancelled' || s==='canceled' || s==='cancelado') return 'cancelled';
+    if (s==='inactive' || s==='inactivo') return 'inactive';
+    if (s==='paid' || s==='pagado') return 'paid';
+    if (s==='disputed' || s==='disputado' || s==='disputa') return 'disputed';
+    return 'pending';
+  }
   window.statusBadge = function(state){
     const key = normalizeStatus(state);
-    const label = i18nText(STATUS_KEYS[key], key);
-    return '<span class="status '+key+'">'+label+'</span>';
+    return '<span class="status '+key+'">'+ statusLabel(key) +'</span>';
   };
   window.updateStatusBadges = function(){
     document.querySelectorAll('.status').forEach(el => {
       const key = ['completed','active','cancelled','inactive','paid','disputed']
         .find(k => el.classList.contains(k)) || 'pending';
-      el.textContent = i18nText(STATUS_KEYS[key], key);
+      el.textContent = statusLabel(key);
     });
   };
   window.addEventListener('storage', (e)=>{
