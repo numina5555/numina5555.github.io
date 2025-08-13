@@ -1832,6 +1832,9 @@ const dI18n8n = {
 
   }
 };
+// Alias unificado: toda la app usa el mismo objeto i18n
+window.dI18n = dI18n8n;
+
 
 (function initDashLang(){
   const saved = (()=>{ try{return localStorage.getItem('dash_lang')}catch(e){ return null } })();
@@ -1851,7 +1854,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function closeMenu(){ dropdown.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
 
   function updateLabel(){
-    const label = dI18n8n.current==='en'?'English': dI18n8n.current==='pt'?'Português':'Español';
+    const label = dI18n.current==='en'?'English': dI18n.current==='pt'?'Português':'Español';
     if (currentSpan) currentSpan.textContent = label;
   }
 
@@ -2120,7 +2123,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   };
 
   function translatePhrases(root){
-    const dict = Phrases[dI18n8n.current];
+    const dict = Phrases[dI18n.current];
     if (!dict) return;
     // Elements where labels commonly live
     const selectors = [
@@ -2673,7 +2676,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       try{
         const n = Number(v||0);
         // Usa el idioma actual si existe dI18n8n, default ES
-        const lang = (window.dI18n && (dI18n8n.current||dI18n8n.lang)) || 'es';
+        const lang = (window.dI18n && (dI18n.current||dI18n8n.lang)) || 'es';
         const currency = 'USD'; // si tu backend usa otra moneda, ajustar aquí
         return new Intl.NumberFormat(lang, { style:'currency', currency }).format(isFinite(n)?n:0);
       }catch(_){ return '$' + (v||'0'); }
@@ -2835,7 +2838,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     });
     wireCopy();
     if (window.dI18n && typeof dI18n.set==='function'){
-      var _set = dI18n.set.bind(dI18n8n);
+      var _set = dI18n.set.bind(dI18n);
       dI18n.set = function(l){ _set(l); try{ wireCopy(); }catch(_){ } };
     }
   });
@@ -3051,7 +3054,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // Reaplicar traducciones al cambiar idioma
   if (window.dI18n && typeof dI18n.set==='function' && !dI18n.__patchedForLoaders){
-    var _set = dI18n.set.bind(dI18n8n);
+    var _set = dI18n.set.bind(dI18n);
     dI18n.set = function(lang){
       var r = _set(lang);
       try{ if (window.dI18n && dI18n.apply) dI18n.apply(); }catch(_){}
