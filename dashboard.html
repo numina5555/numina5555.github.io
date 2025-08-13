@@ -3435,5 +3435,46 @@ document.addEventListener('DOMContentLoaded', ()=>{
   try{ var _a = dI18n.apply.bind(dI18n); dI18n.apply = function(){ _a(); translateAll(); }; }catch(_){}
 })();
 </script>
+
+<script>
+// Sync password labels/placeholders when language changes (independent fallback)
+(function(){
+  const PASS_I18N = {
+    es: { label1: "Nueva contraseña", label2: "Repetir contraseña", ph1: "********", ph2: "********" },
+    en: { label1: "New password",     label2: "Repeat password",    ph1: "********", ph2: "********" },
+    pt: { label1: "Nova senha",       label2: "Repetir senha",      ph1: "********", ph2: "********" }
+  };
+  function setPassLabels(lang){
+    var dict = PASS_I18N[lang] || PASS_I18N.es;
+    var l1 = document.querySelector('label[for="cfg-pass1"] span');
+    var l2 = document.querySelector('label[for="cfg-pass2"] span');
+    var i1 = document.getElementById('cfg-pass1');
+    var i2 = document.getElementById('cfg-pass2');
+    if (l1) l1.textContent = dict.label1;
+    if (l2) l2.textContent = dict.label2;
+    if (i1) i1.setAttribute('placeholder', dict.ph1);
+    if (i2) i2.setAttribute('placeholder', dict.ph2);
+  }
+  // Initial set based on current marker in dropdown
+  document.addEventListener('DOMContentLoaded', function(){
+    try {
+      var selected = document.querySelector('.lang-menu .lang-item[aria-selected="true"]');
+      var lang = selected ? selected.getAttribute('data-lang') : (window.dI18n && dI18n.lang) || 'es';
+      setPassLabels(lang);
+    } catch(_) { setPassLabels('es'); }
+    // Hook into language menu selections
+    var items = document.querySelectorAll('.lang-menu .lang-item[data-lang]');
+    items.forEach(function(it){
+      it.addEventListener('click', function(){
+        var lang = it.getAttribute('data-lang') || 'es';
+        setPassLabels(lang);
+      });
+    });
+  });
+  // Also expose for external i18n switchers if needed
+  window.__applyPassLabels = setPassLabels;
+})();
+</script>
+
 </body>
 </html>
