@@ -850,65 +850,6 @@
     window.__supabaseClient = _client; return _client;
   };
 })();
-
-<script>
-// ===== i18n helpers for status badges =====
-(function(){
-  window.DB_I18N = window.DB_I18N || {};
-  // Ensure status keys exist
-  DB_I18N.es = Object.assign({},{statuses:{active:'Activo',pending:'Pendiente',completed:'Completado',cancelled:'Cancelado',canceled:'Cancelado',inactive:'Inactivo',paid:'Pagado',disputed:'En disputa'}}, DB_I18N.es||{});
-  DB_I18N.en = Object.assign({},{statuses:{active:'Active',pending:'Pending',completed:'Completed',cancelled:'Cancelled',canceled:'Cancelled',inactive:'Inactive',paid:'Paid',disputed:'Disputed'}}, DB_I18N.en||{});
-  DB_I18N.pt = Object.assign({},{statuses:{active:'Ativo',pending:'Pendente',completed:'Concluído',cancelled:'Cancelado',canceled:'Cancelado',inactive:'Inativo',paid:'Pago',disputed:'Em disputa'}}, DB_I18N.pt||{});
-
-  function canon(l){ if(!l) return 'es'; l=String(l).toLowerCase(); return l.startsWith('en')?'en':l.startsWith('pt')?'pt':'es'; }
-
-  function t(path){
-    try{
-      var lang = canon((window.dI18n && (dI18n.current||dI18n.lang)) || (localStorage.getItem('dash_lang')||'es'));
-      var obj = (window.DB_I18N && DB_I18N[lang]) || {};
-      var parts = String(path).split('.');
-      for (var i=0;i<parts.length;i++){ obj = obj[parts[i]]; if (obj == null) return path; }
-      return obj;
-    }catch(e){ return path; }
-  }
-  window._i18nStatusText = function(key){
-    var k = String(key||'').toLowerCase();
-    if (k==='true') k = 'active';
-    if (k==='false') k = 'inactive';
-    return t('statuses.'+k) || key;
-  };
-  window.statusBadge = function(state){
-    var s = String(state||'').toLowerCase();
-    var key = (s==='true' || s==='active' || s==='activo' || s==='ativo') ? 'active'
-            : (s==='pending' || s==='pendiente' || s==='pendente') ? 'pending'
-            : (s==='completed' || s==='complete' || s==='completado' || s==='concluído' || s==='concluido') ? 'completed'
-            : (s==='cancelled' || s==='canceled' || s==='cancelado') ? 'cancelled'
-            : (s==='paid' || s==='pagado' || s==='pago') ? 'paid'
-            : (s==='inactive' || s==='inactivo' || s==='inativo') ? 'inactive'
-            : 'pending';
-    return '<span class="status '+key+'">'+_i18nStatusText(key)+'</span>';
-  };
-  window.updateStatusBadges = function(){
-    document.querySelectorAll('.status.active,.status.pending,.status.completed,.status.cancelled,.status.canceled,.status.inactive,.status.paid').forEach(function(el){
-      var key = 'pending';
-      if (el.classList.contains('active')) key='active';
-      else if (el.classList.contains('completed')) key='completed';
-      else if (el.classList.contains('cancelled') || el.classList.contains('canceled')) key='cancelled';
-      else if (el.classList.contains('inactive')) key='inactive';
-      else if (el.classList.contains('paid')) key='paid';
-      el.textContent = _i18nStatusText(key);
-    });
-  };
-  // Patch dI18n.apply/set to refresh badges
-  if (window.dI18n){
-    var __apply = (typeof dI18n.apply==='function') ? dI18n.apply.bind(dI18n) : function(){};
-    dI18n.apply = function(){ __apply(); try{ updateStatusBadges(); }catch(_){}};
-    var __set = (typeof dI18n.set==='function') ? dI18n.set.bind(dI18n) : function(l){ dI18n.current=l; };
-    dI18n.set = function(l){ __set(l); try{ updateStatusBadges(); }catch(_){}};
-  }
-  document.addEventListener('DOMContentLoaded', function(){ try{ updateStatusBadges(); }catch(_){}});
-})();
-</script>
 </script>
 <script>
   // 1. VERIFICACIÓN DE CARGA DE SUPABASE
@@ -976,9 +917,7 @@ document.getElementById('user-postal').textContent = userData.postal_code || dI1
 
 
       // i18n status helper
-      const statusLabel = (s) => { return _i18nStatusText(s); /* patched */ }; /* original removed */
-// original removed
-function __unused() {
+      const statusLabel = (s) => {
         const v = String(s||'').toLowerCase();
         if (v === 'active' || v === 'activo') return ((window.dI18n && window.dI18n.t) ? dI18n.t('Activo') : 'Activo');
         if (v === 'inactive' || v === 'inactivo') return ((window.dI18n && window.dI18n.t) ? dI18n.t('Inactivo') : 'Inactivo');
@@ -995,7 +934,7 @@ function __unused() {
               <td>${p.product_name}</td>
               <td>${new Date(p.created_at).toLocaleDateString()}</td>
               <td>${(p.value ?? 0).toFixed(2)}</td>
-              <td>${statusBadge(p.status)}</td>
+              <td><span class="status ${p.status}">${statusLabel(p.status)}</span></td>
               <td><button class="action-btn">Detalles</button></td>
             </tr>
           `).join('')
@@ -1009,7 +948,7 @@ function __unused() {
               <td>${r.referred_email}</td>
               <td>${new Date(r.created_at).toLocaleDateString()}</td>
               <td>${r.purchases_count || '0'}</td>
-              <td>${statusBadge(r.is_active ? 'active' : 'inactive')}</td>
+              <td><span class="status ${r.is_active ? 'active' : 'inactive'}">${r.is_active ? 'Activo' : 'Inactivo'}</span></td>
               <td>${(r.commission ?? 0).toFixed(2)}</td>
             </tr>
           `).join('')
@@ -1257,7 +1196,7 @@ document.addEventListener("DOMContentLoaded", () => {
           '<td>' + p.product_name + '</td>' +
           '<td>' + new Date(p.created_at).toLocaleDateString() + '</td>' +
           '<td>$' + (p.value?.toFixed(2) || '0.00') + '</td>' +
-          '<td>' + statusBadge(p.status) + '</td>' +
+          '<td><span class="status ' + p.status + '\">' + statusLabel(p.status) + '</span></td>' +
           '<td><button class="action-btn">Detalles</button></td>' +
           '</tr>';
         purchasesBody.innerHTML += row;
@@ -1347,7 +1286,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <td>${p.product_name}</td>
             <td>${new Date(p.created_at).toLocaleDateString()}</td>
             <td>${(p.value ?? 0).toFixed(2)}</td>
-            <td>${statusBadge(p.status)}</td>
+            <td><span class="status ${p.status}">${statusLabel(p.status)}</span></td>
             <td><button class="action-btn" disabled>${dI18n.t('Hacer reclamo')}</button></td>
           </tr>
         `).join('');
@@ -3176,7 +3115,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
             '<td>'+product+'</td>' +
             '<td>'+date+'</td>' +
             '<td>'+value+'</td>' +
-            '<td><span class="status pending">'+st+'</span></td>' +
+            '<td><span class="status '+String((p.status||p.state||'pending')).toLowerCase()+'">'+st+'</span></td>' +
             '<td><button class="action-btn">'+t('Detalles','Detalles')+'</button></td>' +
           '</tr>'
         );
@@ -3190,7 +3129,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         var name = esc(r.name || r.username || r.email || '');
         var date = fmtDate(r.date || r.created_at || '');
         var purchases = esc(r.purchases || r.count || 0);
-        var st = (r.is_active ? t('Activo','Activo') : t('Inactivo','Inactivo'));
+        var st = (r.is_active ? t('Activo','Activo') : t('Inactivo','Inactivo')); var stClass = (r.is_active ? 'active' : 'inactive');
         var comm = fmtMoney(r.commission || r.total_commission || 0);
         return (
           '<tr>' +
