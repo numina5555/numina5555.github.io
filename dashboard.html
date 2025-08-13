@@ -1029,7 +1029,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const supabase = getSupabase();
 
     const { data: { user }, error } = await supabase.auth.getUser();
-    if (error || !user) return;
+    if (error || !user) { window.location.href = '/login.html'; return; }
 
     const { data: userData } = await supabase
       .from('users')
@@ -1037,7 +1037,15 @@ document.addEventListener("DOMContentLoaded", () => {
       .eq('id', user.id)
       .maybeSingle();
 
-    if (!userData) return;
+    if (!userData) {
+      document.getElementById('welcome-title').textContent = dI18n.t('labels.welcome');
+      document.getElementById('referral-code').textContent = '---';
+      document.getElementById('balance-value').textContent = '$0.00';
+      document.getElementById('purchases-value').textContent = '0';
+      document.getElementById('referrals-value').textContent = '0';
+      document.getElementById('tickets-value').textContent = '0';
+      return;
+    }
 
     document.getElementById('user-avatar').textContent = userData.full_name?.charAt(0).toUpperCase() || 'U';
     window.__lastUserName = (userData.full_name || userData.email);
