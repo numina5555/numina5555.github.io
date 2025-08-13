@@ -574,7 +574,7 @@
 </li>
 <li class="menu-item" data-target="productos">
 <i class="fas fa-box"></i>
-<span id="sidebar-productos-text">Catálogo</span>
+<span id="sidebar-productos-text" data-i18n="catalog.title">Catálogo</span>
 </li>
 <li class="menu-item" data-target="configuracion">
 <i class="fas fa-cog"></i>
@@ -768,7 +768,7 @@
 </section>
 <section class="section-content" id="section-productos" style="display:none;">
 <div class="products-wrap">
-<h2 class="section-title"><i class="fas fa-box"></i><span id="sidebar-productos-text">Catálogo</span></h2>
+<h2 class="section-title"><i class="fas fa-box"></i><span id="sidebar-productos-text" data-i18n="catalog.title" data-i18n="catalog.title">Catálogo</span></h2>
 <section class="products-grid">
 <!-- Oro -->
 <article class="product-card">
@@ -3627,8 +3627,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (sv) sv.textContent = MAP.save[lang] || MAP.save.es;
     const up = document.querySelector('button span[data-i18n="account.settings.updatePassword"]');
     if (up) up.textContent = MAP.updatePassword[lang] || MAP.updatePassword.es;
-    const cat = document.querySelector('[data-i18n="catalog.title"]');
-    if (cat) cat.textContent = MAP.catalog[lang] || MAP.catalog.es;
+    document.querySelectorAll('[data-i18n="catalog.title"]').forEach(function(cat){ cat.textContent = MAP.catalog[lang] || MAP.catalog.es; });
     const l1 = document.querySelector('label[for="cfg-pass1"] span[data-i18n="accountForm.labels.newPassword"]');
     const l2 = document.querySelector('label[for="cfg-pass2"] span[data-i18n="accountForm.labels.repeatPassword"]');
     if (l1) l1.textContent = MAP.label1[lang] || MAP.label1.es;
