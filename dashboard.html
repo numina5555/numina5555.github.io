@@ -2449,5 +2449,45 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 })();
 </script>
+
+<script>
+/* === Enhancement: translate "Tickets Activos" card title in Sorteos === */
+(function(){
+  function getStore(k, fb){ try{ var v=localStorage.getItem(k); return v==null?fb:v; }catch(_){ return fb; } }
+  function curLang(){ var d=window.dI18n||{}; return d.current||d.lang||getStore('dash_lang', getStore('lang','es'))||'es'; }
+  var MAP = { es: "Tickets Activos", en: "Active Tickets", pt: "Bilhetes Ativos" };
+
+  function setActiveTicketsTitle(){
+    var value = document.getElementById("srt-tickets-activos");
+    if (!value) return;
+    var h3 = value.closest("article")?.querySelector("h3");
+    if (!h3) return;
+    var lang = curLang();
+    var target = (window.dI18n && typeof dI18n.t==="function") ? dI18n.t("sorteos.active_tickets") : null;
+    if (!target || typeof target !== "string" || !target.trim() || target.toLowerCase()==="sorteos.active_tickets"){
+      target = MAP[lang] || MAP.es;
+    }
+    if (h3.textContent !== target) h3.textContent = target;
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", setActiveTicketsTitle, {once:true});
+  else setActiveTicketsTitle();
+
+  try{
+    var sec = document.getElementById("section-sorteos");
+    if (sec){
+      var mo = new MutationObserver(function(){ setActiveTicketsTitle(); });
+      mo.observe(sec, {subtree:true, childList:true, characterData:true, attributes:true});
+    }
+  }catch(_){}
+
+  if (window.dI18n){
+    var _a = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
+    dI18n.apply = function(){ if(_a) _a(); setActiveTicketsTitle(); };
+    var _s = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
+    dI18n.set = function(l){ if(_s) _s(l); setActiveTicketsTitle(); };
+  }
+})();
+</script>
 </body>
 </html>
