@@ -945,7 +945,7 @@ document.getElementById('user-postal').textContent = userData.postal_code || 'No
               <td>${new Date(p.created_at).toLocaleDateString()}</td>
               <td>$${(p.value ?? 0).toFixed(2)}</td>
               <td><span class="status ${p.status}">${statusLabel(p.status)}</span></td>
-              <td><button class="action-btn">' + ((window.dI18n && window.dI18n.t) ? window.dI18n.t("Detalles") : "Detalles") + '</button></td>
+              <td><button class="action-btn">${(window.dI18n && window.dI18n.t) ? window.dI18n.t("Detalles") : "Detalles"}</button></td>
             </tr>
           `).join('')
         : '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
@@ -1209,7 +1209,7 @@ document.addEventListener("DOMContentLoaded", () => {
           '<td>' + new Date(p.created_at).toLocaleDateString() + '</td>' +
           '<td>$' + (p.value?.toFixed(2) || '0.00') + '</td>' +
           '<td><span class="status ' + p.status + '\">' + statusLabel(p.status) + '</span></td>' +
-          '<td><button class="action-btn">' + ((window.dI18n && window.dI18n.t) ? window.dI18n.t("Detalles") : "Detalles") + '</button></td>' +
+          '<td><button class="action-btn">${(window.dI18n && window.dI18n.t) ? window.dI18n.t("Detalles") : "Detalles"}</button></td>' +
           '</tr>';
         purchasesBody.innerHTML += row;
       });
@@ -2799,7 +2799,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     function $all(sel, root){ return Array.from((root||document).querySelectorAll(sel)); }
 
     function t(key, fb){
-      try{ return (window.dI18n && window.dI18n.t) ? (dI18n.t(key)||fb||key) : (fb||key); }catch(_){ return fb||key; }
+      try{ return (window.dI18n && window.dI18n.t) ? (window.dI18n && window.dI18n.t ? dI18n.t(key)||fb||key) : (fb||key); }catch(_){ return fb||key; }
     }
 
     function findCopyButton(){
