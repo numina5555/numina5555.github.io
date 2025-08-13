@@ -95,7 +95,14 @@
     .muted { color: var(--muted); font-size:.88rem; text-align:center; margin-top:8px; }
     .link { color: var(--brand); cursor:pointer; }
     .link:hover{ text-decoration: underline; }
-  </style>
+    .help { font-size:.8rem; color:var(--muted); margin-top:-8px; margin-bottom:12px; }
+    /* --- Highlight de referido --- */
+  label[for="register-refcode"]{ color: var(--brand); font-weight: 800; }
+  #register-refcode{ border-color: rgba(255,215,0,.35); }
+  #register-refcode:focus{ border-color: var(--brand); box-shadow:0 0 0 3px rgba(255,215,0,.2); }
+  #register-refcode::placeholder{ color: rgba(255,215,0,.75); }
+  #ref-hint{ color: var(--brand); }
+</style>
 </head>
 <body>
   <div class="login-container">
@@ -169,6 +176,11 @@
       <label for="register-postal" data-i18n="register.postal.label">Código Postal</label>
       <input type="text" id="register-postal" placeholder="C.P." required data-i18n-placeholder="register.postal.placeholder" />
 
+      <!-- NUEVO: Código de referido (opcional) -->
+      <label for="register-refcode" data-i18n="register.refcode.label">Código de referido (opcional)</label>
+      <input type="text" id="register-refcode" placeholder="Código (opcional)" data-i18n-placeholder="register.refcode.placeholder" />
+      <div id="ref-hint" class="help" aria-live="polite"></div>
+
       <button class="login-button" onclick="register()" data-i18n="register.submit">Crear cuenta</button>
       <p id="register-error-message"></p>
       <p id="register-success-message"></p>
@@ -224,6 +236,8 @@
         'register.address.placeholder': 'Calle y número',
         'register.postal.label': 'Código Postal',
         'register.postal.placeholder': 'C.P.',
+        'register.refcode.label': 'Código de referido (opcional)',
+        'register.refcode.placeholder': 'Código (opcional)',
         'register.submit': 'Crear cuenta',
         'register.toggle': '¿Ya tienes cuenta? Inicia sesión',
         'register.creating': 'Creando cuenta...',
@@ -269,6 +283,8 @@
         'register.address.placeholder': 'Street and number',
         'register.postal.label': 'Postal Code',
         'register.postal.placeholder': 'ZIP/Postal code',
+        'register.refcode.label': 'Referral code (optional)',
+        'register.refcode.placeholder': 'Code (optional)',
         'register.submit': 'Create account',
         'register.toggle': 'Already have an account? Sign in',
         'register.creating': 'Creating account...',
@@ -314,6 +330,8 @@
         'register.address.placeholder': 'Rua e número',
         'register.postal.label': 'CEP',
         'register.postal.placeholder': 'CEP',
+        'register.refcode.label': 'Código de indicação (opcional)',
+        'register.refcode.placeholder': 'Código (opcional)',
         'register.submit': 'Criar conta',
         'register.toggle': 'Já tem uma conta? Entrar',
         'register.creating': 'Criando conta...',
@@ -450,6 +468,15 @@
       const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU";
       const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
+      // Prefill de ref code desde ?ref=
+      const refInput = document.getElementById('register-refcode');
+      const refHint  = document.getElementById('ref-hint');
+      const refFromURL = new URLSearchParams(location.search).get('ref');
+      if (refFromURL && refInput){
+        refInput.value = refFromURL.trim();
+        refHint.textContent = `Código aplicado: ${refFromURL.trim()}`;
+      }
+
       // Login y registro
       async function login() {
         const email = document.getElementById("email")?.value;
@@ -471,6 +498,7 @@
         const city     = document.getElementById("register-city")?.value;
         const address  = document.getElementById("register-address")?.value;
         const postal   = document.getElementById("register-postal")?.value;
+        const refCode  = document.getElementById('register-refcode')?.value?.trim();
 
         const registerBtn = document.querySelector("#register-form button.login-button");
         const regErrorMsg = document.getElementById("register-error-message");
@@ -490,6 +518,7 @@
           const userId = data?.user?.id;
           if (!userId) throw new Error("No user ID.");
 
+          // Creamos el perfil de usuario con su referral_code propio
           const { error: insertError } = await supabaseClient.from("users").insert([{
             id: userId, email, full_name: fullName, balance: 0,
             referral_code: "NUM" + Math.random().toString(36).slice(2, 8).toUpperCase(),
@@ -497,11 +526,35 @@
           }]);
           if (insertError) throw insertError;
 
+          // Si vino con código, intentamos registrarlo
+          if (refCode) {
+            try {
+              // Guardamos localmente por si se necesita en el dashboard
+              localStorage.setItem('applied_ref_code', refCode);
+              const { data: refUser, error: refLookupError } = await supabaseClient
+                .from('users')
+                .select('id')
+                .eq('referral_code', refCode)
+                .single();
+
+              if (!refLookupError && refUser) {
+                // Esta inserción puede fallar por RLS según tus policies; no bloqueamos el alta
+                await supabaseClient.from('referrals').insert([{ 
+                  referrer_id: refUser.id,
+                  referred_email: email,
+                  is_active: true
+                }]);
+              }
+            } catch (e) {
+              console.warn('No se pudo registrar el referido ahora (policies/RLS):', e?.message);
+            }
+          }
+
           const { error: loginError } = await supabaseClient.auth.signInWithPassword({ email, password });
           if (loginError) throw loginError;
 
           if (regSuccessMsg) regSuccessMsg.textContent = i18n.t('register.createdRedirect');
-          setTimeout(() => window.location.href = "dashboard.html", 2000);
+          setTimeout(() => window.location.href = "dashboard.html", 1200);
         } catch (error) {
           if (regErrorMsg) regErrorMsg.textContent = error.message;
         } finally {
@@ -570,10 +623,9 @@ const redirectTo = RESET_REDIRECT_URL; // -> en producción envía al formulario
 
   <!--
     Notas:
-    - Para que el enlace de Supabase funcione, añadimos redirectTo a esta misma página.
-    - Cuando el usuario entra desde el correo, Supabase crea una sesión temporal y la deja en el hash (type=recovery).
-    - En ese caso, mostramos el form "newpass-form" y llamamos a supabase.auth.updateUser({ password }).
-    - Todo el flujo está traducido (ES/EN/PT) y usa el mismo selector de idioma del login.
+    - El campo "Código de referido" es opcional y se completa solo con ?ref= de la URL.
+    - Tras crear el usuario se intenta: (1) buscar el dueño del código y (2) insertar un registro en "referrals".
+      Según tus policies de RLS esto puede requerir ajuste o un RPC con SECURITY DEFINER. Si falla, el alta sigue.
   -->
 </body>
 </html>
