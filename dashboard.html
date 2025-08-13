@@ -3052,5 +3052,133 @@ document.addEventListener('DOMContentLoaded', ()=>{
 })();
 </script>
 
+
+<!-- Fase F: helpers de render centralizados (aditivo, sin cambiar diseño) -->
+<script>
+(function(){
+  if (window.NUMINA_RENDER) return;
+
+  function t(k, fb){ try{ return (window.dI18n && dI18n.t) ? (dI18n.t(k)||fb||k) : (fb||k);}catch(_){return fb||k;} }
+  function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+  function fmtMoney(v){ try{ return (new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'})).format(Number(v||0)); }catch(_){ return '$'+(v||0); } }
+  function fmtDate(iso){ try{ const d=new Date(iso); return isNaN(d)?(iso||''):d.toLocaleDateString(); }catch(_){ return iso||''; } }
+  function statusLabel(v){
+    const x = String(v||'').toLowerCase();
+    if (x==='active' || x==='activo') return t('Activo','Activo');
+    if (x==='inactive' || x==='inactivo') return t('Inactivo','Inactivo');
+    if (x==='completed' || x==='complete' || x==='completado') return t('Completado','Completado');
+    return t('Pendiente','Pendiente');
+  }
+
+  const R = {
+    purchases(rows){
+      if (!Array.isArray(rows) || rows.length===0){
+        return '<tr><td colspan="6" style="text-align:center;">'+t('No hay compras','No hay compras')+'</td></tr>';
+      }
+      return rows.map(p => {
+        const product = esc(p.product_name || p.product || '');
+        const date = fmtDate(p.date || p.created_at || '');
+        const value = fmtMoney(p.amount || p.value || p.price || 0);
+        const st = statusLabel(p.status || p.state || 'pending');
+        return `
+          <tr>
+            <td>${product}</td>
+            <td>${date}</td>
+            <td>${value}</td>
+            <td><span class="status pending">${st}</span></td>
+            <td>
+              <button class="action-btn">${t('Detalles','Detalles')}</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    },
+    referrals(rows){
+      if (!Array.isArray(rows) || rows.length===0){
+        return '<tr><td colspan="6" style="text-align:center;">'+t('No hay referidos','No hay referidos')+'</td></tr>';
+      }
+      return rows.map(r => {
+        const name = esc(r.name || r.username || r.email || '');
+        const date = fmtDate(r.date || r.created_at || '');
+        const purchases = esc(r.purchases || r.count || 0);
+        const st = (r.is_active ? t('Activo','Activo') : t('Inactivo','Inactivo'));
+        const comm = fmtMoney(r.commission || r.total_commission || 0);
+        return `
+          <tr>
+            <td>${name}</td>
+            <td>${date}</td>
+            <td>${purchases}</td>
+            <td>${st}</td>
+            <td>${comm}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+  };
+  window.NUMINA_RENDER = R;
+
+  // Integración mínima y segura: si existen funciones que llenan tablas, las adornamos.
+  function wrapOnce(obj, key, wrapper){
+    if (!obj || !obj[key] || obj[key].__wrappedF__) return;
+    const orig = obj[key];
+    obj[key] = function(){ return wrapper(orig, this, arguments); };
+    obj[key].__wrappedF__ = true;
+  }
+
+  wrapOnce(window, 'cargarDashboard', function(orig, ctx, args){
+    const ret = orig.apply(ctx, args);
+    if (ret && typeof ret.then==='function'){
+      ret.then(function(res){
+        try{
+          // Si las tablas existen y hay datos conocidos, render centralizado.
+          const tbP = document.getElementById('purchases-body');
+          if (tbP && (window.__dataCompras__ || (res && res.compras))){
+            const rows = window.__dataCompras__ || res.compras || [];
+            tbP.innerHTML = R.purchases(rows);
+          }
+          const tbR = document.getElementById('referrals-body');
+          if (tbR && (window.__dataReferidos__ || (res && res.referidos))){
+            const rowsR = window.__dataReferidos__ || res.referidos || [];
+            tbR.innerHTML = R.referrals(rowsR);
+          }
+          if (window.dI18n && dI18n.apply) dI18n.apply();
+        }catch(_){}
+      });
+    }
+    return ret;
+  });
+
+  // Hooks opcionales si existen funciones específicas
+  wrapOnce(window, 'cargarMisCompras', function(orig, ctx, args){
+    const ret = orig.apply(ctx, args);
+    if (ret && typeof ret.then==='function'){
+      ret.then(function(rows){
+        try{
+          const tb = document.getElementById('miscompras-body') || document.getElementById('purchases-body');
+          if (tb && Array.isArray(rows)) tb.innerHTML = R.purchases(rows);
+          if (window.dI18n && dI18n.apply) dI18n.apply();
+        }catch(_){}
+      });
+    }
+    return ret;
+  });
+
+  wrapOnce(window, 'cargarReferidos', function(orig, ctx, args){
+    const ret = orig.apply(ctx, args);
+    if (ret && typeof ret.then==='function'){
+      ret.then(function(rows){
+        try{
+          const tb = document.getElementById('referrals-body');
+          if (tb && Array.isArray(rows)) tb.innerHTML = R.referrals(rows);
+          if (window.dI18n && dI18n.apply) dI18n.apply();
+        }catch(_){}
+      });
+    }
+    return ret;
+  });
+
+})();
+</script>
+
 </body>
 </html>
