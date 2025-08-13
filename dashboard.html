@@ -3444,43 +3444,62 @@ document.addEventListener('DOMContentLoaded', ()=>{
     "accountForm.ph.repeatPassword": { es: "********", en: "********", pt: "********" }
   };
 
+  function canon(lang){
+    if (!lang) return 'es';
+    var s = String(lang).toLowerCase();
+    if (s.startsWith('en') || s.includes('english') || s.includes('gb') || s.includes('us')) return 'en';
+    if (s.startsWith('pt') || s.includes('port') || s.includes('br')) return 'pt';
+    if (s.startsWith('es') || s.includes('spanish') || s.includes('espa')) return 'es';
+    return (s.indexOf('en')>=0 ? 'en' : (s.indexOf('pt')>=0 ? 'pt' : 'es'));
+  }
+
   function install(){
     if (!window.dI18n) return false;
-    const origT = (typeof dI18n.t === "function") ? dI18n.t.bind(dI18n) : (k)=>k;
-    const origApply = (typeof dI18n.apply === "function") ? dI18n.apply.bind(dI18n) : function(){};
+    const _t = (typeof dI18n.t === "function") ? dI18n.t.bind(dI18n) : (k)=>k;
+    const _apply = (typeof dI18n.apply === "function") ? dI18n.apply.bind(dI18n) : function(){};
+    const _set = (typeof dI18n.set === "function") ? dI18n.set.bind(dI18n) : function(l){ this.lang = l; };
+
+    // wrap set to normalize and then apply
+    dI18n.set = function(l){
+      try { _set(l); } catch(_) { dI18n.lang = l; }
+      dI18n.lang = canon(dI18n.lang);
+      try { dI18n.apply(); } catch(_){}
+    };
 
     dI18n.t = function(key){
       if (MAP[key]) {
-        const lang = (dI18n.lang || "es").toLowerCase();
+        const lang = canon(dI18n.lang);
         return MAP[key][lang] || MAP[key].es;
       }
-      return origT(key);
+      return _t(key);
     };
 
     dI18n.apply = function(){
-      // Primero deja que el i18n real haga lo suyo
-      try { origApply(); } catch(_) {}
-      // Luego aplicamos placeholders de inputs con data-i18n-ph
+      try { _apply(); } catch(_) {}
       try {
         document.querySelectorAll("[data-i18n-ph]").forEach(function(el){
           const k = el.getAttribute("data-i18n-ph");
           const val = dI18n.t(k);
-          if (val) el.setAttribute("placeholder", val);
+          if (val != null) el.setAttribute("placeholder", val);
         });
       } catch(_) {}
     };
 
-    // Llamada inicial por si ya hay contenido renderizado
-    try { dI18n.apply(); } catch(_) {}
+    // Initial application
+    try { dI18n.lang = canon(dI18n.lang || 'es'); dI18n.apply(); } catch(_){}
+    // Wire dropdown clicks as an extra signal
+    document.querySelectorAll('.lang-menu .lang-item[data-lang]').forEach(function(it){
+      it.addEventListener('click', function(){
+        var code = it.getAttribute('data-lang') || dI18n.lang || 'es';
+        dI18n.set(code);
+      });
+    });
     return true;
   }
 
-  // Intenta instalar ahora; si no, reintenta hasta que cargue el i18n real
   if (!install()) {
-    const iv = setInterval(function(){
-      if (install()) clearInterval(iv);
-    }, 100);
-    setTimeout(function(){ try{ clearInterval(iv); }catch(_){ } }, 6000);
+    const iv = setInterval(function(){ if (install()) clearInterval(iv); }, 120);
+    setTimeout(function(){ try{ clearInterval(iv); }catch(_){ } }, 8000);
   }
 })();
 </script>
