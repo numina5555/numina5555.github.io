@@ -2695,5 +2695,142 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 })();
 </script>
+
+<script>
+/* === Status & Actions i18n for purchases tables (stable, scoped) ==================
+   - Translates status pills (pending/approved/rejected/...)
+   - Translates action buttons/links (Details/Pay/Cancel/Claim/...)
+   - Works for #purchases-table and #miscompras-table
+   - Uses our prior header tags data-i18n-col to find Status/Actions columns
+   - No global observers. Hooks dI18n.set/apply and per-table observers
+====================================================================================*/
+(function(){
+  function getStore(k, fb){ try{ var v=localStorage.getItem(k); return v==null?fb:v; }catch(_){ return fb; } }
+  function curLang(){ var d=window.dI18n||{}; return d.current||d.lang||getStore('dash_lang', getStore('lang','es'))||'es'; }
+  function norm(s){
+    return (s||"").toString().trim().toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .replace(/\s+/g, " ");
+  }
+
+  // Canonical status keys we support
+  var STATUS_L = {
+    es: { pending:"pendiente", approved:"aprobado", paid:"pagado", completed:"completado", processing:"procesando",
+          rejected:"rechazado", failed:"fallido", canceled:"cancelado" },
+    en: { pending:"pending",   approved:"approved", paid:"paid",   completed:"completed", processing:"processing",
+          rejected:"rejected", failed:"failed",     canceled:"canceled" },
+    pt: { pending:"pendente",  approved:"aprovado", paid:"pago",   completed:"concluido", processing:"processando",
+          rejected:"rejeitado",failed:"falhou",     canceled:"cancelado" }
+  };
+  // Various incoming strings -> canonical key
+  var STATUS_IN = {
+    "pending":"pending", "pendiente":"pending", "pendente":"pending",
+    "approved":"approved", "aprobado":"approved", "aprovado":"approved",
+    "paid":"paid", "pagado":"paid", "pago":"paid",
+    "completed":"completed","completado":"completed","concluido":"completed","concluído":"completed",
+    "processing":"processing","procesando":"processing","processando":"processing",
+    "rejected":"rejected","rechazado":"rejected","rejeitado":"rejected",
+    "failed":"failed","fallido":"failed","falhou":"failed",
+    "canceled":"canceled","cancelado":"canceled","cancelled":"canceled"
+  };
+
+  // Actions labels
+  var ACTIONS_L = {
+    es: { details:"Detalles", pay:"Pagar", cancel:"Cancelar", claim:"Reclamar", view:"Ver", download:"Descargar" },
+    en: { details:"Details",  pay:"Pay",   cancel:"Cancel",   claim:"Claim",    view:"View", download:"Download" },
+    pt: { details:"Detalhes", pay:"Pagar", cancel:"Cancelar", claim:"Reclamar", view:"Ver",  download:"Baixar" }
+  };
+  var ACTIONS_IN = {
+    "detalles":"details","details":"details","detalhes":"details",
+    "pagar":"pay","pay":"pay",
+    "cancelar":"cancel","cancel":"cancel",
+    "reclamo":"claim","reclamar":"claim","claim":"claim",
+    "ver":"view","view":"view",
+    "descargar":"download","download":"download","baixar":"download"
+  };
+
+  function colIndex(table, key){
+    var ths = table.querySelectorAll("thead tr:first-child th");
+    for (var i=0;i<ths.length;i++){
+      var th = ths[i];
+      var k = th.getAttribute("data-i18n-col");
+      if (!k) {
+        // try guess by text
+        var t = norm(th.textContent);
+        if ((key==="status" && (t==="estado"||t==="status")) ||
+            (key==="actions" && (t==="acciones"||t==="actions")) ||
+            (key==="claim" && (t==="reclamo"||t==="claim"))){
+          return i;
+        }
+      } else if (k === key || (key==="actions" && k==="claim")) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  function applyTable(tableId){
+    var table = document.getElementById(tableId);
+    if (!table) return;
+    var lang = curLang();
+    var SL = STATUS_L[lang] || STATUS_L.es;
+    var AL = ACTIONS_L[lang] || ACTIONS_L.es;
+
+    var sIdx = colIndex(table, "status");
+    var aIdx = colIndex(table, "actions");
+
+    var rows = table.querySelectorAll("tbody tr");
+    rows.forEach(function(tr){
+      var tds = tr.children;
+      // Status
+      if (sIdx >= 0 && tds[sIdx]){
+        var sCell = tds[sIdx];
+        // Choose inner element with text if exists (pill/span), else the cell itself
+        var el = sCell.querySelector(".status, .badge, .pill, span, strong") || sCell;
+        var txt = norm(el.textContent);
+        var key = STATUS_IN[txt];
+        if (key && SL[key]) {
+          if (el.textContent !== SL[key]) el.textContent = SL[key];
+        }
+      }
+      // Actions
+      if (aIdx >= 0 && tds[aIdx]){
+        var aCell = tds[aIdx];
+        aCell.querySelectorAll("a,button,.btn").forEach(function(btn){
+          var btxt = norm(btn.textContent);
+          var act = ACTIONS_IN[btxt];
+          if (act && AL[act] && btn.textContent !== AL[act]) btn.textContent = AL[act];
+        });
+      }
+    });
+  }
+
+  function applyAll(){
+    applyTable("purchases-table");
+    applyTable("miscompras-table");
+  }
+
+  // Run once and observe only these tables
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", applyAll, { once:true });
+  else applyAll();
+
+  ["purchases-table","miscompras-table"].forEach(function(id){
+    var t = document.getElementById(id);
+    if (!t) return;
+    try{
+      var mo = new MutationObserver(function(){ applyTable(id); });
+      mo.observe(t, { subtree:true, childList:true, characterData:true });
+    }catch(_){}
+  });
+
+  // Hook into language change
+  if (window.dI18n){
+    var _a = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
+    dI18n.apply = function(){ if (_a) _a(); applyAll(); };
+    var _s = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
+    dI18n.set = function(l){ if (_s) _s(l); applyAll(); };
+  }
+})();
+</script>
 </body>
 </html>
