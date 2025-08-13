@@ -935,7 +935,7 @@ document.getElementById('user-postal').textContent = userData.postal_code || dI1
               <td>${new Date(p.created_at).toLocaleDateString()}</td>
               <td>${(p.value ?? 0).toFixed(2)}</td>
               <td><span class="status ${p.status}">${statusLabel(p.status)}</span></td>
-              <td><button class="action-btn"><span data-i18n="actions.details">Detalles</span></button></td>
+              <td><button class="action-btn">Detalles</button></td>
             </tr>
           `).join('')
         : '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
@@ -1197,7 +1197,7 @@ document.addEventListener("DOMContentLoaded", () => {
           '<td>' + new Date(p.created_at).toLocaleDateString() + '</td>' +
           '<td>$' + (p.value?.toFixed(2) || '0.00') + '</td>' +
           '<td><span class="status ' + p.status + '\">' + statusLabel(p.status) + '</span></td>' +
-          '<td><button class="action-btn"><span data-i18n="actions.details">Detalles</span></button></td>' +
+          '<td><button class="action-btn">Detalles</button></td>' +
           '</tr>';
         purchasesBody.innerHTML += row;
       });
@@ -1945,7 +1945,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     es: {
       labels: {
         moreInfo: "Más información",
-        details: "Detalles",
         price: "Precio",
         claim: "Hacer reclamo",
         product: "Producto",
@@ -1968,7 +1967,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     en: {
       labels: {
         moreInfo: "More info",
-        details: "Details",
         price: "Price",
         claim: "Make a claim",
         product: "Product",
@@ -1991,7 +1989,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     pt: {
       labels: {
         moreInfo: "Mais informações",
-        details: "Detalhes",
         price: "Preço",
         claim: "Fazer reclamação",
         product: "Produto",
@@ -2066,15 +2063,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     });
 
     // Translate "Más información" buttons inside cards
-    // Translate "Detalles" action buttons
-    // RAW_KEY_FIX_DETAILS: Replace raw 'actions.details' text if present
-    Array.from(document.querySelectorAll('[data-i18n="actions.details"]')).forEach(el=>{
-      if (el.textContent.trim() === 'actions.details') el.textContent = dict.labels.details;
-    });
-    Array.from(document.querySelectorAll('button, a.button, .btn, .button, .action-btn')).forEach(el=>{
-      const t = el.textContent.trim();
-      if (t === 'Detalles' || t === 'Details' || t === 'Detalhes') el.textContent = dict.labels.details;
-    });
     const candidates = Array.from(document.querySelectorAll('button, a.button, .btn, .button')).filter(el=>{
       const t = el.textContent.trim();
       return t === 'Más información' || t === 'More info' || t === 'Mais informações';
@@ -3128,7 +3116,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
             '<td>'+date+'</td>' +
             '<td>'+value+'</td>' +
             '<td><span class="status pending">'+st+'</span></td>' +
-            '<td><button class=\"action-btn\"><span data-i18n=\"actions.details\">Detalles</span></button></td>' +
+            '<td><button class="action-btn">'+t('Detalles','Detalles')+'</button></td>' +
           '</tr>'
         );
       }).join('');
@@ -3709,71 +3697,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const mo2 = new MutationObserver(() => applyTexts());
       mo2.observe(cur, { characterData: true, subtree: true, childList: true });
     }
-  });
-})();
-</script>
-
-
-<script>
-// Dedicated updater for actions.details that runs on load, i18n apply, language change, and table mutations
-(function(){
-  const LABELS = {
-    es: "Detalles",
-    en: "Details",
-    pt: "Detalhes"
-  };
-  function canon(lang){
-    if (!lang) return 'es';
-    const s = String(lang).toLowerCase();
-    if (s.startsWith('en') || s.includes('english')) return 'en';
-    if (s.startsWith('pt') || s.includes('port')) return 'pt';
-    if (s.startsWith('es') || s.includes('espa')) return 'es';
-    return 'es';
-  }
-  function currentLang(){
-    try{
-      if (window.dI18n8n && dI18n8n.lang) return canon(dI18n8n.lang);
-      if (window.dI18n && dI18n.lang) return canon(dI18n.lang);
-    }catch(_){}
-    const pill = document.getElementById('langCurrentText');
-    if (pill) return canon(pill.textContent||'');
-    return 'es';
-  }
-  function applyDetails(){
-    const lang = currentLang();
-    document.querySelectorAll('[data-i18n="actions.details"]').forEach(el=>{
-      el.textContent = LABELS[lang] || LABELS.es;
-    });
-  }
-  // Run on load
-  document.addEventListener('DOMContentLoaded', applyDetails);
-  // Hook into i18n apply
-  (function tryHook(){
-    try{
-      const base = window.dI18n8n || window.dI18n;
-      if (base && typeof base.apply === 'function'){
-        const orig = base.apply.bind(base);
-        base.apply = function(){ try{ orig(); }catch(_){ } applyDetails(); };
-        return;
-      }
-    }catch(_){}
-    setTimeout(tryHook, 150);
-  })();
-  // Language menu clicks
-  document.addEventListener('DOMContentLoaded', function(){
-    document.querySelectorAll('#langMenu .lang-item').forEach(it=>{
-      it.addEventListener('click', ()=> setTimeout(applyDetails, 0));
-    });
-  });
-  // Observe table bodies for new rows
-  document.addEventListener('DOMContentLoaded', function(){
-    const targets = ['#purchases-body', '#miscompras-body', '#referrals-body'];
-    const opts = { childList: true, subtree: true };
-    targets.map(sel=> document.querySelector(sel)).filter(Boolean).forEach(node=>{
-      try {
-        new MutationObserver(applyDetails).observe(node, opts);
-      } catch(_) {}
-    });
   });
 })();
 </script>
