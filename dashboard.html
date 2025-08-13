@@ -3058,10 +3058,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
 (function(){
   if (window.NUMINA_RENDER) return;
 
-  function t(k, fb){ try{ return (window.dI18n && dI18n.t) ? (dI18n.t(k)||fb||k) : (fb||k);}catch(_){return fb||k;} }
-  function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
-  function fmtMoney(v){ try{ return (new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'})).format(Number(v||0)); }catch(_){ return '$'+(v||0); } }
-  function fmtDate(iso){ try{ const d=new Date(iso); return isNaN(d)?(iso||''):d.toLocaleDateString(); }catch(_){ return iso||''; } }
+  function t(k, fb){ try{ return (window.dI18n && dI18n.t) ? (dI18n.t(k)||fb||k) : (fb||k);}catch(_){return fb||k;} }catch(_){return fb||k;} }
+  function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }[m])); }
+  function fmtMoney(v){ try{ return (new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'})).format(Number(v||0)); }catch(_){ return '$'+(v||0); } })).format(Number(v||0)); }catch(_){ return '$'+(v||0); } }
+  function fmtDate(iso){ try{ var d=new Date(iso); return isNaN(d)?(iso||''):d.toLocaleDateString(); }catch(_){ return iso||''; } }catch(_){ return iso||''; } }
   function statusLabel(v){
     const x = String(v||'').toLowerCase();
     if (x==='active' || x==='activo') return t('Activo','Activo');
@@ -3197,10 +3197,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
     };
   }
 
-  function t(k, fb){ try{ return (window.dI18n && dI18n.t) ? (dI18n.t(k)||fb||k) : (fb||k);}catch(_){return fb||k;} }
-  function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]); }
-  function fmtMoney(v){ try{ return (new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'})).format(Number(v||0)); }catch(_){ return '$'+(v||0); } }
-  function fmtDate(iso){ try{ var d=new Date(iso); return isNaN(d)?(iso||''):d.toLocaleDateString(); }catch(_){ return iso||''; } }
+  function t(k, fb){ try{ return (window.dI18n && dI18n.t) ? (dI18n.t(k)||fb||k) : (fb||k);}catch(_){return fb||k;} }catch(_){return fb||k;} }
+  function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }[m]); }
+  function fmtMoney(v){ try{ return (new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'})).format(Number(v||0)); }catch(_){ return '$'+(v||0); } })).format(Number(v||0)); }catch(_){ return '$'+(v||0); } }
+  function fmtDate(iso){ try{ var d=new Date(iso); return isNaN(d)?(iso||''):d.toLocaleDateString(); }catch(_){ return iso||''; } }catch(_){ return iso||''; } }
 
   // Extensión no destructiva del render existente
   (function extendRender(){
