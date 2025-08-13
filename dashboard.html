@@ -2372,5 +2372,44 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.addEventListener("click", function(ev){ if (ev.target.closest("[data-lang]")) setTimeout(applyAll, 0); }, true);
 })();
 </script>
+
+<script>
+/* === Enhancement: translate Sorteos section title ("Sorteo") === */
+(function(){
+  function getStore(k, fb){ try{ var v=localStorage.getItem(k); return v==null?fb:v; }catch(_){ return fb; } }
+  function curLang(){ var d=window.dI18n||{}; return d.current||d.lang||getStore('dash_lang', getStore('lang','es'))||'es'; }
+  var TITLE = { es: "Sorteo", en: "Raffle", pt: "Sorteio" };
+
+  function applySorteosTitle(){
+    var span = document.querySelector("#section-sorteos .section-title span");
+    if (!span) return;
+    var lang = curLang();
+    var target = (window.dI18n && typeof dI18n.t==="function") ? dI18n.t("sorteos.title") : null;
+    if (!target || typeof target !== "string" || !target.trim() || target.toLowerCase()==="sorteos.title"){
+      target = TITLE[lang] || TITLE.es;
+    }
+    if (span.textContent !== target) span.textContent = target;
+  }
+
+  // run now + on mutations of the section + on language change
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", applySorteosTitle, {once:true});
+  else applySorteosTitle();
+
+  try{
+    var sec = document.getElementById("section-sorteos");
+    if (sec){
+      var mo = new MutationObserver(function(){ applySorteosTitle(); });
+      mo.observe(sec, {subtree:true, childList:true, characterData:true, attributes:true, attributeFilter:["style","class"]});
+    }
+  }catch(_){}
+
+  if (window.dI18n){
+    var _a = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
+    dI18n.apply = function(){ if(_a) _a(); applySorteosTitle(); };
+    var _s = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
+    dI18n.set = function(l){ if(_s) _s(l); applySorteosTitle(); };
+  }
+})();
+</script>
 </body>
 </html>
