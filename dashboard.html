@@ -2645,5 +2645,78 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 })();
 </script>
+
+<!-- Core helpers unificados (additive, no rompen lógica existente) -->
+<script>
+(function(){
+  if (window.__NUMINA_CORE__) return; // evitar doble inyección
+  window.__NUMINA_CORE__ = true;
+
+  // Formateos consistentes
+  const fmt = {
+    money(v){
+      try{
+        const n = Number(v||0);
+        // Usa el idioma actual si existe dI18n, default ES
+        const lang = (window.dI18n && (dI18n.current||dI18n.lang)) || 'es';
+        const currency = 'USD'; // si tu backend usa otra moneda, ajustar aquí
+        return new Intl.NumberFormat(lang, { style:'currency', currency }).format(isFinite(n)?n:0);
+      }catch(_){ return '$' + (v||'0'); }
+    },
+    date(iso){
+      // Acepta 'YYYY-MM-DD' o ISO; muestra dd/mm/aaaa por defecto
+      try{
+        if (!iso) return '—';
+        const d = new Date(iso);
+        if (isNaN(d)) return String(iso);
+        const dd = String(d.getDate()).padStart(2,'0');
+        const mm = String(d.getMonth()+1).padStart(2,'0');
+        const yyyy = d.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+      }catch(_){ return String(iso||'—'); }
+    }
+  };
+  window.fmt = window.fmt || fmt;
+
+  // i18n unificado de estados (coincide con el paso 2)
+  const i18n = {
+    statusLabel(s){
+      const v = String(s||'').toLowerCase();
+      const t = (window.dI18n && dI18n.t) ? dI18n.t : (k)=>k;
+      if (v === 'active' || v === 'activo') return t('Activo') || 'Activo';
+      if (v === 'inactive' || v === 'inactivo') return t('Inactivo') || 'Inactivo';
+      if (v === 'pending' || v === 'pendiente') return t('Pendiente') || 'Pendiente';
+      if (v === 'completed' || v === 'completado' || v === 'complete') return t('Completado') || 'Completado';
+      return s;
+    }
+  };
+  window.NUMINA_I18N = window.NUMINA_I18N || i18n;
+
+  // Render helpers: pequeñas utilidades para futuras refactors
+  const render = {
+    emptyRow(messageKey){
+      const t = (window.dI18n && dI18n.t) ? dI18n.t(messageKey) : messageKey;
+      return `<tr><td colspan="5" style="text-align: center;">${t}</td></tr>`;
+    },
+    statusPill(status){
+      // conserva clases externas (pending/active/etc.), solo estandariza texto
+      const label = (window.NUMINA_I18N ? NUMINA_I18N.statusLabel(status) : status);
+      return `<span class="status ${status}">${label}</span>`;
+    }
+  };
+  window.render = window.render || render;
+
+  // Suaviza errores no críticos para evitar "quedar cargando" silencioso
+  window.safe = window.safe || {
+    setText(id, value, fallback){
+      try{
+        const el = document.getElementById(id);
+        if (el) el.textContent = (value==null || value==='') ? (fallback||'—') : value;
+      }catch(_){}
+    }
+  };
+})();
+</script>
+
 </body>
 </html>
