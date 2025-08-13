@@ -491,77 +491,85 @@
       window.login = login;
 
       async function register() {
-        const email = document.getElementById("register-email")?.value;
-        const password = document.getElementById("register-password")?.value;
-        const fullName = document.getElementById("full-name")?.value;
-        const country  = document.getElementById("register-country")?.value;
-        const city     = document.getElementById("register-city")?.value;
-        const address  = document.getElementById("register-address")?.value;
-        const postal   = document.getElementById("register-postal")?.value;
-        const refCode  = document.getElementById('register-refcode')?.value?.trim();
+  const email = document.getElementById("register-email")?.value;
+  const password = document.getElementById("register-password")?.value;
+  const fullName = document.getElementById("full-name")?.value;
+  const country  = document.getElementById("register-country")?.value;
+  const city     = document.getElementById("register-city")?.value;
+  const address  = document.getElementById("register-address")?.value;
+  const postal   = document.getElementById("register-postal")?.value;
+  const refCode  = document.getElementById('register-refcode')?.value?.trim();
 
-        const registerBtn = document.querySelector("#register-form button.login-button");
-        const regErrorMsg = document.getElementById("register-error-message");
-        const regSuccessMsg = document.getElementById("register-success-message");
+  const registerBtn = document.querySelector("#register-form button.login-button");
+  const regErrorMsg = document.getElementById("register-error-message");
+  const regSuccessMsg = document.getElementById("register-success-message");
 
-        if (registerBtn){ registerBtn.disabled = true; registerBtn.textContent = i18n.t('register.creating'); }
-        if (regErrorMsg) regErrorMsg.textContent = "";
-        if (regSuccessMsg) regSuccessMsg.textContent = "";
+  if (registerBtn){ registerBtn.disabled = true; registerBtn.textContent = i18n.t('register.creating'); }
+  if (regErrorMsg) regErrorMsg.textContent = "";
+  if (regSuccessMsg) regSuccessMsg.textContent = "";
 
-        try {
-          if (!email || !password || !fullName || !country || !city || !address || !postal) {
-            throw new Error(i18n.t('errors.fillAll'));
+  try {
+    if (!email || !password || !fullName || !country || !city || !address || !postal) {
+      throw new Error(i18n.t('errors.fillAll'));
+    }
+    const { data, error: signUpError } = await supabaseClient.auth.signUp({ email, password });
+    if (signUpError) throw signUpError;
+
+    const userId = data?.user?.id;
+    if (!userId) throw new Error("No user ID.");
+
+    // Crear fila en users (perfil) con su referral_code propio (si tenés trigger, podés quitar este campo)
+    const { error: insertError } = await supabaseClient.from("users").insert([{
+      id: userId, email, full_name: fullName, balance: 0,
+      referral_code: "NUM" + Math.random().toString(36).slice(2, 8).toUpperCase(),
+      country, city, address, postal_code: postal
+    }]);
+    if (insertError) throw insertError;
+
+    // Iniciar sesión AHORA (rol authenticated) para poder aplicar el referido con RLS
+    const { error: loginError } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (loginError) throw loginError;
+
+    // Aplicar referido (RPC primero; si no existe, fallback a insert directo)
+    if (refCode) {
+      try {
+        localStorage.setItem('applied_ref_code', refCode);
+
+        // RPC recomendado (security definer)
+        const { error: rpcErr } = await supabaseClient.rpc("apply_referral", { ref_code: refCode });
+
+        if (rpcErr) {
+          console.warn("apply_referral RPC error:", rpcErr.message || rpcErr);
+
+          // Fallback directo (requiere policy de INSERT para authenticated)
+          const { data: refUser, error: refLookupError } = await supabaseClient
+            .from('users')
+            .select('id')
+            .eq('referral_code', refCode)
+            .maybeSingle();
+
+          if (!refLookupError && refUser) {
+            await supabaseClient.from('referrals').insert([{
+              referrer_id: refUser.id,
+              referred_email: email,
+              is_active: true
+            }]);
           }
-          const { data, error: signUpError } = await supabaseClient.auth.signUp({ email, password });
-          if (signUpError) throw signUpError;
-
-          const userId = data?.user?.id;
-          if (!userId) throw new Error("No user ID.");
-
-          // Creamos el perfil de usuario con su referral_code propio
-          const { error: insertError } = await supabaseClient.from("users").insert([{
-            id: userId, email, full_name: fullName, balance: 0,
-            referral_code: "NUM" + Math.random().toString(36).slice(2, 8).toUpperCase(),
-            country, city, address, postal_code: postal
-          }]);
-          if (insertError) throw insertError;
-
-          // Si vino con código, intentamos registrarlo
-          if (refCode) {
-            try {
-              // Guardamos localmente por si se necesita en el dashboard
-              localStorage.setItem('applied_ref_code', refCode);
-              const { data: refUser, error: refLookupError } = await supabaseClient
-                .from('users')
-                .select('id')
-                .eq('referral_code', refCode)
-                .single();
-
-              if (!refLookupError && refUser) {
-                // Esta inserción puede fallar por RLS según tus policies; no bloqueamos el alta
-                await supabaseClient.from('referrals').insert([{ 
-                  referrer_id: refUser.id,
-                  referred_email: email,
-                  is_active: true
-                }]);
-              }
-            } catch (e) {
-              console.warn('No se pudo registrar el referido ahora (policies/RLS):', e?.message);
-            }
-          }
-
-          const { error: loginError } = await supabaseClient.auth.signInWithPassword({ email, password });
-          if (loginError) throw loginError;
-
-          if (regSuccessMsg) regSuccessMsg.textContent = i18n.t('register.createdRedirect');
-          setTimeout(() => window.location.href = "dashboard.html", 1200);
-        } catch (error) {
-          if (regErrorMsg) regErrorMsg.textContent = error.message;
-        } finally {
-          if (registerBtn){ registerBtn.disabled = false; registerBtn.textContent = i18n.t('register.submit'); }
         }
+      } catch (e) {
+        console.warn('No se pudo registrar el referido (RLS/RPC):', e?.message || e);
       }
-      window.register = register;
+    }
+
+    if (regSuccessMsg) regSuccessMsg.textContent = i18n.t('register.createdRedirect');
+    setTimeout(() => window.location.href = "dashboard.html", 1200);
+  } catch (error) {
+    if (regErrorMsg) regErrorMsg.textContent = error.message;
+  } finally {
+    if (registerBtn){ registerBtn.disabled = false; registerBtn.textContent = i18n.t('register.submit'); }
+  }
+}
+window.register = register;
 
       // ===== Flujo de recuperación =====
       const resetBtn = document.getElementById('reset-btn');
