@@ -576,7 +576,7 @@
 </li>
 <li class="menu-item" data-target="compras">
 <i class="fas fa-shopping-bag"></i>
-<span>Mis Compras</span>
+<span><span data-i18n-section="compras"></span></span>
 </li>
 <li class="menu-item" data-target="sorteos">
 <i class="fas fa-ticket-alt"></i>
@@ -769,7 +769,7 @@
 <section class="section-content" id="section-compras" style="display:none;">
   <h2 class="section-title">
     <i class="fas fa-shopping-bag"></i>
-    <span>Mis Compras</span>
+    <span><span data-i18n-section="compras"></span></span>
   </h2>
   <div class="table-container">
     <table id="miscompras-table">
@@ -1741,6 +1741,7 @@ const DB_I18N = {
     actions: { copy: "Copiar", copied: "¡Copiado!" },
     labels: { welcome: "Bienvenido,", loading: "Cargando datos..." },
     sections: {
+      compras: "Mis Compras",
       comprasActivas: "Compras Activas",
       referidosHist: "Historial de Referidos",
       accountInfo: "Información de la Cuenta"
@@ -1761,6 +1762,7 @@ const DB_I18N = {
     actions: { copy: "Copy", copied: "Copied!" },
     labels: { welcome: "Welcome,", loading: "Loading data..." },
     sections: {
+      compras: "My Purchases",
       comprasActivas: "Active Purchases",
       referidosHist: "Referral History",
       accountInfo: "Account Information"
@@ -1781,6 +1783,7 @@ const DB_I18N = {
     actions: { copy: "Copiar", copied: "Copiado!" },
     labels: { welcome: "Bem-vindo,", loading: "Carregando dados..." },
     sections: {
+      compras: "Minhas Compras",
       comprasActivas: "Compras Ativas",
       referidosHist: "Histórico de Indicações",
       accountInfo: "Informações da Conta"
@@ -3322,6 +3325,33 @@ document.addEventListener('DOMContentLoaded', ()=>{
 })();
 </script>
 
+
+
+<script>
+(function(){
+  function applySectionTitles(){
+    document.querySelectorAll('[data-i18n-section]').forEach(el=>{
+      const key = el.getAttribute('data-i18n-section');
+      if (!key) return;
+      el.textContent = (window.dI18n && dI18n.t) ? dI18n.t('sections.'+key) : key;
+    });
+  }
+  // Run on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applySectionTitles);
+  } else {
+    applySectionTitles();
+  }
+  // Hook into i18n apply if present
+  try{
+    const _apply = dI18n.apply.bind(dI18n);
+    dI18n.apply = function(){
+      _apply();
+      applySectionTitles();
+    }
+  }catch(_){}
+})();
+</script>
 
 </body>
 </html>
