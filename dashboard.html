@@ -535,7 +535,6 @@
   .lang-dropdown{ margin-right:.35rem; }
 }
 </style>
-
 <!-- Global helpers: setText (with i18n placeholder) + status i18n -->
 <script id="nm-global-helpers">
 (function(){
@@ -633,8 +632,6 @@
   });
 })();
 </script>
-
-
 <style>
   /* === NUMINA: acomodar selector de idioma dentro del banner === */
   .welcome-banner { gap: 1rem; }
@@ -645,8 +642,6 @@
     .welcome-right .referral-code { align-self: center; }
   }
 </style>
-
-
 <style>
   /* === Antiflicker de alineación al cambiar idioma === */
   :root {
@@ -743,17 +738,13 @@
     .status { min-width: auto; }
   }
 </style>
-
-
 <style>
   /* Forzar scrollbar vertical para evitar "salto" horizontal cuando la página pasa de no-scroll a scroll */
   html { overflow-y: scroll; }
 </style>
-
 </head>
 <body>
 <header class="dashboard-header"><div style="flex-grow:1; text-align:center;"><div class="logo">NUMINA</div></div><div class="user-menu">
-
 <div class="user-avatar" id="user-avatar">US</div>
 </div>
 </header>
@@ -778,7 +769,7 @@
 </li>
 <li class="menu-item" data-target="productos">
 <i class="fas fa-box"></i>
-<span id="sidebar-productos-text" data-i18n="catalog.title">Catálogo</span>
+<span data-i18n="catalog.title" id="sidebar-productos-text">Catálogo</span>
 </li>
 <li class="menu-item" data-target="configuracion">
 <i class="fas fa-cog"></i>
@@ -796,7 +787,6 @@
 <h2 id="welcome-title">Cargando datos...</h2>
 <p id="welcome-subtitle" style="display: none;">Por favor espera</p>
 </div>
-
 <div class="welcome-right">
 <div class="lang-dropdown" id="langDropdown">
 <button aria-expanded="false" aria-haspopup="listbox" class="lang-btn" id="langBtn">
@@ -933,34 +923,60 @@
 </div>
 </div>
 <!-- Configuración: MOVIDA FUERA DE #main-dashboard -->
-<section class="section-content" id="section-configuracion" style="display:none;">
-<h2 class="section-title"><i class="fas fa-cog"></i><span data-i18n="account.settings.title">Configuración de la Cuenta</span></h2>
-<div class="settings-card">
-<h3><i class="fas fa-id-card"></i> <span data-i18n="account.settings.personalData">Datos Personales</span></h3>
-<form id="config-datos-form">
-<div class="form-grid">
-<!-- Nota: El campo de correo electrónico se eliminó de este formulario porque se gestiona únicamente desde el proveedor de autenticación (Supabase Auth). Si en el futuro se habilita su edición, puede reinsertarse un campo de solo lectura o un enlace a la sección correspondiente. Esta nota existe solo como documentación para el equipo y no se muestra al usuario. -->
-<div class="form-row"><label for="cfg-fullname"><span data-i18n="accountForm.labels.fullName"></span></label><input data-i18n-ph="accountForm.ph.fullName" id="cfg-fullname" type="text"/></div>
-<div class="form-row"><label for="cfg-phone"><span data-i18n="accountForm.labels.phone"></span></label><input data-i18n-ph="accountForm.ph.phone" id="cfg-phone" type="tel"/></div>
-<div class="form-row"><label for="cfg-address"><span data-i18n="accountForm.labels.address"></span></label><input data-i18n-ph="accountForm.ph.address" id="cfg-address" type="text"/></div>
-<div class="form-row"><label for="cfg-country"><span data-i18n="accountForm.labels.country"></span></label><input data-i18n-ph="accountForm.ph.country" id="cfg-country" type="text"/></div>
-<div class="form-row"><label for="cfg-city"><span data-i18n="accountForm.labels.city"></span></label><input data-i18n-ph="accountForm.ph.city" id="cfg-city" type="text"/></div>
-<div class="form-row"><label for="cfg-postal"><span data-i18n="accountForm.labels.zip"></span></label><input data-i18n-ph="accountForm.ph.zip" id="cfg-postal" type="text"/></div>
+
+<section class="account-settings">
+<h2 class="section-title">
+<i class="fas fa-cog"></i>
+<span data-i18n="settings.accountConfiguration"></span>
+</h2>
+<div class="settings-section">
+<h3 class="section-subtitle">
+<i class="fas fa-id-card"></i>
+<span data-i18n="settings.personalData"></span>
+</h3>
+<div class="form-row">
+<label data-i18n="settings.fullName" for="fullName"></label>
+<input id="fullName" placeholder="First and last name" type="text"/>
 </div>
-<div class="form-actions"><button class="btn" type="submit"><span data-i18n="account.settings.save">Guardar cambios</span></button></div>
-</form>
+<div class="form-row">
+<label data-i18n="settings.phone" for="phone"></label>
+<input id="phone" placeholder="+54 11 1234 5678" type="tel"/>
 </div>
-<div class="settings-card">
-<h3><i class="fas fa-shield-alt"></i> <span data-i18n="account.settings.security">Seguridad</span></h3>
-<form id="config-pass-form">
-<div class="form-grid">
-<div class="form-row"><label for="cfg-pass1"><span data-i18n="accountForm.labels.newPassword"></span></label><input id="cfg-pass1" placeholder="********" type="password"/></div>
-<div class="form-row"><label for="cfg-pass2"><span data-i18n="accountForm.labels.repeatPassword"></span></label><input id="cfg-pass2" placeholder="********" type="password"/></div>
+<div class="form-row">
+<label data-i18n="settings.address" for="address"></label>
+<input id="address" placeholder="Street, number, city" type="text"/>
 </div>
-<div class="form-actions"><button class="btn" type="submit"><span data-i18n="account.settings.updatePassword">Actualizar contraseña</span></button></div>
-</form>
+<div class="form-row">
+<label data-i18n="settings.country" for="country"></label>
+<input id="country" type="text" value="Argentina"/>
+</div>
+<div class="form-row">
+<label data-i18n="settings.city" for="city"></label>
+<input id="city" type="text" value="Buenos Aires"/>
+</div>
+<div class="form-row">
+<label data-i18n="settings.zipCode" for="zip"></label>
+<input id="zip" placeholder="ZIP" type="text"/>
+</div>
+<button class="btn" data-i18n="settings.saveChanges"></button>
+</div>
+<div class="settings-section">
+<h3 class="section-subtitle">
+<i class="fas fa-shield-alt"></i>
+<span data-i18n="settings.security"></span>
+</h3>
+<div class="form-row">
+<label data-i18n="settings.newPassword" for="newPassword"></label>
+<input id="newPassword" type="password"/>
+</div>
+<div class="form-row">
+<label data-i18n="settings.repeatPassword" for="repeatPassword"></label>
+<input id="repeatPassword" type="password"/>
+</div>
+<button class="btn" data-i18n="settings.updatePassword"></button>
 </div>
 </section>
+
 <section class="section-content" id="section-compras" style="display:none;">
 <h2 class="section-title">
 <i class="fas fa-shopping-bag"></i>
@@ -987,7 +1003,7 @@
 </section>
 <section class="section-content" id="section-productos" style="display:none;">
 <div class="products-wrap">
-<h2 class="section-title"><i class="fas fa-box"></i><span id="sidebar-productos-text" data-i18n="catalog.title" data-i18n="catalog.title">Catálogo</span></h2>
+<h2 class="section-title"><i class="fas fa-box"></i><span data-i18n="catalog.title" id="sidebar-productos-text">Catálogo</span></h2>
 <section class="products-grid">
 <!-- Oro -->
 <article class="product-card">
@@ -3665,7 +3681,6 @@ var R = {
   try{ var _a = dI18n.apply.bind(dI18n); dI18n.apply = function(){ _a(); translateAll(); }; }catch(_){}
 })();
 </script>
-
 <script>
 // === NUMINA password labels i18n bridge (supports dI18n and dI18n) ===
 (function(){
@@ -3747,8 +3762,6 @@ var R = {
   });
 })();
 </script>
-
-
 <script>
 // Dedicated updater for account.settings.title (resilient to timing/order)
 (function(){
@@ -3808,8 +3821,6 @@ var R = {
   });
 })();
 </script>
-
-
 <script>
 // Reactive updater that watches the language selector and updates specific texts
 (function(){
@@ -3931,6 +3942,5 @@ var R = {
   });
 })();
 </script>
-
 </body>
 </html>
