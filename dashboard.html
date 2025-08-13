@@ -925,6 +925,17 @@ document.getElementById('user-city').textContent = userData.city || 'No definido
 document.getElementById('user-postal').textContent = userData.postal_code || 'No definido';
 
 
+
+      // i18n status helper
+      const statusLabel = (s) => {
+        const v = String(s||'').toLowerCase();
+        if (v === 'active' || v === 'activo') return (dI18n.t && dI18n.t('Activo')) || 'Activo';
+        if (v === 'inactive' || v === 'inactivo') return (dI18n.t && dI18n.t('Inactivo')) || 'Inactivo';
+        if (v === 'pending' || v === 'pendiente') return (dI18n.t && dI18n.t('Pendiente')) || 'Pendiente';
+        if (v === 'completed' || v === 'completado' || v === 'complete') return (dI18n.t && dI18n.t('Completado')) || 'Completado';
+        return s;
+      };
+
       // Compras
       const purchasesBody = document.getElementById('purchases-body');
       purchasesBody.innerHTML = userData.purchases?.length > 0 
@@ -933,11 +944,11 @@ document.getElementById('user-postal').textContent = userData.postal_code || 'No
               <td>${p.product_name}</td>
               <td>${new Date(p.created_at).toLocaleDateString()}</td>
               <td>$${(p.value ?? 0).toFixed(2)}</td>
-              <td><span class="status ${p.status}">${p.status}</span></td>
+              <td><span class="status ${p.status}">${statusLabel(p.status)}</span></td>
               <td><button class="action-btn">Detalles</button></td>
             </tr>
           `).join('')
-        : `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay compras')}</td></tr>`;
+        : '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
 
       // Referidos
       const referralsBody = document.getElementById('referrals-body');
@@ -951,7 +962,7 @@ document.getElementById('user-postal').textContent = userData.postal_code || 'No
               <td>$${(r.commission ?? 0).toFixed(2)}</td>
             </tr>
           `).join('')
-        : `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay referidos')}</td></tr>`;
+        : '<tr><td colspan="5" style="text-align: center;">No hay referidos</td></tr>';
 
       // --- NUEVO: Prefill y handlers de Configuración ---
       try { prefillConfigForms(userData); } catch(e) {}
@@ -1160,8 +1171,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('user-email').textContent = 'Cargando...';
     document.getElementById('user-phone').textContent = 'Cargando...';
     document.getElementById('user-address').textContent = 'Cargando...';
-    document.getElementById('purchases-body').innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('Cargando compras...')}</td></tr>`;
-    document.getElementById('referrals-body').innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('Cargando referidos...')}</td></tr>`;
+    document.getElementById('purchases-body').innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando compras...</td></tr>';
+    document.getElementById('referrals-body').innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando referidos...</td></tr>';
 
     const supabase = getSupabase();
 
@@ -1197,13 +1208,13 @@ document.addEventListener("DOMContentLoaded", () => {
           '<td>' + p.product_name + '</td>' +
           '<td>' + new Date(p.created_at).toLocaleDateString() + '</td>' +
           '<td>$' + (p.value?.toFixed(2) || '0.00') + '</td>' +
-          '<td><span class="status ' + p.status + '">' + p.status + '</span></td>' +
+          '<td><span class="status ' + p.status + '\">' + statusLabel(p.status) + '</span></td>' +
           '<td><button class="action-btn">Detalles</button></td>' +
           '</tr>';
         purchasesBody.innerHTML += row;
       });
     } else {
-      purchasesBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay compras')}</td></tr>`;
+      purchasesBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
     }
 
     const referralsBody = document.getElementById('referrals-body');
@@ -1215,13 +1226,13 @@ document.addEventListener("DOMContentLoaded", () => {
           '<td>' + new Date(r.created_at).toLocaleDateString() + '</td>' +
           '<td>' + (r.purchases_count || '0') + '</td>' +
           '<td><span class="status ' + (r.is_active ? 'active' : 'inactive') + '">' +
-          (r.is_active ? 'Activo' : 'Inactivo') + '</span></td>' +
+          (dI18n.t ? (r.is_active ? dI18n.t('Activo') : dI18n.t('Inactivo')) : (r.is_active ? 'Activo' : 'Inactivo')) + '</span></td>' +
           '<td>$' + (r.commission?.toFixed(2) || '0.00') + '</td>' +
           '</tr>';
         referralsBody.innerHTML += row;
       });
     } else {
-      referralsBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay referidos')}</td></tr>`;
+      referralsBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay referidos</td></tr>';
     }
   }
 
@@ -1277,11 +1288,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const tbody = document.getElementById('miscompras-body');
         if (purchaseError || !purchases) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay compras')}</td></tr>`;
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
           return;
         }
         if (purchases.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay compras')}</td></tr>`;
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
           return;
         }
         tbody.innerHTML = purchases.map(p => `
@@ -1289,7 +1300,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <td>${p.product_name}</td>
             <td>${new Date(p.created_at).toLocaleDateString()}</td>
             <td>$${(p.value ?? 0).toFixed(2)}</td>
-            <td><span class="status ${p.status}">${p.status}</span></td>
+            <td><span class="status ${p.status}">${statusLabel(p.status)}</span></td>
             <td><button class="action-btn" disabled>Hacer reclamo</button></td>
           </tr>
         `).join('');
@@ -2055,7 +2066,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
       'SORTEO': 'SORTEO',
       'FECHA': 'FECHA',
       'VALOR': 'VALOR'
-    },
+         'Inactivo': 'Inactivo',
+      'Pendiente': 'Pendiente',
+      'Completado': 'Completado',
+ },
     en: {
       'Sorteo': 'Raffle',
       'Historial de Participación': 'Participation History',
@@ -2068,7 +2082,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
       'SORTEO': 'RAFFLE',
       'FECHA': 'DATE',
       'VALOR': 'AMOUNT'
-    },
+         'Inactivo': 'Inactive',
+      'Pendiente': 'Pending',
+      'Completado': 'Completed',
+ },
     pt: {
       'Sorteo': 'Sorteio',
       'Historial de Participación': 'Histórico de Participação',
@@ -2081,7 +2098,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
       'SORTEO': 'SORTEIO',
       'FECHA': 'DATA',
       'VALOR': 'VALOR'
-    }
+         'Inactivo': 'Inativo',
+      'Pendiente': 'Pendente',
+      'Completado': 'Concluído',
+ }
   };
 
   function translatePhrases(root){
