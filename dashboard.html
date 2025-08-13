@@ -908,7 +908,7 @@
         `Bienvenido, ${userData.full_name || userData.email}`;
       document.getElementById('referral-code').textContent = 
         userData.referral_code || '---';
-      document.getElementById('balance-value').textContent = `$${userData.balance?.toFixed(2) || '0.00'}`;
+      document.getElementById('balance-value').textContent = `${userData.balance?.toFixed(2) || '0.00'}`;
       document.getElementById('purchases-value').textContent = userData.active_purchases || '0';
       document.getElementById('referrals-value').textContent = userData.referrals_count || '0';
       document.getElementById('tickets-value').textContent = userData.tickets_count || '0';
@@ -943,7 +943,7 @@ document.getElementById('user-postal').textContent = userData.postal_code || 'No
             <tr>
               <td>${p.product_name}</td>
               <td>${new Date(p.created_at).toLocaleDateString()}</td>
-              <td>$${(p.value ?? 0).toFixed(2)}</td>
+              <td>${(p.value ?? 0).toFixed(2)}</td>
               <td><span class="status ${p.status}">${statusLabel(p.status)}</span></td>
               <td><button class="action-btn">${(window.dI18n && window.dI18n.t) ? window.dI18n.t("Detalles") : "Detalles"}</button></td>
             </tr>
@@ -959,7 +959,7 @@ document.getElementById('user-postal').textContent = userData.postal_code || 'No
               <td>${new Date(r.created_at).toLocaleDateString()}</td>
               <td>${r.purchases_count || '0'}</td>
               <td><span class="status ${r.is_active ? 'active' : 'inactive'}">${r.is_active ? 'Activo' : 'Inactivo'}</span></td>
-              <td>$${(r.commission ?? 0).toFixed(2)}</td>
+              <td>${(r.commission ?? 0).toFixed(2)}</td>
             </tr>
           `).join('')
         : '<tr><td colspan="5" style="text-align: center;">No hay referidos</td></tr>';
@@ -1299,7 +1299,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <tr>
             <td>${p.product_name}</td>
             <td>${new Date(p.created_at).toLocaleDateString()}</td>
-            <td>$${(p.value ?? 0).toFixed(2)}</td>
+            <td>${(p.value ?? 0).toFixed(2)}</td>
             <td><span class="status ${p.status}">${statusLabel(p.status)}</span></td>
             <td><button class="action-btn" disabled>${dI18n.t('Hacer reclamo')}</button></td>
           </tr>
