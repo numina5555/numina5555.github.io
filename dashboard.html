@@ -929,10 +929,10 @@ document.getElementById('user-postal').textContent = userData.postal_code || 'No
       // i18n status helper
       const statusLabel = (s) => {
         const v = String(s||'').toLowerCase();
-        if (v === 'active' || v === 'activo') return (dI18n.t && dI18n.t('Activo')) || 'Activo';
-        if (v === 'inactive' || v === 'inactivo') return (dI18n.t && dI18n.t('Inactivo')) || 'Inactivo';
-        if (v === 'pending' || v === 'pendiente') return (dI18n.t && dI18n.t('Pendiente')) || 'Pendiente';
-        if (v === 'completed' || v === 'completado' || v === 'complete') return (dI18n.t && dI18n.t('Completado')) || 'Completado';
+        if (v === 'active' || v === 'activo') return ((window.dI18n && window.dI18n.t) ? dI18n.t('Activo') : 'Activo');
+        if (v === 'inactive' || v === 'inactivo') return ((window.dI18n && window.dI18n.t) ? dI18n.t('Inactivo') : 'Inactivo');
+        if (v === 'pending' || v === 'pendiente') return ((window.dI18n && window.dI18n.t) ? dI18n.t('Pendiente') : 'Pendiente');
+        if (v === 'completed' || v === 'completado' || v === 'complete') return ((window.dI18n && window.dI18n.t) ? dI18n.t('Completado') : 'Completado');
         return s;
       };
 
@@ -1722,10 +1722,7 @@ const DB_I18N = {
       catalogo: "Catálogo",
       config: "Configuración",
       logout: "Cerrar Sesión",
-      (dI18n.t ? dI18n.t('Detalles') : 'Detalles'): (dI18n.t ? dI18n.t('Detalles') : 'Detalles'),
-      (dI18n.t ? dI18n.t('Hacer reclamo') : 'Hacer reclamo'): (dI18n.t ? dI18n.t('Hacer reclamo') : 'Hacer reclamo'),
-
-    },
+},
     actions: { copy: "Copiar", copied: "¡Copiado!" },
     labels: { welcome: "Bienvenido,", loading: "Cargando datos..." },
     sections: {
