@@ -2411,5 +2411,43 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 })();
 </script>
+
+<script>
+/* === Enhancement: translate "Mis Compras" section title === */
+(function(){
+  function getStore(k, fb){ try{ var v=localStorage.getItem(k); return v==null?fb:v; }catch(_){ return fb; } }
+  function curLang(){ var d=window.dI18n||{}; return d.current||d.lang||getStore('dash_lang', getStore('lang','es'))||'es'; }
+  var TITLE = { es: "Mis Compras", en: "My Purchases", pt: "Minhas Compras" };
+
+  function applyComprasTitle(){
+    var span = document.querySelector("#section-compras .section-title span");
+    if (!span) return;
+    var lang = curLang();
+    var target = (window.dI18n && typeof dI18n.t==="function") ? dI18n.t("compras.title") : null;
+    if (!target || typeof target !== "string" || !target.trim() || target.toLowerCase()==="compras.title"){
+      target = TITLE[lang] || TITLE.es;
+    }
+    if (span.textContent !== target) span.textContent = target;
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", applyComprasTitle, {once:true});
+  else applyComprasTitle();
+
+  try{
+    var sec = document.getElementById("section-compras");
+    if (sec){
+      var mo = new MutationObserver(function(){ applyComprasTitle(); });
+      mo.observe(sec, {subtree:true, childList:true, characterData:true, attributes:true, attributeFilter:["style","class"]});
+    }
+  }catch(_){}
+
+  if (window.dI18n){
+    var _a = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
+    dI18n.apply = function(){ if(_a) _a(); applyComprasTitle(); };
+    var _s = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
+    dI18n.set = function(l){ if(_s) _s(l); applyComprasTitle(); };
+  }
+})();
+</script>
 </body>
 </html>
