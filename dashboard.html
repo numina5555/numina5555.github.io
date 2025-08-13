@@ -929,10 +929,10 @@ document.getElementById('user-postal').textContent = userData.postal_code || 'No
       // i18n status helper
       const statusLabel = (s) => {
         const v = String(s||'').toLowerCase();
-        if (v === 'active' || v === 'activo') return ((window.dI18n8n && window.dI18n8n.t) ? dI18n8n.t('Activo') : 'Activo');
-        if (v === 'inactive' || v === 'inactivo') return ((window.dI18n8n && window.dI18n8n.t) ? dI18n8n.t('Inactivo') : 'Inactivo');
-        if (v === 'pending' || v === 'pendiente') return ((window.dI18n8n && window.dI18n8n.t) ? dI18n8n.t('Pendiente') : 'Pendiente');
-        if (v === 'completed' || v === 'completado' || v === 'complete') return ((window.dI18n8n && window.dI18n8n.t) ? dI18n8n.t('Completado') : 'Completado');
+        if (v === 'active' || v === 'activo') return ((window.dI18n && window.dI18n.t) ? dI18n8n.t('Activo') : 'Activo');
+        if (v === 'inactive' || v === 'inactivo') return ((window.dI18n && window.dI18n.t) ? dI18n8n.t('Inactivo') : 'Inactivo');
+        if (v === 'pending' || v === 'pendiente') return ((window.dI18n && window.dI18n.t) ? dI18n8n.t('Pendiente') : 'Pendiente');
+        if (v === 'completed' || v === 'completado' || v === 'complete') return ((window.dI18n && window.dI18n.t) ? dI18n8n.t('Completado') : 'Completado');
         return s;
       };
 
@@ -1226,7 +1226,7 @@ document.addEventListener("DOMContentLoaded", () => {
           '<td>' + new Date(r.created_at).toLocaleDateString() + '</td>' +
           '<td>' + (r.purchases_count || '0') + '</td>' +
           '<td><span class="status ' + (r.is_active ? 'active' : 'inactive') + '">' +
-          ((window.dI18n8n && window.dI18n8n.t) ? (r.is_active ? dI18n8n.t('Activo') : dI18n8n.t('Inactivo')) : (r.is_active ? 'Activo' : 'Inactivo')) + '</span></td>' +
+          ((window.dI18n && window.dI18n.t) ? (r.is_active ? dI18n8n.t('Activo') : dI18n8n.t('Inactivo')) : (r.is_active ? 'Activo' : 'Inactivo')) + '</span></td>' +
           '<td>$' + (r.commission?.toFixed(2) || '0.00') + '</td>' +
           '</tr>';
         referralsBody.innerHTML += row;
@@ -1822,7 +1822,7 @@ const dI18n8n = {
   const saved = (()=>{ try{return localStorage.getItem('dash_lang')}catch(e){ return null } })();
   const preferred = (navigator.language || 'es').toLowerCase();
   const initial = saved || (preferred.startsWith('en') ? 'en' : preferred.startsWith('pt') ? 'pt' : 'es');
-  dI18n8n.set(initial);
+  dI18n.set(initial);
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1841,7 +1841,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   updateLabel();
-  dI18n8n.apply();
+  dI18n.apply();
 
   btn?.addEventListener('click', (e)=>{
     e.stopPropagation();
@@ -1851,7 +1851,7 @@ document.addEventListener('DOMContentLoaded', () => {
     item.addEventListener('click', (e)=>{
       e.stopPropagation();
       const lang = item.dataset.lang;
-      dI18n8n.set(lang);
+      dI18n.set(lang);
       updateLabel();
       // update selected
       menu.querySelectorAll('.lang-item').forEach(li=> li.setAttribute('aria-selected', li.dataset.lang===lang?'true':'false'));
@@ -1967,8 +1967,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 
   // Monkey-patch apply to also translate content if present
-  const origApply = dI18n8n.apply.bind(dI18n8n);
-  dI18n8n.apply = function(){
+  const origApply = dI18n.apply.bind(dI18n8n);
+  dI18n.apply = function(){
     origApply();
 
     const dict = DB_I18N[this.current];
@@ -2043,7 +2043,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   };
 
   // Re-apply right away (in case user already had page open)
-  dI18n8n.apply();
+  dI18n.apply();
 })();
 </script>
 
@@ -2051,7 +2051,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 <script>
 // === Stronger phrase-level translations for dashboard widgets ===
 (function(){
-  if (!window.DB_I18N || !window.dI18n8n) return;
+  if (!window.DB_I18N || !window.dI18n) return;
 
   const Phrases = {
     es: {
@@ -2130,15 +2130,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
     });
   }
 
-  // Patch dI18n8n.apply to also translate phrases
-  const originalApply = dI18n8n.apply.bind(dI18n8n);
-  dI18n8n.apply = function(){
+  // Patch dI18n.apply to also translate phrases
+  const originalApply = dI18n.apply.bind(dI18n8n);
+  dI18n.apply = function(){
     originalApply();
     translatePhrases(document);
   };
 
   // Initial apply
-  dI18n8n.apply();
+  dI18n.apply();
 })();
 </script>
 
@@ -2151,7 +2151,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // Resolve current language from multiple sources
   function currentLang(){
-    var d = window.dI18n8n || {};
+    var d = window.dI18n || {};
     return d.current || d.lang || getStore('dash_lang', getStore('lang', 'es')) || 'es';
   }
 
@@ -2166,7 +2166,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   function tOrFallback(key, fb){
     var lang = currentLang();
     try {
-      if (window.dI18n8n && typeof dI18n8n.t === "function") {
+      if (window.dI18n && typeof dI18n8n.t === "function") {
         var v = dI18n8n.t(key);
         if (typeof v === "string" && v.trim()) {
           if (v.toLowerCase() === key.toLowerCase()) return fb;     // returned key itself
@@ -2252,12 +2252,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
     setTimeout(burst, 0);
   }, true); // capture = true to ensure we catch it
 
-  // Also re-run when dI18n8n.apply or set are called
-  if (window.dI18n8n) {
-    var _apply = typeof dI18n8n.apply === "function" ? dI18n8n.apply.bind(dI18n8n) : null;
-    dI18n8n.apply = function(){ if (_apply) _apply(); burst(); };
-    var _set = typeof dI18n8n.set === "function" ? dI18n8n.set.bind(dI18n8n) : null;
-    dI18n8n.set = function(lang){ if (_set) _set(lang); burst(); };
+  // Also re-run when dI18n.apply or set are called
+  if (window.dI18n) {
+    var _apply = typeof dI18n.apply === "function" ? dI18n.apply.bind(dI18n8n) : null;
+    dI18n.apply = function(){ if (_apply) _apply(); burst(); };
+    var _set = typeof dI18n.set === "function" ? dI18n.set.bind(dI18n8n) : null;
+    dI18n.set = function(lang){ if (_set) _set(lang); burst(); };
   }
 })();
 </script>
@@ -2265,13 +2265,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
 <script>
 /* === NUMINA i18n: table headers (Producto/Fecha/Valor/Estado/Acciones) ===
    - Robust: tags columns once (data-i18n-col) by content or position
-   - Translates on DOM changes and when dI18n8n.set/apply run
+   - Translates on DOM changes and when dI18n.set/apply run
    - Does NOT touch dropdown/menu behavior
 */
 (function(){
   // Small helpers
   function getStore(k, fb){ try { var v = localStorage.getItem(k); return v==null?fb:v; } catch(_){ return fb; } }
-  function lang(){ var d = window.dI18n8n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
+  function lang(){ var d = window.dI18n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
   function norm(s){ return (s||"").toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
 
   // Fallback dictionary
@@ -2284,7 +2284,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   function tOr(key, fb){
     try {
-      if (window.dI18n8n && typeof dI18n8n.t === "function") {
+      if (window.dI18n && typeof dI18n8n.t === "function") {
         var v = dI18n8n.t(key);
         if (typeof v === "string" && v.trim()) {
           if (v.toLowerCase() === key.toLowerCase()) return fb;     // returned key itself
@@ -2382,11 +2382,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }catch(_){}
 
   // Hook your i18n
-  if (window.dI18n8n){
-    var _apply = typeof dI18n8n.apply==="function" ? dI18n8n.apply.bind(dI18n8n) : null;
-    dI18n8n.apply = function(){ if (_apply) _apply(); burst(); };
-    var _set   = typeof dI18n8n.set==="function"   ? dI18n8n.set.bind(dI18n8n)   : null;
-    dI18n8n.set = function(l){ if (_set) _set(l); burst(); };
+  if (window.dI18n){
+    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n8n) : null;
+    dI18n.apply = function(){ if (_apply) _apply(); burst(); };
+    var _set   = typeof dI18n.set==="function"   ? dI18n.set.bind(dI18n8n)   : null;
+    dI18n.set = function(l){ if (_set) _set(l); burst(); };
   }
 
   // Also react to clicks on any [data-lang] element (let your code run first)
@@ -2400,7 +2400,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 /* === NUMINA i18n: referrals table headers (Referido/Fecha/Compras/Estado/Comisión) === */
 (function(){
   function getStore(k, fb){ try { var v = localStorage.getItem(k); return v==null?fb:v; } catch(_){ return fb; } }
-  function lang(){ var d = window.dI18n8n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
+  function lang(){ var d = window.dI18n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
   function norm(s){ return (s||"").toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
 
   var COLS = {
@@ -2412,7 +2412,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   function tOr(key, fb){
     try {
-      if (window.dI18n8n && typeof dI18n8n.t === "function") {
+      if (window.dI18n && typeof dI18n8n.t === "function") {
         var v = dI18n8n.t(key);
         if (typeof v === "string" && v.trim()) {
           if (v.toLowerCase() === key.toLowerCase()) return fb;
@@ -2488,11 +2488,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
     mo.observe(document.body, {subtree:true, childList:true, characterData:true});
   }catch(_){}
 
-  if (window.dI18n8n){
-    var _apply = typeof dI18n8n.apply==="function" ? dI18n8n.apply.bind(dI18n8n) : null;
-    dI18n8n.apply = function(){ if (_apply) _apply(); burst(); };
-    var _set = typeof dI18n8n.set==="function" ? dI18n8n.set.bind(dI18n8n) : null;
-    dI18n8n.set = function(l){ if (_set) _set(l); burst(); };
+  if (window.dI18n){
+    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n8n) : null;
+    dI18n.apply = function(){ if (_apply) _apply(); burst(); };
+    var _set = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n8n) : null;
+    dI18n.set = function(l){ if (_set) _set(l); burst(); };
   }
 })();
 </script>
@@ -2501,7 +2501,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 /* === NUMINA i18n: account info labels (Nombre/Correo/Teléfono/Dirección/País/Ciudad/Código Postal) === */
 (function(){
   function getStore(k, fb){ try { var v = localStorage.getItem(k); return v==null?fb:v; } catch(_){ return fb; } }
-  function lang(){ var d = window.dI18n8n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
+  function lang(){ var d = window.dI18n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
   function norm(s){ return (s||"").toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
 
   var LBL = {
@@ -2513,7 +2513,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   function tOr(key, fb){
     try {
-      if (window.dI18n8n && typeof dI18n8n.t === "function") {
+      if (window.dI18n && typeof dI18n8n.t === "function") {
         var v = dI18n8n.t(key);
         if (typeof v === "string" && v.trim()) {
           if (v.toLowerCase() === key.toLowerCase()) return fb;
@@ -2585,11 +2585,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
     mo.observe(document.body, {subtree:true, childList:true, characterData:true});
   }catch(_){}
 
-  if (window.dI18n8n){
-    var _apply = typeof dI18n8n.apply==="function" ? dI18n8n.apply.bind(dI18n8n) : null;
-    dI18n8n.apply = function(){ if (_apply) _apply(); burst(); };
-    var _set = typeof dI18n8n.set==="function" ? dI18n8n.set.bind(dI18n8n) : null;
-    dI18n8n.set = function(l){ if (_set) _set(l); burst(); };
+  if (window.dI18n){
+    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n8n) : null;
+    dI18n.apply = function(){ if (_apply) _apply(); burst(); };
+    var _set = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n8n) : null;
+    dI18n.set = function(l){ if (_set) _set(l); burst(); };
   }
 })();
 </script>
@@ -2597,7 +2597,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 <script>
 /* === Copy button i18n fix (adds PT + ensures updates on set/apply/click) === */
 (function(){
-  if (!window.DB_I18N || !window.dI18n8n) return;
+  if (!window.DB_I18N || !window.dI18n) return;
 
   // Ensure locales exist
   DB_I18N.en = DB_I18N.en || {};
@@ -2624,15 +2624,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
     });
   }
 
-  // Patch dI18n8n.apply and set
-  var _apply = (typeof dI18n8n.apply === "function") ? dI18n8n.apply.bind(dI18n8n) : null;
-  dI18n8n.apply = function(){
+  // Patch dI18n.apply and set
+  var _apply = (typeof dI18n.apply === "function") ? dI18n.apply.bind(dI18n8n) : null;
+  dI18n.apply = function(){
     if (_apply) _apply();
     updateCopyBtn();
     wireCopiedEvent();
   };
-  var _set = (typeof dI18n8n.set === "function") ? dI18n8n.set.bind(dI18n8n) : null;
-  dI18n8n.set = function(lang){
+  var _set = (typeof dI18n.set === "function") ? dI18n.set.bind(dI18n8n) : null;
+  dI18n.set = function(lang){
     if (_set) _set(lang);
     updateCopyBtn();
   };
@@ -2658,7 +2658,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       try{
         const n = Number(v||0);
         // Usa el idioma actual si existe dI18n8n, default ES
-        const lang = (window.dI18n8n && (dI18n8n.current||dI18n8n.lang)) || 'es';
+        const lang = (window.dI18n && (dI18n8n.current||dI18n8n.lang)) || 'es';
         const currency = 'USD'; // si tu backend usa otra moneda, ajustar aquí
         return new Intl.NumberFormat(lang, { style:'currency', currency }).format(isFinite(n)?n:0);
       }catch(_){ return '$' + (v||'0'); }
@@ -2682,7 +2682,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const i18n = {
     statusLabel(s){
       const v = String(s||'').toLowerCase();
-      const t = (window.dI18n8n && window.dI18n8n.t) ? dI18n8n.t : (k)=>k;
+      const t = (window.dI18n && window.dI18n.t) ? dI18n8n.t : (k)=>k;
       if (v === 'active' || v === 'activo') return t('Activo') || 'Activo';
       if (v === 'inactive' || v === 'inactivo') return t('Inactivo') || 'Inactivo';
       if (v === 'pending' || v === 'pendiente') return t('Pendiente') || 'Pendiente';
@@ -2695,7 +2695,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // Render helpers: pequeñas utilidades para futuras refactors
   const render = {
     emptyRow(messageKey){
-      const t = (window.dI18n8n && window.dI18n8n.t) ? dI18n8n.t(messageKey) : messageKey;
+      const t = (window.dI18n && window.dI18n.t) ? dI18n8n.t(messageKey) : messageKey;
       return `<tr><td colspan="5" style="text-align: center;">${t}</td></tr>`;
     },
     statusPill(status){
@@ -2744,7 +2744,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   function postShow(target){
     try{
-      if (window.dI18n8n && typeof dI18n8n.apply === 'function') dI18n8n.apply();
+      if (window.dI18n && typeof dI18n.apply === 'function') dI18n.apply();
     }catch(_){}
     if (target && /mis/i.test(target)) ensureMisComprasFresh();
   }
@@ -2780,7 +2780,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 
   function t(key, fb){
-    try{ return (window.dI18n8n && dI18n8n.t) ? (dI18n8n.t(key)||fb||key) : (fb||key); }catch(_){ return fb||key; }
+    try{ return (window.dI18n && dI18n8n.t) ? (dI18n8n.t(key)||fb||key) : (fb||key); }catch(_){ return fb||key; }
   }
 
   function wireCopy(){
@@ -2819,9 +2819,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
       }, { passive:true });
     });
     wireCopy();
-    if (window.dI18n8n && typeof dI18n8n.set==='function'){
-      var _set = dI18n8n.set.bind(dI18n8n);
-      dI18n8n.set = function(l){ _set(l); try{ wireCopy(); }catch(_){ } };
+    if (window.dI18n && typeof dI18n.set==='function'){
+      var _set = dI18n.set.bind(dI18n8n);
+      dI18n.set = function(l){ _set(l); try{ wireCopy(); }catch(_){ } };
     }
   });
 })();
@@ -2889,7 +2889,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     window.__NUMINA_BTN_I18N__ = true;
     function applyBtnI18n(){
       try{
-        var t = (window.dI18n8n && window.dI18n8n.t) ? dI18n8n.t : (k)=>k;
+        var t = (window.dI18n && window.dI18n.t) ? dI18n8n.t : (k)=>k;
         document.querySelectorAll('button').forEach(function(b){
           var x = (b.textContent||'').trim();
           if (!x) return;
@@ -2903,9 +2903,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyBtnI18n, {once:true});
     else applyBtnI18n();
-    if (window.dI18n8n){
-      var _set = (window.dI18n8n && typeof dI18n8n.set==='function') ? dI18n8n.set.bind(dI18n8n) : null;
-      dI18n8n.set = function(l){ if (_set) _set(l); applyBtnI18n(); };
+    if (window.dI18n){
+      var _set = (window.dI18n && typeof dI18n.set==='function') ? dI18n.set.bind(dI18n8n) : null;
+      dI18n.set = function(l){ if (_set) _set(l); applyBtnI18n(); };
     }
   }
 })();
@@ -2919,7 +2919,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   window.__NUMINA_LOADERS__ = true;
 
   function t(key, fb){
-    try{ return (window.dI18n8n && dI18n8n.t) ? (dI18n8n.t(key)||fb||key) : (fb||key); }catch(_){ return fb||key; }
+    try{ return (window.dI18n && dI18n8n.t) ? (dI18n8n.t(key)||fb||key) : (fb||key); }catch(_){ return fb||key; }
   }
 
   // Helpers de UI para estados
@@ -2980,9 +2980,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
       var r = fn && fn();
       if (r && typeof r.then === 'function'){
         return r.catch(function(e){ console.warn('['+name+']', e); })
-                .finally(function(){ try{ if (window.dI18n8n && dI18n8n.apply) dI18n8n.apply(); }catch(_){} });
+                .finally(function(){ try{ if (window.dI18n && dI18n.apply) dI18n.apply(); }catch(_){} });
       }else{
-        try{ if (window.dI18n8n && dI18n8n.apply) dI18n8n.apply(); }catch(_){}
+        try{ if (window.dI18n && dI18n.apply) dI18n.apply(); }catch(_){}
         return r;
       }
     }catch(e){
@@ -3035,14 +3035,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 
   // Reaplicar traducciones al cambiar idioma
-  if (window.dI18n8n && typeof dI18n8n.set==='function' && !dI18n8n.__patchedForLoaders){
-    var _set = dI18n8n.set.bind(dI18n8n);
-    dI18n8n.set = function(lang){
+  if (window.dI18n && typeof dI18n.set==='function' && !dI18n.__patchedForLoaders){
+    var _set = dI18n.set.bind(dI18n8n);
+    dI18n.set = function(lang){
       var r = _set(lang);
-      try{ if (window.dI18n8n && dI18n8n.apply) dI18n8n.apply(); }catch(_){}
+      try{ if (window.dI18n && dI18n.apply) dI18n.apply(); }catch(_){}
       return r;
     };
-    dI18n8n.__patchedForLoaders = true;
+    dI18n.__patchedForLoaders = true;
   }
 
   // Señales de red (opcional futuro) – silencioso por ahora
@@ -3053,110 +3053,106 @@ document.addEventListener('DOMContentLoaded', ()=>{
 </script>
 
 
+
 <!-- Fase F: helpers de render centralizados (aditivo, sin cambiar diseño) -->
 <script>
 (function(){
   if (window.NUMINA_RENDER) return;
 
-  function t(k, fb){ try{ return (window.dI18n && dI18n.t) ? (dI18n.t(k)||fb||k) : (fb||k); } catch(_) { return fb||k; } }catch(_){return fb||k;} }catch(_){return fb||k;} }catch(_){return fb||k;} }
-  function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }[m])); }
-  function fmtMoney(v){ try{ return (new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'})).format(Number(v||0)); }catch(_){ return '$'+(v||0); } })).format(Number(v||0)); }catch(_){ return '$'+(v||0); } }
-  function fmtDate(iso){ try{ var d=new Date(iso); return isNaN(d)?(iso||''):d.toLocaleDateString(); }catch(_){ return iso||''; } }catch(_){ return iso||''; } }
+  function t(k, fb){ try { return (window.dI18n && dI18n.t) ? (dI18n.t(k) || fb || k) : (fb || k); } catch(_) { return fb || k; } }
+  function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }
+  function fmtMoney(v){ try{ return (new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'})).format(Number(v||0)); }catch(_){ return '$'+(v||0); } }
+  function fmtDate(iso){ try{ var d=new Date(iso); return isNaN(d)?(iso||''):d.toLocaleDateString(); }catch(_){ return iso||''; } }
   function statusLabel(v){
-    const x = String(v||'').toLowerCase();
+    var x = String(v||'').toLowerCase();
     if (x==='active' || x==='activo') return t('Activo','Activo');
     if (x==='inactive' || x==='inactivo') return t('Inactivo','Inactivo');
     if (x==='completed' || x==='complete' || x==='completado') return t('Completado','Completado');
     return t('Pendiente','Pendiente');
   }
 
-  const R = {
-    purchases(rows){
+  var R = {
+    purchases: function(rows){
       if (!Array.isArray(rows) || rows.length===0){
         return '<tr><td colspan="6" style="text-align:center;">'+t('No hay compras','No hay compras')+'</td></tr>';
       }
-      return rows.map(p => {
-        const product = esc(p.product_name || p.product || '');
-        const date = fmtDate(p.date || p.created_at || '');
-        const value = fmtMoney(p.amount || p.value || p.price || 0);
-        const st = statusLabel(p.status || p.state || 'pending');
-        return `
-          <tr>
-            <td>${product}</td>
-            <td>${date}</td>
-            <td>${value}</td>
-            <td><span class="status pending">${st}</span></td>
-            <td>
-              <button class="action-btn">${t('Detalles','Detalles')}</button>
-            </td>
-          </tr>
-        `;
+      return rows.map(function(p){
+        var product = esc(p.product_name || p.product || '');
+        var date = fmtDate(p.date || p.created_at || '');
+        var value = fmtMoney(p.amount || p.value || p.price || 0);
+        var st = statusLabel(p.status || p.state || 'pending');
+        return (
+          '<tr>' +
+            '<td>'+product+'</td>' +
+            '<td>'+date+'</td>' +
+            '<td>'+value+'</td>' +
+            '<td><span class="status pending">'+st+'</span></td>' +
+            '<td><button class="action-btn">'+t('Detalles','Detalles')+'</button></td>' +
+          '</tr>'
+        );
       }).join('');
     },
-    referrals(rows){
+    referrals: function(rows){
       if (!Array.isArray(rows) || rows.length===0){
         return '<tr><td colspan="6" style="text-align:center;">'+t('No hay referidos','No hay referidos')+'</td></tr>';
       }
-      return rows.map(r => {
-        const name = esc(r.name || r.username || r.email || '');
-        const date = fmtDate(r.date || r.created_at || '');
-        const purchases = esc(r.purchases || r.count || 0);
-        const st = (r.is_active ? t('Activo','Activo') : t('Inactivo','Inactivo'));
-        const comm = fmtMoney(r.commission || r.total_commission || 0);
-        return `
-          <tr>
-            <td>${name}</td>
-            <td>${date}</td>
-            <td>${purchases}</td>
-            <td>${st}</td>
-            <td>${comm}</td>
-          </tr>
-        `;
+      return rows.map(function(r){
+        var name = esc(r.name || r.username || r.email || '');
+        var date = fmtDate(r.date || r.created_at || '');
+        var purchases = esc(r.purchases || r.count || 0);
+        var st = (r.is_active ? t('Activo','Activo') : t('Inactivo','Inactivo'));
+        var comm = fmtMoney(r.commission || r.total_commission || 0);
+        return (
+          '<tr>' +
+            '<td>'+name+'</td>' +
+            '<td>'+date+'</td>' +
+            '<td>'+purchases+'</td>' +
+            '<td>'+st+'</td>' +
+            '<td>'+comm+'</td>' +
+          '</tr>'
+        );
       }).join('');
     }
   };
   window.NUMINA_RENDER = R;
 
-  // Integración mínima y segura: si existen funciones que llenan tablas, las adornamos.
   function wrapOnce(obj, key, wrapper){
     if (!obj || !obj[key] || obj[key].__wrappedF__) return;
-    const orig = obj[key];
+    var orig = obj[key];
     obj[key] = function(){ return wrapper(orig, this, arguments); };
     obj[key].__wrappedF__ = true;
   }
 
   wrapOnce(window, 'cargarDashboard', function(orig, ctx, args){
-    const ret = orig.apply(ctx, args);
+    var ret = orig.apply(ctx, args);
     if (ret && typeof ret.then==='function'){
       ret.then(function(res){
         try{
-          // Si las tablas existen y hay datos conocidos, render centralizado.
-          const tbP = document.getElementById('purchases-body');
+          var tbP = document.getElementById('purchases-body');
           if (tbP && (window.__dataCompras__ || (res && res.compras))){
-            const rows = window.__dataCompras__ || res.compras || [];
+            var rows = window.__dataCompras__ || (res && res.compras) || [];
             tbP.innerHTML = R.purchases(rows);
           }
-          const tbR = document.getElementById('referrals-body');
+          var tbR = document.getElementById('referrals-body');
           if (tbR && (window.__dataReferidos__ || (res && res.referidos))){
-            const rowsR = window.__dataReferidos__ || res.referidos || [];
+            var rowsR = window.__dataReferidos__ || (res && res.referidos) || [];
             tbR.innerHTML = R.referrals(rowsR);
           }
-          if (window.dI18n8n && dI18n8n.apply) dI18n8n.apply();
+          if (window.dI18n && dI18n.apply) dI18n.apply();
         }catch(_){}
       });
     }
     return ret;
   });
 
-  // Hooks opcionales si existen funciones específicas
   wrapOnce(window, 'cargarMisCompras', function(orig, ctx, args){
-    const ret = orig.apply(ctx, args);
+    var ret = orig.apply(ctx, args);
     if (ret && typeof ret.then==='function'){
       ret.then(function(rows){
         try{
-          const tb = document.getElementById('miscompras-body') || document.getElementById('purchases-body');
+          var tb = document.getElementById('miscompras-body') || document.getElementById('purchases-body');
           if (tb && Array.isArray(rows)) tb.innerHTML = R.purchases(rows);
-          if (window.dI18n8n && dI18n8n.apply) dI18n8n.apply();
+          if (window.dI18n && dI18n.apply) dI18n.apply();
         }catch(_){}
       });
     }
@@ -3164,13 +3160,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 
   wrapOnce(window, 'cargarReferidos', function(orig, ctx, args){
-    const ret = orig.apply(ctx, args);
+    var ret = orig.apply(ctx, args);
     if (ret && typeof ret.then==='function'){
       ret.then(function(rows){
         try{
-          const tb = document.getElementById('referrals-body');
+          var tb = document.getElementById('referrals-body');
           if (tb && Array.isArray(rows)) tb.innerHTML = R.referrals(rows);
-          if (window.dI18n8n && dI18n8n.apply) dI18n8n.apply();
+          if (window.dI18n && dI18n.apply) dI18n.apply();
         }catch(_){}
       });
     }
@@ -3181,10 +3177,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
 </script>
 
 
+
+
 <!-- Fase G: render de sorteos y cuenta + helper de fetch (aditivo, sin tocar diseño) -->
 <script>
 (function(){
-  // Helper de fetch centralizado (opcional de uso)
   if (!window.NUMINA_FETCH){
     window.NUMINA_FETCH = async function(url, opts){
       var ctrl = new AbortController();
@@ -3197,12 +3194,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
     };
   }
 
-  function t(k, fb){ try{ return (window.dI18n && dI18n.t) ? (dI18n.t(k)||fb||k) : (fb||k); } catch(_) { return fb||k; } }catch(_){return fb||k;} }catch(_){return fb||k;} }catch(_){return fb||k;} }
-  function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }[m]); }
-  function fmtMoney(v){ try{ return (new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'})).format(Number(v||0)); }catch(_){ return '$'+(v||0); } })).format(Number(v||0)); }catch(_){ return '$'+(v||0); } }
-  function fmtDate(iso){ try{ var d=new Date(iso); return isNaN(d)?(iso||''):d.toLocaleDateString(); }catch(_){ return iso||''; } }catch(_){ return iso||''; } }
+  function t(k, fb){ try { return (window.dI18n && dI18n.t) ? (dI18n.t(k) || fb || k) : (fb || k); } catch(_) { return fb || k; } }
+  function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }
+  function fmtMoney(v){ try{ return (new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'})).format(Number(v||0)); }catch(_){ return '$'+(v||0); } }
+  function fmtDate(iso){ try{ var d=new Date(iso); return isNaN(d)?(iso||''):d.toLocaleDateString(); }catch(_){ return iso||''; } }
 
-  // Extensión no destructiva del render existente
   (function extendRender(){
     var R = window.NUMINA_RENDER || (window.NUMINA_RENDER = {});
 
@@ -3229,10 +3225,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
 
     if (!R.account){
-      // account(info) devuelve objeto { setters: fn } para aplicar valores
       R.account = function(info){
         info = info || {};
-        // Mapeo flexible por posibles nombres de campos
         var map = {
           name: info.name || info.full_name || info.fullName || '',
           email: info.email || '',
@@ -3242,7 +3236,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
           city: info.city || info.ciudad || '',
           zip: info.zip || info.postal_code || info.codigo_postal || info.cp || ''
         };
-        // Lista de posibles ids donde setear (si no existen, se ignora)
         var ids = {
           name:   ['account-name','name-value','acc-name'],
           email:  ['account-email','email-value','acc-email'],
@@ -3265,7 +3258,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   })();
 
-  // Wrappers opcionales para integrar si existen funciones del proyecto
   (function integrateWrappers(){
     function wrapOnce(obj, key, wrapper){
       if (!obj || !obj[key] || obj[key].__wrappedG__) return;
@@ -3274,7 +3266,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
       obj[key].__wrappedG__ = true;
     }
 
-    // cargarSorteos -> pinta #raffles-body o #sorteos-body si existe
     wrapOnce(window, 'cargarSorteos', function(orig, ctx, args){
       var ret = orig.apply(ctx, args);
       if (ret && typeof ret.then==='function'){
@@ -3282,14 +3273,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
           try{
             var tb = document.getElementById('raffles-body') || document.getElementById('sorteos-body');
             if (tb && Array.isArray(rows)){ tb.innerHTML = window.NUMINA_RENDER.raffles(rows); }
-            if (window.dI18n8n && dI18n8n.apply) dI18n8n.apply();
+            if (window.dI18n && dI18n.apply) dI18n.apply();
           }catch(_){}
         });
       }
       return ret;
     });
 
-    // cargarCuenta -> aplica valores si hay ids compatibles
     wrapOnce(window, 'cargarCuenta', function(orig, ctx, args){
       var ret = orig.apply(ctx, args);
       if (ret && typeof ret.then==='function'){
@@ -3297,7 +3287,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
           try{
             if (info && window.NUMINA_RENDER && NUMINA_RENDER.account){
               NUMINA_RENDER.account(info);
-              if (window.dI18n8n && dI18n8n.apply) dI18n8n.apply();
+              if (window.dI18n && dI18n.apply) dI18n.apply();
             }
           }catch(_){}
         });
@@ -3307,6 +3297,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   })();
 })();
 </script>
+
 
 </body>
 </html>
