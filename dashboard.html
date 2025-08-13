@@ -3180,5 +3180,133 @@ document.addEventListener('DOMContentLoaded', ()=>{
 })();
 </script>
 
+
+<!-- Fase G: render de sorteos y cuenta + helper de fetch (aditivo, sin tocar diseño) -->
+<script>
+(function(){
+  // Helper de fetch centralizado (opcional de uso)
+  if (!window.NUMINA_FETCH){
+    window.NUMINA_FETCH = async function(url, opts){
+      var ctrl = new AbortController();
+      var to = setTimeout(function(){ try{ ctrl.abort(); }catch(_){ } }, (opts && opts.timeout) || 12000);
+      try{
+        var res = await fetch(url, Object.assign({}, opts||{}, { signal: ctrl.signal }));
+        if (!res.ok) throw new Error('HTTP '+res.status);
+        return await res.json();
+      }finally{ clearTimeout(to); }
+    };
+  }
+
+  function t(k, fb){ try{ return (window.dI18n && dI18n.t) ? (dI18n.t(k)||fb||k) : (fb||k);}catch(_){return fb||k;} }
+  function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]); }
+  function fmtMoney(v){ try{ return (new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'})).format(Number(v||0)); }catch(_){ return '$'+(v||0); } }
+  function fmtDate(iso){ try{ var d=new Date(iso); return isNaN(d)?(iso||''):d.toLocaleDateString(); }catch(_){ return iso||''; } }
+
+  // Extensión no destructiva del render existente
+  (function extendRender(){
+    var R = window.NUMINA_RENDER || (window.NUMINA_RENDER = {});
+
+    if (!R.raffles){
+      R.raffles = function(rows){
+        if (!Array.isArray(rows) || rows.length===0){
+          return '<tr><td colspan="6" style="text-align:center;">'+t('No hay sorteos','No hay sorteos')+'</td></tr>';
+        }
+        return rows.map(function(r){
+          var name = esc(r.name || r.title || '');
+          var date = fmtDate(r.date || r.draw_date || r.created_at || '');
+          var tickets = esc(r.tickets || r.user_tickets || r.count || 0);
+          var status = esc(r.status || r.state || '');
+          return (
+            '<tr>' +
+              '<td>'+ name +'</td>' +
+              '<td>'+ date +'</td>' +
+              '<td>'+ tickets +'</td>' +
+              '<td>'+ status +'</td>' +
+            '</tr>'
+          );
+        }).join('');
+      };
+    }
+
+    if (!R.account){
+      // account(info) devuelve objeto { setters: fn } para aplicar valores
+      R.account = function(info){
+        info = info || {};
+        // Mapeo flexible por posibles nombres de campos
+        var map = {
+          name: info.name || info.full_name || info.fullName || '',
+          email: info.email || '',
+          phone: info.phone || info.telefono || '',
+          address: info.address || info.direccion || '',
+          country: info.country || info.pais || '',
+          city: info.city || info.ciudad || '',
+          zip: info.zip || info.postal_code || info.codigo_postal || info.cp || ''
+        };
+        // Lista de posibles ids donde setear (si no existen, se ignora)
+        var ids = {
+          name:   ['account-name','name-value','acc-name'],
+          email:  ['account-email','email-value','acc-email'],
+          phone:  ['account-phone','phone-value','acc-phone'],
+          address:['account-address','address-value','acc-address'],
+          country:['account-country','country-value','acc-country'],
+          city:   ['account-city','city-value','acc-city'],
+          zip:    ['account-zip','zip-value','acc-zip','postal-value']
+        };
+        Object.keys(ids).forEach(function(key){
+          var val = map[key];
+          var list = ids[key];
+          for (var i=0;i<list.length;i++){
+            var el = document.getElementById(list[i]);
+            if (el){ el.textContent = String(val || ''); break; }
+          }
+        });
+        return map;
+      };
+    }
+  })();
+
+  // Wrappers opcionales para integrar si existen funciones del proyecto
+  (function integrateWrappers(){
+    function wrapOnce(obj, key, wrapper){
+      if (!obj || !obj[key] || obj[key].__wrappedG__) return;
+      var orig = obj[key];
+      obj[key] = function(){ return wrapper(orig, this, arguments); };
+      obj[key].__wrappedG__ = true;
+    }
+
+    // cargarSorteos -> pinta #raffles-body o #sorteos-body si existe
+    wrapOnce(window, 'cargarSorteos', function(orig, ctx, args){
+      var ret = orig.apply(ctx, args);
+      if (ret && typeof ret.then==='function'){
+        ret.then(function(rows){
+          try{
+            var tb = document.getElementById('raffles-body') || document.getElementById('sorteos-body');
+            if (tb && Array.isArray(rows)){ tb.innerHTML = window.NUMINA_RENDER.raffles(rows); }
+            if (window.dI18n && dI18n.apply) dI18n.apply();
+          }catch(_){}
+        });
+      }
+      return ret;
+    });
+
+    // cargarCuenta -> aplica valores si hay ids compatibles
+    wrapOnce(window, 'cargarCuenta', function(orig, ctx, args){
+      var ret = orig.apply(ctx, args);
+      if (ret && typeof ret.then==='function'){
+        ret.then(function(info){
+          try{
+            if (info && window.NUMINA_RENDER && NUMINA_RENDER.account){
+              NUMINA_RENDER.account(info);
+              if (window.dI18n && dI18n.apply) dI18n.apply();
+            }
+          }catch(_){}
+        });
+      }
+      return ret;
+    });
+  })();
+})();
+</script>
+
 </body>
 </html>
