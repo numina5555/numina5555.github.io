@@ -534,6 +534,22 @@
 
 </head>
 <body>
+<script>
+(function(){
+  // Helper to show a visible auth banner and avoid hard redirects that "freezes" flow
+  function showAuthBanner(msg){
+    try{
+      var banner = document.getElementById('welcome-banner');
+      if (!banner) return;
+      banner.innerHTML = '<div class="error-banner"><i class="fas fa-exclamation-circle"></i><span>'
+        + (msg || 'No hay sesión activa. Inicia sesión para continuar.') +
+        '</span><button onclick="window.location.href=\'/login.html\'">Ir a Iniciar Sesión</button></div>';
+    }catch(e){}
+  }
+  window.__showAuthBanner = showAuthBanner;
+})();
+</script>
+
 <header class="dashboard-header"><div style="flex-grow:1; text-align:center;"><div class="logo">NUMINA</div></div><div class="user-menu">
 
 <div class="lang-dropdown" id="langDropdown">
@@ -717,7 +733,7 @@
 
 <!-- Configuración: MOVIDA FUERA DE #main-dashboard -->
 <section class="section-content" id="section-configuracion" style="display:none;">
-  <h2 class="section-title"><i class="fas fa-cog"></i><span>Configuración de la Cuenta</span></h2>
+  <h2 class="section-title"><i class="fas fa-cog"></i><span id="config-account-title">Configuración de la Cuenta</span></h2>
 
   <div class="settings-card">
     <h3><i class="fas fa-id-card"></i> Datos Personales</h3>
@@ -889,7 +905,7 @@
       // Desde la verificación de sesión hasta los event listeners
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) {
-        window.location.href = '/login.html';
+        if (window.__showAuthBanner) { window.__showAuthBanner('No hay sesión activa.'); } else { try{ window.location.href='/login.html'; }catch(e){} }
         return;
       }
 
@@ -984,7 +1000,7 @@ document.getElementById('user-postal').textContent = userData.postal_code || 'No
   document.getElementById('logout-btn')?.addEventListener('click', async () => {
     const supabase = getSupabase();
     await getSupabase().auth.signOut();
-    window.location.href = '/login.html';
+    if (window.__showAuthBanner) { window.__showAuthBanner('No hay sesión activa.'); } else { try{ window.location.href='/login.html'; }catch(e){} }
   });
 </script>
 <script>
@@ -1107,38 +1123,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const menuItems = document.querySelectorAll('.menu-item[data-target]');
-  const sections = document.querySelectorAll('.section-content');
-
-  menuItems.forEach(item => {
-    item.addEventListener('click', () => {
-      const target = item.getAttribute('data-target');
-      sections.forEach(section => {
-        section.style.display = section.id === 'section-' + target ? 'block' : 'none';
-      });
-      menuItems.forEach(i => i.classList.remove('active'));
-      item.classList.add('active');
-    });
-  });
-});
 </script>
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const menuItems = document.querySelectorAll(".menu-item[data-target]");
-  const sections = document.querySelectorAll(".section-content");
-
-  menuItems.forEach(item => {
-    item.addEventListener("click", () => {
-      const target = item.getAttribute("data-target");
-      sections.forEach(section => {
-        section.style.display = section.id === 'section-' + target ? 'block' : 'none';
-      });
-      menuItems.forEach(i => i.classList.remove("active"));
-      item.classList.add("active");
-    });
-  });
-});
 </script>
 
 
@@ -1147,65 +1133,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const menuItems = document.querySelectorAll(".menu-item[data-target]");
   const mainDashboard = document.getElementById("main-dashboard");
 
-  async function cargarDashboard() {
-    console.log("[cargarDashboard] Ejecutando");
-
-    document.getElementById('welcome-title').textContent = dI18n.t('labels.loading');
-    document.getElementById('referral-code').textContent = '---';
-    document.getElementById('balance-value').textContent = '$---';
-    document.getElementById('purchases-value').textContent = '--';
-    document.getElementById('referrals-value').textContent = '--';
-    document.getElementById('tickets-value').textContent = '--';
-    document.getElementById('full-name').textContent = 'Cargando...';
-    document.getElementById('user-email').textContent = 'Cargando...';
-    document.getElementById('user-phone').textContent = 'Cargando...';
-    document.getElementById('user-address').textContent = 'Cargando...';
-    document.getElementById('purchases-body').innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando compras...</td></tr>';
-    document.getElementById('referrals-body').innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando referidos...</td></tr>';
-
-    const supabase = getSupabase();
-
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error || !user) return;
-
-    const { data: userData } = await supabase
-      .from('users')
-      .select('*, purchases(*), referrals(*)')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    if (!userData) return;
-
-    document.getElementById('user-avatar').textContent = userData.full_name?.charAt(0).toUpperCase() || 'U';
-    window.__lastUserName = (userData.full_name || userData.email);
-    document.getElementById('welcome-title').textContent = dI18n.t('labels.welcome') + ' ' + window.__lastUserName;
-    document.getElementById('referral-code').textContent = userData.referral_code || '---';
-    document.getElementById('balance-value').textContent = '$' + (userData.balance?.toFixed(2) || '0.00');
-    document.getElementById('purchases-value').textContent = userData.active_purchases || '0';
-    document.getElementById('referrals-value').textContent = userData.referrals_count || '0';
-    document.getElementById('tickets-value').textContent = userData.tickets_count || '0';
-    document.getElementById('full-name').textContent = userData.full_name || 'No definido';
-    document.getElementById('user-email').textContent = userData.email || 'No definido';
-    document.getElementById('user-phone').textContent = userData.phone || 'No definido';
-    document.getElementById('user-address').textContent = userData.address || 'No definido';
-
-    const purchasesBody = document.getElementById('purchases-body');
-    if (userData.purchases?.length > 0) {
-      purchasesBody.innerHTML = '';
-      userData.purchases.forEach(p => {
-        const row = '<tr>' +
-          '<td>' + p.product_name + '</td>' +
-          '<td>' + new Date(p.created_at).toLocaleDateString() + '</td>' +
-          '<td>$' + (p.value?.toFixed(2) || '0.00') + '</td>' +
-          '<td><span class="status ' + p.status + '">' + p.status + '</span></td>' +
-          '<td><button class="action-btn">Detalles</button></td>' +
-          '</tr>';
-        purchasesBody.innerHTML += row;
-      });
-    } else {
-      purchasesBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
-    }
-
+  
     const referralsBody = document.getElementById('referrals-body');
     if (userData.referrals?.length > 0) {
       referralsBody.innerHTML = '';
@@ -1264,7 +1192,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const supabase = getSupabase();
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError || !user) {
-          window.location.href = '/login.html';
+          if (window.__showAuthBanner) { window.__showAuthBanner('No hay sesión activa.'); } else { try{ window.location.href='/login.html'; }catch(e){} }
           return;
         }
         // Traer solo las 7 compras más recientes del usuario
@@ -1491,7 +1419,7 @@ overlay.classList.add("show");
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         alert('Inicia sesión para continuar con la compra.');
-        window.location.href = '/login.html';
+        if (window.__showAuthBanner) { window.__showAuthBanner('No hay sesión activa.'); } else { try{ window.location.href='/login.html'; }catch(e){} }
         return;
       }
       // 2) obtener datos del producto
@@ -1611,7 +1539,7 @@ overlay.classList.add("show");
     try{
       const supabase = getSupabase();
       const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) { window.location.href = '/login.html'; return; }
+      if (authError || !user) { if (window.__showAuthBanner) { window.__showAuthBanner('No hay sesión activa.'); } else { try{ window.location.href='/login.html'; }catch(e){} } return; }
 
       
 // Tickets activos tomados desde tickets_ledger (saldo = SUM(count))
