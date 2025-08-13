@@ -735,8 +735,8 @@
 <h3><i class="fas fa-shield-alt"></i> Seguridad</h3>
 <form id="config-pass-form">
 <div class="form-grid">
-<div class="form-row"><label for="cfg-pass1"><span data-i18n="accountForm.labels.newPassword"></span></label><input id="cfg-pass1" placeholder="********" type="password"/></div>
-<div class="form-row"><label for="cfg-pass2"><span data-i18n="accountForm.labels.repeatPassword"></span></label><input id="cfg-pass2" placeholder="********" type="password"/></div>
+<div class="form-row"><label for="cfg-pass1"><span data-i18n="accountForm.labels.newPassword">Nueva contraseña</span></label><input id="cfg-pass1" placeholder="********" type="password"/></div>
+<div class="form-row"><label for="cfg-pass2"><span data-i18n="accountForm.labels.repeatPassword">Repetir contraseña</span></label><input id="cfg-pass2" placeholder="********" type="password"/></div>
 </div>
 <div class="form-actions"><button class="btn" type="submit">Actualizar contraseña</button></div>
 </form>
@@ -1241,6 +1241,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   mainDashboard.style.display = "block";
   cargarDashboard();
+  try { if (window.dI18n && typeof dI18n.apply==="function") dI18n.apply(); } catch(e) {}
 });
 </script>
 <script>
@@ -1302,7 +1303,7 @@ document.addEventListener("DOMContentLoaded", () => {
     menuConfig.addEventListener("click", () => {
       if (mainDashboard) mainDashboard.style.display = "none";
       if (sectionCompras) sectionCompras.style.display = "none";
-      if (sectionConfig) sectionConfig.style.display = "block";
+      if (sectionConfig) sectionConfig.style.display = "block"; try { if (window.dI18n && typeof dI18n.apply==="function") dI18n.apply(); } catch(e) {}
       try { prefillConfigForms(window._userData || {}); } catch(e) {}
     });
   }
