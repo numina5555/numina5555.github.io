@@ -2625,5 +2625,52 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 })();
 </script>
+
+<script>
+/* === Account info empty-value i18n (No definido -> Not defined/Não definido) === */
+(function(){
+  function getStore(k, fb){ try{ var v=localStorage.getItem(k); return v==null?fb:v; }catch(_){ return fb; } }
+  function lang(){ var d=window.dI18n||{}; return d.current||d.lang||getStore('dash_lang', getStore('lang','es'))||'es'; }
+  var ND = { es: "No definido", en: "Not defined", pt: "Não definido" };
+  var ND_SET = new Set(["No definido","Not defined","Não definido"]);
+
+  function applyND(){
+    var L = ND[lang()] || ND.es;
+    var ids = ["full-name","user-email","user-phone","user-address","user-country","user-city","user-postal"];
+    ids.forEach(function(id){
+      var el = document.getElementById(id);
+      if (!el) return;
+      var txt = (el.textContent||"").trim();
+      if (!txt || ND_SET.has(txt)) {
+        // If empty or showing a known "not defined", localize it
+        el.textContent = L;
+      }
+    });
+  }
+
+  // Burst a few times to catch the assignment that sets 'No definido'
+  var t=null, runs=0;
+  function burst(){
+    runs=0;
+    function step(){ applyND(); runs++; if (runs<5) t=setTimeout(step, runs<3?0:80); else t=null; }
+    if (!t) step();
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", burst, {once:true});
+  else burst();
+
+  try {
+    var mo = new MutationObserver(function(m){ for (var i=0;i<m.length;i++){ if (m[i].type==="childList"||m[i].type==="characterData"){ burst(); break; } } });
+    mo.observe(document.getElementById("account-info-grid") || document.body, { subtree:true, childList:true, characterData:true });
+  } catch(_){}
+
+  if (window.dI18n) {
+    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
+    dI18n.apply = function(){ if (_apply) _apply(); burst(); };
+    var _set = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
+    dI18n.set = function(l){ if (_set) _set(l); burst(); };
+  }
+})();
+</script>
 </body>
 </html>
