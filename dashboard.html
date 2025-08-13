@@ -1,6 +1,21 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
+<!-- i18n shim: evita ReferenceError si dI18n aún no fue cargado -->
+<script>
+(function(){
+  if (!window.dI18n) {
+    window.dI18n = {
+      lang: 'es',
+      t: function(k){ return k; },
+      set: function(l){ this.lang = l; },
+      apply: function(){ /* noop: se reemplaza cuando i18n real carga */ }
+    };
+  }
+})();
+</script>
+
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <title>NUMINA | Dashboard</title>
