@@ -536,37 +536,43 @@
 }
 </style>
 
-<!-- NUMINA helpers injected: setText + status i18n -->
-<script id="nm-i18n-helpers-head">
+<!-- Global helpers: setText (with i18n placeholder) + status i18n -->
+<script id="nm-global-helpers">
 (function(){
-  // Minimal safe i18n accessors
-  function _lang(){
+  function lang2(){
     try { return (localStorage.getItem('lang') || (navigator.language||'es')).slice(0,2).toLowerCase(); }
     catch(_) { return 'es'; }
   }
-  function _t(key, fb){
+  function i18nText(key, fb){
     try { return (window.dI18n && typeof dI18n.t==='function') ? (dI18n.t(key) || fb || key) : (fb || key); }
     catch(_) { return fb || key; }
   }
-  function _undef(){
-    const L = _lang();
-    // Try dictionary key if exists
-    try { if (window.dI18n && typeof dI18n.t==='function') { const v = dI18n.t('placeholders.undefined'); if (v && v !== 'placeholders.undefined') return v; } } catch(_){}
+  function undefText(){
+    // try dictionary key first
+    try {
+      if (window.dI18n && typeof dI18n.t==='function'){
+        const v = dI18n.t('placeholders.undefined');
+        if (v && v !== 'placeholders.undefined') return v;
+      }
+    } catch(_){}
+    const L = lang2();
     return L==='es' ? 'No definido' : (L==='pt' ? 'Não definido' : 'Undefined');
   }
-  // Expose a global setText used across the file
-  if (!window.setText) {
-    window.setText = function setText(id, val){
-      var el = document.getElementById(id);
-      if (!el) return;
-      var v = (val === undefined || val === null || String(val).trim()==='') ? _undef() : val;
-      el.textContent = v;
-    };
-  }
+  // Expose globally
+  window.setText = function setText(id, val){
+    const el = document.getElementById(id);
+    if (!el) return;
+    const v = (val === undefined || val === null || String(val).trim()==='') ? undefText() : val;
+    el.textContent = v;
+  };
 
   // Status helpers
-  if (!window._normalizeStatus) window._normalizeStatus = function(x){
-    var s = String(x ?? '').toLowerCase();
+  const STATUS_KEYS = {
+    active:'status.active', pending:'status.pending', completed:'status.completed',
+    cancelled:'status.cancelled', inactive:'status.inactive', paid:'status.paid', disputed:'status.disputed'
+  };
+  function normalizeStatus(x){
+    const s = String(x ?? '').toLowerCase();
     if (s==='true' || s==='activo' || s==='active') return 'active';
     if (s==='completed' || s==='completado' || s==='complete') return 'completed';
     if (s==='cancelled' || s==='canceled' || s==='cancelado') return 'cancelled';
@@ -574,48 +580,24 @@
     if (s==='paid' || s==='pagado') return 'paid';
     if (s==='disputed' || s==='disputado' || s==='disputa') return 'disputed';
     return 'pending';
-  };
-  if (!window._STATUS_KEYS) window._STATUS_KEYS = {
-    active: 'status.active',
-    pending: 'status.pending',
-    completed: 'status.completed',
-    cancelled: 'status.cancelled',
-    inactive: 'status.inactive',
-    paid: 'status.paid',
-    disputed: 'status.disputed'
-  };
-  if (!window.statusBadge) window.statusBadge = function(state){
-    var key = window._normalizeStatus(state);
-    var label = _t(window._STATUS_KEYS[key], key);
+  }
+  window.statusBadge = function(state){
+    const key = normalizeStatus(state);
+    const label = i18nText(STATUS_KEYS[key], key);
     return '<span class="status '+key+'">'+label+'</span>';
   };
-  if (!window.updateStatusBadges) window.updateStatusBadges = function(){
-    document.querySelectorAll('.status').forEach(function(el){
-      var key = ['completed','active','cancelled','inactive','paid','disputed'].find(function(k){return el.classList.contains(k);}) || 'pending';
-      el.textContent = _t(window._STATUS_KEYS[key], key);
+  window.updateStatusBadges = function(){
+    document.querySelectorAll('.status').forEach(el => {
+      const key = ['completed','active','cancelled','inactive','paid','disputed']
+        .find(k => el.classList.contains(k)) || 'pending';
+      el.textContent = i18nText(STATUS_KEYS[key], key);
     });
   };
-  if (!window.refreshPlaceholders) window.refreshPlaceholders = function(){
-    // If you have specific placeholders in elements, re-assign here if needed.
-    // No-op by default.
-  };
-
-  // Apply stored language at load
-  document.addEventListener('DOMContentLoaded', function(){
-    try {
-      var saved = localStorage.getItem('lang');
-      if (saved && window.dI18n && typeof dI18n.set==='function') dI18n.set(saved);
-      if (window.dI18n && typeof dI18n.apply==='function') dI18n.apply();
-    } catch(_){}
-  });
-
-  // Live re-translate when language changes
-  window.addEventListener('storage', function(e){
-    if (e.key === 'lang') {
+  window.addEventListener('storage', (e)=>{
+    if (e.key === 'lang'){
       try { if (window.dI18n && typeof dI18n.set==='function') dI18n.set(localStorage.getItem('lang')); } catch(_){}
       try { if (window.dI18n && typeof dI18n.apply==='function') dI18n.apply(); } catch(_){}
       window.updateStatusBadges();
-      window.refreshPlaceholders();
     }
   });
 })();
@@ -988,11 +970,7 @@
       document.getElementById('purchases-value').textContent = userData.active_purchases || '0';
       document.getElementById('referrals-value').textContent = (typeof userData.referrals_count !== 'undefined' ? userData.referrals_count : (userData.referrals?.length || '0'));
       document.getElementById('tickets-value').textContent = userData.tickets_count || '0';
-      setText('full-name', userData.full_name);
-      setText('user-email', userData.email);
-      setText('user-phone', userData.phone);
-      setText('user-address', userData.address);
-setText('user-country', userData.country);
+      setText('user-country', userData.country);
 setText('user-city', userData.city);
 setText('user-postal', userData.postal_code);
 
@@ -1031,7 +1009,7 @@ const statusLabel = (s) => {
               <td>${p.product_name}</td>
               <td>${new Date(p.created_at).toLocaleDateString()}</td>
               <td>${(p.value ?? 0).toFixed(2)}</td>
-              <td><span class="status ${p.status}">${statusLabel(p.status)}</span></td>
+              <td>${statusBadge(p.status)}</td>
               <td><button class="action-btn">Detalles</button></td>
             </tr>
           `).join('')
@@ -1045,7 +1023,7 @@ const statusLabel = (s) => {
               <td>${r.referred_email}</td>
               <td>${new Date(r.created_at).toLocaleDateString()}</td>
               <td>${r.purchases_count || '0'}</td>
-              <td><span class="status ${r.is_active ? 'active' : 'inactive'}">${r.is_active ? 'Activo' : 'Inactivo'}</span></td>
+              <td>${statusBadge(r.is_active ? 'active' : 'inactive')}</td>
               <td>${(r.commission ?? 0).toFixed(2)}</td>
             </tr>
           `).join('')
@@ -1252,10 +1230,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('purchases-value').textContent = '--';
     document.getElementById('referrals-value').textContent = '--';
     document.getElementById('tickets-value').textContent = '--';
-// removed early setText; will fill after userData is loaded
-// removed early setText; will fill after userData is loaded
-// removed early setText; will fill after userData is loaded
-// removed early setText; will fill after userData is loaded
+    setText('full-name', userData.full_name);
+    setText('user-email', userData.email);
+    setText('user-phone', userData.phone);
+    setText('user-address', userData.address);
     document.getElementById('purchases-body').innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando compras...</td></tr>';
     document.getElementById('referrals-body').innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando referidos...</td></tr>';
 
@@ -1310,8 +1288,7 @@ document.addEventListener("DOMContentLoaded", () => {
           '<td>' + r.referred_email + '</td>' +
           '<td>' + new Date(r.created_at).toLocaleDateString() + '</td>' +
           '<td>' + (r.purchases_count || '0') + '</td>' +
-          '<td><span class="status ' + (r.is_active ? 'active' : 'inactive') + '">' +
-          ((window.dI18n && window.dI18n.t) ? (r.is_active ? dI18n.t('Activo') : dI18n.t('Inactivo')) : (r.is_active ? 'Activo' : 'Inactivo')) + '</span></td>' +
+          '<td>'+statusBadge(r.is_active ? "active" : "inactive")+'</td>' +
           '<td>$' + (r.commission?.toFixed(2) || '0.00') + '</td>' +
           '</tr>';
         referralsBody.innerHTML += row;
@@ -1383,7 +1360,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <td>${p.product_name}</td>
             <td>${new Date(p.created_at).toLocaleDateString()}</td>
             <td>${(p.value ?? 0).toFixed(2)}</td>
-            <td><span class="status ${p.status}">${statusLabel(p.status)}</span></td>
+            <td>${statusBadge(p.status)}</td>
             <td><button class="action-btn" disabled>${dI18n.t('Hacer reclamo')}</button></td>
           </tr>
         `).join('');
@@ -3794,44 +3771,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const mo2 = new MutationObserver(() => applyTexts());
       mo2.observe(cur, { characterData: true, subtree: true, childList: true });
     }
-  });
-})();
-</script>
-
-
-<!-- NUMINA helpers injected: observe renders and fix status labels/i18n dynamically -->
-<script id="nm-i18n-helpers-tail">
-(function(){
-  function patchTables(){
-    // Replace hard-coded status cells with i18n-safe ones if needed
-    document.querySelectorAll('#purchases-body tr, #miscompras-body tr').forEach(function(tr){
-      var td = tr.querySelector('td:nth-child(4) .status'); // status column
-      if (!td) return;
-      var cls = td.className; // e.g., "status pending"
-      var key = (cls.match(/\b(active|pending|completed|cancelled|inactive|paid|disputed)\b/)||[])[1] || 'pending';
-      td.textContent = (window._STATUS_KEYS && window._STATUS_KEYS[key]) ? ( (window.dI18n && dI18n.t) ? dI18n.t(window._STATUS_KEYS[key]) : key ) : key;
-    });
-    document.querySelectorAll('#referrals-body tr').forEach(function(tr){
-      var td = tr.querySelector('td:nth-child(4) .status');
-      if (!td) return;
-      var isActive = td.classList.contains('active');
-      var key = isActive ? 'active' : (td.classList.contains('inactive') ? 'inactive' : 'pending');
-      td.textContent = (window._STATUS_KEYS && window._STATUS_KEYS[key]) ? ( (window.dI18n && dI18n.t) ? dI18n.t(window._STATUS_KEYS[key]) : key ) : key;
-    });
-  }
-  function observe(){
-    var targets = ['#purchases-body', '#referrals-body', '#miscompras-body'];
-    targets.forEach(function(sel){
-      var el = document.querySelector(sel);
-      if (!el) return;
-      var mo = new MutationObserver(function(){ patchTables(); });
-      mo.observe(el, { childList: true, subtree: true });
-    });
-  }
-  document.addEventListener('DOMContentLoaded', function(){
-    observe();
-    // Also patch once after first paint
-    setTimeout(function(){ patchTables(); window.updateStatusBadges && window.updateStatusBadges(); }, 0);
   });
 })();
 </script>
