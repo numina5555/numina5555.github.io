@@ -885,7 +885,7 @@
 
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('*, purchases(*), referrals(*)')
+        .select('*, purchases(*), referrals:referrals!referrer_id(*)')
         .eq('id', user.id)
         .maybeSingle();
 
@@ -900,7 +900,7 @@
         userData.referral_code || '---';
       document.getElementById('balance-value').textContent = `${userData.balance?.toFixed(2) || '0.00'}`;
       document.getElementById('purchases-value').textContent = userData.active_purchases || '0';
-      document.getElementById('referrals-value').textContent = userData.referrals_count || '0';
+      document.getElementById('referrals-value').textContent = (typeof userData.referrals_count !== 'undefined' ? userData.referrals_count : (userData.referrals?.length || '0'));
       document.getElementById('tickets-value').textContent = userData.tickets_count || '0';
       document.getElementById('full-name').textContent = userData.full_name || dI18n.t('placeholders.undefined');
       document.getElementById('user-email').textContent = userData.email || dI18n.t('placeholders.undefined');
@@ -1169,7 +1169,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const { data: userData } = await supabase
       .from('users')
-      .select('*, purchases(*), referrals(*)')
+      .select('*, purchases(*), referrals:referrals!referrer_id(*)')
       .eq('id', user.id)
       .maybeSingle();
 
@@ -1181,7 +1181,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('referral-code').textContent = userData.referral_code || '---';
     document.getElementById('balance-value').textContent = '$' + (userData.balance?.toFixed(2) || '0.00');
     document.getElementById('purchases-value').textContent = userData.active_purchases || '0';
-    document.getElementById('referrals-value').textContent = userData.referrals_count || '0';
+    document.getElementById('referrals-value').textContent = (typeof userData.referrals_count !== 'undefined' ? userData.referrals_count : (userData.referrals?.length || '0'));
     document.getElementById('tickets-value').textContent = userData.tickets_count || '0';
     document.getElementById('full-name').textContent = userData.full_name || dI18n.t('placeholders.undefined');
     document.getElementById('user-email').textContent = userData.email || dI18n.t('placeholders.undefined');
