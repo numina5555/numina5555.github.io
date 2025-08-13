@@ -2719,133 +2719,114 @@ document.addEventListener('DOMContentLoaded', ()=>{
 </script>
 
 
-<!-- Fase B: menú unificado + copiar referido (additive, idempotente) -->
+
+<!-- Fase B: menú unificado + copiar referido (reemplazo limpio) -->
 <script>
 (function(){
-  if (!window.__NUMINA_CORE__) { window.__NUMINA_CORE__ = true; } // por las dudas
-  // ===== Menú unificado =====
-  if (!window.__NUMINA_MENU__) {
-    window.__NUMINA_MENU__ = true;
-    function $(sel, root){ return (root||document).querySelector(sel); }
-    function $all(sel, root){ return Array.from((root||document).querySelectorAll(sel)); }
+  if (window.__NUMINA_MENU_V2__) return;
+  window.__NUMINA_MENU_V2__ = true;
 
-    function showSection(target){
-      try{
-        const sections = $all('.section-content');
-        sections.forEach(s => {
-          const id = s.getAttribute('id') || s.dataset.section || '';
-          s.style.display = (id === target) ? '' : 'none';
-        });
-        // activar item
-        $all('.menu-item').forEach(mi => {
-          if (mi.dataset && mi.dataset.target === target) mi.classList.add('active');
-          else mi.classList.remove('active');
-        });
-      }catch(_){}
-    }
+  function $(sel, root){ return (root||document).querySelector(sel); }
+  function $all(sel, root){ return Array.from((root||document).querySelectorAll(sel)); }
 
-    function postShow(target){
-      try{
-        if (window.dI18n && typeof dI18n.apply === 'function') dI18n.apply();
-      }catch(_){}
-      if (target && target.toLowerCase().includes('mis')) {
-        ensureMisComprasFresh();
-      }
-    }
-
-    function ensureMisComprasFresh(){
-      try{
-        var tb = document.getElementById('miscompras-body') || document.querySelector('#miscompras-table tbody');
-        if (!tb) return;
-        var txt = (tb.textContent || '').trim().toLowerCase();
-        // Si está vacío o en 'cargando' intentamos refrescar
-        if (!txt || txt.includes('cargando') || txt.includes('no hay compras')){
-          if (typeof window.cargarMisCompras === 'function') { window.cargarMisCompras(); return; }
-          if (typeof window.cargarDashboard === 'function') { window.cargarDashboard(); return; }
-          // Fallback: si hay compras en la tabla del dashboard, no hacemos nada (ya deberían verse en su sección cuando el backend complete)
-        }
-      }catch(_){}
-    }
-
-    document.addEventListener('DOMContentLoaded', function(){
-      // Marcar sección activa desde el primer item si no hay una visible
-      var active = document.querySelector('.menu-item.active');
-      if (!active){
-        var first = document.querySelector('.menu-item[data-target]');
-        if (first) { first.classList.add('active'); showSection(first.dataset.target); }
-      }
-      // Clicks de menú (idempotente; ignoramos si ya está activo)
-      $all('.menu-item[data-target]').forEach(function(item){
-        item.addEventListener('click', function(ev){
-          try{
-            if (item.classList.contains('active')) return;
-            var target = item.dataset.target;
-            if (!target) return;
-            showSection(target);
-            postShow(target);
-          }catch(_){}
-        }, { passive:true });
+  function showSection(target){
+    try{
+      $all('.section-content').forEach(function(s){
+        var id = s.getAttribute('id') || (s.dataset ? s.dataset.section : '') || '';
+        s.style.display = (id === target) ? '' : 'none';
       });
-    }, { once:true });
+      $all('.menu-item').forEach(function(mi){
+        if (mi.dataset && mi.dataset.target === target) mi.classList.add('active');
+        else mi.classList.remove('active');
+      });
+    }catch(_){}
   }
 
-  // ===== Botón Copiar de referido =====
-  if (!window.__NUMINA_COPY__) {
-    window.__NUMINA_COPY__ = true;
-    function $(sel, root){ return (root||document).querySelector(sel); }
-    function $all(sel, root){ return Array.from((root||document).querySelectorAll(sel)); }
+  function postShow(target){
+    try{
+      if (window.dI18n && typeof dI18n.apply === 'function') dI18n.apply();
+    }catch(_){}
+    if (target && /mis/i.test(target)) ensureMisComprasFresh();
+  }
 
-    function t(key, fb){
-      try{ return (window.dI18n && window.dI18n.t) ? (window.dI18n && window.dI18n.t ? dI18n.t(key)||fb||key) : (fb||key); }catch(_){ return fb||key; }
-    }
+  function ensureMisComprasFresh(){
+    try{
+      var tb = document.getElementById('miscompras-body') || document.querySelector('#miscompras-table tbody');
+      if (!tb) return;
+      var txt = (tb.textContent || '').trim().toLowerCase();
+      if (!txt || txt.includes('cargando') || txt.includes('no hay compras')){
+        if (typeof window.cargarMisCompras === 'function') { window.cargarMisCompras(); return; }
+        if (typeof window.cargarDashboard === 'function') { window.cargarDashboard(); return; }
+      }
+    }catch(_){}
+  }
 
-    function findCopyButton(){
-      // Buscar botón cercano al código de referido
+  function findCopyButton(){
+    try{
       var code = document.getElementById('referral-code');
       if (code){
         var root = code.closest('.referral') || code.parentElement || document;
         var btn = root.querySelector('button') || document.querySelector('button.copy') || document.querySelector('button');
-        return btn;
+        if (btn) return btn;
       }
-      // fallback: botón cuyo texto sea Copiar/Copy
       var labels = ['Copiar','Copy','Copiar ',' Copiar'];
       var candidates = $all('button');
       for (var i=0;i<candidates.length;i++){
         var txt = (candidates[i].textContent||'').trim();
         if (labels.indexOf(txt) !== -1) return candidates[i];
       }
-      return null;
-    }
-
-    function wireCopy(){
-      var btn = findCopyButton();
-      var code = document.getElementById('referral-code');
-      if (!btn || !code) return;
-      if (btn.__wired) return; // idempotente
-      btn.__wired = true;
-      btn.addEventListener('click', async function(){
-        try{
-          var text = (code.textContent||'').trim();
-          if (!text) return;
-          await (navigator.clipboard && navigator.clipboard.writeText) ? navigator.clipboard.writeText(text) : Promise.resolve();
-          var prev = btn.textContent;
-          btn.textContent = t('copied', '¡Copiado!');
-          setTimeout(function(){ btn.textContent = t('copy', 'Copiar'); }, 1500);
-        }catch(_){}
-      });
-    }
-
-    document.addEventListener('DOMContentLoaded', function(){
-      wireCopy();
-      // Re-aplicar al cambiar idioma
-      if (window.dI18n){
-        var _set = (window.dI18n && typeof dI18n.set==='function') ? dI18n.set.bind(dI18n) : null;
-        dI18n.set = function(l){ if (_set) _set(l); try{ wireCopy(); }catch(_){} };
-      }
-    }, { once:true });
+    }catch(_){}
+    return null;
   }
+
+  function t(key, fb){
+    try{ return (window.dI18n && dI18n.t) ? (dI18n.t(key)||fb||key) : (fb||key); }catch(_){ return fb||key; }
+  }
+
+  function wireCopy(){
+    var btn = findCopyButton();
+    var code = document.getElementById('referral-code');
+    if (!btn || !code) return;
+    if (btn.__wired) return;
+    btn.__wired = true;
+    btn.addEventListener('click', function(){
+      try{
+        var text = (code.textContent||'').trim();
+        if (!text) return;
+        if (navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(text);
+        }
+        var prev = btn.textContent;
+        btn.textContent = t('copied', '¡Copiado!');
+        setTimeout(function(){ btn.textContent = t('copy', 'Copiar'); }, 1200);
+      }catch(_){}
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    var active = document.querySelector('.menu-item.active');
+    if (!active){
+      var first = document.querySelector('.menu-item[data-target]');
+      if (first) { first.classList.add('active'); showSection(first.dataset.target); }
+    }
+    $all('.menu-item[data-target]').forEach(function(item){
+      item.addEventListener('click', function(){
+        if (item.classList.contains('active')) return;
+        var target = item.dataset.target;
+        if (!target) return;
+        showSection(target);
+        postShow(target);
+      }, { passive:true });
+    });
+    wireCopy();
+    if (window.dI18n && typeof dI18n.set==='function'){
+      var _set = dI18n.set.bind(dI18n);
+      dI18n.set = function(l){ _set(l); try{ wireCopy(); }catch(_){ } };
+    }
+  });
 })();
 </script>
+
 
 
 <!-- Fase C: robust loaders + shim global statusLabel -->
