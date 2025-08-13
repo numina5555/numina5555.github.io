@@ -717,7 +717,7 @@
 <section class="section-content" id="section-configuracion" style="display:none;">
 <h2 class="section-title"><i class="fas fa-cog"></i><span data-i18n="account.settings.title">Configuración de la Cuenta</span></h2>
 <div class="settings-card">
-<h3><i class="fas fa-id-card"></i> Datos Personales</h3>
+<h3><i class="fas fa-id-card"></i> <span data-i18n="account.settings.personalData">Datos Personales</span></h3>
 <form id="config-datos-form">
 <div class="form-grid">
 <!-- Nota: El campo de correo electrónico se eliminó de este formulario porque se gestiona únicamente desde el proveedor de autenticación (Supabase Auth). Si en el futuro se habilita su edición, puede reinsertarse un campo de solo lectura o un enlace a la sección correspondiente. Esta nota existe solo como documentación para el equipo y no se muestra al usuario. -->
@@ -3585,6 +3585,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const MAP = {
     title: { es: "Configuración de la Cuenta", en: "Account Settings", pt: "Configurações da Conta" },
     security: { es: "Seguridad", en: "Security", pt: "Segurança" },
+    personal: { es: "Datos Personales", en: "Personal Data", pt: "Dados Pessoais" },
     label1: { es: "Nueva contraseña", en: "New password", pt: "Nova senha" },
     label2: { es: "Repetir contraseña", en: "Repeat password", pt: "Repetir senha" },
     ph1: { es: "********", en: "********", pt: "********" },
@@ -3617,6 +3618,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (t) t.textContent = MAP.title[lang] || MAP.title.es;
     const s = document.querySelector('.settings-card h3 span[data-i18n="account.settings.security"]');
     if (s) s.textContent = MAP.security[lang] || MAP.security.es;
+    const pd = document.querySelector('.settings-card h3 span[data-i18n="account.settings.personalData"]');
+    if (pd) pd.textContent = MAP.personal[lang] || MAP.personal.es;
     const l1 = document.querySelector('label[for="cfg-pass1"] span[data-i18n="accountForm.labels.newPassword"]');
     const l2 = document.querySelector('label[for="cfg-pass2"] span[data-i18n="accountForm.labels.repeatPassword"]');
     if (l1) l1.textContent = MAP.label1[lang] || MAP.label1.es;
