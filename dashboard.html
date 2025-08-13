@@ -937,7 +937,7 @@ document.getElementById('user-postal').textContent = userData.postal_code || 'No
               <td><button class="action-btn">Detalles</button></td>
             </tr>
           `).join('')
-        : '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
+        : `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay compras')}</td></tr>`;
 
       // Referidos
       const referralsBody = document.getElementById('referrals-body');
@@ -951,7 +951,7 @@ document.getElementById('user-postal').textContent = userData.postal_code || 'No
               <td>$${(r.commission ?? 0).toFixed(2)}</td>
             </tr>
           `).join('')
-        : '<tr><td colspan="5" style="text-align: center;">No hay referidos</td></tr>';
+        : `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay referidos')}</td></tr>`;
 
       // --- NUEVO: Prefill y handlers de Configuración ---
       try { prefillConfigForms(userData); } catch(e) {}
@@ -1160,8 +1160,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('user-email').textContent = 'Cargando...';
     document.getElementById('user-phone').textContent = 'Cargando...';
     document.getElementById('user-address').textContent = 'Cargando...';
-    document.getElementById('purchases-body').innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando compras...</td></tr>';
-    document.getElementById('referrals-body').innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando referidos...</td></tr>';
+    document.getElementById('purchases-body').innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('Cargando compras...')}</td></tr>`;
+    document.getElementById('referrals-body').innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('Cargando referidos...')}</td></tr>`;
 
     const supabase = getSupabase();
 
@@ -1203,7 +1203,7 @@ document.addEventListener("DOMContentLoaded", () => {
         purchasesBody.innerHTML += row;
       });
     } else {
-      purchasesBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
+      purchasesBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay compras')}</td></tr>`;
     }
 
     const referralsBody = document.getElementById('referrals-body');
@@ -1221,7 +1221,7 @@ document.addEventListener("DOMContentLoaded", () => {
         referralsBody.innerHTML += row;
       });
     } else {
-      referralsBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay referidos</td></tr>';
+      referralsBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay referidos')}</td></tr>`;
     }
   }
 
@@ -1277,11 +1277,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const tbody = document.getElementById('miscompras-body');
         if (purchaseError || !purchases) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay compras')}</td></tr>`;
           return;
         }
         if (purchases.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay compras')}</td></tr>`;
           return;
         }
         tbody.innerHTML = purchases.map(p => `
