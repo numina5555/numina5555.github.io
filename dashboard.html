@@ -2241,5 +2241,139 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 })();
 </script>
+
+<script>
+/* === NUMINA i18n: table headers (Producto/Fecha/Valor/Estado/Acciones) ===
+   - Robust: tags columns once (data-i18n-col) by content or position
+   - Translates on DOM changes and when dI18n.set/apply run
+   - Does NOT touch dropdown/menu behavior
+*/
+(function(){
+  // Small helpers
+  function getStore(k, fb){ try { var v = localStorage.getItem(k); return v==null?fb:v; } catch(_){ return fb; } }
+  function lang(){ var d = window.dI18n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
+  function norm(s){ return (s||"").toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
+
+  // Fallback dictionary
+  var COLS = {
+    es: { product:"Producto", date:"Fecha", value:"Valor", status:"Estado", actions:"Acciones", claim:"Reclamo" },
+    en: { product:"Product",  date:"Date",  value:"Value", status:"Status", actions:"Actions",  claim:"Claim" },
+    pt: { product:"Produto",  date:"Data",  value:"Valor", status:"Status", actions:"Ações",   claim:"Reclamação" }
+  };
+  var ES_SET = new Set(Object.values(COLS.es));
+
+  function tOr(key, fb){
+    try {
+      if (window.dI18n && typeof dI18n.t === "function") {
+        var v = dI18n.t(key);
+        if (typeof v === "string" && v.trim()) {
+          if (v.toLowerCase() === key.toLowerCase()) return fb;     // returned key itself
+          if (lang() !== "es" && ES_SET.has(v.trim())) return fb;   // fell back to ES in non-ES
+          return v;
+        }
+      }
+    } catch(_){}
+    return fb;
+  }
+
+  // Resolve labels for current language; prefer your own dictionary if present
+  function labels(){
+    var L = COLS[lang()] || COLS.es;
+    return {
+      product: tOr("table.product", L.product),
+      date:    tOr("table.date", L.date),
+      value:   tOr("table.value", L.value),
+      status:  tOr("table.status", L.status),
+      actions: tOr("table.actions", L.actions),
+      claim:   tOr("table.claim", L.claim)
+    };
+  }
+
+  // Try to tag headers by their current content
+  var SEED = {
+    "producto":"product", "fecha":"date", "valor":"value", "estado":"status", "acciones":"actions", "reclamo":"claim",
+    "product":"product",  "date":"date",  "value":"value",  "status":"status",  "actions":"actions", "claim":"claim"
+  };
+
+  function tagTableHead(ths, preferPositions){
+    // If cells are known 5-column order, use positions as fallback
+    var mapByPos = ["product","date","value","status","actions"];
+    ths.forEach(function(th, idx){
+      if (th.hasAttribute("data-i18n-col")) return;
+      var key = SEED[norm(th.textContent)];
+      if (!key && preferPositions && idx < mapByPos.length) key = mapByPos[idx];
+      if (key) th.setAttribute("data-i18n-col", key);
+    });
+  }
+
+  function tagAll(){
+    // Dashboard purchases table (Acciones)
+    var pHead = document.querySelectorAll("#purchases-table thead tr:first-child th");
+    if (pHead.length) tagTableHead(Array.from(pHead), true);
+
+    // "Mis Compras" table (Reclamo)
+    var mcHead = document.querySelectorAll("#miscompras-table thead tr:first-child th");
+    if (mcHead.length) {
+      // same order but last is "claim"
+      Array.from(mcHead).forEach(function(th, idx){
+        if (th.hasAttribute("data-i18n-col")) return;
+        var key = SEED[norm(th.textContent)];
+        if (!key) key = ["product","date","value","status","claim"][idx] || key;
+        if (key) th.setAttribute("data-i18n-col", key);
+      });
+    }
+  }
+
+  function applyAll(){
+    var L = labels();
+    document.querySelectorAll("th[data-i18n-col]").forEach(function(th){
+      var k = th.getAttribute("data-i18n-col");
+      var v = L[k];
+      if (v && th.textContent !== v) th.textContent = v;
+    });
+  }
+
+  // Burst runner to cover late renders
+  var timer=null, runs=0;
+  function burst(){
+    runs = 0;
+    function step(){
+      tagAll(); applyAll();
+      runs++;
+      if (runs < 6) timer = setTimeout(step, runs<3?0:60);
+      else timer = null;
+    }
+    if (!timer) step();
+  }
+
+  // Init & observers
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", burst, {once:true});
+  else burst();
+
+  try{
+    var mo = new MutationObserver(function(m){
+      for (var i=0;i<m.length;i++){
+        if (m[i].type === "childList" || m[i].type === "characterData" || m[i].attributeName === "data-i18n-col"){
+          burst(); break;
+        }
+      }
+    });
+    mo.observe(document.body, {subtree:true, childList:true, characterData:true, attributes:true, attributeFilter:["data-i18n-col"]});
+  }catch(_){}
+
+  // Hook your i18n
+  if (window.dI18n){
+    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
+    dI18n.apply = function(){ if (_apply) _apply(); burst(); };
+    var _set   = typeof dI18n.set==="function"   ? dI18n.set.bind(dI18n)   : null;
+    dI18n.set = function(l){ if (_set) _set(l); burst(); };
+  }
+
+  // Also react to clicks on any [data-lang] element (let your code run first)
+  document.addEventListener("click", function(e){
+    if (e.target.closest("[data-lang]")) setTimeout(burst, 0);
+  }, true);
+})();
+</script>
 </body>
 </html>
