@@ -2911,5 +2911,146 @@ document.addEventListener('DOMContentLoaded', ()=>{
 })();
 </script>
 
+
+<!-- Fase E: Unificador de cargas y manejo de errores (add-on, no rompe lógica existente) -->
+<script>
+(function(){
+  if (window.__NUMINA_LOADERS__) return;
+  window.__NUMINA_LOADERS__ = true;
+
+  function t(key, fb){
+    try{ return (window.dI18n && dI18n.t) ? (dI18n.t(key)||fb||key) : (fb||key); }catch(_){ return fb||key; }
+  }
+
+  // Helpers de UI para estados
+  var UI = {
+    setLoading: function(tbodySelectorOrId, msgKey){
+      try{
+        var el = (typeof tbodySelectorOrId === 'string' && tbodySelectorOrId[0] === '#')
+          ? document.querySelector(tbodySelectorOrId)
+          : (typeof tbodySelectorOrId === 'string'
+              ? document.getElementById(tbodySelectorOrId)
+              : tbodySelectorOrId);
+        if (!el) return;
+        el.innerHTML = '<tr><td colspan="8" style="text-align:center;">' + t(msgKey || 'Cargando...', 'Cargando...') + '</td></tr>';
+      }catch(_){}
+    },
+    setError: function(tbodySelectorOrId, msgKey){
+      try{
+        var el = (typeof tbodySelectorOrId === 'string' && tbodySelectorOrId[0] === '#')
+          ? document.querySelector(tbodySelectorOrId)
+          : (typeof tbodySelectorOrId === 'string'
+              ? document.getElementById(tbodySelectorOrId)
+              : tbodySelectorOrId);
+        if (!el) return;
+        el.innerHTML = '<tr><td colspan="8" style="text-align:center;">' + t(msgKey || 'Error cargando...', 'Error cargando...') + '</td></tr>';
+      }catch(_){}
+    },
+    setEmpty: function(tbodySelectorOrId, msgKey){
+      try{
+        var el = (typeof tbodySelectorOrId === 'string' && tbodySelectorOrId[0] === '#')
+          ? document.querySelector(tbodySelectorOrId)
+          : (typeof tbodySelectorOrId === 'string'
+              ? document.getElementById(tbodySelectorOrId)
+              : tbodySelectorOrId);
+        if (!el) return;
+        el.innerHTML = '<tr><td colspan="8" style="text-align:center;">' + t(msgKey || 'Sin datos', 'Sin datos') + '</td></tr>';
+      }catch(_){}
+    }
+  };
+  window.NUMINA_UI = window.NUMINA_UI || UI;
+
+  // Fetch JSON con timeouts y captura de errores
+  async function fetchJSON(url, opts){
+    var ctrl = new AbortController();
+    var to = setTimeout(function(){ try{ ctrl.abort(); }catch(_){ } }, (opts && opts.timeout) || 12000);
+    try{
+      var res = await fetch(url, Object.assign({}, opts||{}, { signal: ctrl.signal }));
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return await res.json();
+    }finally{
+      clearTimeout(to);
+    }
+  }
+  window.fetchJSON = window.fetchJSON || fetchJSON;
+
+  // Wrapper genérico: ejecuta fn y asegura i18n + captura
+  function runSafe(name, fn){
+    try{
+      var r = fn && fn();
+      if (r && typeof r.then === 'function'){
+        return r.catch(function(e){ console.warn('['+name+']', e); })
+                .finally(function(){ try{ if (window.dI18n && dI18n.apply) dI18n.apply(); }catch(_){} });
+      }else{
+        try{ if (window.dI18n && dI18n.apply) dI18n.apply(); }catch(_){}
+        return r;
+      }
+    }catch(e){
+      console.warn('['+name+']', e);
+    }
+  }
+
+  // Si existen funciones del proyecto, las envolvemos de forma idempotente
+  function wrapOnce(obj, key, wrapper){
+    if (!obj || !obj[key] || obj[key].__wrapped__) return;
+    var orig = obj[key];
+    obj[key] = function(){ return wrapper(orig, this, arguments); };
+    obj[key].__wrapped__ = true;
+  }
+
+  // Cargar Dashboard
+  wrapOnce(window, 'cargarDashboard', function(orig, ctx, args){
+    // placeholders de tablas comunes
+    UI.setLoading('purchases-body', 'Cargando compras...');
+    UI.setLoading('referrals-body', 'Cargando referidos...');
+    var ret = runSafe('cargarDashboard', function(){ return orig.apply(ctx, args); });
+    // en caso de error, mostrar mensaje genérico (el orig ya gestiona los suyos)
+    if (ret && typeof ret.catch==='function'){
+      ret.catch(function(){ 
+        UI.setError('purchases-body', 'Error cargando compras...');
+        UI.setError('referrals-body', 'Error cargando referidos...');
+      });
+    }
+    return ret;
+  });
+
+  // Cargar Mis Compras (si existe)
+  wrapOnce(window, 'cargarMisCompras', function(orig, ctx, args){
+    UI.setLoading('miscompras-body', 'Cargando compras...');
+    var ret = runSafe('cargarMisCompras', function(){ return orig.apply(ctx, args); });
+    if (ret && typeof ret.catch==='function'){
+      ret.catch(function(){ UI.setError('miscompras-body', 'Error cargando compras...'); });
+    }
+    return ret;
+  });
+
+  // Cargar Referidos (si existe)
+  wrapOnce(window, 'cargarReferidos', function(orig, ctx, args){
+    UI.setLoading('referrals-body', 'Cargando referidos...');
+    var ret = runSafe('cargarReferidos', function(){ return orig.apply(ctx, args); });
+    if (ret && typeof ret.catch==='function'){
+      ret.catch(function(){ UI.setError('referrals-body', 'Error cargando referidos...'); });
+    }
+    return ret;
+  });
+
+  // Reaplicar traducciones al cambiar idioma
+  if (window.dI18n && typeof dI18n.set==='function' && !dI18n.__patchedForLoaders){
+    var _set = dI18n.set.bind(dI18n);
+    dI18n.set = function(lang){
+      var r = _set(lang);
+      try{ if (window.dI18n && dI18n.apply) dI18n.apply(); }catch(_){}
+      return r;
+    };
+    dI18n.__patchedForLoaders = true;
+  }
+
+  // Señales de red (opcional futuro) – silencioso por ahora
+  window.addEventListener('offline', function(){ console.warn('[red] offline'); });
+  window.addEventListener('online', function(){ console.info('[red] online'); });
+
+})();
+</script>
+
 </body>
 </html>
