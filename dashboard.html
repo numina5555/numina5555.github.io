@@ -2243,455 +2243,385 @@ document.addEventListener('DOMContentLoaded', ()=>{
 </script>
 
 <script>
-/* === NUMINA i18n add-ons (stable) ==============================
-   Covers table headers, empty-states and account info values.
-   Scope-limited observers; no global body observers.
-==================================================================*/
+/* === NUMINA i18n: table headers (Producto/Fecha/Valor/Estado/Acciones) ===
+   - Robust: tags columns once (data-i18n-col) by content or position
+   - Translates on DOM changes and when dI18n.set/apply run
+   - Does NOT touch dropdown/menu behavior
+*/
 (function(){
-  // Helpers
-  function safeGet(k, fb){ try{ var v=localStorage.getItem(k); return v==null?fb:v; }catch(_){ return fb; } }
-  function curLang(){ var d=window.dI18n||{}; return d.current||d.lang||safeGet('dash_lang', safeGet('lang','es'))||'es'; }
+  // Small helpers
+  function getStore(k, fb){ try { var v = localStorage.getItem(k); return v==null?fb:v; } catch(_){ return fb; } }
+  function lang(){ var d = window.dI18n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
+  function norm(s){ return (s||"").toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
 
-  // Copy button (ensure PT strings exist)
-  (function ensureCopyLocale(){
-    if (!window.DB_I18N) return;
-    DB_I18N.es = DB_I18N.es || {}; DB_I18N.en = DB_I18N.en || {}; DB_I18N.pt = DB_I18N.pt || {};
-    DB_I18N.es.actions = Object.assign({copy:"Copiar",   copied:"¡Copiado!"}, DB_I18N.es.actions||{});
-    DB_I18N.en.actions = Object.assign({copy:"Copy",     copied:"Copied!"},   DB_I18N.en.actions||{});
-    DB_I18N.pt.actions = Object.assign({copy:"Copiar",   copied:"Copiado!"},  DB_I18N.pt.actions||{});
-    function updateCopy(){ var b=document.getElementById("copy-btn"); if (b) b.textContent = (window.dI18n&&dI18n.t)? dI18n.t("actions.copy") : (curLang()==="en"?"Copy":curLang()==="pt"?"Copiar":"Copiar"); }
-    function wire(){ var b=document.getElementById("copy-btn"); if (!b||b.__i18nCopyWired) return; b.__i18nCopyWired=true; b.addEventListener("copied-i18n", function(){ b.textContent=(window.dI18n&&dI18n.t)?dI18n.t("actions.copied"):"Copied!"; setTimeout(updateCopy,1200);}); }
-    if (document.readyState==="loading") document.addEventListener("DOMContentLoaded", function(){ updateCopy(); wire(); }, {once:true});
-    else { updateCopy(); wire(); }
-    if (window.dI18n){ var _a = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null; dI18n.apply=function(){ if(_a)_a(); updateCopy(); };
-                        var _s = typeof dI18n.set==="function"   ? dI18n.set.bind(dI18n)   : null; dI18n.set=function(l){ if(_s)_s(l); updateCopy(); }; }
-  })();
-
-  // Dictionaries
-  var TBL = {
-    es: {
-      product:"Producto", date:"Fecha", value:"Valor", status:"Estado", actions:"Acciones", claim:"Reclamo",
-      referred:"Referido", purchases:"Compras", commission:"Comisión",
-      raffle:"Sorteo", tickets_used:"Tickets Utilizados",
-      loading_purchases:"Cargando compras...", loading_referrals:"Cargando referidos...", loading:"Cargando...", empty_referrals:"No hay referidos", empty_entries:"Sin participaciones"
-    },
-    en: {
-      product:"Product",  date:"Date",  value:"Value", status:"Status", actions:"Actions",  claim:"Claim",
-      referred:"Referral", purchases:"Purchases", commission:"Commission",
-      raffle:"Raffle", tickets_used:"Tickets Used",
-      loading_purchases:"Loading purchases...", loading_referrals:"Loading referrals...", loading:"Loading...", empty_referrals:"No referrals", empty_entries:"No entries"
-    },
-    pt: {
-      product:"Produto",  date:"Data",  value:"Valor", status:"Status", actions:"Ações",   claim:"Reclamação",
-      referred:"Indicado", purchases:"Compras", commission:"Comissão",
-      raffle:"Sorteio", tickets_used:"Bilhetes Utilizados",
-      loading_purchases:"Carregando compras...", loading_referrals:"Carregando indicados...", loading:"Carregando...", empty_referrals:"Sem indicados", empty_entries:"Sem participações"
-    }
+  // Fallback dictionary
+  var COLS = {
+    es: { product:"Producto", date:"Fecha", value:"Valor", status:"Estado", actions:"Acciones", claim:"Reclamo" },
+    en: { product:"Product",  date:"Date",  value:"Value", status:"Status", actions:"Actions",  claim:"Claim" },
+    pt: { product:"Produto",  date:"Data",  value:"Valor", status:"Status", actions:"Ações",   claim:"Reclamação" }
   };
-  var ND = { es:"No definido", en:"Not defined", pt:"Não definido" };
-
-  // Utilities
-  function L(){ return TBL[curLang()] || TBL.es; }
-  function nd(){ return ND[curLang()] || ND.es; }
-  function observe(target, opts, fn){ if (!target) return null; try{ var mo=new MutationObserver(function(){ fn(); }); mo.observe(target, opts||{childList:true,subtree:true,characterData:true}); return mo; }catch(_){ return null; } }
-  function text(el, v){ if (el && v!=null && el.textContent!==v) el.textContent=v; }
-
-  // Apply functions (idempotent, scope-limited)
-  function applyPurchasesHeaders(){
-    var ths = document.querySelectorAll("#purchases-table thead tr:first-child th");
-    if (!ths.length) return;
-    var order = ["product","date","value","status","actions"];
-    ths.forEach(function(th,i){ th.setAttribute("data-i18n-col", order[i]||""); text(th, L()[order[i]]); });
-  }
-  function applyMisComprasHeaders(){
-    var ths = document.querySelectorAll("#miscompras-table thead tr:first-child th");
-    if (!ths.length) return;
-    var order = ["product","date","value","status","claim"];
-    ths.forEach(function(th,i){ th.setAttribute("data-i18n-col", order[i]||""); text(th, L()[order[i]]); });
-  }
-  function applyReferrals(){
-    var ths = document.querySelectorAll("#referrals-table thead tr:first-child th");
-    if (ths.length){
-      var order = ["referred","date","purchases","status","commission"];
-      ths.forEach(function(th,i){ th.setAttribute("data-i18n-col", order[i]||""); text(th, L()[order[i]]); });
-    }
-    // empty/loading message cell
-    var td = document.querySelector("#referrals-body td[colspan]");
-    if (td){
-      var t = td.textContent.trim().toLowerCase();
-      if (/cargando/.test(t) || /loading/.test(t) || /carregando/.test(t)) text(td, L().loading_referrals);
-      if (/no hay referidos/.test(t) || /no referrals/.test(t) || /sem indicados?/.test(t)) text(td, L().empty_referrals);
-    }
-  }
-  function applySorteos(){
-    var ths = document.querySelectorAll("#sorteos-table thead tr:first-child th");
-    if (ths.length){
-      var order = ["date","raffle","tickets_used"];
-      ths.forEach(function(th,i){ th.setAttribute("data-i18n-col", order[i]||""); text(th, L()[order[i]]); });
-    }
-    var td = document.querySelector("#sorteos-tbody td[colspan]");
-    if (td){
-      var t = td.textContent.trim().toLowerCase();
-      if (/cargando/.test(t) || /loading/.test(t) || /carregando/.test(t)) text(td, L().loading);
-      if (/sin participaciones/.test(t) || /no entries/.test(t) || /sem participa[cç][oõ]es/.test(t)) text(td, L().empty_entries);
-    }
-  }
-  function applyAccountLabels(){
-    var labels = ["fullname","email","phone","address","country","city","postal"];
-    var ids = ["full-name","user-email","user-phone","user-address","user-country","user-city","user-postal"];
-    var h4s = document.querySelectorAll("#account-info-grid .info-item h4");
-    h4s.forEach(function(h4,i){ h4.setAttribute("data-i18n-field", labels[i]||""); var map={fullname:"Full Name",email:"Email",phone:"Phone",address:"Address",country:"Country",city:"City",postal:"Zip Code"}; text(h4, (TBL[curLang()]||TBL.es)[labels[i]] || map[labels[i]] ); });
-    // empty values
-    ids.forEach(function(id){ var el=document.getElementById(id); if (!el) return; var t=el.textContent.trim(); if (!t || /no definido|not defined|n[aã]o definido/i.test(t)) text(el, nd()); });
-  }
-
-  function applyAll(){
-    applyPurchasesHeaders(); applyMisComprasHeaders(); applyReferrals(); applySorteos(); applyAccountLabels();
-  }
-
-  // Run once DOM ready
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", applyAll, {once:true});
-  else applyAll();
-
-  // Scoped observers (no global body observer)
-  observe(document.getElementById("purchases-table"), {childList:true,subtree:true,characterData:true}, applyPurchasesHeaders);
-  observe(document.getElementById("miscompras-table"), {childList:true,subtree:true,characterData:true}, applyMisComprasHeaders);
-  observe(document.getElementById("referrals-table"), {childList:true,subtree:true,characterData:true}, applyReferrals);
-  observe(document.getElementById("sorteos-table"), {childList:true,subtree:true,characterData:true}, applySorteos);
-  observe(document.getElementById("account-info-grid"), {childList:true,subtree:true,characterData:true}, applyAccountLabels);
-
-  // Re-apply on language changes
-  if (window.dI18n){
-    var _a = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
-    dI18n.apply = function(){ if (_a) _a(); applyAll(); };
-    var _s = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
-    dI18n.set = function(l){ if (_s) _s(l); applyAll(); };
-  }
-
-  // Also react to clicks on [data-lang] items (let your own handler run first)
-  document.addEventListener("click", function(ev){ if (ev.target.closest("[data-lang]")) setTimeout(applyAll, 0); }, true);
-})();
-</script>
-
-<script>
-/* === Enhancement: translate Sorteos section title ("Sorteo") === */
-(function(){
-  function getStore(k, fb){ try{ var v=localStorage.getItem(k); return v==null?fb:v; }catch(_){ return fb; } }
-  function curLang(){ var d=window.dI18n||{}; return d.current||d.lang||getStore('dash_lang', getStore('lang','es'))||'es'; }
-  var TITLE = { es: "Sorteo", en: "Raffle", pt: "Sorteio" };
-
-  function applySorteosTitle(){
-    var span = document.querySelector("#section-sorteos .section-title span");
-    if (!span) return;
-    var lang = curLang();
-    var target = (window.dI18n && typeof dI18n.t==="function") ? dI18n.t("sorteos.title") : null;
-    if (!target || typeof target !== "string" || !target.trim() || target.toLowerCase()==="sorteos.title"){
-      target = TITLE[lang] || TITLE.es;
-    }
-    if (span.textContent !== target) span.textContent = target;
-  }
-
-  // run now + on mutations of the section + on language change
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", applySorteosTitle, {once:true});
-  else applySorteosTitle();
-
-  try{
-    var sec = document.getElementById("section-sorteos");
-    if (sec){
-      var mo = new MutationObserver(function(){ applySorteosTitle(); });
-      mo.observe(sec, {subtree:true, childList:true, characterData:true, attributes:true, attributeFilter:["style","class"]});
-    }
-  }catch(_){}
-
-  if (window.dI18n){
-    var _a = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
-    dI18n.apply = function(){ if(_a) _a(); applySorteosTitle(); };
-    var _s = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
-    dI18n.set = function(l){ if(_s) _s(l); applySorteosTitle(); };
-  }
-})();
-</script>
-
-<script>
-/* === Enhancement: translate "Mis Compras" section title === */
-(function(){
-  function getStore(k, fb){ try{ var v=localStorage.getItem(k); return v==null?fb:v; }catch(_){ return fb; } }
-  function curLang(){ var d=window.dI18n||{}; return d.current||d.lang||getStore('dash_lang', getStore('lang','es'))||'es'; }
-  var TITLE = { es: "Mis Compras", en: "My Purchases", pt: "Minhas Compras" };
-
-  function applyComprasTitle(){
-    var span = document.querySelector("#section-compras .section-title span");
-    if (!span) return;
-    var lang = curLang();
-    var target = (window.dI18n && typeof dI18n.t==="function") ? dI18n.t("compras.title") : null;
-    if (!target || typeof target !== "string" || !target.trim() || target.toLowerCase()==="compras.title"){
-      target = TITLE[lang] || TITLE.es;
-    }
-    if (span.textContent !== target) span.textContent = target;
-  }
-
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", applyComprasTitle, {once:true});
-  else applyComprasTitle();
-
-  try{
-    var sec = document.getElementById("section-compras");
-    if (sec){
-      var mo = new MutationObserver(function(){ applyComprasTitle(); });
-      mo.observe(sec, {subtree:true, childList:true, characterData:true, attributes:true, attributeFilter:["style","class"]});
-    }
-  }catch(_){}
-
-  if (window.dI18n){
-    var _a = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
-    dI18n.apply = function(){ if(_a) _a(); applyComprasTitle(); };
-    var _s = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
-    dI18n.set = function(l){ if(_s) _s(l); applyComprasTitle(); };
-  }
-})();
-</script>
-
-<script>
-/* === Enhancement: translate "Tickets Activos" card title in Sorteos === */
-(function(){
-  function getStore(k, fb){ try{ var v=localStorage.getItem(k); return v==null?fb:v; }catch(_){ return fb; } }
-  function curLang(){ var d=window.dI18n||{}; return d.current||d.lang||getStore('dash_lang', getStore('lang','es'))||'es'; }
-  var MAP = { es: "Tickets Activos", en: "Active Tickets", pt: "Bilhetes Ativos" };
-
-  function setActiveTicketsTitle(){
-    var value = document.getElementById("srt-tickets-activos");
-    if (!value) return;
-    var h3 = value.closest("article")?.querySelector("h3");
-    if (!h3) return;
-    var lang = curLang();
-    var target = (window.dI18n && typeof dI18n.t==="function") ? dI18n.t("sorteos.active_tickets") : null;
-    if (!target || typeof target !== "string" || !target.trim() || target.toLowerCase()==="sorteos.active_tickets"){
-      target = MAP[lang] || MAP.es;
-    }
-    if (h3.textContent !== target) h3.textContent = target;
-  }
-
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", setActiveTicketsTitle, {once:true});
-  else setActiveTicketsTitle();
-
-  try{
-    var sec = document.getElementById("section-sorteos");
-    if (sec){
-      var mo = new MutationObserver(function(){ setActiveTicketsTitle(); });
-      mo.observe(sec, {subtree:true, childList:true, characterData:true, attributes:true});
-    }
-  }catch(_){}
-
-  if (window.dI18n){
-    var _a = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
-    dI18n.apply = function(){ if(_a) _a(); setActiveTicketsTitle(); };
-    var _s = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
-    dI18n.set = function(l){ if(_s) _s(l); setActiveTicketsTitle(); };
-  }
-})();
-</script>
-
-<script>
-/* === Settings section i18n (Configuración de la Cuenta) === */
-(function(){
-  function getStore(k, fb){ try{ var v=localStorage.getItem(k); return v==null?fb:v; }catch(_){ return fb; } }
-  function curLang(){ var d=window.dI18n||{}; return d.current||d.lang||getStore('dash_lang', getStore('lang','es'))||'es'; }
-
-  // Map with safe fallbacks; we try dI18n.t('settings.*') first if available
-  var MAP = {
-    es: {
-      title: "Configuración de la Cuenta",
-      personal: "Datos Personales",
-      security: "Seguridad",
-      fields: {
-        fullname: "Nombre completo",
-        phone: "Teléfono",
-        address: "Dirección",
-        country: "País",
-        city: "Ciudad",
-        postal: "Código Postal",
-        pass1: "Nueva contraseña",
-        pass2: "Repetir contraseña"
-      },
-      buttons: {
-        save: "Guardar cambios",
-        updatePass: "Actualizar contraseña"
-      },
-      ph: {
-        fullname: "Nombre y apellido",
-        phone: "+54 11 1234 5678",
-        address: "Calle, número, ciudad",
-        country: "Argentina",
-        city: "Buenos Aires",
-        postal: "C.P.",
-        pass: "********"
-      }
-    },
-    en: {
-      title: "Account Settings",
-      personal: "Personal Information",
-      security: "Security",
-      fields: {
-        fullname: "Full Name",
-        phone: "Phone",
-        address: "Address",
-        country: "Country",
-        city: "City",
-        postal: "Zip Code",
-        pass1: "New password",
-        pass2: "Confirm password"
-      },
-      buttons: {
-        save: "Save changes",
-        updatePass: "Update password"
-      },
-      ph: {
-        fullname: "Full name",
-        phone: "+1 555 555 5555",
-        address: "Street, number, city",
-        country: "Country",
-        city: "City",
-        postal: "ZIP",
-        pass: "********"
-      }
-    },
-    pt: {
-      title: "Configurações da Conta",
-      personal: "Dados Pessoais",
-      security: "Segurança",
-      fields: {
-        fullname: "Nome completo",
-        phone: "Telefone",
-        address: "Endereço",
-        country: "País",
-        city: "Cidade",
-        postal: "CEP",
-        pass1: "Nova senha",
-        pass2: "Confirmar senha"
-      },
-      buttons: {
-        save: "Salvar alterações",
-        updatePass: "Atualizar senha"
-      },
-      ph: {
-        fullname: "Nome e sobrenome",
-        phone: "+55 11 91234 5678",
-        address: "Rua, número, cidade",
-        country: "País",
-        city: "Cidade",
-        postal: "CEP",
-        pass: "********"
-      }
-    }
-  };
+  var ES_SET = new Set(Object.values(COLS.es));
 
   function tOr(key, fb){
-    try{
+    try {
       if (window.dI18n && typeof dI18n.t === "function") {
         var v = dI18n.t(key);
-        if (typeof v === "string" && v.trim() && v.toLowerCase() !== key.toLowerCase()) return v;
+        if (typeof v === "string" && v.trim()) {
+          if (v.toLowerCase() === key.toLowerCase()) return fb;     // returned key itself
+          if (lang() !== "es" && ES_SET.has(v.trim())) return fb;   // fell back to ES in non-ES
+          return v;
+        }
       }
-    }catch(_){}
+    } catch(_){}
     return fb;
   }
 
-  function L(){
-    var lang = curLang();
-    var base = MAP[lang] || MAP.es;
-    // try to resolve from your dictionary first; fallback to base
+  // Resolve labels for current language; prefer your own dictionary if present
+  function labels(){
+    var L = COLS[lang()] || COLS.es;
     return {
-      title:    tOr("settings.title", base.title),
-      personal: tOr("settings.personal", base.personal),
-      security: tOr("settings.security", base.security),
-      fields: {
-        fullname: tOr("settings.fields.fullname", base.fields.fullname),
-        phone:    tOr("settings.fields.phone",    base.fields.phone),
-        address:  tOr("settings.fields.address",  base.fields.address),
-        country:  tOr("settings.fields.country",  base.fields.country),
-        city:     tOr("settings.fields.city",     base.fields.city),
-        postal:   tOr("settings.fields.postal",   base.fields.postal),
-        pass1:    tOr("settings.fields.pass1",    base.fields.pass1),
-        pass2:    tOr("settings.fields.pass2",    base.fields.pass2)
-      },
-      buttons: {
-        save:       tOr("settings.buttons.save",       base.buttons.save),
-        updatePass: tOr("settings.buttons.updatePass", base.buttons.updatePass)
-      },
-      ph: base.ph
+      product: tOr("table.product", L.product),
+      date:    tOr("table.date", L.date),
+      value:   tOr("table.value", L.value),
+      status:  tOr("table.status", L.status),
+      actions: tOr("table.actions", L.actions),
+      claim:   tOr("table.claim", L.claim)
     };
   }
 
-  function applySettings(){
-    var sec = document.getElementById("section-configuracion");
-    if (!sec) return;
-    var lang = curLang();
-    var labels = L();
+  // Try to tag headers by their current content
+  var SEED = {
+    "producto":"product", "fecha":"date", "valor":"value", "estado":"status", "acciones":"actions", "reclamo":"claim",
+    "product":"product",  "date":"date",  "value":"value",  "status":"status",  "actions":"actions", "claim":"claim"
+  };
 
-    // Title
-    var t = sec.querySelector(".section-title span");
-    if (t) t.textContent = labels.title;
-
-    // Card titles
-    var cards = sec.querySelectorAll(".settings-card > h3");
-    if (cards[0]) cards[0].childNodes[cards[0].childNodes.length-1].textContent = " " + labels.personal;
-    if (cards[1]) cards[1].childNodes[cards[1].childNodes.length-1].textContent = " " + labels.security;
-
-    // Field labels
-    var mapLab = {
-      "cfg-fullname": labels.fields.fullname,
-      "cfg-phone":    labels.fields.phone,
-      "cfg-address":  labels.fields.address,
-      "cfg-country":  labels.fields.country,
-      "cfg-city":     labels.fields.city,
-      "cfg-postal":   labels.fields.postal,
-      "cfg-pass1":    labels.fields.pass1,
-      "cfg-pass2":    labels.fields.pass2
-    };
-    Object.keys(mapLab).forEach(function(fid){
-      var lab = sec.querySelector('label[for="'+fid+'"]');
-      if (lab) lab.textContent = mapLab[fid];
+  function tagTableHead(ths, preferPositions){
+    // If cells are known 5-column order, use positions as fallback
+    var mapByPos = ["product","date","value","status","actions"];
+    ths.forEach(function(th, idx){
+      if (th.hasAttribute("data-i18n-col")) return;
+      var key = SEED[norm(th.textContent)];
+      if (!key && preferPositions && idx < mapByPos.length) key = mapByPos[idx];
+      if (key) th.setAttribute("data-i18n-col", key);
     });
-
-    // Placeholders
-    var ph = labels.ph;
-    var phMap = {
-      "cfg-fullname": ph.fullname,
-      "cfg-phone":    ph.phone,
-      "cfg-address":  ph.address,
-      "cfg-country":  ph.country,
-      "cfg-city":     ph.city,
-      "cfg-postal":   ph.postal,
-      "cfg-pass1":    ph.pass,
-      "cfg-pass2":    ph.pass
-    };
-    Object.keys(phMap).forEach(function(fid){
-      var input = sec.querySelector("#"+fid);
-      if (input && phMap[fid]) input.setAttribute("placeholder", phMap[fid]);
-    });
-
-    // Buttons
-    var btnSave = sec.querySelector("#config-datos-form .form-actions .btn");
-    if (btnSave) btnSave.textContent = labels.buttons.save;
-    var btnPass = sec.querySelector("#config-pass-form .form-actions .btn");
-    if (btnPass) btnPass.textContent = labels.buttons.updatePass;
   }
 
-  // Run and observe that section only
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", applySettings, {once:true});
-  else applySettings();
+  function tagAll(){
+    // Dashboard purchases table (Acciones)
+    var pHead = document.querySelectorAll("#purchases-table thead tr:first-child th");
+    if (pHead.length) tagTableHead(Array.from(pHead), true);
+
+    // "Mis Compras" table (Reclamo)
+    var mcHead = document.querySelectorAll("#miscompras-table thead tr:first-child th");
+    if (mcHead.length) {
+      // same order but last is "claim"
+      Array.from(mcHead).forEach(function(th, idx){
+        if (th.hasAttribute("data-i18n-col")) return;
+        var key = SEED[norm(th.textContent)];
+        if (!key) key = ["product","date","value","status","claim"][idx] || key;
+        if (key) th.setAttribute("data-i18n-col", key);
+      });
+    }
+  }
+
+  function applyAll(){
+    var L = labels();
+    document.querySelectorAll("th[data-i18n-col]").forEach(function(th){
+      var k = th.getAttribute("data-i18n-col");
+      var v = L[k];
+      if (v && th.textContent !== v) th.textContent = v;
+    });
+  }
+
+  // Burst runner to cover late renders
+  var timer=null, runs=0;
+  function burst(){
+    runs = 0;
+    function step(){
+      tagAll(); applyAll();
+      runs++;
+      if (runs < 6) timer = setTimeout(step, runs<3?0:60);
+      else timer = null;
+    }
+    if (!timer) step();
+  }
+
+  // Init & observers
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", burst, {once:true});
+  else burst();
 
   try{
-    var target = document.getElementById("section-configuracion");
-    if (target){
-      var mo = new MutationObserver(function(){ applySettings(); });
-      mo.observe(target, {subtree:true, childList:true, characterData:true, attributes:true});
+    var mo = new MutationObserver(function(m){
+      for (var i=0;i<m.length;i++){
+        if (m[i].type === "childList" || m[i].type === "characterData" || m[i].attributeName === "data-i18n-col"){
+          burst(); break;
+        }
+      }
+    });
+    mo.observe(document.body, {subtree:true, childList:true, characterData:true, attributes:true, attributeFilter:["data-i18n-col"]});
+  }catch(_){}
+
+  // Hook your i18n
+  if (window.dI18n){
+    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
+    dI18n.apply = function(){ if (_apply) _apply(); burst(); };
+    var _set   = typeof dI18n.set==="function"   ? dI18n.set.bind(dI18n)   : null;
+    dI18n.set = function(l){ if (_set) _set(l); burst(); };
+  }
+
+  // Also react to clicks on any [data-lang] element (let your code run first)
+  document.addEventListener("click", function(e){
+    if (e.target.closest("[data-lang]")) setTimeout(burst, 0);
+  }, true);
+})();
+</script>
+
+<script>
+/* === NUMINA i18n: referrals table headers (Referido/Fecha/Compras/Estado/Comisión) === */
+(function(){
+  function getStore(k, fb){ try { var v = localStorage.getItem(k); return v==null?fb:v; } catch(_){ return fb; } }
+  function lang(){ var d = window.dI18n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
+  function norm(s){ return (s||"").toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
+
+  var COLS = {
+    es: { referred:"Referido", date:"Fecha", purchases:"Compras", status:"Estado", commission:"Comisión" },
+    en: { referred:"Referral", date:"Date",  purchases:"Purchases", status:"Status", commission:"Commission" },
+    pt: { referred:"Indicado", date:"Data",  purchases:"Compras",   status:"Status", commission:"Comissão" }
+  };
+  var ES_SET = new Set(Object.values(COLS.es));
+
+  function tOr(key, fb){
+    try {
+      if (window.dI18n && typeof dI18n.t === "function") {
+        var v = dI18n.t(key);
+        if (typeof v === "string" && v.trim()) {
+          if (v.toLowerCase() === key.toLowerCase()) return fb;
+          if (lang() !== "es" && ES_SET.has(v.trim())) return fb;
+          return v;
+        }
+      }
+    } catch(_){}
+    return fb;
+  }
+
+  function labels(){
+    var L = COLS[lang()] || COLS.es;
+    return {
+      referred:   tOr("referrals.header.referred",   tOr("table.referral", L.referred)),
+      date:       tOr("referrals.header.date",       tOr("table.date", L.date)),
+      purchases:  tOr("referrals.header.purchases",  tOr("table.purchases", L.purchases)),
+      status:     tOr("referrals.header.status",     tOr("table.status", L.status)),
+      commission: tOr("referrals.header.commission", tOr("table.commission", L.commission)),
+    };
+  }
+
+  var SEED = {
+    // ES
+    "referido":"referred","fecha":"date","compras":"purchases","estado":"status","comision":"commission","comisión":"commission",
+    // EN
+    "referral":"referred","date":"date","purchases":"purchases","status":"status","commission":"commission",
+    // PT
+    "indicado":"referred","data":"date","compras":"purchases","status":"status","comissao":"commission","comissão":"commission"
+  };
+
+  function tagReferrals(){
+    var ths = Array.from(document.querySelectorAll("#referrals-table thead tr:first-child th"));
+    if (!ths.length) return;
+    ths.forEach(function(th, idx){
+      if (th.hasAttribute("data-i18n-col")) return;
+      var key = SEED[norm(th.textContent)];
+      if (!key) key = ["referred","date","purchases","status","commission"][idx];
+      if (key) th.setAttribute("data-i18n-col", key);
+    });
+  }
+
+  function applyReferrals(){
+    var L = labels();
+    document.querySelectorAll("#referrals-table thead th[data-i18n-col]").forEach(function(th){
+      var k = th.getAttribute("data-i18n-col");
+      var v = L[k];
+      if (v && th.textContent !== v) th.textContent = v;
+    });
+  }
+
+  var timer=null, runs=0;
+  function burst(){
+    runs = 0;
+    function step(){
+      tagReferrals(); applyReferrals();
+      runs++;
+      if (runs < 6) timer = setTimeout(step, runs<3?0:60);
+      else timer = null;
     }
+    if (!timer) step();
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", burst, {once:true});
+  else burst();
+
+  try{
+    var mo = new MutationObserver(function(m){
+      for (var i=0;i<m.length;i++){
+        if (m[i].type === "childList" || m[i].type === "characterData") { burst(); break; }
+      }
+    });
+    mo.observe(document.body, {subtree:true, childList:true, characterData:true});
   }catch(_){}
 
   if (window.dI18n){
-    var _a = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
-    dI18n.apply = function(){ if (_a) _a(); applySettings(); };
-    var _s = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
-    dI18n.set = function(l){ if (_s) _s(l); applySettings(); };
+    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
+    dI18n.apply = function(){ if (_apply) _apply(); burst(); };
+    var _set = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
+    dI18n.set = function(l){ if (_set) _set(l); burst(); };
+  }
+})();
+</script>
+
+<script>
+/* === NUMINA i18n: account info labels (Nombre/Correo/Teléfono/Dirección/País/Ciudad/Código Postal) === */
+(function(){
+  function getStore(k, fb){ try { var v = localStorage.getItem(k); return v==null?fb:v; } catch(_){ return fb; } }
+  function lang(){ var d = window.dI18n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
+  function norm(s){ return (s||"").toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
+
+  var LBL = {
+    es: { fullname:"Nombre Completo", email:"Correo Electrónico", phone:"Teléfono", address:"Dirección", country:"País", city:"Ciudad", postal:"Código Postal" },
+    en: { fullname:"Full Name",       email:"Email",              phone:"Phone",   address:"Address",   country:"Country", city:"City",   postal:"Zip Code" },
+    pt: { fullname:"Nome Completo",   email:"Email",              phone:"Telefone",address:"Endereço",  country:"País",    city:"Cidade", postal:"CEP" }
+  };
+  var ES_SET = new Set(Object.values(LBL.es));
+
+  function tOr(key, fb){
+    try {
+      if (window.dI18n && typeof dI18n.t === "function") {
+        var v = dI18n.t(key);
+        if (typeof v === "string" && v.trim()) {
+          if (v.toLowerCase() === key.toLowerCase()) return fb;
+          if (lang() !== "es" && ES_SET.has(v.trim())) return fb;
+          return v;
+        }
+      }
+    } catch(_){}
+    return fb;
+  }
+
+  function labels(){
+    var base = LBL[lang()] || LBL.es;
+    return {
+      fullname: tOr("account.fullname", base.fullname),
+      email:    tOr("account.email",    base.email),
+      phone:    tOr("account.phone",    base.phone),
+      address:  tOr("account.address",  base.address),
+      country:  tOr("account.country",  base.country),
+      city:     tOr("account.city",     base.city),
+      postal:   tOr("account.postal",   base.postal)
+    };
+  }
+
+  var SEED = {
+    "nombre completo":"fullname",
+    "correo electronico":"email","correo electrónico":"email",
+    "telefono":"phone","teléfono":"phone",
+    "direccion":"address","dirección":"address",
+    "pais":"country","país":"country",
+    "ciudad":"city",
+    "codigo postal":"postal","código postal":"postal",
+    // EN/PT
+    "full name":"fullname","email":"email","phone":"phone","address":"address","country":"country","city":"city","zip code":"postal","cep":"postal","nome completo":"fullname","telefone":"phone","endereco":"address","endereço":"address","pais":"country"
+  };
+
+  function tag(){
+    var ths = Array.from(document.querySelectorAll("#account-info-grid .info-item h4"));
+    ths.forEach(function(h4, idx){
+      if (h4.hasAttribute("data-i18n-field")) return;
+      var key = SEED[norm(h4.textContent)] || ["fullname","email","phone","address","country","city","postal"][idx];
+      if (key) h4.setAttribute("data-i18n-field", key);
+    });
+  }
+
+  function applyAll(){
+    var L = labels();
+    document.querySelectorAll("#account-info-grid .info-item h4[data-i18n-field]").forEach(function(h4){
+      var k = h4.getAttribute("data-i18n-field");
+      var v = L[k];
+      if (v && h4.textContent !== v) h4.textContent = v;
+    });
+  }
+
+  var timer=null, runs=0;
+  function burst(){
+    runs=0;
+    function step(){ tag(); applyAll(); runs++; if (runs<6) timer=setTimeout(step, runs<3?0:60); else timer=null; }
+    if (!timer) step();
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", burst, {once:true});
+  else burst();
+
+  try{
+    var mo = new MutationObserver(function(m){
+      for (var i=0;i<m.length;i++){ if (m[i].type === "childList" || m[i].type === "characterData") { burst(); break; } }
+    });
+    mo.observe(document.body, {subtree:true, childList:true, characterData:true});
+  }catch(_){}
+
+  if (window.dI18n){
+    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
+    dI18n.apply = function(){ if (_apply) _apply(); burst(); };
+    var _set = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
+    dI18n.set = function(l){ if (_set) _set(l); burst(); };
+  }
+})();
+</script>
+
+<script>
+/* === Copy button i18n fix (adds PT + ensures updates on set/apply/click) === */
+(function(){
+  if (!window.DB_I18N || !window.dI18n) return;
+
+  // Ensure locales exist
+  DB_I18N.en = DB_I18N.en || {};
+  DB_I18N.pt = DB_I18N.pt || {};
+
+  // Merge default actions if missing
+  DB_I18N.en.actions = Object.assign({ copy: "Copy",    copied: "Copied!"  }, DB_I18N.en.actions || {});
+  DB_I18N.pt.actions = Object.assign({ copy: "Copiar",  copied: "Copiado!" }, DB_I18N.pt.actions || {});
+  // Keep Spanish too (in case it was missing in some builds)
+  DB_I18N.es = DB_I18N.es || {};
+  DB_I18N.es.actions = Object.assign({ copy: "Copiar",  copied: "¡Copiado!" }, DB_I18N.es.actions || {});
+
+  function updateCopyBtn(){
+    var btn = document.getElementById("copy-btn");
+    if (btn) btn.textContent = dI18n.t("actions.copy");
+  }
+  function wireCopiedEvent(){
+    var btn = document.getElementById("copy-btn");
+    if (!btn || btn.__wiredCopiedI18n) return;
+    btn.__wiredCopiedI18n = true;
+    btn.addEventListener("copied-i18n", function(){
+      btn.textContent = dI18n.t("actions.copied");
+      setTimeout(updateCopyBtn, 1400);
+    });
+  }
+
+  // Patch dI18n.apply and set
+  var _apply = (typeof dI18n.apply === "function") ? dI18n.apply.bind(dI18n) : null;
+  dI18n.apply = function(){
+    if (_apply) _apply();
+    updateCopyBtn();
+    wireCopiedEvent();
+  };
+  var _set = (typeof dI18n.set === "function") ? dI18n.set.bind(dI18n) : null;
+  dI18n.set = function(lang){
+    if (_set) _set(lang);
+    updateCopyBtn();
+  };
+
+  // Initial
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function(){ updateCopyBtn(); wireCopiedEvent(); }, { once: true });
+  } else {
+    updateCopyBtn(); wireCopiedEvent();
   }
 })();
 </script>
