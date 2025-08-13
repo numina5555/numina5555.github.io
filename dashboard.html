@@ -3436,6 +3436,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 </script>
 
 <script>
+// === NUMINA password labels i18n bridge (supports dI18n and dI18n8n) ===
 (function(){
   const MAP = {
     "accountForm.labels.newPassword": { es: "Nueva contraseña", en: "New password", pt: "Nova senha" },
@@ -3443,64 +3444,76 @@ document.addEventListener('DOMContentLoaded', ()=>{
     "accountForm.ph.newPassword": { es: "********", en: "********", pt: "********" },
     "accountForm.ph.repeatPassword": { es: "********", en: "********", pt: "********" }
   };
-
   function canon(lang){
     if (!lang) return 'es';
     var s = String(lang).toLowerCase();
-    if (s.startsWith('en') || s.includes('english') || s.includes('gb') || s.includes('us')) return 'en';
-    if (s.startsWith('pt') || s.includes('port') || s.includes('br')) return 'pt';
-    if (s.startsWith('es') || s.includes('spanish') || s.includes('espa')) return 'es';
-    return (s.indexOf('en')>=0 ? 'en' : (s.indexOf('pt')>=0 ? 'pt' : 'es'));
+    if (s.startsWith('en')) return 'en';
+    if (s.startsWith('pt')) return 'pt';
+    if (s.startsWith('es')) return 'es';
+    if (s.includes('english')) return 'en';
+    if (s.includes('port')) return 'pt';
+    if (s.includes('espa')) return 'es';
+    return 'es';
   }
+  function wrap(obj){
+    if (!obj || obj.__pwwrapped) return;
+    const _t = typeof obj.t === 'function' ? obj.t.bind(obj) : (k)=>k;
+    const _apply = typeof obj.apply === 'function' ? obj.apply.bind(obj) : function(){};
+    const _set = typeof obj.set === 'function' ? obj.set.bind(obj) : function(l){ obj.lang = l; };
 
-  function install(){
-    if (!window.dI18n) return false;
-    const _t = (typeof dI18n.t === "function") ? dI18n.t.bind(dI18n) : (k)=>k;
-    const _apply = (typeof dI18n.apply === "function") ? dI18n.apply.bind(dI18n) : function(){};
-    const _set = (typeof dI18n.set === "function") ? dI18n.set.bind(dI18n) : function(l){ this.lang = l; };
-
-    // wrap set to normalize and then apply
-    dI18n.set = function(l){
-      try { _set(l); } catch(_) { dI18n.lang = l; }
-      dI18n.lang = canon(dI18n.lang);
-      try { dI18n.apply(); } catch(_){}
-    };
-
-    dI18n.t = function(key){
+    obj.t = function(key){
       if (MAP[key]) {
-        const lang = canon(dI18n.lang);
+        const lang = canon(obj.lang);
         return MAP[key][lang] || MAP[key].es;
       }
       return _t(key);
     };
-
-    dI18n.apply = function(){
-      try { _apply(); } catch(_) {}
+    obj.apply = function(){
+      try { _apply(); } catch(_){}
       try {
-        document.querySelectorAll("[data-i18n-ph]").forEach(function(el){
-          const k = el.getAttribute("data-i18n-ph");
-          const val = dI18n.t(k);
-          if (val != null) el.setAttribute("placeholder", val);
+        document.querySelectorAll('[data-i18n-ph]').forEach(function(el){
+          var k = el.getAttribute('data-i18n-ph');
+          var v = obj.t(k);
+          if (v != null) el.setAttribute('placeholder', v);
         });
-      } catch(_) {}
+      } catch(_){}
+      // Force our two labels in case they aren't managed by the base i18n
+      try {
+        const l1 = document.querySelector('label[for="cfg-pass1"] span[data-i18n="accountForm.labels.newPassword"]');
+        const l2 = document.querySelector('label[for="cfg-pass2"] span[data-i18n="accountForm.labels.repeatPassword"]');
+        if (l1) l1.textContent = obj.t('accountForm.labels.newPassword');
+        if (l2) l2.textContent = obj.t('accountForm.labels.repeatPassword');
+      } catch(_){}
     };
-
-    // Initial application
-    try { dI18n.lang = canon(dI18n.lang || 'es'); dI18n.apply(); } catch(_){}
-    // Wire dropdown clicks as an extra signal
+    obj.set = function(l){
+      try { _set(l); } catch(_){ obj.lang = l; }
+      obj.lang = canon(obj.lang);
+      try { obj.apply(); } catch(_){}
+    };
+    obj.lang = canon(obj.lang || 'es');
+    obj.__pwwrapped = true;
+    try { obj.apply(); } catch(_){}
+  }
+  function install(){
+    if (window.dI18n8n) wrap(window.dI18n8n);
+    if (window.dI18n) wrap(window.dI18n);
+    // If neither exists yet, try again later
+    return !!(window.dI18n8n || window.dI18n);
+  }
+  if (!install()){
+    const iv = setInterval(function(){ if (install()) clearInterval(iv); }, 100);
+    setTimeout(function(){ try{ clearInterval(iv); }catch(_){} }, 8000);
+  }
+  // Also listen to language menu clicks as a fallback
+  document.addEventListener('DOMContentLoaded', function(){
     document.querySelectorAll('.lang-menu .lang-item[data-lang]').forEach(function(it){
       it.addEventListener('click', function(){
-        var code = it.getAttribute('data-lang') || dI18n.lang || 'es';
-        dI18n.set(code);
+        var code = it.getAttribute('data-lang') || 'es';
+        if (window.dI18n8n) window.dI18n8n.set(code);
+        else if (window.dI18n) window.dI18n.set(code);
       });
     });
-    return true;
-  }
-
-  if (!install()) {
-    const iv = setInterval(function(){ if (install()) clearInterval(iv); }, 120);
-    setTimeout(function(){ try{ clearInterval(iv); }catch(_){ } }, 8000);
-  }
+  });
 })();
 </script>
 
