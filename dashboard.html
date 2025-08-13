@@ -647,11 +647,9 @@
 </tr>
 </thead>
 <tbody id="purchases-body">
-
 <tr>
 <td colspan="5" style="text-align: center;">Cargando compras...</td>
 </tr>
-
 </tbody>
 </table>
 </div>
@@ -671,11 +669,9 @@
 </tr>
 </thead>
 <tbody id="referrals-body">
-
 <tr>
 <td colspan="5" style="text-align: center;">Cargando referidos...</td>
 </tr>
-
 </tbody>
 </table>
 </div>
@@ -865,7 +861,132 @@
 })();
 </script>
 
+<script>
+  // 1. VERIFICACIÓN DE CARGA DE SUPABASE
+  function checkSupabaseLoaded() {
+    return new Promise((resolve) => {
+      const check = () => {
+        if (window.supabase) {
+          resolve();
+        } else {
+          setTimeout(check, 100);
+        }
+      };
+      check();
+    });
+  }
 
+  // 2. INICIALIZACIÓN PRINCIPAL
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      // Espera a que Supabase esté disponible
+      await checkSupabaseLoaded();
+
+      // Conexión a Supabase (TUS CREDENCIALES ORIGINALES)
+      const supabase = getSupabase();
+
+      // ► [TODO EL RESTO DE TU CÓDIGO ORIGINAL SE MANTIENE IGUAL]
+      // Desde la verificación de sesión hasta los event listeners
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('*, purchases(*), referrals(*)')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (userError) throw userError;
+
+      // Actualizar UI (tu función original)
+      document.getElementById('user-avatar').textContent = 
+        userData.full_name?.charAt(0).toUpperCase() || 'U';
+      document.getElementById('welcome-title').textContent = 
+        `Bienvenido, ${userData.full_name || userData.email}`;
+      document.getElementById('referral-code').textContent = 
+        userData.referral_code || '---';
+      document.getElementById('balance-value').textContent = `$${userData.balance?.toFixed(2) || '0.00'}`;
+      document.getElementById('purchases-value').textContent = userData.active_purchases || '0';
+      document.getElementById('referrals-value').textContent = userData.referrals_count || '0';
+      document.getElementById('tickets-value').textContent = userData.tickets_count || '0';
+      document.getElementById('full-name').textContent = userData.full_name || 'No definido';
+      document.getElementById('user-email').textContent = userData.email || 'No definido';
+      document.getElementById('user-phone').textContent = userData.phone || 'No definido';
+      document.getElementById('user-address').textContent = userData.address || 'No definido';
+document.getElementById('user-country').textContent = userData.country || 'No definido';
+document.getElementById('user-city').textContent = userData.city || 'No definido';
+document.getElementById('user-postal').textContent = userData.postal_code || 'No definido';
+
+document.getElementById('user-country').textContent = userData.country || 'No definido';
+document.getElementById('user-city').textContent = userData.city || 'No definido';
+document.getElementById('user-postal').textContent = userData.postal_code || 'No definido';
+
+
+      // Compras
+      const purchasesBody = document.getElementById('purchases-body');
+      purchasesBody.innerHTML = userData.purchases?.length > 0 
+        ? userData.purchases.map(p => `
+            <tr>
+              <td>${p.product_name}</td>
+              <td>${new Date(p.created_at).toLocaleDateString()}</td>
+              <td>$${(p.value ?? 0).toFixed(2)}</td>
+              <td><span class="status ${p.status}">${p.status}</span></td>
+              <td><button class="action-btn">Detalles</button></td>
+            </tr>
+          `).join('')
+        : '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
+
+      // Referidos
+      const referralsBody = document.getElementById('referrals-body');
+      referralsBody.innerHTML = userData.referrals?.length > 0
+        ? userData.referrals.map(r => `
+            <tr>
+              <td>${r.referred_email}</td>
+              <td>${new Date(r.created_at).toLocaleDateString()}</td>
+              <td>${r.purchases_count || '0'}</td>
+              <td><span class="status ${r.is_active ? 'active' : 'inactive'}">${r.is_active ? 'Activo' : 'Inactivo'}</span></td>
+              <td>$${(r.commission ?? 0).toFixed(2)}</td>
+            </tr>
+          `).join('')
+        : '<tr><td colspan="5" style="text-align: center;">No hay referidos</td></tr>';
+
+      // --- NUEVO: Prefill y handlers de Configuración ---
+      try { prefillConfigForms(userData); } catch(e) {}
+      try { attachConfigHandlers(supabase); } catch(e) {}
+      // ---------------------------------------------------
+
+    } catch (error) {
+      console.error('Error:', error);
+      const banner = document.getElementById('welcome-banner');
+      if (banner) {
+        banner.innerHTML = `
+          <div class="error-banner">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>Error al conectar con el servidor. Recarga la página.</span>
+            <button onclick="window.location.reload()">Reintentar</button>
+          </div>
+        `;
+      }
+    }
+  });
+
+  // Event listeners (originales)
+  document.getElementById('copy-btn')?.addEventListener('click', function() {
+    const code = document.getElementById('referral-code').textContent;
+    navigator.clipboard.writeText(code);
+    this.textContent = '¡Copiado!';
+    setTimeout(() => this.textContent = 'Copiar', 2000);
+  });
+
+  document.getElementById('logout-btn')?.addEventListener('click', async () => {
+    const supabase = getSupabase();
+    await getSupabase().auth.signOut();
+    window.location.href = '/login.html';
+  });
+</script>
 <script>
 // NUEVOS helpers para Configuración (no afectan otras vistas)
 function prefillConfigForms(userData){
@@ -985,7 +1106,23 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const menuItems = document.querySelectorAll('.menu-item[data-target]');
+  const sections = document.querySelectorAll('.section-content');
 
+  menuItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const target = item.getAttribute('data-target');
+      sections.forEach(section => {
+        section.style.display = section.id === 'section-' + target ? 'block' : 'none';
+      });
+      menuItems.forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+});
+</script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const menuItems = document.querySelectorAll(".menu-item[data-target]");
@@ -1023,13 +1160,13 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('user-email').textContent = 'Cargando...';
     document.getElementById('user-phone').textContent = 'Cargando...';
     document.getElementById('user-address').textContent = 'Cargando...';
-    document.getElementById('purchases-body').innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('Cargando compras...')}</td></tr>`;
-    document.getElementById('referrals-body').innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('Cargando referidos...')}</td></tr>`;
+    document.getElementById('purchases-body').innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando compras...</td></tr>';
+    document.getElementById('referrals-body').innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando referidos...</td></tr>';
 
     const supabase = getSupabase();
 
     const { data: { user }, error } = await supabase.auth.getUser();
-    if (error || !user) { window.location.href = '/login.html'; return; }
+    if (error || !user) return;
 
     const { data: userData } = await supabase
       .from('users')
@@ -1037,15 +1174,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .eq('id', user.id)
       .maybeSingle();
 
-    if (!userData) {
-      document.getElementById('welcome-title').textContent = dI18n.t('labels.welcome');
-      document.getElementById('referral-code').textContent = '---';
-      document.getElementById('balance-value').textContent = '$0.00';
-      document.getElementById('purchases-value').textContent = '0';
-      document.getElementById('referrals-value').textContent = '0';
-      document.getElementById('tickets-value').textContent = '0';
-      return;
-    }
+    if (!userData) return;
 
     document.getElementById('user-avatar').textContent = userData.full_name?.charAt(0).toUpperCase() || 'U';
     window.__lastUserName = (userData.full_name || userData.email);
@@ -1074,7 +1203,7 @@ document.addEventListener("DOMContentLoaded", () => {
         purchasesBody.innerHTML += row;
       });
     } else {
-      purchasesBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay compras')}</td></tr>`;
+      purchasesBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
     }
 
     const referralsBody = document.getElementById('referrals-body');
@@ -1086,13 +1215,13 @@ document.addEventListener("DOMContentLoaded", () => {
           '<td>' + new Date(r.created_at).toLocaleDateString() + '</td>' +
           '<td>' + (r.purchases_count || '0') + '</td>' +
           '<td><span class="status ' + (r.is_active ? 'active' : 'inactive') + '">' +
-          (r.is_active ? (dI18n.t('Activo')||'Activo') : (dI18n.t('Inactivo')||'Inactivo')) + '</span></td>' +
+          (r.is_active ? 'Activo' : 'Inactivo') + '</span></td>' +
           '<td>$' + (r.commission?.toFixed(2) || '0.00') + '</td>' +
           '</tr>';
         referralsBody.innerHTML += row;
       });
     } else {
-      referralsBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay referidos')}</td></tr>`;
+      referralsBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay referidos</td></tr>';
     }
   }
 
@@ -1148,11 +1277,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const tbody = document.getElementById('miscompras-body');
         if (purchaseError || !purchases) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay compras')}</td></tr>`;
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
           return;
         }
         if (purchases.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">${dI18n.t('No hay compras')}</td></tr>`;
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
           return;
         }
         tbody.innerHTML = purchases.map(p => `
@@ -2497,41 +2626,25 @@ document.addEventListener('DOMContentLoaded', ()=>{
 })();
 </script>
 
-
-
-
+<!-- SAFE addon: live i18n for dynamic content (does not alter existing logic) -->
 <script>
-// === Live i18n for dynamic content (tables, account info, statuses, buttons) ===
 (function(){
   function getStore(k, fb){ try { var v = localStorage.getItem(k); return v==null?fb:v; } catch(_){ return fb; } }
   function lang(){ var d = window.dI18n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
-
-  // Base map (keys in ES). We keep keys in ES para detectar cuando fueron insertados por código.
   var MAP = {
-    es: {
-      'No hay referidos':'No hay referidos', 'No hay compras':'No hay compras',
-      'Cargando referidos...':'Cargando referidos...', 'Cargando compras...':'Cargando compras...',
-      'Activo':'Activo', 'Inactivo':'Inactivo',
-      'No definido':'No definido',
-      'Hacer reclamo':'Hacer reclamo', 'Detalles':'Detalles'
-    },
-    en: {
-      'No hay referidos':'No referrals', 'No hay compras':'No purchases',
-      'Cargando referidos...':'Loading referrals...', 'Cargando compras...':'Loading purchases...',
-      'Activo':'Active', 'Inactivo':'Inactive',
-      'No definido':'Not set',
-      'Hacer reclamo':'Open claim', 'Detalles':'Details'
-    },
-    pt: {
-      'No hay referidos':'Sem referidos', 'No hay compras':'Sem compras',
-      'Cargando referidos...':'Carregando referidos...', 'Cargando compras...':'Carregando compras...',
-      'Activo':'Ativo', 'Inactivo':'Inativo',
-      'No definido':'Não definido',
-      'Hacer reclamo':'Abrir reclamação', 'Detalles':'Detalhes'
-    }
+    es: { 'No hay referidos':'No hay referidos', 'No hay compras':'No hay compras',
+          'Cargando referidos...':'Cargando referidos...', 'Cargando compras...':'Cargando compras...',
+          'Activo':'Activo', 'Inactivo':'Inactivo', 'No definido':'No definido',
+          'Hacer reclamo':'Hacer reclamo', 'Detalles':'Detalles' },
+    en: { 'No hay referidos':'No referrals', 'No hay compras':'No purchases',
+          'Cargando referidos...':'Loading referrals...', 'Cargando compras...':'Loading purchases...',
+          'Activo':'Active', 'Inactivo':'Inactive', 'No definido':'Not set',
+          'Hacer reclamo':'Open claim', 'Detalles':'Details' },
+    pt: { 'No hay referidos':'Sem referidos', 'No hay compras':'Sem compras',
+          'Cargando referidos...':'Carregando referidos...', 'Cargando compras...':'Carregando compras...',
+          'Activo':'Ativo', 'Inactivo':'Inativo', 'No definido':'Não definido',
+          'Hacer reclamo':'Abrir reclamação', 'Detalles':'Detalhes' }
   };
-
-  // Take translations from global Phrases if available and merge over our fallback MAP
   function dict(){
     var L = lang();
     var base = Object.assign({}, MAP[L] || MAP['es']);
@@ -2542,10 +2655,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }catch(_){}
     return base;
   }
-
   function translateDynamic(){
     var D = dict();
-    // Areas we need to keep translated even when DOM changes
     var selectors = [
       '#referrals-table td', '#purchases-table td', '#miscompras-table td',
       '#referrals-body td', '#purchases-body td', '#miscompras-body td',
@@ -2553,23 +2664,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
     ];
     var nodes = document.querySelectorAll(selectors.join(','));
     nodes.forEach(function(el){
-      var t = (el.textContent||'').trim();
-      if (!t) return;
-      if (Object.prototype.hasOwnProperty.call(D, t)) {
-        el.textContent = D[t];
-      } else {
-        // allow case-insensitive match
-        var lower = t.toLowerCase();
-        for (var k in D){ if (k.toLowerCase() === lower){ el.textContent = D[k]; break; } }
-      }
+      var t = (el.textContent||'').trim(); if (!t) return;
+      if (Object.prototype.hasOwnProperty.call(D, t)) { el.textContent = D[t]; return; }
+      var lower = t.toLowerCase();
+      for (var k in D){ if (k.toLowerCase() === lower){ el.textContent = D[k]; break; } }
     });
   }
-
-  // Initial translate
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', translateDynamic, {once:true});
   else translateDynamic();
-
-  // Observe DOM changes
   try{
     var mo = new MutationObserver(function(m){
       for (var i=0;i<m.length;i++){
@@ -2578,8 +2680,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     });
     mo.observe(document.body, {subtree:true, childList:true, characterData:true});
   }catch(_){}
-
-  // Re-translate when language changes via dI18n.set
   if (window.dI18n){
     var _origSet = typeof dI18n.set==='function' ? dI18n.set.bind(dI18n) : null;
     dI18n.set = function(l){ if (_origSet) _origSet(l); translateDynamic(); };
