@@ -603,17 +603,8 @@
     const L = lang2();
     return (STATUS_FALLBACK[L] && STATUS_FALLBACK[L][key]) || STATUS_FALLBACK.es[key] || key;
   }
-  function normalizeStatus(x){
-    const s = String(x ?? '').toLowerCase();
-    if (s==='true' || s==='activo' || s==='active') return 'active';
-    if (s==='completed' || s==='completado' || s==='complete') return 'completed';
-    if (s==='cancelled' || s==='canceled' || s==='cancelado') return 'cancelled';
-    if (s==='inactive' || s==='inactivo') return 'inactive';
-    if (s==='paid' || s==='pagado') return 'paid';
-    if (s==='disputed' || s==='disputado' || s==='disputa') return 'disputed';
-    return 'pending';
-  }
-  window.statusBadge = function(state){
+  function normalizeStatus(x){ try { return window.normalizeStatus ? window.normalizeStatus(x) : (String(x ?? '').toLowerCase() || 'pending'); } catch(_) { return 'pending'; } }
+window.statusBadge = function(state){
     const key = normalizeStatus(state);
     return '<span class="status '+key+'">'+ statusLabel(key) +'</span>';
   };
@@ -1143,14 +1134,7 @@ setText('user-postal', userData.postal_code);
         if (!el) return;
         el.textContent = (val === undefined || val === null || String(val).trim()==='') ? _i18nUndefined() : val;
       }
-const statusLabel = (s) => {
-        const v = String(s||'').toLowerCase();
-        if (v === 'active' || v === 'activo') return ((window.dI18n && window.dI18n.t) ? dI18n.t('Activo') : 'Activo');
-        if (v === 'inactive' || v === 'inactivo') return ((window.dI18n && window.dI18n.t) ? dI18n.t('Inactivo') : 'Inactivo');
-        if (v === 'pending' || v === 'pendiente') return ((window.dI18n && window.dI18n.t) ? dI18n.t('Pendiente') : 'Pendiente');
-        if (v === 'completed' || v === 'completado' || v === 'complete') return ((window.dI18n && window.dI18n.t) ? dI18n.t('Completado') : 'Completado');
-        return s;
-      };
+// removed duplicate/bad statusLabel (Spanish literals); using global statusBadge instead
 
       // Compras
       const purchasesBody = document.getElementById('purchases-body');
@@ -1420,9 +1404,7 @@ document.addEventListener("DOMContentLoaded", () => {
       userData.purchases.forEach(p => {
         const row = '<tr>' +
           '<td>' + p.product_name + '</td>' +
-          '<td>' + new Date(p.created_at).toLocaleDateString() + '</td>' +
-          '<td>$' + (p.value?.toFixed(2) || '0.00') + '</td>' +
-          '<td><span class="status ' + p.status + '\">' + statusLabel(p.status) + '</span></td>' +
+          '<td>' + new Date(p.created_at).toLocaleDateString() + '</td>' +'<td>$' + (p.value?.toFixed(2) || '0.00') + '</td>' +'<td>' + statusBadge(p.status) + '</td>' +
           '<td><button class="action-btn">Detalles</button></td>' +
           '</tr>';
         purchasesBody.innerHTML += row;
