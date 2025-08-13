@@ -929,10 +929,10 @@ document.getElementById('user-postal').textContent = userData.postal_code || 'No
       // i18n status helper
       const statusLabel = (s) => {
         const v = String(s||'').toLowerCase();
-        if (v === 'active' || v === 'activo') return ((window.dI18n && window.dI18n.t) ? dI18n.t('Activo') : 'Activo');
-        if (v === 'inactive' || v === 'inactivo') return ((window.dI18n && window.dI18n.t) ? dI18n.t('Inactivo') : 'Inactivo');
-        if (v === 'pending' || v === 'pendiente') return ((window.dI18n && window.dI18n.t) ? dI18n.t('Pendiente') : 'Pendiente');
-        if (v === 'completed' || v === 'completado' || v === 'complete') return ((window.dI18n && window.dI18n.t) ? dI18n.t('Completado') : 'Completado');
+        if (v === 'active' || v === 'activo') return ((window.dI18n8n && window.dI18n8n.t) ? dI18n8n.t('Activo') : 'Activo');
+        if (v === 'inactive' || v === 'inactivo') return ((window.dI18n8n && window.dI18n8n.t) ? dI18n8n.t('Inactivo') : 'Inactivo');
+        if (v === 'pending' || v === 'pendiente') return ((window.dI18n8n && window.dI18n8n.t) ? dI18n8n.t('Pendiente') : 'Pendiente');
+        if (v === 'completed' || v === 'completado' || v === 'complete') return ((window.dI18n8n && window.dI18n8n.t) ? dI18n8n.t('Completado') : 'Completado');
         return s;
       };
 
@@ -1161,7 +1161,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function cargarDashboard() {
     console.log("[cargarDashboard] Ejecutando");
 
-    document.getElementById('welcome-title').textContent = dI18n.t('labels.loading');
+    document.getElementById('welcome-title').textContent = dI18n8n.t('labels.loading');
     document.getElementById('referral-code').textContent = '---';
     document.getElementById('balance-value').textContent = '$---';
     document.getElementById('purchases-value').textContent = '--';
@@ -1189,7 +1189,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById('user-avatar').textContent = userData.full_name?.charAt(0).toUpperCase() || 'U';
     window.__lastUserName = (userData.full_name || userData.email);
-    document.getElementById('welcome-title').textContent = dI18n.t('labels.welcome') + ' ' + window.__lastUserName;
+    document.getElementById('welcome-title').textContent = dI18n8n.t('labels.welcome') + ' ' + window.__lastUserName;
     document.getElementById('referral-code').textContent = userData.referral_code || '---';
     document.getElementById('balance-value').textContent = '$' + (userData.balance?.toFixed(2) || '0.00');
     document.getElementById('purchases-value').textContent = userData.active_purchases || '0';
@@ -1226,7 +1226,7 @@ document.addEventListener("DOMContentLoaded", () => {
           '<td>' + new Date(r.created_at).toLocaleDateString() + '</td>' +
           '<td>' + (r.purchases_count || '0') + '</td>' +
           '<td><span class="status ' + (r.is_active ? 'active' : 'inactive') + '">' +
-          ((window.dI18n && window.dI18n.t) ? (r.is_active ? dI18n.t('Activo') : dI18n.t('Inactivo')) : (r.is_active ? 'Activo' : 'Inactivo')) + '</span></td>' +
+          ((window.dI18n8n && window.dI18n8n.t) ? (r.is_active ? dI18n8n.t('Activo') : dI18n8n.t('Inactivo')) : (r.is_active ? 'Activo' : 'Inactivo')) + '</span></td>' +
           '<td>$' + (r.commission?.toFixed(2) || '0.00') + '</td>' +
           '</tr>';
         referralsBody.innerHTML += row;
@@ -1301,7 +1301,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <td>${new Date(p.created_at).toLocaleDateString()}</td>
             <td>${(p.value ?? 0).toFixed(2)}</td>
             <td><span class="status ${p.status}">${statusLabel(p.status)}</span></td>
-            <td><button class="action-btn" disabled>${dI18n.t('Hacer reclamo')}</button></td>
+            <td><button class="action-btn" disabled>${dI18n8n.t('Hacer reclamo')}</button></td>
           </tr>
         `).join('');
       } catch (e) {
@@ -1769,7 +1769,7 @@ const DB_I18N = {
   }
 };
 
-const dI18n = {
+const dI18n8n = {
   current: 'es',
   set(lang){
     if(!DB_I18N[lang]) return;
@@ -1797,22 +1797,22 @@ const dI18n = {
     };
     Object.entries(map).forEach(([k, sel]) => {
       const el = document.querySelector(sel);
-      if (el) el.textContent = dI18n.t('sidebar.'+k);
+      if (el) el.textContent = dI18n8n.t('sidebar.'+k);
     });
     // Copy button
     const copyBtn = document.getElementById('copy-btn');
-    if (copyBtn) copyBtn.textContent = dI18n.t('actions.copy');
+    if (copyBtn) copyBtn.textContent = dI18n8n.t('actions.copy');
     // Section titles (if present)
     const s1 = document.querySelector('h2.section-title i.fa-shopping-bag + span');
-    if (s1) s1.textContent = dI18n.t('sections.comprasActivas');
+    if (s1) s1.textContent = dI18n8n.t('sections.comprasActivas');
     const s2 = document.querySelector('h2.section-title i.fa-users + span');
-    if (s2) s2.textContent = dI18n.t('sections.referidosHist');
+    if (s2) s2.textContent = dI18n8n.t('sections.referidosHist');
     const s3 = document.querySelector('h2.section-title i.fa-user-circle + span');
-    if (s3) s3.textContent = dI18n.t('sections.accountInfo');
+    if (s3) s3.textContent = dI18n8n.t('sections.accountInfo');
     const wt = document.getElementById('welcome-title');
     if (wt) {
       const nm = (window.__lastUserName || '').trim();
-      wt.textContent = dI18n.t('labels.welcome') + (nm ? ' ' + nm : '');
+      wt.textContent = dI18n8n.t('labels.welcome') + (nm ? ' ' + nm : '');
     }
 
   }
@@ -1822,7 +1822,7 @@ const dI18n = {
   const saved = (()=>{ try{return localStorage.getItem('dash_lang')}catch(e){ return null } })();
   const preferred = (navigator.language || 'es').toLowerCase();
   const initial = saved || (preferred.startsWith('en') ? 'en' : preferred.startsWith('pt') ? 'pt' : 'es');
-  dI18n.set(initial);
+  dI18n8n.set(initial);
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1836,12 +1836,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function closeMenu(){ dropdown.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
 
   function updateLabel(){
-    const label = dI18n.current==='en'?'English': dI18n.current==='pt'?'Português':'Español';
+    const label = dI18n8n.current==='en'?'English': dI18n8n.current==='pt'?'Português':'Español';
     if (currentSpan) currentSpan.textContent = label;
   }
 
   updateLabel();
-  dI18n.apply();
+  dI18n8n.apply();
 
   btn?.addEventListener('click', (e)=>{
     e.stopPropagation();
@@ -1851,7 +1851,7 @@ document.addEventListener('DOMContentLoaded', () => {
     item.addEventListener('click', (e)=>{
       e.stopPropagation();
       const lang = item.dataset.lang;
-      dI18n.set(lang);
+      dI18n8n.set(lang);
       updateLabel();
       // update selected
       menu.querySelectorAll('.lang-item').forEach(li=> li.setAttribute('aria-selected', li.dataset.lang===lang?'true':'false'));
@@ -1863,7 +1863,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Hook copy button text change on success to language
   const copyBtn = document.getElementById('copy-btn');
   if (copyBtn) {
-    const setCopied = ()=>{ copyBtn.textContent = dI18n.t('actions.copied'); setTimeout(()=> copyBtn.textContent = dI18n.t('actions.copy'), 2000); };
+    const setCopied = ()=>{ copyBtn.textContent = dI18n8n.t('actions.copied'); setTimeout(()=> copyBtn.textContent = dI18n8n.t('actions.copy'), 2000); };
     // If an existing handler changes it, we still ensure fallback translation with a custom event
     copyBtn.addEventListener('copied-i18n', setCopied);
   }
@@ -1967,8 +1967,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 
   // Monkey-patch apply to also translate content if present
-  const origApply = dI18n.apply.bind(dI18n);
-  dI18n.apply = function(){
+  const origApply = dI18n8n.apply.bind(dI18n8n);
+  dI18n8n.apply = function(){
     origApply();
 
     const dict = DB_I18N[this.current];
@@ -2021,7 +2021,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     // Translate "Hacer reclamo" buttons
     const claimBtns = Array.from(document.querySelectorAll('button, a')).filter(el=>{
       const t = el.textContent.trim();
-      return t === (dI18n.t ? dI18n.t('Hacer reclamo') : 'Hacer reclamo') || t === 'Make a claim' || t === 'Fazer reclamação';
+      return t === (dI18n8n.t ? dI18n8n.t('Hacer reclamo') : 'Hacer reclamo') || t === 'Make a claim' || t === 'Fazer reclamação';
     });
     claimBtns.forEach(el=> el.textContent = dict.labels.claim);
 
@@ -2043,7 +2043,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   };
 
   // Re-apply right away (in case user already had page open)
-  dI18n.apply();
+  dI18n8n.apply();
 })();
 </script>
 
@@ -2051,7 +2051,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 <script>
 // === Stronger phrase-level translations for dashboard widgets ===
 (function(){
-  if (!window.DB_I18N || !window.dI18n) return;
+  if (!window.DB_I18N || !window.dI18n8n) return;
 
   const Phrases = {
     es: {
@@ -2105,7 +2105,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   };
 
   function translatePhrases(root){
-    const dict = Phrases[dI18n.current];
+    const dict = Phrases[dI18n8n.current];
     if (!dict) return;
     // Elements where labels commonly live
     const selectors = [
@@ -2130,15 +2130,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
     });
   }
 
-  // Patch dI18n.apply to also translate phrases
-  const originalApply = dI18n.apply.bind(dI18n);
-  dI18n.apply = function(){
+  // Patch dI18n8n.apply to also translate phrases
+  const originalApply = dI18n8n.apply.bind(dI18n8n);
+  dI18n8n.apply = function(){
     originalApply();
     translatePhrases(document);
   };
 
   // Initial apply
-  dI18n.apply();
+  dI18n8n.apply();
 })();
 </script>
 
@@ -2151,7 +2151,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // Resolve current language from multiple sources
   function currentLang(){
-    var d = window.dI18n || {};
+    var d = window.dI18n8n || {};
     return d.current || d.lang || getStore('dash_lang', getStore('lang', 'es')) || 'es';
   }
 
@@ -2166,8 +2166,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   function tOrFallback(key, fb){
     var lang = currentLang();
     try {
-      if (window.dI18n && typeof dI18n.t === "function") {
-        var v = dI18n.t(key);
+      if (window.dI18n8n && typeof dI18n8n.t === "function") {
+        var v = dI18n8n.t(key);
         if (typeof v === "string" && v.trim()) {
           if (v.toLowerCase() === key.toLowerCase()) return fb;     // returned key itself
           if (lang !== "es" && ES_SET.has(v.trim())) return fb;      // fell back to ES while not ES
@@ -2252,12 +2252,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
     setTimeout(burst, 0);
   }, true); // capture = true to ensure we catch it
 
-  // Also re-run when dI18n.apply or set are called
-  if (window.dI18n) {
-    var _apply = typeof dI18n.apply === "function" ? dI18n.apply.bind(dI18n) : null;
-    dI18n.apply = function(){ if (_apply) _apply(); burst(); };
-    var _set = typeof dI18n.set === "function" ? dI18n.set.bind(dI18n) : null;
-    dI18n.set = function(lang){ if (_set) _set(lang); burst(); };
+  // Also re-run when dI18n8n.apply or set are called
+  if (window.dI18n8n) {
+    var _apply = typeof dI18n8n.apply === "function" ? dI18n8n.apply.bind(dI18n8n) : null;
+    dI18n8n.apply = function(){ if (_apply) _apply(); burst(); };
+    var _set = typeof dI18n8n.set === "function" ? dI18n8n.set.bind(dI18n8n) : null;
+    dI18n8n.set = function(lang){ if (_set) _set(lang); burst(); };
   }
 })();
 </script>
@@ -2265,13 +2265,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
 <script>
 /* === NUMINA i18n: table headers (Producto/Fecha/Valor/Estado/Acciones) ===
    - Robust: tags columns once (data-i18n-col) by content or position
-   - Translates on DOM changes and when dI18n.set/apply run
+   - Translates on DOM changes and when dI18n8n.set/apply run
    - Does NOT touch dropdown/menu behavior
 */
 (function(){
   // Small helpers
   function getStore(k, fb){ try { var v = localStorage.getItem(k); return v==null?fb:v; } catch(_){ return fb; } }
-  function lang(){ var d = window.dI18n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
+  function lang(){ var d = window.dI18n8n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
   function norm(s){ return (s||"").toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
 
   // Fallback dictionary
@@ -2284,8 +2284,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   function tOr(key, fb){
     try {
-      if (window.dI18n && typeof dI18n.t === "function") {
-        var v = dI18n.t(key);
+      if (window.dI18n8n && typeof dI18n8n.t === "function") {
+        var v = dI18n8n.t(key);
         if (typeof v === "string" && v.trim()) {
           if (v.toLowerCase() === key.toLowerCase()) return fb;     // returned key itself
           if (lang() !== "es" && ES_SET.has(v.trim())) return fb;   // fell back to ES in non-ES
@@ -2382,11 +2382,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }catch(_){}
 
   // Hook your i18n
-  if (window.dI18n){
-    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
-    dI18n.apply = function(){ if (_apply) _apply(); burst(); };
-    var _set   = typeof dI18n.set==="function"   ? dI18n.set.bind(dI18n)   : null;
-    dI18n.set = function(l){ if (_set) _set(l); burst(); };
+  if (window.dI18n8n){
+    var _apply = typeof dI18n8n.apply==="function" ? dI18n8n.apply.bind(dI18n8n) : null;
+    dI18n8n.apply = function(){ if (_apply) _apply(); burst(); };
+    var _set   = typeof dI18n8n.set==="function"   ? dI18n8n.set.bind(dI18n8n)   : null;
+    dI18n8n.set = function(l){ if (_set) _set(l); burst(); };
   }
 
   // Also react to clicks on any [data-lang] element (let your code run first)
@@ -2400,7 +2400,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 /* === NUMINA i18n: referrals table headers (Referido/Fecha/Compras/Estado/Comisión) === */
 (function(){
   function getStore(k, fb){ try { var v = localStorage.getItem(k); return v==null?fb:v; } catch(_){ return fb; } }
-  function lang(){ var d = window.dI18n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
+  function lang(){ var d = window.dI18n8n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
   function norm(s){ return (s||"").toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
 
   var COLS = {
@@ -2412,8 +2412,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   function tOr(key, fb){
     try {
-      if (window.dI18n && typeof dI18n.t === "function") {
-        var v = dI18n.t(key);
+      if (window.dI18n8n && typeof dI18n8n.t === "function") {
+        var v = dI18n8n.t(key);
         if (typeof v === "string" && v.trim()) {
           if (v.toLowerCase() === key.toLowerCase()) return fb;
           if (lang() !== "es" && ES_SET.has(v.trim())) return fb;
@@ -2488,11 +2488,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
     mo.observe(document.body, {subtree:true, childList:true, characterData:true});
   }catch(_){}
 
-  if (window.dI18n){
-    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
-    dI18n.apply = function(){ if (_apply) _apply(); burst(); };
-    var _set = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
-    dI18n.set = function(l){ if (_set) _set(l); burst(); };
+  if (window.dI18n8n){
+    var _apply = typeof dI18n8n.apply==="function" ? dI18n8n.apply.bind(dI18n8n) : null;
+    dI18n8n.apply = function(){ if (_apply) _apply(); burst(); };
+    var _set = typeof dI18n8n.set==="function" ? dI18n8n.set.bind(dI18n8n) : null;
+    dI18n8n.set = function(l){ if (_set) _set(l); burst(); };
   }
 })();
 </script>
@@ -2501,7 +2501,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 /* === NUMINA i18n: account info labels (Nombre/Correo/Teléfono/Dirección/País/Ciudad/Código Postal) === */
 (function(){
   function getStore(k, fb){ try { var v = localStorage.getItem(k); return v==null?fb:v; } catch(_){ return fb; } }
-  function lang(){ var d = window.dI18n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
+  function lang(){ var d = window.dI18n8n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
   function norm(s){ return (s||"").toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
 
   var LBL = {
@@ -2513,8 +2513,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   function tOr(key, fb){
     try {
-      if (window.dI18n && typeof dI18n.t === "function") {
-        var v = dI18n.t(key);
+      if (window.dI18n8n && typeof dI18n8n.t === "function") {
+        var v = dI18n8n.t(key);
         if (typeof v === "string" && v.trim()) {
           if (v.toLowerCase() === key.toLowerCase()) return fb;
           if (lang() !== "es" && ES_SET.has(v.trim())) return fb;
@@ -2585,11 +2585,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
     mo.observe(document.body, {subtree:true, childList:true, characterData:true});
   }catch(_){}
 
-  if (window.dI18n){
-    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
-    dI18n.apply = function(){ if (_apply) _apply(); burst(); };
-    var _set = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
-    dI18n.set = function(l){ if (_set) _set(l); burst(); };
+  if (window.dI18n8n){
+    var _apply = typeof dI18n8n.apply==="function" ? dI18n8n.apply.bind(dI18n8n) : null;
+    dI18n8n.apply = function(){ if (_apply) _apply(); burst(); };
+    var _set = typeof dI18n8n.set==="function" ? dI18n8n.set.bind(dI18n8n) : null;
+    dI18n8n.set = function(l){ if (_set) _set(l); burst(); };
   }
 })();
 </script>
@@ -2597,7 +2597,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 <script>
 /* === Copy button i18n fix (adds PT + ensures updates on set/apply/click) === */
 (function(){
-  if (!window.DB_I18N || !window.dI18n) return;
+  if (!window.DB_I18N || !window.dI18n8n) return;
 
   // Ensure locales exist
   DB_I18N.en = DB_I18N.en || {};
@@ -2612,27 +2612,27 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   function updateCopyBtn(){
     var btn = document.getElementById("copy-btn");
-    if (btn) btn.textContent = dI18n.t("actions.copy");
+    if (btn) btn.textContent = dI18n8n.t("actions.copy");
   }
   function wireCopiedEvent(){
     var btn = document.getElementById("copy-btn");
-    if (!btn || btn.__wiredCopiedI18n) return;
-    btn.__wiredCopiedI18n = true;
+    if (!btn || btn.__wiredCopiedI18n8n) return;
+    btn.__wiredCopiedI18n8n = true;
     btn.addEventListener("copied-i18n", function(){
-      btn.textContent = dI18n.t("actions.copied");
+      btn.textContent = dI18n8n.t("actions.copied");
       setTimeout(updateCopyBtn, 1400);
     });
   }
 
-  // Patch dI18n.apply and set
-  var _apply = (typeof dI18n.apply === "function") ? dI18n.apply.bind(dI18n) : null;
-  dI18n.apply = function(){
+  // Patch dI18n8n.apply and set
+  var _apply = (typeof dI18n8n.apply === "function") ? dI18n8n.apply.bind(dI18n8n) : null;
+  dI18n8n.apply = function(){
     if (_apply) _apply();
     updateCopyBtn();
     wireCopiedEvent();
   };
-  var _set = (typeof dI18n.set === "function") ? dI18n.set.bind(dI18n) : null;
-  dI18n.set = function(lang){
+  var _set = (typeof dI18n8n.set === "function") ? dI18n8n.set.bind(dI18n8n) : null;
+  dI18n8n.set = function(lang){
     if (_set) _set(lang);
     updateCopyBtn();
   };
@@ -2657,8 +2657,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     money(v){
       try{
         const n = Number(v||0);
-        // Usa el idioma actual si existe dI18n, default ES
-        const lang = (window.dI18n && (dI18n.current||dI18n.lang)) || 'es';
+        // Usa el idioma actual si existe dI18n8n, default ES
+        const lang = (window.dI18n8n && (dI18n8n.current||dI18n8n.lang)) || 'es';
         const currency = 'USD'; // si tu backend usa otra moneda, ajustar aquí
         return new Intl.NumberFormat(lang, { style:'currency', currency }).format(isFinite(n)?n:0);
       }catch(_){ return '$' + (v||'0'); }
@@ -2682,7 +2682,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const i18n = {
     statusLabel(s){
       const v = String(s||'').toLowerCase();
-      const t = (window.dI18n && window.dI18n.t) ? dI18n.t : (k)=>k;
+      const t = (window.dI18n8n && window.dI18n8n.t) ? dI18n8n.t : (k)=>k;
       if (v === 'active' || v === 'activo') return t('Activo') || 'Activo';
       if (v === 'inactive' || v === 'inactivo') return t('Inactivo') || 'Inactivo';
       if (v === 'pending' || v === 'pendiente') return t('Pendiente') || 'Pendiente';
@@ -2695,7 +2695,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // Render helpers: pequeñas utilidades para futuras refactors
   const render = {
     emptyRow(messageKey){
-      const t = (window.dI18n && window.dI18n.t) ? dI18n.t(messageKey) : messageKey;
+      const t = (window.dI18n8n && window.dI18n8n.t) ? dI18n8n.t(messageKey) : messageKey;
       return `<tr><td colspan="5" style="text-align: center;">${t}</td></tr>`;
     },
     statusPill(status){
@@ -2744,7 +2744,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   function postShow(target){
     try{
-      if (window.dI18n && typeof dI18n.apply === 'function') dI18n.apply();
+      if (window.dI18n8n && typeof dI18n8n.apply === 'function') dI18n8n.apply();
     }catch(_){}
     if (target && /mis/i.test(target)) ensureMisComprasFresh();
   }
@@ -2780,7 +2780,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 
   function t(key, fb){
-    try{ return (window.dI18n && dI18n.t) ? (dI18n.t(key)||fb||key) : (fb||key); }catch(_){ return fb||key; }
+    try{ return (window.dI18n8n && dI18n8n.t) ? (dI18n8n.t(key)||fb||key) : (fb||key); }catch(_){ return fb||key; }
   }
 
   function wireCopy(){
@@ -2819,9 +2819,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
       }, { passive:true });
     });
     wireCopy();
-    if (window.dI18n && typeof dI18n.set==='function'){
-      var _set = dI18n.set.bind(dI18n);
-      dI18n.set = function(l){ _set(l); try{ wireCopy(); }catch(_){ } };
+    if (window.dI18n8n && typeof dI18n8n.set==='function'){
+      var _set = dI18n8n.set.bind(dI18n8n);
+      dI18n8n.set = function(l){ _set(l); try{ wireCopy(); }catch(_){ } };
     }
   });
 })();
@@ -2889,7 +2889,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     window.__NUMINA_BTN_I18N__ = true;
     function applyBtnI18n(){
       try{
-        var t = (window.dI18n && window.dI18n.t) ? dI18n.t : (k)=>k;
+        var t = (window.dI18n8n && window.dI18n8n.t) ? dI18n8n.t : (k)=>k;
         document.querySelectorAll('button').forEach(function(b){
           var x = (b.textContent||'').trim();
           if (!x) return;
@@ -2903,9 +2903,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyBtnI18n, {once:true});
     else applyBtnI18n();
-    if (window.dI18n){
-      var _set = (window.dI18n && typeof dI18n.set==='function') ? dI18n.set.bind(dI18n) : null;
-      dI18n.set = function(l){ if (_set) _set(l); applyBtnI18n(); };
+    if (window.dI18n8n){
+      var _set = (window.dI18n8n && typeof dI18n8n.set==='function') ? dI18n8n.set.bind(dI18n8n) : null;
+      dI18n8n.set = function(l){ if (_set) _set(l); applyBtnI18n(); };
     }
   }
 })();
@@ -2919,7 +2919,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   window.__NUMINA_LOADERS__ = true;
 
   function t(key, fb){
-    try{ return (window.dI18n && dI18n.t) ? (dI18n.t(key)||fb||key) : (fb||key); }catch(_){ return fb||key; }
+    try{ return (window.dI18n8n && dI18n8n.t) ? (dI18n8n.t(key)||fb||key) : (fb||key); }catch(_){ return fb||key; }
   }
 
   // Helpers de UI para estados
@@ -2980,9 +2980,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
       var r = fn && fn();
       if (r && typeof r.then === 'function'){
         return r.catch(function(e){ console.warn('['+name+']', e); })
-                .finally(function(){ try{ if (window.dI18n && dI18n.apply) dI18n.apply(); }catch(_){} });
+                .finally(function(){ try{ if (window.dI18n8n && dI18n8n.apply) dI18n8n.apply(); }catch(_){} });
       }else{
-        try{ if (window.dI18n && dI18n.apply) dI18n.apply(); }catch(_){}
+        try{ if (window.dI18n8n && dI18n8n.apply) dI18n8n.apply(); }catch(_){}
         return r;
       }
     }catch(e){
@@ -3035,14 +3035,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 
   // Reaplicar traducciones al cambiar idioma
-  if (window.dI18n && typeof dI18n.set==='function' && !dI18n.__patchedForLoaders){
-    var _set = dI18n.set.bind(dI18n);
-    dI18n.set = function(lang){
+  if (window.dI18n8n && typeof dI18n8n.set==='function' && !dI18n8n.__patchedForLoaders){
+    var _set = dI18n8n.set.bind(dI18n8n);
+    dI18n8n.set = function(lang){
       var r = _set(lang);
-      try{ if (window.dI18n && dI18n.apply) dI18n.apply(); }catch(_){}
+      try{ if (window.dI18n8n && dI18n8n.apply) dI18n8n.apply(); }catch(_){}
       return r;
     };
-    dI18n.__patchedForLoaders = true;
+    dI18n8n.__patchedForLoaders = true;
   }
 
   // Señales de red (opcional futuro) – silencioso por ahora
@@ -3058,7 +3058,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 (function(){
   if (window.NUMINA_RENDER) return;
 
-  function t(k, fb){ try{ return (window.dI18n && dI18n.t) ? (dI18n.t(k)||fb||k) : (fb||k);}catch(_){return fb||k;} }catch(_){return fb||k;} }
+  function t(k, fb){ try{ return (window.dI18n && dI18n.t) ? (dI18n.t(k)||fb||k) : (fb||k);}catch(_){return fb||k;} }catch(_){return fb||k;} }catch(_){return fb||k;} }
   function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }[m])); }
   function fmtMoney(v){ try{ return (new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'})).format(Number(v||0)); }catch(_){ return '$'+(v||0); } })).format(Number(v||0)); }catch(_){ return '$'+(v||0); } }
   function fmtDate(iso){ try{ var d=new Date(iso); return isNaN(d)?(iso||''):d.toLocaleDateString(); }catch(_){ return iso||''; } }catch(_){ return iso||''; } }
@@ -3141,7 +3141,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
             const rowsR = window.__dataReferidos__ || res.referidos || [];
             tbR.innerHTML = R.referrals(rowsR);
           }
-          if (window.dI18n && dI18n.apply) dI18n.apply();
+          if (window.dI18n8n && dI18n8n.apply) dI18n8n.apply();
         }catch(_){}
       });
     }
@@ -3156,7 +3156,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         try{
           const tb = document.getElementById('miscompras-body') || document.getElementById('purchases-body');
           if (tb && Array.isArray(rows)) tb.innerHTML = R.purchases(rows);
-          if (window.dI18n && dI18n.apply) dI18n.apply();
+          if (window.dI18n8n && dI18n8n.apply) dI18n8n.apply();
         }catch(_){}
       });
     }
@@ -3170,7 +3170,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         try{
           const tb = document.getElementById('referrals-body');
           if (tb && Array.isArray(rows)) tb.innerHTML = R.referrals(rows);
-          if (window.dI18n && dI18n.apply) dI18n.apply();
+          if (window.dI18n8n && dI18n8n.apply) dI18n8n.apply();
         }catch(_){}
       });
     }
@@ -3197,7 +3197,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     };
   }
 
-  function t(k, fb){ try{ return (window.dI18n && dI18n.t) ? (dI18n.t(k)||fb||k) : (fb||k);}catch(_){return fb||k;} }catch(_){return fb||k;} }
+  function t(k, fb){ try{ return (window.dI18n && dI18n.t) ? (dI18n.t(k)||fb||k) : (fb||k);}catch(_){return fb||k;} }catch(_){return fb||k;} }catch(_){return fb||k;} }
   function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }[m]); }
   function fmtMoney(v){ try{ return (new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'})).format(Number(v||0)); }catch(_){ return '$'+(v||0); } })).format(Number(v||0)); }catch(_){ return '$'+(v||0); } }
   function fmtDate(iso){ try{ var d=new Date(iso); return isNaN(d)?(iso||''):d.toLocaleDateString(); }catch(_){ return iso||''; } }catch(_){ return iso||''; } }
@@ -3282,7 +3282,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
           try{
             var tb = document.getElementById('raffles-body') || document.getElementById('sorteos-body');
             if (tb && Array.isArray(rows)){ tb.innerHTML = window.NUMINA_RENDER.raffles(rows); }
-            if (window.dI18n && dI18n.apply) dI18n.apply();
+            if (window.dI18n8n && dI18n8n.apply) dI18n8n.apply();
           }catch(_){}
         });
       }
@@ -3297,7 +3297,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
           try{
             if (info && window.NUMINA_RENDER && NUMINA_RENDER.account){
               NUMINA_RENDER.account(info);
-              if (window.dI18n && dI18n.apply) dI18n.apply();
+              if (window.dI18n8n && dI18n8n.apply) dI18n8n.apply();
             }
           }catch(_){}
         });
