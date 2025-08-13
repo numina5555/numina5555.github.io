@@ -732,7 +732,7 @@
 </form>
 </div>
 <div class="settings-card">
-<h3><i class="fas fa-shield-alt"></i> Seguridad</h3>
+<h3><i class="fas fa-shield-alt"></i> <span data-i18n="account.settings.security">Seguridad</span></h3>
 <form id="config-pass-form">
 <div class="form-grid">
 <div class="form-row"><label for="cfg-pass1"><span data-i18n="accountForm.labels.newPassword"></span></label><input id="cfg-pass1" placeholder="********" type="password"/></div>
@@ -3584,6 +3584,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 (function(){
   const MAP = {
     title: { es: "Configuración de la Cuenta", en: "Account Settings", pt: "Configurações da Conta" },
+    security: { es: "Seguridad", en: "Security", pt: "Segurança" },
     label1: { es: "Nueva contraseña", en: "New password", pt: "Nova senha" },
     label2: { es: "Repetir contraseña", en: "Repeat password", pt: "Repetir senha" },
     ph1: { es: "********", en: "********", pt: "********" },
@@ -3614,6 +3615,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const lang = currentLang();
     const t = document.querySelector('h2.section-title span[data-i18n="account.settings.title"]');
     if (t) t.textContent = MAP.title[lang] || MAP.title.es;
+    const s = document.querySelector('.settings-card h3 span[data-i18n="account.settings.security"]');
+    if (s) s.textContent = MAP.security[lang] || MAP.security.es;
     const l1 = document.querySelector('label[for="cfg-pass1"] span[data-i18n="accountForm.labels.newPassword"]');
     const l2 = document.querySelector('label[for="cfg-pass2"] span[data-i18n="accountForm.labels.repeatPassword"]');
     if (l1) l1.textContent = MAP.label1[lang] || MAP.label1.es;
