@@ -3317,24 +3317,29 @@ document.addEventListener('DOMContentLoaded', ()=>{
   function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }
   function fmtMoney(v){ try{ return (new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'})).format(Number(v||0)); }catch(_){ return '$'+(v||0); } }
   function fmtDate(iso){ try{ var d=new Date(iso); return isNaN(d)?(iso||''):d.toLocaleDateString(); }catch(_){ return iso||''; } }
-  
   function statusLabel(v){
-    try{
-      var key = normalizeStatus(v);
-      if (window.dI18n && typeof dI18n.t === 'function'){
-        var r = dI18n.t('status.'+key);
-        if (r && r !== ('status.'+key)) return r;
-      }
-      var L = lang2 && lang2();
-      if (typeof STATUS_FALLBACK !== 'undefined'){
-        if (L && STATUS_FALLBACK[L] && STATUS_FALLBACK[L][key]) return STATUS_FALLBACK[L][key];
-        if (STATUS_FALLBACK.es && STATUS_FALLBACK.es[key]) return STATUS_FALLBACK.es[key];
-      }
-      return key;
-    }catch(_){
-      return String(v||'').toLowerCase()||'pending';
+  try {
+    if (window && typeof window.statusLabel === 'function' && window.statusLabel !== arguments.callee) {
+      return window.statusLabel(v);
     }
-  }
+  } catch(_) {}
+  var key = String(v||'').toLowerCase();
+  try {
+    if (window.dI18n && typeof dI18n.t === 'function') {
+      var r = dI18n.t('status.'+key);
+      if (r && r !== ('status.'+key)) return r;
+    }
+  } catch(_) {}
+  try {
+    var L = (typeof lang2 === 'function' ? lang2() : 'en');
+    if (typeof STATUS_FALLBACK === 'object') {
+      if (STATUS_FALLBACK[L] && STATUS_FALLBACK[L][key]) return STATUS_FALLBACK[L][key];
+      if (STATUS_FALLBACK.en && STATUS_FALLBACK.en[key]) return STATUS_FALLBACK.en[key];
+      if (STATUS_FALLBACK.es && STATUS_FALLBACK.es[key]) return STATUS_FALLBACK.es[key];
+    }
+  } catch(_) {}
+  return key || 'pending';
+}
 
   var R = {
     purchases: function(rows){
@@ -3351,7 +3356,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
             '<td>'+product+'</td>' +
             '<td>'+date+'</td>' +
             '<td>'+value+'</td>' +
-            '<td>' + statusBadge(p.status || p.state || 'pending') + '</td>' +
+            '<td>'+statusBadge(p.status || p.state || "pending")+'</td>' +
             '<td><button class="action-btn">'+t('Detalles','Detalles')+'</button></td>' +
           '</tr>'
         );
@@ -3365,7 +3370,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         var name = esc(r.name || r.username || r.email || '');
         var date = fmtDate(r.date || r.created_at || '');
         var purchases = esc(r.purchases || r.count || 0);
-        var st = (r.is_active ? t('Activo','Activo') : t('Inactivo','Inactivo'));
+        var st = statusBadge(r.is_active ? "active" : "inactive");
         var comm = fmtMoney(r.commission || r.total_commission || 0);
         return (
           '<tr>' +
