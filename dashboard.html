@@ -3591,6 +3591,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
     catalog: { es: "Catálogo", en: "Catalog", pt: "Catálogo" },
     moreInfo: { es: "Más información", en: "More info", pt: "Mais informações" },
     buy: { es: "Comprar", en: "Buy", pt: "Comprar" },
+    statuses: {
+      es: { pending: "Pendiente", active: "Activo", inactive: "Inactivo", completed: "Completado", paid: "Pagado", canceled: "Cancelado", disputed: "En disputa" },
+      en: { pending: "Pending",   active: "Active",  inactive: "Inactive", completed: "Completed", paid: "Paid",   canceled: "Canceled", disputed: "Disputed" },
+      pt: { pending: "Pendente",  active: "Ativo",   inactive: "Inativo",  completed: "Concluído", paid: "Pago",   canceled: "Cancelado", disputed: "Em disputa" }
+    },
     label1: { es: "Nueva contraseña", en: "New password", pt: "Nova senha" },
     label2: { es: "Repetir contraseña", en: "Repeat password", pt: "Repetir senha" },
     ph1: { es: "********", en: "********", pt: "********" },
@@ -3632,6 +3637,35 @@ document.addEventListener('DOMContentLoaded', ()=>{
     document.querySelectorAll('[data-i18n="catalog.title"]').forEach(function(cat){ cat.textContent = MAP.catalog[lang] || MAP.catalog.es; });
     document.querySelectorAll('button [data-i18n="catalog.moreInfo"]').forEach(function(mi){ mi.textContent = MAP.moreInfo[lang] || MAP.moreInfo.es; });
     var buy = document.querySelector('#nmBuy [data-i18n="product.buy"]'); if (buy) buy.textContent = MAP.buy[lang] || MAP.buy.es;
+    // Status badges & pills
+    (function(){
+      var dict = MAP.statuses[lang] || MAP.statuses.es;
+      var syn = new Map([
+        // pending
+        ['pending','pending'], ['pendiente','pending'], ['pendente','pending'],
+        // active
+        ['active','active'], ['activo','active'], ['ativo','active'],
+        // inactive
+        ['inactive','inactive'], ['inactivo','inactive'], ['inativo','inactive'],
+        // completed
+        ['completed','completed'], ['complete','completed'], ['completado','completed'], ['completo','completed'], ['concluído','completed'], ['concluido','completed'],
+        // paid
+        ['paid','paid'], ['pagado','paid'], ['pago','paid'],
+        // canceled
+        ['canceled','canceled'], ['cancelled','canceled'], ['cancelado','canceled'],
+        // disputed
+        ['disputed','disputed'], ['en disputa','disputed'], ['em disputa','disputed']
+      ]);
+      document.querySelectorAll('.status, .badge, .chip, .pill, .status-badge, .status-chip, td, span').forEach(function(el){
+        var t = (el.textContent||'').trim().toLowerCase();
+        if (!t) return;
+        var key = syn.get(t);
+        if (!key) return;
+        var newTxt = dict[key] || el.textContent;
+        if (newTxt && newTxt !== el.textContent) el.textContent = newTxt;
+      });
+    })();
+
     const l1 = document.querySelector('label[for="cfg-pass1"] span[data-i18n="accountForm.labels.newPassword"]');
     const l2 = document.querySelector('label[for="cfg-pass2"] span[data-i18n="accountForm.labels.repeatPassword"]');
     if (l1) l1.textContent = MAP.label1[lang] || MAP.label1.es;
