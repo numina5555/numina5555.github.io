@@ -655,7 +655,7 @@
 <thead>
 <tr>
 <th>Producto</th>
-<th>Fecha</th>
+<th data-i18n="raffles.date"></th>
 <th>Valor</th>
 <th>Estado</th>
 <th>Acciones</th>
@@ -677,7 +677,7 @@
 <thead>
 <tr>
 <th>Referido</th>
-<th>Fecha</th>
+<th data-i18n="raffles.date"></th>
 <th>Compras</th>
 <th>Estado</th>
 <th>Comisión</th>
@@ -776,7 +776,7 @@
       <thead>
         <tr>
           <th>Producto</th>
-          <th>Fecha</th>
+          <th data-i18n="raffles.date"></th>
           <th>Valor</th>
           <th>Estado</th>
           <th>Reclamo</th>
@@ -1578,7 +1578,7 @@ overlay.classList.add("show");
 
 <!-- ===== Sección: Sorteos (integrada) ===== -->
 <section class="section-content" id="section-sorteos" style="display:none;">
-  <h2 class="section-title"><i class="fas fa-ticket-alt"></i><span>Sorteo</span></h2>
+  <h2 class="section-title"><i class="fas fa-ticket-alt"></i><span data-i18n="sections.sorteoTitle"></span></h2>
 
   <div class="srt-stats">
     <!-- Tickets activos -->
@@ -1608,14 +1608,14 @@ overlay.classList.add("show");
     </article>
   </div>
 
-  <h3 class="section-title"><i class="fas fa-history"></i><span>Historial de Participación</span></h3>
+  <h3 class="section-title"><i class="fas fa-history"></i><span data-i18n="sections.raffleHistory"></span></h3>
   <div class="table-container">
     <table id="sorteos-table">
       <thead>
         <tr>
-          <th>Fecha</th>
-          <th>Sorteo</th>
-          <th>Tickets Utilizados</th>
+          <th data-i18n="raffles.date"></th>
+          <th data-i18n="raffles.name"></th>
+          <th data-i18n="raffles.ticketsUsed"></th>
         </tr>
       </thead>
       <tbody id="sorteos-tbody">
@@ -1741,6 +1741,8 @@ const DB_I18N = {
     actions: { copy: "Copiar", copied: "¡Copiado!" },
     labels: { welcome: "Bienvenido,", loading: "Cargando datos..." },
     sections: {
+      raffleHistory: "Historial de Participación",
+      sorteoTitle: "Sorteo",
       compras: "Mis Compras",
       comprasActivas: "Compras Activas",
       referidosHist: "Historial de Referidos",
@@ -1762,6 +1764,8 @@ const DB_I18N = {
     actions: { copy: "Copy", copied: "Copied!" },
     labels: { welcome: "Welcome,", loading: "Loading data..." },
     sections: {
+      raffleHistory: "Participation History",
+      sorteoTitle: "Raffle",
       compras: "My Purchases",
       comprasActivas: "Active Purchases",
       referidosHist: "Referral History",
@@ -1783,6 +1787,8 @@ const DB_I18N = {
     actions: { copy: "Copiar", copied: "Copiado!" },
     labels: { welcome: "Bem-vindo,", loading: "Carregando dados..." },
     sections: {
+      raffleHistory: "Histórico de Participação",
+      sorteoTitle: "Sorteio",
       compras: "Minhas Compras",
       comprasActivas: "Compras Ativas",
       referidosHist: "Histórico de Indicações",
@@ -3353,5 +3359,29 @@ document.addEventListener('DOMContentLoaded', ()=>{
 })();
 </script>
 
+<script>
+(function(){
+  function applyI18nDataAttr(){
+    document.querySelectorAll('[data-i18n]').forEach(el=>{
+      const path = el.getAttribute('data-i18n');
+      if (!path) return;
+      el.textContent = (window.dI18n && dI18n.t) ? dI18n.t(path) : path;
+    });
+  }
+  // Run on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyI18nDataAttr);
+  } else {
+    applyI18nDataAttr();
+  }
+  // Hook into i18n apply if present
+  try{
+    const _apply = dI18n.apply.bind(dI18n);
+    dI18n.apply = function(){
+      _apply();
+      applyI18nDataAttr();
+    }
+  }catch(_){}
+})();</script>
 </body>
 </html>
