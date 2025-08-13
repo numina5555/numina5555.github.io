@@ -634,21 +634,22 @@
 })();
 </script>
 
+
+<style>
+  /* === NUMINA: acomodar selector de idioma dentro del banner === */
+  .welcome-banner { gap: 1rem; }
+  .welcome-right { display: flex; flex-direction: column; align-items: flex-end; gap: .6rem; }
+  .welcome-right .lang-dropdown { align-self: flex-end; margin-right: 0; }
+  @media (max-width: 992px) {
+    .welcome-right { align-items: center; width: 100%; }
+    .welcome-right .referral-code { align-self: center; }
+  }
+</style>
+
 </head>
 <body>
 <header class="dashboard-header"><div style="flex-grow:1; text-align:center;"><div class="logo">NUMINA</div></div><div class="user-menu">
-<div class="lang-dropdown" id="langDropdown">
-<button aria-expanded="false" aria-haspopup="listbox" class="lang-btn" id="langBtn">
-<span aria-hidden="true">🌐</span>
-<span id="langCurrentText">Español</span>
-<svg aria-hidden="true" class="chevron" viewbox="0 0 10 6"><path d="M1 1l4 4 4-4"></path></svg>
-</button>
-<ul aria-label="Language" class="lang-menu" id="langMenu" role="listbox">
-<li aria-selected="true" class="lang-item" data-lang="es" role="option"><span class="lang-flag">🇪🇸</span><span>Español</span></li>
-<li aria-selected="false" class="lang-item" data-lang="en" role="option"><span class="lang-flag">🇬🇧</span><span>English</span></li>
-<li aria-selected="false" class="lang-item" data-lang="pt" role="option"><span class="lang-flag">🇧🇷</span><span>Português</span></li>
-</ul>
-</div>
+
 <div class="user-avatar" id="user-avatar">US</div>
 </div>
 </header>
@@ -691,10 +692,25 @@
 <h2 id="welcome-title">Cargando datos...</h2>
 <p id="welcome-subtitle" style="display: none;">Por favor espera</p>
 </div>
+
+<div class="welcome-right">
+<div class="lang-dropdown" id="langDropdown">
+<button aria-expanded="false" aria-haspopup="listbox" class="lang-btn" id="langBtn">
+<span aria-hidden="true">🌐</span>
+<span id="langCurrentText">Español</span>
+<svg aria-hidden="true" class="chevron" viewbox="0 0 10 6"><path d="M1 1l4 4 4-4"></path></svg>
+</button>
+<ul aria-label="Language" class="lang-menu" id="langMenu" role="listbox">
+<li aria-selected="true" class="lang-item" data-lang="es" role="option"><span class="lang-flag">🇪🇸</span><span>Español</span></li>
+<li aria-selected="false" class="lang-item" data-lang="en" role="option"><span class="lang-flag">🇬🇧</span><span>English</span></li>
+<li aria-selected="false" class="lang-item" data-lang="pt" role="option"><span class="lang-flag">🇧🇷</span><span>Português</span></li>
+</ul>
+</div>
 <div class="referral-code">
 <i class="fas fa-user-plus"></i>
 <span id="referral-code">---</span>
 <button class="copy-btn" id="copy-btn">Copiar</button>
+</div>
 </div>
 </section>
 <div class="stats-grid">
