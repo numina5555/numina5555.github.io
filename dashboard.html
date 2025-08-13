@@ -2672,5 +2672,78 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 })();
 </script>
+
+<script>
+/* === Referrals empty-state i18n ("No hay referidos") === */
+(function(){
+  function getStore(k, fb){ try{ var v=localStorage.getItem(k); return v==null?fb:v; }catch(_){ return fb; } }
+  function lang(){ var d=window.dI18n||{}; return d.current||d.lang||getStore('dash_lang', getStore('lang','es'))||'es'; }
+  function norm(s){ return (s||"").toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
+
+  var L = {
+    es: { empty: "No hay referidos", loading: "Cargando referidos..." },
+    en: { empty: "No referrals",     loading: "Loading referrals..." },
+    pt: { empty: "Sem indicados",    loading: "Carregando indicados..." }
+  };
+
+  function tOr(key, fb){
+    try{
+      if (window.dI18n && typeof dI18n.t === "function"){
+        var v = dI18n.t(key);
+        if (typeof v === "string" && v.trim() && v.toLowerCase() !== key.toLowerCase()) return v;
+      }
+    }catch(_){}
+    return fb;
+  }
+
+  function labels(){
+    var base = L[lang()] || L.es;
+    return {
+      empty:   tOr("referrals.empty", base.empty),
+      loading: tOr("referrals.loading", base.loading)
+    };
+  }
+
+  function applyEmpty(){
+    var tbody = document.getElementById("referrals-body");
+    if (!tbody) return;
+    var td = tbody.querySelector("td[colspan]");
+    if (!td) return;
+    var n = norm(td.textContent);
+    var lab = labels();
+    // If any known empty-state message is present, replace it with localized one
+    if (["no hay referidos", "no referrals", "sem referidos", "sem indicados"].indexOf(n) !== -1){
+      td.textContent = lab.empty;
+    }
+    // Also translate loading state if present
+    if (["cargando referidos...", "loading referrals...", "carregando indicados..."].indexOf(n) !== -1){
+      td.textContent = lab.loading;
+    }
+  }
+
+  // Burst a few times to catch dynamic writes
+  var t=null, runs=0;
+  function burst(){
+    runs=0;
+    function step(){ applyEmpty(); runs++; if (runs<6) t=setTimeout(step, runs<3?0:80); else t=null; }
+    if (!t) step();
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", burst, {once:true});
+  else burst();
+
+  try{
+    var mo = new MutationObserver(function(m){ for (var i=0;i<m.length;i++){ if (m[i].type==="childList"||m[i].type==="characterData"){ burst(); break; } } });
+    mo.observe(document.getElementById("referrals-body") || document.body, { subtree:true, childList:true, characterData:true });
+  }catch(_){}
+
+  if (window.dI18n){
+    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
+    dI18n.apply = function(){ if (_apply) _apply(); burst(); };
+    var _set = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
+    dI18n.set = function(l){ if (_set) _set(l); burst(); };
+  }
+})();
+</script>
 </body>
 </html>
