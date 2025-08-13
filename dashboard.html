@@ -3517,5 +3517,66 @@ document.addEventListener('DOMContentLoaded', ()=>{
 })();
 </script>
 
+
+<script>
+// Dedicated updater for account.settings.title (resilient to timing/order)
+(function(){
+  const TITLE_MAP = {
+    es: "Configuración de la Cuenta",
+    en: "Account Settings",
+    pt: "Configurações da Conta"
+  };
+  function canon(lang){
+    if (!lang) return 'es';
+    const s = String(lang).toLowerCase();
+    if (s.startsWith('en')) return 'en';
+    if (s.startsWith('pt')) return 'pt';
+    if (s.startsWith('es')) return 'es';
+    if (s.includes('english')) return 'en';
+    if (s.includes('port')) return 'pt';
+    if (s.includes('espa')) return 'es';
+    return 'es';
+  }
+  function renderTitle(){
+    const el = document.querySelector('h2.section-title span[data-i18n="account.settings.title"]');
+    if (!el) return;
+    let lang = 'es';
+    try {
+      if (window.dI18n8n && dI18n8n.lang) lang = dI18n8n.lang;
+      else if (window.dI18n && dI18n.lang) lang = dI18n.lang;
+      else {
+        const sel = document.querySelector('.lang-menu .lang-item[aria-selected="true"]');
+        if (sel) lang = sel.getAttribute('data-lang') || lang;
+      }
+    } catch(_) {}
+    el.textContent = TITLE_MAP[canon(lang)] || TITLE_MAP.es;
+  }
+  // Initial run
+  document.addEventListener('DOMContentLoaded', renderTitle);
+  // Also after any i18n apply if available
+  const tryHook = () => {
+    try {
+      const base = window.dI18n8n || window.dI18n;
+      if (base && typeof base.apply === 'function') {
+        const orig = base.apply.bind(base);
+        base.apply = function(){ try{ orig(); }catch(_){ } renderTitle(); };
+        return true;
+      }
+    } catch(_) {}
+    return false;
+  };
+  if (!tryHook()) {
+    const iv = setInterval(() => { if (tryHook()) clearInterval(iv); }, 100);
+    setTimeout(() => { try{ clearInterval(iv); }catch(_){ } }, 6000);
+  }
+  // And on language menu clicks
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.lang-menu .lang-item[data-lang]').forEach(it=>{
+      it.addEventListener('click', ()=> setTimeout(renderTitle, 0));
+    });
+  });
+})();
+</script>
+
 </body>
 </html>
