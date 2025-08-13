@@ -945,7 +945,7 @@ document.getElementById('user-postal').textContent = userData.postal_code || 'No
               <td>${new Date(p.created_at).toLocaleDateString()}</td>
               <td>$${(p.value ?? 0).toFixed(2)}</td>
               <td><span class="status ${p.status}">${statusLabel(p.status)}</span></td>
-              <td><button class="action-btn">${dI18n.t((dI18n.t ? dI18n.t('Detalles') : 'Detalles'))}</button></td>
+              <td><button class="action-btn">' + ((window.dI18n && window.dI18n.t) ? window.dI18n.t('Detalles') : 'Detalles') + '</button></td>
             </tr>
           `).join('')
         : '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
@@ -1209,7 +1209,7 @@ document.addEventListener("DOMContentLoaded", () => {
           '<td>' + new Date(p.created_at).toLocaleDateString() + '</td>' +
           '<td>$' + (p.value?.toFixed(2) || '0.00') + '</td>' +
           '<td><span class="status ' + p.status + '\">' + statusLabel(p.status) + '</span></td>' +
-          '<td><button class="action-btn">${dI18n.t((dI18n.t ? dI18n.t('Detalles') : 'Detalles'))}</button></td>' +
+          '<td><button class="action-btn">' + ((window.dI18n && window.dI18n.t) ? window.dI18n.t('Detalles') : 'Detalles') + '</button></td>' +
           '</tr>';
         purchasesBody.innerHTML += row;
       });
@@ -2691,7 +2691,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const i18n = {
     statusLabel(s){
       const v = String(s||'').toLowerCase();
-      const t = (window.dI18n && dI18n.t) ? dI18n.t : (k)=>k;
+      const t = (window.dI18n && window.dI18n.t) ? dI18n.t : (k)=>k;
       if (v === 'active' || v === 'activo') return t('Activo') || 'Activo';
       if (v === 'inactive' || v === 'inactivo') return t('Inactivo') || 'Inactivo';
       if (v === 'pending' || v === 'pendiente') return t('Pendiente') || 'Pendiente';
@@ -2704,7 +2704,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // Render helpers: pequeñas utilidades para futuras refactors
   const render = {
     emptyRow(messageKey){
-      const t = (window.dI18n && dI18n.t) ? dI18n.t(messageKey) : messageKey;
+      const t = (window.dI18n && window.dI18n.t) ? dI18n.t(messageKey) : messageKey;
       return `<tr><td colspan="5" style="text-align: center;">${t}</td></tr>`;
     },
     statusPill(status){
@@ -2805,7 +2805,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     function $all(sel, root){ return Array.from((root||document).querySelectorAll(sel)); }
 
     function t(key, fb){
-      try{ return (window.dI18n && dI18n.t) ? (dI18n.t(key)||fb||key) : (fb||key); }catch(_){ return fb||key; }
+      try{ return (window.dI18n && window.dI18n.t) ? (dI18n.t(key)||fb||key) : (fb||key); }catch(_){ return fb||key; }
     }
 
     function findCopyButton(){
@@ -2848,7 +2848,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       wireCopy();
       // Re-aplicar al cambiar idioma
       if (window.dI18n){
-        var _set = typeof dI18n.set==='function' ? dI18n.set.bind(dI18n) : null;
+        var _set = (window.dI18n && typeof dI18n.set==='function') ? dI18n.set.bind(dI18n) : null;
         dI18n.set = function(l){ if (_set) _set(l); try{ wireCopy(); }catch(_){} };
       }
     }, { once:true });
@@ -2917,7 +2917,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     window.__NUMINA_BTN_I18N__ = true;
     function applyBtnI18n(){
       try{
-        var t = (window.dI18n && dI18n.t) ? dI18n.t : (k)=>k;
+        var t = (window.dI18n && window.dI18n.t) ? dI18n.t : (k)=>k;
         document.querySelectorAll('button').forEach(function(b){
           var x = (b.textContent||'').trim();
           if (!x) return;
@@ -2932,7 +2932,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyBtnI18n, {once:true});
     else applyBtnI18n();
     if (window.dI18n){
-      var _set = typeof dI18n.set==='function' ? dI18n.set.bind(dI18n) : null;
+      var _set = (window.dI18n && typeof dI18n.set==='function') ? dI18n.set.bind(dI18n) : null;
       dI18n.set = function(l){ if (_set) _set(l); applyBtnI18n(); };
     }
   }
