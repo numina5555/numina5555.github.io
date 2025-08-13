@@ -535,6 +535,92 @@
   .lang-dropdown{ margin-right:.35rem; }
 }
 </style>
+
+<!-- NUMINA helpers injected: setText + status i18n -->
+<script id="nm-i18n-helpers-head">
+(function(){
+  // Minimal safe i18n accessors
+  function _lang(){
+    try { return (localStorage.getItem('lang') || (navigator.language||'es')).slice(0,2).toLowerCase(); }
+    catch(_) { return 'es'; }
+  }
+  function _t(key, fb){
+    try { return (window.dI18n && typeof dI18n.t==='function') ? (dI18n.t(key) || fb || key) : (fb || key); }
+    catch(_) { return fb || key; }
+  }
+  function _undef(){
+    const L = _lang();
+    // Try dictionary key if exists
+    try { if (window.dI18n && typeof dI18n.t==='function') { const v = dI18n.t('placeholders.undefined'); if (v && v !== 'placeholders.undefined') return v; } } catch(_){}
+    return L==='es' ? 'No definido' : (L==='pt' ? 'Não definido' : 'Undefined');
+  }
+  // Expose a global setText used across the file
+  if (!window.setText) {
+    window.setText = function setText(id, val){
+      var el = document.getElementById(id);
+      if (!el) return;
+      var v = (val === undefined || val === null || String(val).trim()==='') ? _undef() : val;
+      el.textContent = v;
+    };
+  }
+
+  // Status helpers
+  if (!window._normalizeStatus) window._normalizeStatus = function(x){
+    var s = String(x ?? '').toLowerCase();
+    if (s==='true' || s==='activo' || s==='active') return 'active';
+    if (s==='completed' || s==='completado' || s==='complete') return 'completed';
+    if (s==='cancelled' || s==='canceled' || s==='cancelado') return 'cancelled';
+    if (s==='inactive' || s==='inactivo') return 'inactive';
+    if (s==='paid' || s==='pagado') return 'paid';
+    if (s==='disputed' || s==='disputado' || s==='disputa') return 'disputed';
+    return 'pending';
+  };
+  if (!window._STATUS_KEYS) window._STATUS_KEYS = {
+    active: 'status.active',
+    pending: 'status.pending',
+    completed: 'status.completed',
+    cancelled: 'status.cancelled',
+    inactive: 'status.inactive',
+    paid: 'status.paid',
+    disputed: 'status.disputed'
+  };
+  if (!window.statusBadge) window.statusBadge = function(state){
+    var key = window._normalizeStatus(state);
+    var label = _t(window._STATUS_KEYS[key], key);
+    return '<span class="status '+key+'">'+label+'</span>';
+  };
+  if (!window.updateStatusBadges) window.updateStatusBadges = function(){
+    document.querySelectorAll('.status').forEach(function(el){
+      var key = ['completed','active','cancelled','inactive','paid','disputed'].find(function(k){return el.classList.contains(k);}) || 'pending';
+      el.textContent = _t(window._STATUS_KEYS[key], key);
+    });
+  };
+  if (!window.refreshPlaceholders) window.refreshPlaceholders = function(){
+    // If you have specific placeholders in elements, re-assign here if needed.
+    // No-op by default.
+  };
+
+  // Apply stored language at load
+  document.addEventListener('DOMContentLoaded', function(){
+    try {
+      var saved = localStorage.getItem('lang');
+      if (saved && window.dI18n && typeof dI18n.set==='function') dI18n.set(saved);
+      if (window.dI18n && typeof dI18n.apply==='function') dI18n.apply();
+    } catch(_){}
+  });
+
+  // Live re-translate when language changes
+  window.addEventListener('storage', function(e){
+    if (e.key === 'lang') {
+      try { if (window.dI18n && typeof dI18n.set==='function') dI18n.set(localStorage.getItem('lang')); } catch(_){}
+      try { if (window.dI18n && typeof dI18n.apply==='function') dI18n.apply(); } catch(_){}
+      window.updateStatusBadges();
+      window.refreshPlaceholders();
+    }
+  });
+})();
+</script>
+
 </head>
 <body>
 <header class="dashboard-header"><div style="flex-grow:1; text-align:center;"><div class="logo">NUMINA</div></div><div class="user-menu">
@@ -3708,6 +3794,44 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const mo2 = new MutationObserver(() => applyTexts());
       mo2.observe(cur, { characterData: true, subtree: true, childList: true });
     }
+  });
+})();
+</script>
+
+
+<!-- NUMINA helpers injected: observe renders and fix status labels/i18n dynamically -->
+<script id="nm-i18n-helpers-tail">
+(function(){
+  function patchTables(){
+    // Replace hard-coded status cells with i18n-safe ones if needed
+    document.querySelectorAll('#purchases-body tr, #miscompras-body tr').forEach(function(tr){
+      var td = tr.querySelector('td:nth-child(4) .status'); // status column
+      if (!td) return;
+      var cls = td.className; // e.g., "status pending"
+      var key = (cls.match(/\b(active|pending|completed|cancelled|inactive|paid|disputed)\b/)||[])[1] || 'pending';
+      td.textContent = (window._STATUS_KEYS && window._STATUS_KEYS[key]) ? ( (window.dI18n && dI18n.t) ? dI18n.t(window._STATUS_KEYS[key]) : key ) : key;
+    });
+    document.querySelectorAll('#referrals-body tr').forEach(function(tr){
+      var td = tr.querySelector('td:nth-child(4) .status');
+      if (!td) return;
+      var isActive = td.classList.contains('active');
+      var key = isActive ? 'active' : (td.classList.contains('inactive') ? 'inactive' : 'pending');
+      td.textContent = (window._STATUS_KEYS && window._STATUS_KEYS[key]) ? ( (window.dI18n && dI18n.t) ? dI18n.t(window._STATUS_KEYS[key]) : key ) : key;
+    });
+  }
+  function observe(){
+    var targets = ['#purchases-body', '#referrals-body', '#miscompras-body'];
+    targets.forEach(function(sel){
+      var el = document.querySelector(sel);
+      if (!el) return;
+      var mo = new MutationObserver(function(){ patchTables(); });
+      mo.observe(el, { childList: true, subtree: true });
+    });
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    observe();
+    // Also patch once after first paint
+    setTimeout(function(){ patchTables(); window.updateStatusBadges && window.updateStatusBadges(); }, 0);
   });
 })();
 </script>
