@@ -3656,8 +3656,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
         // disputed
         ['disputed','disputed'], ['en disputa','disputed'], ['em disputa','disputed']
       ]);
-      document.querySelectorAll('.status, .badge, .chip, .pill, .status-badge, .status-chip, td, span').forEach(function(el){
+      document.querySelectorAll('.status, .badge, .chip, .pill, .status-badge, .status-chip, [data-status]').forEach(function(el){
         var t = (el.textContent||'').trim().toLowerCase();
+        var tag = (el.tagName||'').toLowerCase();
+        var hasClass = el.classList && (el.classList.contains('status') || el.classList.contains('badge') || el.classList.contains('chip') || el.classList.contains('pill') || el.classList.contains('status-badge') || el.classList.contains('status-chip'));
+        if (tag==='td' && !hasClass && !el.hasAttribute('data-status')) return;
+
         if (!t) return;
         var key = syn.get(t);
         if (!key) return;
