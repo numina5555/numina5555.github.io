@@ -2375,5 +2375,106 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }, true);
 })();
 </script>
+
+<script>
+/* === NUMINA i18n: referrals table headers (Referido/Fecha/Compras/Estado/Comisión) === */
+(function(){
+  function getStore(k, fb){ try { var v = localStorage.getItem(k); return v==null?fb:v; } catch(_){ return fb; } }
+  function lang(){ var d = window.dI18n||{}; return d.current || d.lang || getStore('dash_lang', getStore('lang','es')) || 'es'; }
+  function norm(s){ return (s||"").toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
+
+  var COLS = {
+    es: { referred:"Referido", date:"Fecha", purchases:"Compras", status:"Estado", commission:"Comisión" },
+    en: { referred:"Referral", date:"Date",  purchases:"Purchases", status:"Status", commission:"Commission" },
+    pt: { referred:"Indicado", date:"Data",  purchases:"Compras",   status:"Status", commission:"Comissão" }
+  };
+  var ES_SET = new Set(Object.values(COLS.es));
+
+  function tOr(key, fb){
+    try {
+      if (window.dI18n && typeof dI18n.t === "function") {
+        var v = dI18n.t(key);
+        if (typeof v === "string" && v.trim()) {
+          if (v.toLowerCase() === key.toLowerCase()) return fb;
+          if (lang() !== "es" && ES_SET.has(v.trim())) return fb;
+          return v;
+        }
+      }
+    } catch(_){}
+    return fb;
+  }
+
+  function labels(){
+    var L = COLS[lang()] || COLS.es;
+    return {
+      referred:   tOr("referrals.header.referred",   tOr("table.referral", L.referred)),
+      date:       tOr("referrals.header.date",       tOr("table.date", L.date)),
+      purchases:  tOr("referrals.header.purchases",  tOr("table.purchases", L.purchases)),
+      status:     tOr("referrals.header.status",     tOr("table.status", L.status)),
+      commission: tOr("referrals.header.commission", tOr("table.commission", L.commission)),
+    };
+  }
+
+  var SEED = {
+    // ES
+    "referido":"referred","fecha":"date","compras":"purchases","estado":"status","comision":"commission","comisión":"commission",
+    // EN
+    "referral":"referred","date":"date","purchases":"purchases","status":"status","commission":"commission",
+    // PT
+    "indicado":"referred","data":"date","compras":"purchases","status":"status","comissao":"commission","comissão":"commission"
+  };
+
+  function tagReferrals(){
+    var ths = Array.from(document.querySelectorAll("#referrals-table thead tr:first-child th"));
+    if (!ths.length) return;
+    ths.forEach(function(th, idx){
+      if (th.hasAttribute("data-i18n-col")) return;
+      var key = SEED[norm(th.textContent)];
+      if (!key) key = ["referred","date","purchases","status","commission"][idx];
+      if (key) th.setAttribute("data-i18n-col", key);
+    });
+  }
+
+  function applyReferrals(){
+    var L = labels();
+    document.querySelectorAll("#referrals-table thead th[data-i18n-col]").forEach(function(th){
+      var k = th.getAttribute("data-i18n-col");
+      var v = L[k];
+      if (v && th.textContent !== v) th.textContent = v;
+    });
+  }
+
+  var timer=null, runs=0;
+  function burst(){
+    runs = 0;
+    function step(){
+      tagReferrals(); applyReferrals();
+      runs++;
+      if (runs < 6) timer = setTimeout(step, runs<3?0:60);
+      else timer = null;
+    }
+    if (!timer) step();
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", burst, {once:true});
+  else burst();
+
+  try{
+    var mo = new MutationObserver(function(m){
+      for (var i=0;i<m.length;i++){
+        if (m[i].type === "childList" || m[i].type === "characterData") { burst(); break; }
+      }
+    });
+    mo.observe(document.body, {subtree:true, childList:true, characterData:true});
+  }catch(_){}
+
+  if (window.dI18n){
+    var _apply = typeof dI18n.apply==="function" ? dI18n.apply.bind(dI18n) : null;
+    dI18n.apply = function(){ if (_apply) _apply(); burst(); };
+    var _set = typeof dI18n.set==="function" ? dI18n.set.bind(dI18n) : null;
+    dI18n.set = function(l){ if (_set) _set(l); burst(); };
+  }
+})();
+</script>
 </body>
 </html>
