@@ -3317,18 +3317,23 @@ document.addEventListener('DOMContentLoaded', ()=>{
   function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }
   function fmtMoney(v){ try{ return (new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'})).format(Number(v||0)); }catch(_){ return '$'+(v||0); } }
   function fmtDate(iso){ try{ var d=new Date(iso); return isNaN(d)?(iso||''):d.toLocaleDateString(); }catch(_){ return iso||''; } }
-  // Replaced legacy statusLabel with delegate to the global one
+  
   function statusLabel(v){
-    try {
-      var x = (v==null?'':String(v)).toLowerCase();
-      if (window.normalizeStatus) x = window.normalizeStatus(x);
-      if (window.statusLabel) return window.statusLabel(x);
-      if (window.dI18n && dI18n.t) {
-        var r = dI18n.t('status.'+x);
-        if (r && r !== ('status.'+x)) return r;
+    try{
+      var key = normalizeStatus(v);
+      if (window.dI18n && typeof dI18n.t === 'function'){
+        var r = dI18n.t('status.'+key);
+        if (r && r !== ('status.'+key)) return r;
       }
-      return x || 'pending';
-    } catch(_){ return 'pending'; }
+      var L = lang2 && lang2();
+      if (typeof STATUS_FALLBACK !== 'undefined'){
+        if (L && STATUS_FALLBACK[L] && STATUS_FALLBACK[L][key]) return STATUS_FALLBACK[L][key];
+        if (STATUS_FALLBACK.es && STATUS_FALLBACK.es[key]) return STATUS_FALLBACK.es[key];
+      }
+      return key;
+    }catch(_){
+      return String(v||'').toLowerCase()||'pending';
+    }
   }
 
   var R = {
@@ -3346,7 +3351,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
             '<td>'+product+'</td>' +
             '<td>'+date+'</td>' +
             '<td>'+value+'</td>' +
-            '<td><span class="status pending">'+st+'</span></td>' +
+            '<td>' + statusBadge(p.status || p.state || 'pending') + '</td>' +
             '<td><button class="action-btn">'+t('Detalles','Detalles')+'</button></td>' +
           '</tr>'
         );
