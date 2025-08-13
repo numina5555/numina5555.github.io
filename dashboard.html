@@ -902,22 +902,33 @@
       document.getElementById('purchases-value').textContent = userData.active_purchases || '0';
       document.getElementById('referrals-value').textContent = (typeof userData.referrals_count !== 'undefined' ? userData.referrals_count : (userData.referrals?.length || '0'));
       document.getElementById('tickets-value').textContent = userData.tickets_count || '0';
-      document.getElementById('full-name').textContent = userData.full_name || dI18n.t('placeholders.undefined');
-      document.getElementById('user-email').textContent = userData.email || dI18n.t('placeholders.undefined');
-      document.getElementById('user-phone').textContent = userData.phone || dI18n.t('placeholders.undefined');
-      document.getElementById('user-address').textContent = userData.address || dI18n.t('placeholders.undefined');
-document.getElementById('user-country').textContent = userData.country || dI18n.t('placeholders.undefined');
-document.getElementById('user-city').textContent = userData.city || dI18n.t('placeholders.undefined');
-document.getElementById('user-postal').textContent = userData.postal_code || dI18n.t('placeholders.undefined');
+      setText('full-name', userData.full_name);
+      setText('user-email', userData.email);
+      setText('user-phone', userData.phone);
+      setText('user-address', userData.address);
+setText('user-country', userData.country);
+setText('user-city', userData.city);
+setText('user-postal', userData.postal_code);
 
-document.getElementById('user-country').textContent = userData.country || dI18n.t('placeholders.undefined');
-document.getElementById('user-city').textContent = userData.city || dI18n.t('placeholders.undefined');
-document.getElementById('user-postal').textContent = userData.postal_code || dI18n.t('placeholders.undefined');
+setText('user-country', userData.country);
+setText('user-city', userData.city);
+setText('user-postal', userData.postal_code);
 
 
 
       // i18n status helper
-      const statusLabel = (s) => {
+      
+      // --- i18n helpers for placeholders & status ---
+      function _i18nUndefined(){
+        try { return (window.dI18n && dI18n.t) ? dI18n.t('placeholders.undefined') : 'Undefined'; }
+        catch(_) { return 'Undefined'; }
+      }
+      function setText(id, val){
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = (val === undefined || val === null || String(val).trim()==='') ? _i18nUndefined() : val;
+      }
+const statusLabel = (s) => {
         const v = String(s||'').toLowerCase();
         if (v === 'active' || v === 'activo') return ((window.dI18n && window.dI18n.t) ? dI18n.t('Activo') : 'Activo');
         if (v === 'inactive' || v === 'inactivo') return ((window.dI18n && window.dI18n.t) ? dI18n.t('Inactivo') : 'Inactivo');
@@ -1155,10 +1166,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('purchases-value').textContent = '--';
     document.getElementById('referrals-value').textContent = '--';
     document.getElementById('tickets-value').textContent = '--';
-    document.getElementById('full-name').textContent = 'Cargando...';
-    document.getElementById('user-email').textContent = 'Cargando...';
-    document.getElementById('user-phone').textContent = 'Cargando...';
-    document.getElementById('user-address').textContent = 'Cargando...';
+    setText('full-name', userData.full_name);
+    setText('user-email', userData.email);
+    setText('user-phone', userData.phone);
+    setText('user-address', userData.address);
     document.getElementById('purchases-body').innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando compras...</td></tr>';
     document.getElementById('referrals-body').innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando referidos...</td></tr>';
 
@@ -1183,10 +1194,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('purchases-value').textContent = userData.active_purchases || '0';
     document.getElementById('referrals-value').textContent = (typeof userData.referrals_count !== 'undefined' ? userData.referrals_count : (userData.referrals?.length || '0'));
     document.getElementById('tickets-value').textContent = userData.tickets_count || '0';
-    document.getElementById('full-name').textContent = userData.full_name || dI18n.t('placeholders.undefined');
-    document.getElementById('user-email').textContent = userData.email || dI18n.t('placeholders.undefined');
-    document.getElementById('user-phone').textContent = userData.phone || dI18n.t('placeholders.undefined');
-    document.getElementById('user-address').textContent = userData.address || dI18n.t('placeholders.undefined');
+    setText('full-name', userData.full_name);
+    setText('user-email', userData.email);
+    setText('user-phone', userData.phone);
+    setText('user-address', userData.address);
 
     const purchasesBody = document.getElementById('purchases-body');
     if (userData.purchases?.length > 0) {
@@ -3115,7 +3126,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
             '<td>'+product+'</td>' +
             '<td>'+date+'</td>' +
             '<td>'+value+'</td>' +
-            '<td><span class="status '+String((p.status||p.state||'pending')).toLowerCase()+'">'+st+'</span></td>' +
+            '<td><span class="status pending">'+st+'</span></td>' +
             '<td><button class="action-btn">'+t('Detalles','Detalles')+'</button></td>' +
           '</tr>'
         );
@@ -3129,7 +3140,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         var name = esc(r.name || r.username || r.email || '');
         var date = fmtDate(r.date || r.created_at || '');
         var purchases = esc(r.purchases || r.count || 0);
-        var st = (r.is_active ? t('Activo','Activo') : t('Inactivo','Inactivo')); var stClass = (r.is_active ? 'active' : 'inactive');
+        var st = (r.is_active ? t('Activo','Activo') : t('Inactivo','Inactivo'));
         var comm = fmtMoney(r.commission || r.total_commission || 0);
         return (
           '<tr>' +
