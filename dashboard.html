@@ -3383,5 +3383,47 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   }catch(_){}
 })();</script>
+
+<script>
+(function(){
+  function translateDataI18n(){
+    if (!(window.dI18n && typeof dI18n.t === 'function')) return false;
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      var path = el.getAttribute('data-i18n');
+      if (!path) return;
+      try { el.textContent = dI18n.t(path); } catch(e) { el.textContent = path; }
+    });
+    return true;
+  }
+
+  function tryUntilReady(attempts){
+    if (translateDataI18n()) return;
+    if (attempts <= 0) return;
+    setTimeout(function(){ tryUntilReady(attempts-1); }, 100);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function(){ tryUntilReady(20); });
+  } else {
+    tryUntilReady(20);
+  }
+
+  // Hook into i18n apply if present (re-run after language change)
+  Object.defineProperty(window, '__i18nHooked', {
+    value: (function(){
+      try{
+        var _apply = dI18n.apply.bind(dI18n);
+        dI18n.apply = function(){
+          _apply();
+          translateDataI18n();
+        };
+      }catch(_){ /* dI18n not ready; the retry loop above will still translate later */ }
+      return true;
+    })(),
+    writable: false
+  });
+})();
+</script>
+
 </body>
 </html>
