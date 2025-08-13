@@ -945,7 +945,7 @@ document.getElementById('user-postal').textContent = userData.postal_code || 'No
               <td>${new Date(p.created_at).toLocaleDateString()}</td>
               <td>$${(p.value ?? 0).toFixed(2)}</td>
               <td><span class="status ${p.status}">${statusLabel(p.status)}</span></td>
-              <td><button class="action-btn">Detalles</button></td>
+              <td><button class="action-btn">${dI18n.t((dI18n.t ? dI18n.t('Detalles') : 'Detalles'))}</button></td>
             </tr>
           `).join('')
         : '<tr><td colspan="5" style="text-align: center;">No hay compras</td></tr>';
@@ -1209,7 +1209,7 @@ document.addEventListener("DOMContentLoaded", () => {
           '<td>' + new Date(p.created_at).toLocaleDateString() + '</td>' +
           '<td>$' + (p.value?.toFixed(2) || '0.00') + '</td>' +
           '<td><span class="status ' + p.status + '\">' + statusLabel(p.status) + '</span></td>' +
-          '<td><button class="action-btn">Detalles</button></td>' +
+          '<td><button class="action-btn">${dI18n.t((dI18n.t ? dI18n.t('Detalles') : 'Detalles'))}</button></td>' +
           '</tr>';
         purchasesBody.innerHTML += row;
       });
@@ -1301,7 +1301,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <td>${new Date(p.created_at).toLocaleDateString()}</td>
             <td>$${(p.value ?? 0).toFixed(2)}</td>
             <td><span class="status ${p.status}">${statusLabel(p.status)}</span></td>
-            <td><button class="action-btn" disabled>Hacer reclamo</button></td>
+            <td><button class="action-btn" disabled>${dI18n.t('Hacer reclamo')}</button></td>
           </tr>
         `).join('');
       } catch (e) {
@@ -1721,7 +1721,10 @@ const DB_I18N = {
       referidos: "Referidos",
       catalogo: "Catálogo",
       config: "Configuración",
-      logout: "Cerrar Sesión"
+      logout: "Cerrar Sesión",
+      (dI18n.t ? dI18n.t('Detalles') : 'Detalles'): (dI18n.t ? dI18n.t('Detalles') : 'Detalles'),
+      (dI18n.t ? dI18n.t('Hacer reclamo') : 'Hacer reclamo'): (dI18n.t ? dI18n.t('Hacer reclamo') : 'Hacer reclamo'),
+
     },
     actions: { copy: "Copiar", copied: "¡Copiado!" },
     labels: { welcome: "Bienvenido,", loading: "Cargando datos..." },
@@ -1739,7 +1742,10 @@ const DB_I18N = {
       referidos: "Referrals",
       catalogo: "Catalog",
       config: "Settings",
-      logout: "Sign out"
+      logout: "Sign out",
+      (dI18n.t ? dI18n.t('Detalles') : 'Detalles'): 'Details',
+      (dI18n.t ? dI18n.t('Hacer reclamo') : 'Hacer reclamo'): 'Open claim',
+
     },
     actions: { copy: "Copy", copied: "Copied!" },
     labels: { welcome: "Welcome,", loading: "Loading data..." },
@@ -1757,7 +1763,10 @@ const DB_I18N = {
       referidos: "Indicados",
       catalogo: "Catálogo",
       config: "Configurações",
-      logout: "Sair"
+      logout: "Sair",
+      (dI18n.t ? dI18n.t('Detalles') : 'Detalles'): 'Detalhes',
+      (dI18n.t ? dI18n.t('Hacer reclamo') : 'Hacer reclamo'): 'Abrir reclamação',
+
     },
     actions: { copy: "Copiar", copied: "Copiado!" },
     labels: { welcome: "Bem-vindo,", loading: "Carregando dados..." },
@@ -2021,7 +2030,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     // Translate "Hacer reclamo" buttons
     const claimBtns = Array.from(document.querySelectorAll('button, a')).filter(el=>{
       const t = el.textContent.trim();
-      return t === 'Hacer reclamo' || t === 'Make a claim' || t === 'Fazer reclamação';
+      return t === (dI18n.t ? dI18n.t('Hacer reclamo') : 'Hacer reclamo') || t === 'Make a claim' || t === 'Fazer reclamação';
     });
     claimBtns.forEach(el=> el.textContent = dict.labels.claim);
 
@@ -2898,6 +2907,35 @@ document.addEventListener('DOMContentLoaded', ()=>{
       setTimeout(refreshIfNeeded, 3500);
     }, { once:true });
   })();
+})();
+</script>
+
+
+<script>
+(function(){
+  if (!window.__NUMINA_BTN_I18N__){
+    window.__NUMINA_BTN_I18N__ = true;
+    function applyBtnI18n(){
+      try{
+        var t = (window.dI18n && dI18n.t) ? dI18n.t : (k)=>k;
+        document.querySelectorAll('button').forEach(function(b){
+          var x = (b.textContent||'').trim();
+          if (!x) return;
+          if (x.toLowerCase()==='detalles' || x.toLowerCase()==='details' || x.toLowerCase()==='detalhes'){
+            b.textContent = t('Detalles') || 'Detalles';
+          }else if (x.toLowerCase()==='hacer reclamo' || x.toLowerCase()==='open claim' || x.toLowerCase()==='abrir reclamação'){
+            b.textContent = t('Hacer reclamo') || 'Hacer reclamo';
+          }
+        });
+      }catch(_){}
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyBtnI18n, {once:true});
+    else applyBtnI18n();
+    if (window.dI18n){
+      var _set = typeof dI18n.set==='function' ? dI18n.set.bind(dI18n) : null;
+      dI18n.set = function(l){ if (_set) _set(l); applyBtnI18n(); };
+    }
+  }
 })();
 </script>
 
