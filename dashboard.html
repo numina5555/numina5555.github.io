@@ -3588,6 +3588,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     personal: { es: "Datos Personales", en: "Personal Data", pt: "Dados Pessoais" },
     save: { es: "Guardar cambios", en: "Save changes", pt: "Salvar alterações" },
     updatePassword: { es: "Actualizar contraseña", en: "Update password", pt: "Atualizar senha" },
+    catalog: { es: "Catálogo", en: "Catalog", pt: "Catálogo" },
     label1: { es: "Nueva contraseña", en: "New password", pt: "Nova senha" },
     label2: { es: "Repetir contraseña", en: "Repeat password", pt: "Repetir senha" },
     ph1: { es: "********", en: "********", pt: "********" },
@@ -3626,6 +3627,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (sv) sv.textContent = MAP.save[lang] || MAP.save.es;
     const up = document.querySelector('button span[data-i18n="account.settings.updatePassword"]');
     if (up) up.textContent = MAP.updatePassword[lang] || MAP.updatePassword.es;
+    const cat = document.querySelector('[data-i18n="catalog.title"]');
+    if (cat) cat.textContent = MAP.catalog[lang] || MAP.catalog.es;
     const l1 = document.querySelector('label[for="cfg-pass1"] span[data-i18n="accountForm.labels.newPassword"]');
     const l2 = document.querySelector('label[for="cfg-pass2"] span[data-i18n="accountForm.labels.repeatPassword"]');
     if (l1) l1.textContent = MAP.label1[lang] || MAP.label1.es;
