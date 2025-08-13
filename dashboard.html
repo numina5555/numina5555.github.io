@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <title>NUMINA | Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
 <style>
     :root {
@@ -430,7 +431,6 @@
   .btn-primary:hover { filter: brightness(0.95); }
 
 </style>
-
 <style>
   /* === NUMINA Productos override: fixed 2x2 centered grid === */
   #section-productos .products-wrap { max-width: 1100px; margin: 0 auto; padding: 0 1rem; }
@@ -447,16 +447,11 @@
   #section-productos .section-title { justify-content: center; }
   #section-productos .product-media { aspect-ratio: 16/9; display:block; }
 </style>
-
-
-
 <style>
   /* Compact top spacing for products */
   #section-productos { margin-top: 0; }
   #section-productos .products-wrap { padding-top: 0.5rem; }
 </style>
-
-
 <style>
   /* === NUMINA: Modal de producto pantalla completa === */
   .nm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;z-index:1000;}
@@ -481,10 +476,8 @@
   .nm-pitch strong{color:#ffd700}
 }
 </style>
-
-
-  <!-- === Sorteos (estilos integrados) === -->
-  <style>
+<!-- === Sorteos (estilos integrados) === -->
+<style>
     /* Tarjetas y layout de Sorteos */
     .srt-stats { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; margin-bottom:1.5rem; align-items:stretch; }
     @media (max-width:900px){ .srt-stats{ grid-template-columns:1fr; } }
@@ -510,8 +503,6 @@
     #sorteos-table th{ background:var(--dark-lighter); color:var(--primary); font-weight:600; text-transform:uppercase; font-size:.8rem; }
     #sorteos-table td{ color:var(--text-light); border-bottom:1px solid rgba(255,255,255,.05); }
   </style>
-
-
 <style>
 /* === NUMINA: Pill de idioma en header === */
 .lang-dropdown{ position:relative; display:inline-block; margin-right:.75rem; }
@@ -531,24 +522,21 @@
   .lang-dropdown{ margin-right:.35rem; }
 }
 </style>
-
 </head>
 <body>
 <header class="dashboard-header"><div style="flex-grow:1; text-align:center;"><div class="logo">NUMINA</div></div><div class="user-menu">
-
 <div class="lang-dropdown" id="langDropdown">
-  <button class="lang-btn" id="langBtn" aria-haspopup="listbox" aria-expanded="false">
-    <span aria-hidden="true">🌐</span>
-    <span id="langCurrentText">Español</span>
-    <svg class="chevron" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
-  </button>
-  <ul class="lang-menu" id="langMenu" role="listbox" aria-label="Language">
-    <li class="lang-item" role="option" data-lang="es" aria-selected="true"><span class="lang-flag">🇪🇸</span><span>Español</span></li>
-    <li class="lang-item" role="option" data-lang="en" aria-selected="false"><span class="lang-flag">🇬🇧</span><span>English</span></li>
-    <li class="lang-item" role="option" data-lang="pt" aria-selected="false"><span class="lang-flag">🇧🇷</span><span>Português</span></li>
-  </ul>
+<button aria-expanded="false" aria-haspopup="listbox" class="lang-btn" id="langBtn">
+<span aria-hidden="true">🌐</span>
+<span id="langCurrentText">Español</span>
+<svg aria-hidden="true" class="chevron" viewbox="0 0 10 6"><path d="M1 1l4 4 4-4"></path></svg>
+</button>
+<ul aria-label="Language" class="lang-menu" id="langMenu" role="listbox">
+<li aria-selected="true" class="lang-item" data-lang="es" role="option"><span class="lang-flag">🇪🇸</span><span>Español</span></li>
+<li aria-selected="false" class="lang-item" data-lang="en" role="option"><span class="lang-flag">🇬🇧</span><span>English</span></li>
+<li aria-selected="false" class="lang-item" data-lang="pt" role="option"><span class="lang-flag">🇧🇷</span><span>Português</span></li>
+</ul>
 </div>
-
 <div class="user-avatar" id="user-avatar">US</div>
 </div>
 </header>
@@ -698,148 +686,211 @@
 <p id="user-address">Cargando...</p>
 </div>
 <div class="info-item">
-  <h4>País</h4>
-  <p id="user-country">Cargando...</p>
+<h4>País</h4>
+<p id="user-country">Cargando...</p>
 </div>
 <div class="info-item">
-  <h4>Ciudad</h4>
-  <p id="user-city">Cargando...</p>
+<h4>Ciudad</h4>
+<p id="user-city">Cargando...</p>
 </div>
 <div class="info-item">
-  <h4>Código Postal</h4>
-  <p id="user-postal">Cargando...</p>
-</div>
-
-</div>
-
+<h4>Código Postal</h4>
+<p id="user-postal">Cargando...</p>
 </div>
 </div>
-
+</div>
+</div>
 <!-- Configuración: MOVIDA FUERA DE #main-dashboard -->
 <section class="section-content" id="section-configuracion" style="display:none;">
-  <h2 class="section-title"><i class="fas fa-cog"></i><span id="config-account-title">Configuración de la Cuenta</span></h2>
-
-  <div class="settings-card">
-    <h3><i class="fas fa-id-card"></i> Datos Personales</h3>
-    <form id="config-datos-form">
-      <div class="form-grid">
-      <!-- Nota: El campo de correo electrónico se eliminó de este formulario porque se gestiona únicamente desde el proveedor de autenticación (Supabase Auth). Si en el futuro se habilita su edición, puede reinsertarse un campo de solo lectura o un enlace a la sección correspondiente. Esta nota existe solo como documentación para el equipo y no se muestra al usuario. -->
-
-        <div class="form-row"><label for="cfg-fullname">Nombre completo</label><input id="cfg-fullname" type="text" placeholder="Nombre y apellido"/></div>
-        
-        <div class="form-row"><label for="cfg-phone">Teléfono</label><input id="cfg-phone" type="tel" placeholder="+54 11 1234 5678"/></div>
-        <div class="form-row"><label for="cfg-address">Dirección</label><input id="cfg-address" type="text" placeholder="Calle, número, ciudad"/></div>
-        <div class="form-row"><label for="cfg-country">País</label><input id="cfg-country" type="text" placeholder="Argentina"/></div>
-        <div class="form-row"><label for="cfg-city">Ciudad</label><input id="cfg-city" type="text" placeholder="Buenos Aires"/></div>
-        <div class="form-row"><label for="cfg-postal">Código Postal</label><input id="cfg-postal" type="text" placeholder="C.P."/></div>
-
-      </div>
-      <div class="form-actions"><button class="btn" type="submit">Guardar cambios</button></div>
-    </form>
-  </div>
-
-  <div class="settings-card">
-    <h3><i class="fas fa-shield-alt"></i> Seguridad</h3>
-    <form id="config-pass-form">
-      <div class="form-grid">
-        <div class="form-row"><label for="cfg-pass1">Nueva contraseña</label><input id="cfg-pass1" type="password" placeholder="********"/></div>
-        <div class="form-row"><label for="cfg-pass2">Repetir contraseña</label><input id="cfg-pass2" type="password" placeholder="********"/></div>
-      </div>
-      <div class="form-actions"><button class="btn" type="submit">Actualizar contraseña</button></div>
-    </form>
-  </div>
-
-  </section>
-
+<h2 class="section-title"><i class="fas fa-cog"></i><span id="config-account-title">Configuración de la Cuenta</span></h2>
+<div class="settings-card">
+<h3><i class="fas fa-id-card"></i> Datos Personales</h3>
+<form id="config-datos-form">
+<div class="form-grid">
+<!-- Nota: El campo de correo electrónico se eliminó de este formulario porque se gestiona únicamente desde el proveedor de autenticación (Supabase Auth). Si en el futuro se habilita su edición, puede reinsertarse un campo de solo lectura o un enlace a la sección correspondiente. Esta nota existe solo como documentación para el equipo y no se muestra al usuario. -->
+<div class="form-row"><label for="cfg-fullname">Nombre completo</label><input id="cfg-fullname" placeholder="Nombre y apellido" type="text"/></div>
+<div class="form-row"><label for="cfg-phone">Teléfono</label><input id="cfg-phone" placeholder="+54 11 1234 5678" type="tel"/></div>
+<div class="form-row"><label for="cfg-address">Dirección</label><input id="cfg-address" placeholder="Calle, número, ciudad" type="text"/></div>
+<div class="form-row"><label for="cfg-country">País</label><input id="cfg-country" placeholder="Argentina" type="text"/></div>
+<div class="form-row"><label for="cfg-city">Ciudad</label><input id="cfg-city" placeholder="Buenos Aires" type="text"/></div>
+<div class="form-row"><label for="cfg-postal">Código Postal</label><input id="cfg-postal" placeholder="C.P." type="text"/></div>
+</div>
+<div class="form-actions"><button class="btn" type="submit">Guardar cambios</button></div>
+</form>
+</div>
+<div class="settings-card">
+<h3><i class="fas fa-shield-alt"></i> Seguridad</h3>
+<form id="config-pass-form">
+<div class="form-grid">
+<div class="form-row"><label for="cfg-pass1">Nueva contraseña</label><input id="cfg-pass1" placeholder="********" type="password"/></div>
+<div class="form-row"><label for="cfg-pass2">Repetir contraseña</label><input id="cfg-pass2" placeholder="********" type="password"/></div>
+</div>
+<div class="form-actions"><button class="btn" type="submit">Actualizar contraseña</button></div>
+</form>
+</div>
+</section>
 <section class="section-content" id="section-compras" style="display:none;">
-  <h2 class="section-title">
-    <i class="fas fa-shopping-bag"></i>
-    <span>Mis Compras</span>
-  </h2>
-  <div class="table-container">
-    <table id="miscompras-table">
-      <thead>
-        <tr>
-          <th>Producto</th>
-          <th>Fecha</th>
-          <th>Valor</th>
-          <th>Estado</th>
-          <th>Reclamo</th>
-        </tr>
-      </thead>
-      <tbody id="miscompras-body">
-        <tr>
-          <td colspan="5" style="text-align: center;">Cargando compras...</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+<h2 class="section-title">
+<i class="fas fa-shopping-bag"></i>
+<span>Mis Compras</span>
+</h2>
+<div class="table-container">
+<table id="miscompras-table">
+<thead>
+<tr>
+<th>Producto</th>
+<th>Fecha</th>
+<th>Valor</th>
+<th>Estado</th>
+<th>Reclamo</th>
+</tr>
+</thead>
+<tbody id="miscompras-body">
+<tr>
+<td colspan="5" style="text-align: center;">Cargando compras...</td>
+</tr>
+</tbody>
+</table>
+</div>
 </section>
 <section class="section-content" id="section-productos" style="display:none;">
-  <div class="products-wrap">
-    <h2 class="section-title"><i class="fas fa-box"></i><span id="sidebar-productos-text">Catálogo</span></h2>
-    <section class="products-grid">
-      <!-- Oro -->
-      <article class="product-card">
-        <figure class="product-media">
-          <svg viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Lingote de Oro">
-            <defs><linearGradient id="g1" x1="0" x2="1"><stop offset="0%" stop-color="#4b4300"/><stop offset="100%" stop-color="#8a7a00"/></linearGradient></defs>
-            <rect width="640" height="360" fill="url(#g1)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="36">Lingote de Oro</text>
-          </svg>
-        </figure>
-        <div class="product-body">
-          <h3 class="product-title">Lingote 100g Oro Fino</h3>
-          <p class="product-desc">Oro 999.9 certificado. Ideal para inversión y resguardo de valor.</p>
-          <span class="price">US$ 13,500</span>
-          <button class="btn btn-primary" data-action="more" data-sku="GOLD-100G">Más información</button>
-        </div>
-      </article>
-      <!-- Platino -->
-      <article class="product-card">
-        <figure class="product-media">
-          <svg viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Lingote de Platino">
-            <defs><linearGradient id="g2" x1="0" x2="1"><stop offset="0%" stop-color="#2e3136"/><stop offset="100%" stop-color="#6a6f78"/></linearGradient></defs>
-            <rect width="640" height="360" fill="url(#g2)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="36">Lingote de Platino</text>
-          </svg>
-        </figure>
-        <div class="product-body">
-          <h3 class="product-title">Lingote 100g Platino Fino</h3>
-          <p class="product-desc">Platino 999.5 certificado. Inversión de alto valor y rareza.</p>
-          <span class="price">US$ 6,500</span>
-          <button class="btn btn-primary" data-action="more" data-sku="PLAT-100G">Más información</button>
-        </div>
-      </article>
-      <!-- Rolex -->
-      <article class="product-card">
-        <figure class="product-media">
-          <svg viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Rolex 126610L">
-            <defs><linearGradient id="g3" x1="0" x2="1"><stop offset="0%" stop-color="#0d1f14"/><stop offset="100%" stop-color="#1d6c3a"/></linearGradient></defs>
-            <rect width="640" height="360" fill="url(#g3)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="34">Rolex 126610L</text>
-          </svg>
-        </figure>
-        <div class="product-body">
-          <h3 class="product-title">Rolex Starbucks Ref. 126610L</h3>
-          <p class="product-desc">Submariner Date con bisel verde y caja Oystersteel. Automático.</p>
-          <span class="price">US$ 19,600</span>
-          <button class="btn btn-primary" data-action="more" data-sku="ROLEX-126610L">Más información</button>
-        </div>
-      </article>
-      <!-- Pulsera -->
-      <article class="product-card">
-        <figure class="product-media">
-          <svg viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Pulsera Numina">
-            <defs><linearGradient id="g4" x1="0" x2="1"><stop offset="0%" stop-color="#2a0d2d"/><stop offset="100%" stop-color="#6f1d75"/></linearGradient></defs>
-            <rect width="640" height="360" fill="url(#g4)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="34">Pulsera Numina</text>
-          </svg>
-        </figure>
-        <div class="product-body">
-          <h3 class="product-title">Pulsera Numina</h3>
-          <p class="product-desc">Diseño exclusivo con materiales de alta calidad. Edición limitada.</p>
-          <span class="price">US$ 35</span>
-          <button class="btn btn-primary" data-action="more" data-sku="NUMINA-BRACELET">Más información</button>
-        </div>
-      </article>
-    </section>
+<div class="products-wrap">
+<h2 class="section-title"><i class="fas fa-box"></i><span id="sidebar-productos-text">Catálogo</span></h2>
+<section class="products-grid">
+<!-- Oro -->
+<article class="product-card">
+<figure class="product-media">
+<svg aria-label="Lingote de Oro" height="100%" preserveaspectratio="xMidYMid slice" role="img" viewbox="0 0 640 360" width="100%">
+<defs><lineargradient id="g1" x1="0" x2="1"><stop offset="0%" stop-color="#4b4300"></stop><stop offset="100%" stop-color="#8a7a00"></stop></lineargradient></defs>
+<rect fill="url(#g1)" height="360" width="640"></rect><text fill="#fff" font-family="Montserrat, sans-serif" font-size="36" font-weight="700" text-anchor="middle" x="50%" y="52%">Lingote de Oro</text>
+</svg>
+</figure>
+<div class="product-body">
+<h3 class="product-title">Lingote 100g Oro Fino</h3>
+<p class="product-desc">Oro 999.9 certificado. Ideal para inversión y resguardo de valor.</p>
+<span class="price">US$ 13,500</span>
+<button class="btn btn-primary" data-action="more" data-sku="GOLD-100G">Más información</button>
+</div>
+</article>
+<!-- Platino -->
+<article class="product-card">
+<figure class="product-media">
+<svg aria-label="Lingote de Platino" height="100%" preserveaspectratio="xMidYMid slice" role="img" viewbox="0 0 640 360" width="100%">
+<defs><lineargradient id="g2" x1="0" x2="1"><stop offset="0%" stop-color="#2e3136"></stop><stop offset="100%" stop-color="#6a6f78"></stop></lineargradient></defs>
+<rect fill="url(#g2)" height="360" width="640"></rect><text fill="#fff" font-family="Montserrat, sans-serif" font-size="36" font-weight="700" text-anchor="middle" x="50%" y="52%">Lingote de Platino</text>
+</svg>
+</figure>
+<div class="product-body">
+<h3 class="product-title">Lingote 100g Platino Fino</h3>
+<p class="product-desc">Platino 999.5 certificado. Inversión de alto valor y rareza.</p>
+<span class="price">US$ 6,500</span>
+<button class="btn btn-primary" data-action="more" data-sku="PLAT-100G">Más información</button>
+</div>
+</article>
+<!-- Rolex -->
+<article class="product-card">
+<figure class="product-media">
+<svg aria-label="Rolex 126610L" height="100%" preserveaspectratio="xMidYMid slice" role="img" viewbox="0 0 640 360" width="100%">
+<defs><lineargradient id="g3" x1="0" x2="1"><stop offset="0%" stop-color="#0d1f14"></stop><stop offset="100%" stop-color="#1d6c3a"></stop></lineargradient></defs>
+<rect fill="url(#g3)" height="360" width="640"></rect><text fill="#fff" font-family="Montserrat, sans-serif" font-size="34" font-weight="700" text-anchor="middle" x="50%" y="52%">Rolex 126610L</text>
+</svg>
+</figure>
+<div class="product-body">
+<h3 class="product-title">Rolex Starbucks Ref. 126610L</h3>
+<p class="product-desc">Submariner Date con bisel verde y caja Oystersteel. Automático.</p>
+<span class="price">US$ 19,600</span>
+<button class="btn btn-primary" data-action="more" data-sku="ROLEX-126610L">Más información</button>
+</div>
+</article>
+<!-- Pulsera -->
+<article class="product-card">
+<figure class="product-media">
+<svg aria-label="Pulsera Numina" height="100%" preserveaspectratio="xMidYMid slice" role="img" viewbox="0 0 640 360" width="100%">
+<defs><lineargradient id="g4" x1="0" x2="1"><stop offset="0%" stop-color="#2a0d2d"></stop><stop offset="100%" stop-color="#6f1d75"></stop></lineargradient></defs>
+<rect fill="url(#g4)" height="360" width="640"></rect><text fill="#fff" font-family="Montserrat, sans-serif" font-size="34" font-weight="700" text-anchor="middle" x="50%" y="52%">Pulsera Numina</text>
+</svg>
+</figure>
+<div class="product-body">
+<h3 class="product-title">Pulsera Numina</h3>
+<p class="product-desc">Diseño exclusivo con materiales de alta calidad. Edición limitada.</p>
+<span class="price">US$ 35</span>
+<button class="btn btn-primary" data-action="more" data-sku="NUMINA-BRACELET">Más información</button>
+</div>
+</article>
+</section>
+
+<script>
+// === Safe i18n shim ===
+(function(){
+  try{
+    if (!window.dI18n || typeof window.dI18n.t !== 'function'){
+      var DICT = {
+        es: {
+          'labels.loading':'Cargando...',
+          'labels.welcome':'Bienvenido,',
+          'config.account':'Configuración de la Cuenta'
+        },
+        en: {
+          'labels.loading':'Loading...',
+          'labels.welcome':'Welcome,',
+          'config.account':'Account Settings'
+        },
+        pt: {
+          'labels.loading':'Carregando...',
+          'labels.welcome':'Bem-vindo,',
+          'config.account':'Configuração da Conta'
+        }
+      };
+      var _lang = (window.__lang || (document.documentElement.lang || 'es')).slice(0,2);
+      if(!DICT[_lang]) _lang = 'es';
+      window.dI18n = window.dI18n || {};
+      window.dI18n.t = function(k){
+        try{
+          return (window.__DICTIONARY__ && window.__DICTIONARY__[_lang] && window.__DICTIONARY__[_lang][k])
+                 || (DICT[_lang] && DICT[_lang][k])
+                 || (DICT['es'][k] || k);
+        }catch(e){ return k; }
+      };
+      window.dI18n.setLang = function(l){ _lang = l; try{ if(typeof window.applyLang==='function') window.applyLang(); }catch(e){} };
+      window.dI18n.getLang = function(){ return _lang; };
+    }
+  }catch(e){ /* ignore */ }
+})();
+// === Apply selected language to specific nodes ===
+(function(){
+  window.applyLang = function(){
+    try{
+      var t = window.dI18n && window.dI18n.t ? window.dI18n.t : function(x){return x};
+      var el = document.getElementById('config-account-title');
+      if (el){ el.textContent = t('config.account'); }
+    }catch(e){}
+  };
+  document.addEventListener('DOMContentLoaded', function(){
+    // Wire basic language menu if present
+    var menu = document.getElementById('langMenu');
+    if (menu){
+      menu.querySelectorAll('.lang-item').forEach(function(item){
+        item.addEventListener('click', function(){
+          var lang = item.getAttribute('data-lang') || 'es';
+          if (window.dI18n && typeof window.dI18n.setLang === 'function'){ window.dI18n.setLang(lang); }
+          var map = {es:'Español', en:'English', pt:'Português'};
+          var lbl = document.getElementById('langCurrentText');
+          if (lbl) lbl.textContent = map[lang] || lang;
+          // reflect selection
+          menu.querySelectorAll('.lang-item').forEach(function(i){ i.setAttribute('aria-selected', i===item ? 'true':'false'); });
+          // close dropdown if UI script toggles class (best-effort)
+          var dd = document.getElementById('langDropdown');
+          if (dd && dd.classList.contains('open')) dd.classList.remove('open');
+          // finally, apply language to known nodes
+          try{ window.applyLang(); }catch(e){}
+        });
+      });
+    }
+    // Initial apply
+    try{ window.applyLang(); }catch(e){}
+  });
+})();
+</script>
 <script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
 <script>
 // Memoized Supabase client: re-use the same instance so session persists between sections
@@ -860,7 +911,6 @@
   };
 })();
 </script>
-
 <script>
   // 1. VERIFICACIÓN DE CARGA DE SUPABASE
   function checkSupabaseLoaded() {
@@ -1140,8 +1190,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
-
-
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const menuItems = document.querySelectorAll(".menu-item[data-target]");
@@ -1244,8 +1292,6 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarDashboard();
 });
 </script>
-
-
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const menuCompras = document.querySelector('.menu-item[data-target="compras"]');
@@ -1311,15 +1357,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 </script>
-
-
-
-
-  </div>
+</div>
 </section>
-
-
-
 <script>
 (function(){
   function setSidebarWidthVar(){
@@ -1331,35 +1370,29 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener('resize', setSidebarWidthVar);
 })();
 </script>
-
-
 <!-- NUMINA: Modal global de detalle de producto -->
-<div class="nm-overlay" id="nmOverlay" hidden inert>
-  <div class="nm-modal" role="dialog" aria-modal="true" aria-labelledby="nmTitle">
-    <header>
-      <h3 id="nmTitle">Detalles del producto</h3>
-      <button class="nm-close" id="nmClose" aria-label="Cerrar">✕</button>
-    </header>
-    <div class="nm-body">
-      <div class="nm-imgbox"><img id="nmImg" alt="Producto"/></div>
-      <div class="nm-info">
-        <span id="nmSku" class="label" style="display:inline-block;padding:.15rem .5rem;border-radius:999px;background:#2a2a2a;color:#d7d7d7;font-size:12px;margin-bottom:12px"></span>
-        <h4 id="nmName">—</h4>
-        <p class="nm-desc" id="nmDesc">—</p>
-        <div class="nm-price" id="nmPrice">—</div>
-        <div class="nm-pitch" id="nmPitch" style="display:none"></div>
-        <div class="nm-actions">
-          <button class="nm-buy" id="nmBuy">Comprar</button>
-        </div>
-        <p class="nm-note">Envíos asegurados con seguimiento. Certificado incluido.</p>
-      </div>
-    </div>
-  </div>
+<div class="nm-overlay" hidden="" id="nmOverlay" inert="">
+<div aria-labelledby="nmTitle" aria-modal="true" class="nm-modal" role="dialog">
+<header>
+<h3 id="nmTitle">Detalles del producto</h3>
+<button aria-label="Cerrar" class="nm-close" id="nmClose">✕</button>
+</header>
+<div class="nm-body">
+<div class="nm-imgbox"><img alt="Producto" id="nmImg"/></div>
+<div class="nm-info">
+<span class="label" id="nmSku" style="display:inline-block;padding:.15rem .5rem;border-radius:999px;background:#2a2a2a;color:#d7d7d7;font-size:12px;margin-bottom:12px"></span>
+<h4 id="nmName">—</h4>
+<p class="nm-desc" id="nmDesc">—</p>
+<div class="nm-price" id="nmPrice">—</div>
+<div class="nm-pitch" id="nmPitch" style="display:none"></div>
+<div class="nm-actions">
+<button class="nm-buy" id="nmBuy">Comprar</button>
 </div>
-
-
-
-
+<p class="nm-note">Envíos asegurados con seguimiento. Certificado incluido.</p>
+</div>
+</div>
+</div>
+</div>
 <script>
 // NUMINA: Catálogo y modal a pantalla completa (sin aria-hidden warnings)
 document.addEventListener('DOMContentLoaded', function(){
@@ -1546,61 +1579,52 @@ overlay.classList.add("show");
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
 });
 </script>
-
-    
-
-
 <!-- ===== Sección: Sorteos (integrada) ===== -->
 <section class="section-content" id="section-sorteos" style="display:none;">
-  <h2 class="section-title"><i class="fas fa-ticket-alt"></i><span>Sorteo</span></h2>
-
-  <div class="srt-stats">
-    <!-- Tickets activos -->
-    <article class="srt-card gold">
-      <h3>Tickets Activos</h3>
-      <div class="val" id="srt-tickets-activos">--</div>
-    </article>
-
-    <!-- Upgrade Numina con barra e hitos -->
-    <article class="srt-card">
-      <h3>Upgrade Numina</h3>
-      <div class="val" id="srt-upgrade-valor">0 / 10,000</div>
-      <div class="srt-progress" role="progressbar" aria-valuemin="0" aria-valuemax="10000" aria-valuenow="0">
-        <div class="srt-track" id="srt-track">
-          <div class="srt-fill" id="srt-fill"></div>
-          <!-- Hitos -->
-          <span class="srt-hit" style="left:25%" id="srt-25"></span>
-          <span class="srt-hit" style="left:50%" id="srt-50"></span>
-          <span class="srt-hit" style="left:100%" id="srt-100"></span>
-        </div>
-        <div class="srt-marks">
-          <span class="srt-mark" style="left:25%">2,500</span>
-          <span class="srt-mark" style="left:50%">5,000</span>
-          <span class="srt-mark" style="left:100%">10,000</span>
-        </div>
-      </div>
-    </article>
-  </div>
-
-  <h3 class="section-title"><i class="fas fa-history"></i><span>Historial de Participación</span></h3>
-  <div class="table-container">
-    <table id="sorteos-table">
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Sorteo</th>
-          <th>Tickets Utilizados</th>
-        </tr>
-      </thead>
-      <tbody id="sorteos-tbody">
-        <tr><td colspan="3" style="text-align:center;">Cargando...</td></tr>
-      </tbody>
-    </table>
-  </div>
+<h2 class="section-title"><i class="fas fa-ticket-alt"></i><span>Sorteo</span></h2>
+<div class="srt-stats">
+<!-- Tickets activos -->
+<article class="srt-card gold">
+<h3>Tickets Activos</h3>
+<div class="val" id="srt-tickets-activos">--</div>
+</article>
+<!-- Upgrade Numina con barra e hitos -->
+<article class="srt-card">
+<h3>Upgrade Numina</h3>
+<div class="val" id="srt-upgrade-valor">0 / 10,000</div>
+<div aria-valuemax="10000" aria-valuemin="0" aria-valuenow="0" class="srt-progress" role="progressbar">
+<div class="srt-track" id="srt-track">
+<div class="srt-fill" id="srt-fill"></div>
+<!-- Hitos -->
+<span class="srt-hit" id="srt-25" style="left:25%"></span>
+<span class="srt-hit" id="srt-50" style="left:50%"></span>
+<span class="srt-hit" id="srt-100" style="left:100%"></span>
+</div>
+<div class="srt-marks">
+<span class="srt-mark" style="left:25%">2,500</span>
+<span class="srt-mark" style="left:50%">5,000</span>
+<span class="srt-mark" style="left:100%">10,000</span>
+</div>
+</div>
+</article>
+</div>
+<h3 class="section-title"><i class="fas fa-history"></i><span>Historial de Participación</span></h3>
+<div class="table-container">
+<table id="sorteos-table">
+<thead>
+<tr>
+<th>Fecha</th>
+<th>Sorteo</th>
+<th>Tickets Utilizados</th>
+</tr>
+</thead>
+<tbody id="sorteos-tbody">
+<tr><td colspan="3" style="text-align:center;">Cargando...</td></tr>
+</tbody>
+</table>
+</div>
 </section>
-</div></main>
-
-
+</main></div>
 <script>
 // ===== Sorteos: carga desde Supabase (users.tickets_count, purchases: NUMINA-BRACELET, historial) =====
 (function(){
@@ -1697,8 +1721,6 @@ overlay.classList.add("show");
   });
 })();
 </script>
-
-
 <script>
 // === NUMINA Dashboard i18n (ES/EN/PT) ===
 const DB_I18N = {
@@ -1858,8 +1880,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
-
-
 <script>
 // Patch: after existing copy logic, ensure label matches current language
 document.addEventListener('DOMContentLoaded', ()=>{
@@ -1872,8 +1892,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 });
 </script>
-
-
 <script>
 // === Enhance i18n to include common content labels and table headers ===
 (function(){
@@ -2035,8 +2053,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   dI18n.apply();
 })();
 </script>
-
-
 <script>
 // === Stronger phrase-level translations for dashboard widgets ===
 (function(){
@@ -2121,8 +2137,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   dI18n.apply();
 })();
 </script>
-
-
 <script>
 /* === i18n observer patch v9 (final): deterministic, multi-trigger, no dropdown interference === */
 (function(){
@@ -2241,7 +2255,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 })();
 </script>
-
 <script>
 /* === NUMINA i18n add-ons (stable) ==============================
    Covers table headers, empty-states and account info values.
@@ -2372,7 +2385,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.addEventListener("click", function(ev){ if (ev.target.closest("[data-lang]")) setTimeout(applyAll, 0); }, true);
 })();
 </script>
-
 <script>
 /* === Enhancement: translate Sorteos section title ("Sorteo") === */
 (function(){
@@ -2411,7 +2423,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 })();
 </script>
-
 <script>
 /* === Enhancement: translate "Mis Compras" section title === */
 (function(){
@@ -2449,7 +2460,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 })();
 </script>
-
 <script>
 /* === Enhancement: translate "Tickets Activos" card title in Sorteos === */
 (function(){
@@ -2489,7 +2499,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 })();
 </script>
-
 <script>
 /* === Settings section i18n (Configuración de la Cuenta) === */
 (function(){
@@ -2695,7 +2704,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 })();
 </script>
-
 <script>
 /* === Status & Actions i18n for purchases tables (stable, scoped) ==================
    - Translates status pills (pending/approved/rejected/...)
