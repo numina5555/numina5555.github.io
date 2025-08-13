@@ -2847,6 +2847,59 @@ document.addEventListener('DOMContentLoaded', ()=>{
 })();
 </script>
 
+
+<!-- Fase C: robust loaders + shim global statusLabel -->
+<script>
+(function(){
+  // Shim global para evitar "statusLabel is not defined"
+  if (!window.statusLabel){
+    window.statusLabel = function(s){
+      try{
+        if (window.NUMINA_I18N && typeof NUMINA_I18N.statusLabel === 'function') {
+          return NUMINA_I18N.statusLabel(s);
+        }
+      }catch(_){}
+      return s;
+    };
+  }
+
+  // Namespace auxiliar
+  window.NUMINA = window.NUMINA || {};
+
+  // Invocación segura con captura
+  window.NUMINA.safeInvoke = function(fn){
+    try{ if (typeof fn === 'function') return fn(); }catch(e){ console && console.warn && console.warn(e); }
+  };
+
+  // Mejoras de recarga para "Mis Compras"
+  (function(){
+    var tries = 0;
+    function looksStuck(){
+      try{
+        var tb = document.getElementById('miscompras-body') || document.querySelector('#miscompras-table tbody');
+        if (!tb) return false;
+        var txt = (tb.textContent||'').trim().toLowerCase();
+        return (!txt || txt.includes('cargando') || txt.includes('error cargando') || txt.includes('no hay compras'));
+      }catch(_){ return false; }
+    }
+    function refreshIfNeeded(){
+      if (tries >= 3) return;
+      if (looksStuck()){
+        tries++;
+        if (typeof window.cargarMisCompras === 'function') { try{ window.cargarMisCompras(); }catch(_){} return; }
+        if (typeof window.cargarDashboard === 'function') { try{ window.cargarDashboard(); }catch(_){} return; }
+      }
+    }
+    document.addEventListener('DOMContentLoaded', function(){
+      // Primero intento al cargar
+      setTimeout(refreshIfNeeded, 300);
+      // Reintentos suaves
+      setTimeout(refreshIfNeeded, 1500);
+      setTimeout(refreshIfNeeded, 3500);
+    }, { once:true });
+  })();
+})();
+</script>
+
 </body>
 </html>
-
