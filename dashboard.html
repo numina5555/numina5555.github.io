@@ -1337,7 +1337,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="nm-price" id="nmPrice">—</div>
 <div class="nm-pitch" id="nmPitch" style="display:none"></div>
 <div class="nm-actions">
-<button class="nm-buy" id="nmBuy">Comprar</button>
+<button class="nm-buy" id="nmBuy"><span data-i18n="product.buy">Comprar</span></button>
 </div>
 <p class="nm-note">Envíos asegurados con seguimiento. Certificado incluido.</p>
 </div>
@@ -3590,6 +3590,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     updatePassword: { es: "Actualizar contraseña", en: "Update password", pt: "Atualizar senha" },
     catalog: { es: "Catálogo", en: "Catalog", pt: "Catálogo" },
     moreInfo: { es: "Más información", en: "More info", pt: "Mais informações" },
+    buy: { es: "Comprar", en: "Buy", pt: "Comprar" },
     label1: { es: "Nueva contraseña", en: "New password", pt: "Nova senha" },
     label2: { es: "Repetir contraseña", en: "Repeat password", pt: "Repetir senha" },
     ph1: { es: "********", en: "********", pt: "********" },
@@ -3630,6 +3631,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (up) up.textContent = MAP.updatePassword[lang] || MAP.updatePassword.es;
     document.querySelectorAll('[data-i18n="catalog.title"]').forEach(function(cat){ cat.textContent = MAP.catalog[lang] || MAP.catalog.es; });
     document.querySelectorAll('button [data-i18n="catalog.moreInfo"]').forEach(function(mi){ mi.textContent = MAP.moreInfo[lang] || MAP.moreInfo.es; });
+    var buy = document.querySelector('#nmBuy [data-i18n="product.buy"]'); if (buy) buy.textContent = MAP.buy[lang] || MAP.buy.es;
     const l1 = document.querySelector('label[for="cfg-pass1"] span[data-i18n="accountForm.labels.newPassword"]');
     const l2 = document.querySelector('label[for="cfg-pass2"] span[data-i18n="accountForm.labels.repeatPassword"]');
     if (l1) l1.textContent = MAP.label1[lang] || MAP.label1.es;
