@@ -645,6 +645,14 @@
 }
 </style>
 
+
+<style id="table-filter-styles">
+.table-filters{background:#1a1a1a;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:.75rem 1rem;margin:0 0 .75rem}
+.table-filters label{display:block;font-size:.9rem;color:#c9c9c9;margin:0 0 .35rem}
+.table-filters input[type="text"]{width:100%;background:#0f0f0f;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:.7rem .9rem;color:#f0f0f0;outline:none}
+.table-filters input[type="text"]::placeholder{color:#8a8a8a}
+</style>
+
 </head>
 <body>
   <header class="dashboard-header">
@@ -742,8 +750,8 @@
         </div>
 
         <h2 class="section-title"><i class="fas fa-shopping-bag"></i><span data-i18n="sections.comprasActivas">Compras Activas</span></h2>
-        <div class="table-container">
-          <table id="purchases-table">
+        \1<div class="table-filters"><label for="search-purchases">Buscar</label><input id="search-purchases" type="text" placeholder="Buscar por producto, fecha o estado…" /></div>
+\2>
             <thead>
               <tr>
                 <th data-i18n="tables.product">Producto</th>
@@ -758,8 +766,8 @@
         </div>
 
         <h2 class="section-title"><i class="fas fa-users"></i><span data-i18n="sections.referralsHistory">Historial de Referidos</span></h2>
-        <div class="table-container">
-          <table id="referrals-table">
+        \1<div class="table-filters"><label for="search-referrals">Buscar</label><input id="search-referrals" type="text" placeholder="Buscar por referido, fecha o estado…" /></div>
+\2>
             <thead>
               <tr>
                 <th data-i18n="tables.referral">Referido</th>
@@ -819,8 +827,8 @@
 
       <section class="section-content" id="section-compras">
         <h2 class="section-title"><i class="fas fa-shopping-bag"></i><span data-i18n="sections.misCompras">Mis Compras</span></h2>
-        <div class="table-container">
-          <table id="miscompras-table">
+        \1<div class="table-filters"><label for="search-miscompras">Buscar</label><input id="search-miscompras" type="text" placeholder="Buscar por producto, fecha o estado…" /></div>
+\2>
             <thead>
               <tr>
                 <th data-i18n="tables.product">Producto</th>
@@ -1661,6 +1669,52 @@ if (!link) {
   } else {
     init();
   }
+})();
+</script>
+
+
+<script id="table-filter-js">
+(function(){
+  function attachTableSearch(input, tbody){
+    if (!input || !tbody) return;
+    input.addEventListener('input', function(){
+      var q = this.value.trim().toLowerCase();
+      Array.prototype.forEach.call(tbody.querySelectorAll('tr'), function(tr){
+        var text = tr.textContent.toLowerCase();
+        tr.style.display = text.indexOf(q) !== -1 ? '' : 'none';
+      });
+    });
+  }
+  function ensureFilterAbove(tbodyId, inputId, placeholder){
+    var tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
+    var container = tbody.closest('.table-container') || tbody.parentElement;
+    if (!container) return;
+    var existing = container.querySelector('#'+inputId);
+    if (!existing){
+      var wrap = document.createElement('div');
+      wrap.className = 'table-filters';
+      var label = document.createElement('label');
+      label.setAttribute('for', inputId);
+      label.textContent = 'Buscar';
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.id = inputId;
+      input.placeholder = placeholder || 'Buscar…';
+      wrap.appendChild(label);
+      wrap.appendChild(input);
+      container.insertBefore(wrap, container.firstChild);
+      existing = input;
+    }
+    attachTableSearch(existing, tbody);
+  }
+  function init(){
+    ensureFilterAbove('purchases-body', 'search-purchases', 'Buscar por producto, fecha o estado…');
+    ensureFilterAbove('referrals-body', 'search-referrals', 'Buscar por referido, fecha o estado…');
+    ensureFilterAbove('miscompras-body', 'search-miscompras', 'Buscar por producto, fecha o estado…');
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();
 </script>
 
