@@ -1057,7 +1057,7 @@
           </tr>`;
         }).join('');
       } else {
-        purchasesBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">—</td></tr>';
+        purchasesBody.innerHTML = '<tr><td colspan=\"5\" style=\"text-align:center;\"><span data-i18n=\"purchases.none\">Sin compras</span></td></tr>';
       }
       const referralsBody = document.getElementById('referrals-body');
       if (userData.referrals?.length){
