@@ -1613,6 +1613,56 @@ if (!link) {
   apply(mq);
 })();
 </script>
+<script>
+(function () {
+  // 1) Enlaces fijos de NOWPayments por SKU
+  var FIXED_PAY_URL = {
+    'NUMINA-BRACELET': 'https://nowpayments.io/payment/?iid=4476885766', // USDT 35
+    'GOLD-100G':       'https://nowpayments.io/payment/?iid=4384021327', // USDT 13500
+    'PLAT-100G':       'https://nowpayments.io/payment/?iid=5742431610', // USDT 6500
+    'ROLEX-126610L':   'https://nowpayments.io/payment/?iid=5388824453'  // USDT 19600
+  };
+
+  // 2) Garantiza que el SKU del botón "Más información" quede en el modal
+  function wireMoreInfoButtons() {
+    var moreBtns = document.querySelectorAll('[data-action="more"][data-sku]');
+    moreBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var sku = btn.getAttribute('data-sku') || '';
+        var skuEl = document.getElementById('nmSku');
+        if (skuEl) { skuEl.textContent = sku; }
+      });
+    });
+  }
+
+  // 3) Conecta el botón "Comprar" del modal a los enlaces fijos
+  function wireBuyButton() {
+    var buyBtn = document.getElementById('nmBuy');
+    if (!buyBtn) return;
+    buyBtn.addEventListener('click', function () {
+      var skuEl = document.getElementById('nmSku');
+      var sku = skuEl ? String(skuEl.textContent || '').trim() : '';
+      var url = FIXED_PAY_URL[sku];
+      if (url) {
+        window.open(url, '_blank', 'noopener'); // cobra SIEMPRE el importe exacto
+      } else {
+        // Si algún producto nuevo todavía no tiene link fijo configurado
+        alert('Payment link not available for: ' + (sku || 'unknown SKU'));
+      }
+    });
+  }
+
+  function init() {
+    wireMoreInfoButtons();
+    wireBuyButton();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
 
 </body>
 </html>
