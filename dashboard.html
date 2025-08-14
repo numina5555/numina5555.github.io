@@ -2145,6 +2145,15 @@ if (!link) {
     EL.total.innerHTML = '<strong>' + ((value !== '—') ? (value + ' USDT') : '—') + '</strong>';
     EL.date.textContent = date || '—';
     EL.order.textContent = '#—';
+    // Robust: set "Order created" and "Payment link generated" dates from the date chip
+    (function(){
+      const orderDateText = (EL.date && EL.date.textContent || '').trim();
+      // Support either .pd-timeline or #pdTimeline containers
+      const sNodes = document.querySelectorAll('#pdOverlay .pd-timeline .s, #pdOverlay #pdTimeline .s');
+      if (sNodes[0]) sNodes[0].textContent = orderDateText || '—';                // Order created
+      if (sNodes[1]) sNodes[1].textContent = (statusK !== 'pending') ? (orderDateText || '—') : '—'; // Payment link generated
+    })();
+
 
     EL.status.classList.remove('pending','active','cancelled','completed');
     EL.status.classList.add(statusK);
