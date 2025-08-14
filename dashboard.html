@@ -1371,23 +1371,27 @@ overlay.classList.add("show");
       }
 
       // 4) invocar Edge Function autenticada (maneja CORS internamente)
-      const { data, error } = await supabase.functions.invoke('create-invoice', {
-        body: {
-          purchase_id: purchase.id,
-          mode: 'fixed',
-          // Use crypto as price currency to avoid FX conversion
-          price_currency: 'usdt',
-          price_amount: p.price,
-          pay_currency: 'usdttrc20',
-          is_fixed_rate: true,
-          // Make sure buyer does NOT pay the gateway fee
-          is_fee_paid_by_user: false,
-          // Backwards-compat fields
-          fixed_amount_usdt: p.price,
-          fixed_pay_amount_usdt: p.price,
-          test_amount_usdt: p.price
-    }
-      });
+      const { data, error } = await 
+// --- NOWPayments prebuilt link mode ---
+// p.sku must be one of: 'gold_100g_9999', 'platinum_100g_9995', 'rolex_126610LV', 'bracelet_numina'
+const PAYMENT_LINKS = {
+  
+  gold_100g_9999:    'https://nowpayments.io/payment/?iid=4384021327',  // 13,500 USDT
+  platinum_100g_9995:'https://nowpayments.io/payment/?iid=5742431610',  // 6,500 USDT
+  rolex_126610LV:    'https://nowpayments.io/payment/?iid=5388824453',  // 19,600 USDT
+  bracelet_numina:   'https://nowpayments.io/payment/?iid=4476885766'   // 35 USDT
+};
+
+const link = PAYMENT_LINKS[p.sku];
+if (!link) {
+  alert('No payment link configured for product: ' + p.sku);
+} else {
+  // optional: attach order_id so you can reconcile later (NOWPayments ignores unknown params harmlessly)
+  const orderId = `ORD-${p.sku}-${Date.now()}`;
+  const url = link + (link.includes('?') ? '&' : '?') + 'order_id=' + encodeURIComponent(orderId);
+  window.location.href = url;
+}
+
       if (error) {
         console.error(error);
         alert('Error al crear la factura: ' + (error.message || 'desconocido'));
