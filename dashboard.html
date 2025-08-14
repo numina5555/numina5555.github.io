@@ -571,8 +571,7 @@
     active:'status.active', pending:'status.pending', completed:'status.completed',
     cancelled:'status.cancelled', inactive:'status.inactive', paid:'status.paid', disputed:'status.disputed'
   };
-  /* deprecated by i18n v2 */
-/* function normalizeStatus(x){
+  function normalizeStatus(x){
     const s = String(x ?? '').toLowerCase();
     if (s==='true' || s==='activo' || s==='active') return 'active';
     if (s==='completed' || s==='completado' || s==='complete') return 'completed';
@@ -581,7 +580,7 @@
     if (s==='paid' || s==='pagado') return 'paid';
     if (s==='disputed' || s==='disputado' || s==='disputa') return 'disputed';
     return 'pending';
-  } */
+  }
   // Robust status label resolver with fallback maps
   function lang2(){
     try { return (localStorage.getItem('lang') || (navigator.language||'es')).slice(0,2).toLowerCase(); }
@@ -592,21 +591,19 @@
     en: { active:'Active',  pending:'Pending',  completed:'Completed',  cancelled:'Cancelled', inactive:'Inactive', paid:'Paid',  disputed:'Disputed' },
     pt: { active:'Ativo',   pending:'Pendente', completed:'Concluído',  cancelled:'Cancelado', inactive:'Inativo',  paid:'Pago', disputed:'Em disputa' }
   };
-  /* deprecated by i18n v2 */
-/* function statusLabel(key){
+  function statusLabel(key){
     // Try dI18n first
     try {
       if (window.dI18n && typeof dI18n.t === 'function') {
         const r = dI18n.t('status.'+key);
         if (r && r !== ('status.'+key)) return r;
-      } */
+      }
     } catch(_){}
     // Fallback map by language
     const L = lang2();
     return (STATUS_FALLBACK[L] && STATUS_FALLBACK[L][key]) || STATUS_FALLBACK.es[key] || key;
   }
-  /* deprecated by i18n v2 */
-/* function normalizeStatus(x){
+  function normalizeStatus(x){
     const s = String(x ?? '').toLowerCase();
     if (s==='true' || s==='activo' || s==='active') return 'active';
     if (s==='completed' || s==='completado' || s==='complete') return 'completed';
@@ -615,7 +612,7 @@
     if (s==='paid' || s==='pagado') return 'paid';
     if (s==='disputed' || s==='disputado' || s==='disputa') return 'disputed';
     return 'pending';
-  } */
+  }
   window.statusBadge = function(state){
     const key = normalizeStatus(state);
     return '<span class="status '+key+'">'+ statusLabel(key) +'</span>';
@@ -3321,14 +3318,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
   function fmtMoney(v){ try{ return (new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'})).format(Number(v||0)); }catch(_){ return '$'+(v||0); } }
   function fmtDate(iso){ try{ var d=new Date(iso); return isNaN(d)?(iso||''):d.toLocaleDateString(); }catch(_){ return iso||''; } }
   
-/* deprecated by i18n v2 */
-/* function statusLabel(v){
+function statusLabel(v){
   try {
     const key = normalizeStatus(v);
     if (window.dI18n && typeof dI18n.t === 'function'){
       const r = dI18n.t('status.'+key);
       if (r && r !== ('status.'+key)) return r;
-    } */
+    }
     const L = (typeof lang2==='function'? lang2() : 'es');
     return (STATUS_FALLBACK[L] && STATUS_FALLBACK[L][key]) || STATUS_FALLBACK.es[key] || key;
   } catch(_) {
@@ -3937,141 +3933,155 @@ var R = {
 </script>
 
 
-<!-- i18n kernel v2: centralizado -->
+<!-- I18N core v3 (no colisiones) -->
 <script>
 (function(){
-  const DICT = {"en": {"labels.loading": "Loading...", "labels.welcome": "Welcome,", "placeholders.undefined": "Undefined", "sidebar.dashboard": "Dashboard", "sidebar.purchases": "My Purchases", "sidebar.raffles": "Raffles", "sidebar.referrals": "Referrals", "sidebar.catalog": "Catalog", "sidebar.settings": "Settings", "sidebar.logout": "Log out", "raffles.activeTickets": "Active tickets", "raffles.date": "Date", "empty.noPurchases": "No purchases", "empty.noReferrals": "No referrals", "empty.noRaffles": "No participations", "catalog.title": "Catalog", "catalog.moreInfo": "More info", "account.settings.title": "Account settings", "account.settings.personalData": "Personal data", "account.settings.security": "Security", "account.settings.save": "Save changes", "account.settings.updatePassword": "Update password", "accountForm.labels.fullName": "Full name", "accountForm.labels.phone": "Phone", "accountForm.labels.address": "Address", "accountForm.labels.country": "Country", "accountForm.labels.city": "City", "accountForm.labels.zip": "ZIP / Postal code", "accountForm.labels.newPassword": "New password", "accountForm.labels.repeatPassword": "Repeat password", "buttons.details": "Details", "buttons.claim": "Claim", "buttons.copy": "Copy", "buttons.copied": "Copied!", "status.active": "Active", "status.pending": "Pending", "status.completed": "Completed", "status.cancelled": "Cancelled", "status.inactive": "Inactive", "status.paid": "Paid", "status.disputed": "Disputed"}, "es": {"labels.loading": "Cargando...", "labels.welcome": "Bienvenido,", "placeholders.undefined": "No definido", "sidebar.dashboard": "Dashboard", "sidebar.purchases": "Mis Compras", "sidebar.raffles": "Sorteos", "sidebar.referrals": "Referidos", "sidebar.catalog": "Catálogo", "sidebar.settings": "Configuración", "sidebar.logout": "Cerrar Sesión", "raffles.activeTickets": "Tickets activos", "raffles.date": "Fecha", "empty.noPurchases": "No hay compras", "empty.noReferrals": "No hay referidos", "empty.noRaffles": "No hay participaciones", "catalog.title": "Catálogo", "catalog.moreInfo": "Más información", "account.settings.title": "Configuración de la Cuenta", "account.settings.personalData": "Datos Personales", "account.settings.security": "Seguridad", "account.settings.save": "Guardar cambios", "account.settings.updatePassword": "Actualizar contraseña", "accountForm.labels.fullName": "Nombre Completo", "accountForm.labels.phone": "Teléfono", "accountForm.labels.address": "Dirección", "accountForm.labels.country": "País", "accountForm.labels.city": "Ciudad", "accountForm.labels.zip": "Código Postal", "accountForm.labels.newPassword": "Nueva contraseña", "accountForm.labels.repeatPassword": "Repetir contraseña", "buttons.details": "Detalles", "buttons.claim": "Hacer reclamo", "buttons.copy": "Copiar", "buttons.copied": "¡Copiado!", "status.active": "Activo", "status.pending": "Pendiente", "status.completed": "Completado", "status.cancelled": "Cancelado", "status.inactive": "Inactivo", "status.paid": "Pagado", "status.disputed": "En disputa"}, "pt": {"labels.loading": "Carregando...", "labels.welcome": "Bem-vindo,", "placeholders.undefined": "Não definido", "sidebar.dashboard": "Painel", "sidebar.purchases": "Minhas Compras", "sidebar.raffles": "Sorteios", "sidebar.referrals": "Indicados", "sidebar.catalog": "Catálogo", "sidebar.settings": "Configurações", "sidebar.logout": "Sair", "raffles.activeTickets": "Bilhetes ativos", "raffles.date": "Data", "empty.noPurchases": "Não há compras", "empty.noReferrals": "Não há indicados", "empty.noRaffles": "Sem participações", "catalog.title": "Catálogo", "catalog.moreInfo": "Mais informações", "account.settings.title": "Configurações da Conta", "account.settings.personalData": "Dados Pessoais", "account.settings.security": "Segurança", "account.settings.save": "Salvar alterações", "account.settings.updatePassword": "Atualizar senha", "accountForm.labels.fullName": "Nome completo", "accountForm.labels.phone": "Telefone", "accountForm.labels.address": "Endereço", "accountForm.labels.country": "País", "accountForm.labels.city": "Cidade", "accountForm.labels.zip": "CEP", "accountForm.labels.newPassword": "Nova senha", "accountForm.labels.repeatPassword": "Repetir senha", "buttons.details": "Detalhes", "buttons.claim": "Reclamar", "buttons.copy": "Copiar", "buttons.copied": "Copiado!", "status.active": "Ativo", "status.pending": "Pendente", "status.completed": "Concluído", "status.cancelled": "Cancelado", "status.inactive": "Inativo", "status.paid": "Pago", "status.disputed": "Em disputa"}};
+  var DICT = {"en": {"labels.loading": "Loading...", "labels.welcome": "Welcome,", "placeholders.undefined": "Undefined", "sidebar.dashboard": "Dashboard", "sidebar.purchases": "My Purchases", "sidebar.raffles": "Raffles", "sidebar.referrals": "Referrals", "sidebar.catalog": "Catalog", "sidebar.settings": "Settings", "sidebar.logout": "Sign out", "raffles.activeTickets": "Active tickets", "raffles.date": "Date", "empty.noPurchases": "No purchases", "empty.noReferrals": "No referrals", "empty.noRaffles": "No participations", "catalog.title": "Catalog", "catalog.moreInfo": "More information", "account.settings.title": "Account settings", "account.settings.personalData": "Personal data", "account.settings.security": "Security", "account.settings.save": "Save changes", "account.settings.updatePassword": "Update password", "accountForm.labels.fullName": "Full name", "accountForm.labels.phone": "Phone", "accountForm.labels.address": "Address", "accountForm.labels.country": "Country", "accountForm.labels.city": "City", "accountForm.labels.zip": "ZIP / Postal code", "accountForm.labels.newPassword": "New password", "accountForm.labels.repeatPassword": "Repeat password", "buttons.details": "Details", "buttons.claim": "Make a claim", "buttons.copy": "Copy", "buttons.copied": "Copied!", "status.active": "Active", "status.pending": "Pending", "status.completed": "Completed", "status.cancelled": "Cancelled", "status.inactive": "Inactive", "status.paid": "Paid", "status.disputed": "Disputed"}, "es": {"labels.loading": "Cargando...", "labels.welcome": "Bienvenido,", "placeholders.undefined": "No definido", "sidebar.dashboard": "Dashboard", "sidebar.purchases": "Mis Compras", "sidebar.raffles": "Sorteos", "sidebar.referrals": "Referidos", "sidebar.catalog": "Catálogo", "sidebar.settings": "Configuración", "sidebar.logout": "Cerrar Sesión", "raffles.activeTickets": "Tickets activos", "raffles.date": "Fecha", "empty.noPurchases": "No hay compras", "empty.noReferrals": "No hay referidos", "empty.noRaffles": "No hay participaciones", "catalog.title": "Catálogo", "catalog.moreInfo": "Más información", "account.settings.title": "Configuración de la Cuenta", "account.settings.personalData": "Datos Personales", "account.settings.security": "Seguridad", "account.settings.save": "Guardar cambios", "account.settings.updatePassword": "Actualizar contraseña", "accountForm.labels.fullName": "Nombre Completo", "accountForm.labels.phone": "Teléfono", "accountForm.labels.address": "Dirección", "accountForm.labels.country": "País", "accountForm.labels.city": "Ciudad", "accountForm.labels.zip": "Código Postal", "accountForm.labels.newPassword": "Nueva contraseña", "accountForm.labels.repeatPassword": "Repetir contraseña", "buttons.details": "Detalles", "buttons.claim": "Hacer reclamo", "buttons.copy": "Copiar", "buttons.copied": "¡Copiado!", "status.active": "Activo", "status.pending": "Pendiente", "status.completed": "Completado", "status.cancelled": "Cancelado", "status.inactive": "Inactivo", "status.paid": "Pagado", "status.disputed": "En disputa"}, "pt": {"labels.loading": "Carregando...", "labels.welcome": "Bem-vindo,", "placeholders.undefined": "Não definido", "sidebar.dashboard": "Painel", "sidebar.purchases": "Minhas Compras", "sidebar.raffles": "Sorteios", "sidebar.referrals": "Indicados", "sidebar.catalog": "Catálogo", "sidebar.settings": "Configurações", "sidebar.logout": "Sair", "raffles.activeTickets": "Bilhetes ativos", "raffles.date": "Data", "empty.noPurchases": "Não há compras", "empty.noReferrals": "Não há indicados", "empty.noRaffles": "Sem participações", "catalog.title": "Catálogo", "catalog.moreInfo": "Mais informações", "account.settings.title": "Configurações da Conta", "account.settings.personalData": "Dados Pessoais", "account.settings.security": "Segurança", "account.settings.save": "Salvar alterações", "account.settings.updatePassword": "Atualizar senha", "accountForm.labels.fullName": "Nome completo", "accountForm.labels.phone": "Telefone", "accountForm.labels.address": "Endereço", "accountForm.labels.country": "País", "accountForm.labels.city": "Cidade", "accountForm.labels.zip": "CEP", "accountForm.labels.newPassword": "Nova senha", "accountForm.labels.repeatPassword": "Repetir senha", "buttons.details": "Detalhes", "buttons.claim": "Fazer reclamação", "buttons.copy": "Copiar", "buttons.copied": "Copiado!", "status.active": "Ativo", "status.pending": "Pendente", "status.completed": "Concluído", "status.cancelled": "Cancelado", "status.inactive": "Inativo", "status.paid": "Pago", "status.disputed": "Em disputa"}};
   function normalizeLang(l){ return String(l||'en').slice(0,2).toLowerCase(); }
-  function getLang(){ try{ return localStorage.getItem('lang') || 'en'; }catch(_){ return 'en'; } }
+  function getLang(){ try { return localStorage.getItem('lang') || 'en'; } catch(e) { return 'en'; } }
   function setLang(l){
-    const lang = normalizeLang(l);
-    try{ localStorage.setItem('lang', lang); }catch(_){}
-    dI18n.set(lang); dI18n.apply(); updateStatusBadges(); updateLangUI(lang);
+    var lang = normalizeLang(l);
+    try { localStorage.setItem('lang', lang); } catch(e) {}
+    I18N.lang = lang;
+    I18N.apply();
+    if (typeof I18N.updateStatusBadges === 'function') I18N.updateStatusBadges();
+    if (typeof I18N.updateLangUI === 'function') I18N.updateLangUI(lang);
   }
-
-  function updateLangUI(lang){
-    try{
-      document.querySelectorAll('.lang-item').forEach(li=>li.setAttribute('aria-selected', li.dataset.lang===lang ? 'true':'false'));
-      const current = document.getElementById('langCurrentText');
-      if(current) current.textContent = (lang==='en'?'English':(lang==='es'?'Español':'Português'));
-    }catch(_){}
-  }
-
-  window.dI18n = {
+  window.I18N = window.I18N || {
     lang: 'en',
-    set: function(l){ this.lang = normalizeLang(l); },
     t: function(key){
-      const lang = normalizeLang(this.lang);
-      const val = (DICT[lang] && DICT[lang][key]) || (DICT['en'] && DICT['en'][key]);
-      return val || key;
+      var L = normalizeLang(this.lang);
+      return (DICT[L] && DICT[L][key]) || (DICT.en && DICT.en[key]) || key;
     },
     apply: function(){
-      document.querySelectorAll('[data-i18n]').forEach(el=>{
-        const k = el.getAttribute('data-i18n');
-        const v = this.t(k);
-        if(v && v !== k) el.textContent = v;
-      });
-      document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
-        const k = el.getAttribute('data-i18n-ph');
-        const v = this.t(k);
-        if(v && v !== k) el.setAttribute('placeholder', v);
-      });
-      // Sidebar "productos" compat
-      const sbProd = document.getElementById('sidebar-productos-text');
-      if (sbProd) sbProd.textContent = this.t('sidebar.catalog');
+      var nodes = document.querySelectorAll('[data-i18n]');
+      for (var i=0;i<nodes.length;i++){
+        var el = nodes[i];
+        var k = el.getAttribute('data-i18n');
+        var v = I18N.t(k);
+        if (v && v !== k) el.textContent = v;
+      }
+      var ph = document.querySelectorAll('[data-i18n-ph]');
+      for (var j=0;j<ph.length;j++){
+        var el2 = ph[j];
+        var k2 = el2.getAttribute('data-i18n-ph');
+        var v2 = I18N.t(k2);
+        if (v2 && v2 !== k2) el2.setAttribute('placeholder', v2);
+      }
+    },
+    updateLangUI: function(lang){
+      try{
+        var items = document.querySelectorAll('.lang-item');
+        for (var i=0;i<items.length;i++){
+          items[i].setAttribute('aria-selected', items[i].dataset.lang===lang ? 'true':'false');
+        }
+        var current = document.getElementById('langCurrentText');
+        if(current){ current.textContent = (lang==='en'?'English':(lang==='es'?'Español':'Português')); }
+      }catch(e){}
+    },
+    normStatus: function(x){
+      var s = String(x||'').toLowerCase().trim();
+      if(['true','activo','active','ativo'].indexOf(s)>-1) return 'active';
+      if(['pending','pendiente','pendente'].indexOf(s)>-1) return 'pending';
+      if(['completed','complete','completado','concluído','concluido'].indexOf(s)>-1) return 'completed';
+      if(['cancelled','canceled','cancelado'].indexOf(s)>-1) return 'cancelled';
+      if(['inactive','inactivo','inativo'].indexOf(s)>-1) return 'inactive';
+      if(['paid','pagado','pago'].indexOf(s)>-1) return 'paid';
+      if(['disputed','disputa','disputado','em disputa'].indexOf(s)>-1) return 'disputed';
+      return 'pending';
+    },
+    statusLabel: function(key){
+      var canon = I18N.normStatus(key);
+      return I18N.t('status.'+canon);
+    },
+    updateStatusBadges: function(){
+      var badges = document.querySelectorAll('.status, .status-badge, .badge-status');
+      for (var i=0;i<badges.length;i++){
+        var el = badges[i];
+        var raw = el.getAttribute('data-status') || el.textContent;
+        var canon = I18N.normStatus(raw);
+        el.setAttribute('data-status', canon);
+        el.textContent = I18N.statusLabel(canon);
+        var all = ['active','pending','completed','cancelled','inactive','paid','disputed'];
+        for (var k=0;k<all.length;k++){ el.classList.remove(all[k]); }
+        el.classList.add(canon);
+      }
     }
   };
+  window.__i18n = { setLang: setLang, getLang: getLang, dI18n: I18N };
 
-  const STATUS_CANON = ['active','pending','completed','cancelled','inactive','paid','disputed'];
-  function normStatus(x){
-    const s = String(x||'').toLowerCase().trim();
-    if(['true','activo','active'].includes(s)) return 'active';
-    if(['pending','pendiente'].includes(s)) return 'pending';
-    if(['completed','complete','completado'].includes(s)) return 'completed';
-    if(['cancelled','canceled','cancelado'].includes(s)) return 'cancelled';
-    if(['inactive','inactivo'].includes(s)) return 'inactive';
-    if(['paid','pagado'].includes(s)) return 'paid';
-    if(['disputed','disputa','disputado'].includes(s)) return 'disputed';
-    return 'pending';
-  }
-  function statusLabel(key){
-    const canon = normStatus(key);
-    return dI18n.t('status.'+canon);
-  }
-  window.statusBadge = function(state){
-    const canon = normStatus(state);
-    return '<span class="status '+canon+'" data-status="'+canon+'">'+ statusLabel(canon) +'</span>';
-  }
-  window.updateStatusBadges = function(){
-    document.querySelectorAll('.status').forEach(el=>{
-      const attr = el.getAttribute('data-status');
-      const cls = STATUS_CANON.find(k=>el.classList.contains(k)) || normStatus(attr);
-      el.textContent = statusLabel(cls);
-      if(!el.classList.contains(cls)){ STATUS_CANON.forEach(k=>el.classList.remove(k)); el.classList.add(cls); }
-      el.setAttribute('data-status', cls);
-    });
-  };
+  // primer load: forzar EN si no hay lang guardado
+  if(!localStorage.getItem('lang')){ try{ localStorage.setItem('lang', 'en'); }catch(e){} }
 
-  // Idioma default EN al primer load
-  if(!localStorage.getItem('lang')){ try{ localStorage.setItem('lang','en'); }catch(_){ } }
-
-  // Dropdown idioma (si existe)
+  // Clic en dropdown idioma (si existe)
   document.addEventListener('DOMContentLoaded', function(){
-    const langBtn = document.getElementById('langBtn');
-    const langMenu = document.getElementById('langMenu');
-    const dropdown = document.getElementById('langDropdown');
-    if(langBtn && langMenu && dropdown){
-      langBtn.addEventListener('click', ()=> dropdown.classList.toggle('open'));
-      langMenu.querySelectorAll('.lang-item').forEach(li=> li.addEventListener('click', ()=>{ dropdown.classList.remove('open'); setLang(li.dataset.lang); }));
-      document.addEventListener('click', (e)=>{ if(!dropdown.contains(e.target)) dropdown.classList.remove('open'); });
+    var btn = document.getElementById('langBtn');
+    var menu = document.getElementById('langMenu');
+    var dd = document.getElementById('langDropdown');
+    if(btn && menu && dd){
+      btn.addEventListener('click', function(){ dd.classList.toggle('open'); });
+      var items = menu.querySelectorAll('.lang-item');
+      for(var i=0;i<items.length;i++){
+        items[i].addEventListener('click', function(){ dd.classList.remove('open'); setLang(this.dataset.lang); });
+      }
+      document.addEventListener('click', function(e){ if(dd && !dd.contains(e.target)) dd.classList.remove('open'); });
     }
   });
-
-  window.__i18n = { setLang, getLang, dI18n };
 })();
 </script>
 
-<!-- i18n v2 extras para Fase 2: persistencia y auto-apply -->
+<!-- Fase 3: auto-etiquetado de estáticos + aplicación en DOMContentLoaded -->
 <script>
 (function(){
-  // anti-flicker
-  document.documentElement.style.visibility="hidden";
+  function autoTagStatics(){
+    // Sidebar
+    var sidebar = document.querySelector('.sidebar, nav');
+    if(sidebar){
+      var lis = sidebar.querySelectorAll('li, .menu-item, a');
+      for (var i=0;i<lis.length;i++){
+        var el = lis[i];
+        var txt = (el.textContent||'').trim().toLowerCase();
+        if(!el.querySelector('[data-i18n]')){
+          if(/dashboard|painel/.test(txt)) el.innerHTML = el.innerHTML.replace(/(Dashboard|Painel)/i, '<span data-i18n="sidebar.dashboard">Dashboard</span>');
+          else if(/mis compras|minhas compras|my purchases/.test(txt)) el.innerHTML = el.innerHTML.replace(/(Mis Compras|Minhas Compras|My Purchases)/i, '<span data-i18n="sidebar.purchases">My Purchases</span>');
+          else if(/sorteos|raffles/.test(txt)) el.innerHTML = el.innerHTML.replace(/(Sorteos|Raffles)/i, '<span data-i18n="sidebar.raffles">Raffles</span>');
+          else if(/referidos|indicados|referrals/.test(txt)) el.innerHTML = el.innerHTML.replace(/(Referidos|Indicados|Referrals)/i, '<span data-i18n="sidebar.referrals">Referrals</span>');
+          else if(/cat[aá]logo|catalog/.test(txt)) el.innerHTML = el.innerHTML.replace(/(Cat[aá]logo|Catalog)/i, '<span data-i18n="sidebar.catalog">Catalog</span>');
+          else if(/configuraci[oó]n|configura[cç][aã]o|settings/.test(txt)) el.innerHTML = el.innerHTML.replace(/(Configuraci[oó]n|Configura[cç][aã]o|Settings)/i, '<span data-i18n="sidebar.settings">Settings</span>');
+          else if(/salir|sair|sign out|log out|cerrar sesi[oó]n/.test(txt)) el.innerHTML = el.innerHTML.replace(/(Salir|Sair|Sign out|Log out|Cerrar Sesi[oó]n)/i, '<span data-i18n="sidebar.logout">Sign out</span>');
+        }
+      }
+    }
+    // Botones "Más información"
+    var moreBtns = document.querySelectorAll('button, a');
+    for (var j=0;j<moreBtns.length;j++){
+      var b = moreBtns[j];
+      var t = (b.textContent||'').trim().toLowerCase();
+      if(/m[aá]s informaci[oó]n|mais informa[cç][aã]o|more info|more information/.test(t)){
+        b.setAttribute('data-i18n','catalog.moreInfo');
+      }
+      if(/detalles|detalhes|details/.test(t)){
+        b.setAttribute('data-i18n','buttons.details');
+      }
+      if(/hacer reclamo|reclamar|claim|make a claim/.test(t)){
+        b.setAttribute('data-i18n','buttons.claim');
+      }
+    }
+    // Títulos típicos
+    var titles = document.querySelectorAll('h1,h2,h3');
+    for (var k=0;k<titles.length;k++){
+      var h = titles[k];
+      var t2 = (h.textContent||'').trim().toLowerCase();
+      if(/cat[aá]logo|catalog/.test(t2)) h.setAttribute('data-i18n','catalog.title');
+      if(/account settings|configuraci[oó]n.*cuenta|configura[cç][aã]o.*conta/.test(t2)) h.setAttribute('data-i18n','account.settings.title');
+      if(/security|seguridad|seguran[çc]a/.test(t2)) h.setAttribute('data-i18n','account.settings.security');
+      if(/personal data|datos personales|dados pessoais/.test(t2)) h.setAttribute('data-i18n','account.settings.personalData');
+    }
+  }
   document.addEventListener('DOMContentLoaded', function(){
-    const L = (window.__i18n?.getLang && __i18n.getLang()) || localStorage.getItem('lang') || 'en';
-    window.__i18n?.dI18n?.set(L);
-    window.__i18n?.dI18n?.apply();
-    if(typeof window.updateStatusBadges==='function'){ window.updateStatusBadges(); }
-    document.documentElement.style.visibility="visible";
-  });
-
-  // mutation observer: re-aplicar traducción cuando cambie el DOM (tablas/estados dinámicos)
-  const mo = new MutationObserver((muts)=>{
-    if(!window.__i18n || !window.__i18n.dI18n) return;
-    window.__i18n.dI18n.apply();
-    if(typeof window.updateStatusBadges==='function'){ window.updateStatusBadges(); }
-  });
-  document.addEventListener('DOMContentLoaded', ()=>{
-    try{ mo.observe(document.body, { childList:true, subtree:true }); }catch(_){}
-  });
-
-  // re-apply al cambiar de pestaña en el sidebar (si usan data-target)
-  document.addEventListener('click', (e)=>{
-    const item = e.target.closest('.menu-item[data-target]');
-    if(item && window.__i18n && window.__i18n.dI18n){
-      setTimeout(()=>{
-        window.__i18n.dI18n.apply();
-        if(typeof window.updateStatusBadges==='function'){ window.updateStatusBadges(); }
-      }, 0);
-    }
-  });
-
-  // sync entre pestañas
-  window.addEventListener('storage', (e)=>{
-    if(e.key==="lang" && window.__i18n && window.__i18n.dI18n){
-      window.__i18n.dI18n.set(localStorage.getItem("lang")||"en");
-      window.__i18n.dI18n.apply();
-      if(typeof window.updateStatusBadges==='function'){ window.updateStatusBadges(); }
-    }
+    try{ autoTagStatics(); }catch(e){}
+    try{ I18N.lang = (localStorage.getItem('lang') || 'en'); }catch(e){ I18N.lang='en'; }
+    I18N.apply();
   });
 })();
 </script>
