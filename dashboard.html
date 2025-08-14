@@ -3933,7 +3933,7 @@ var R = {
 </script>
 
 
-<!-- I18N core v3 (no colisiones) -->
+<!-- I18N core v3.1 -->
 <script>
 (function(){
   var DICT = {"en": {"labels.loading": "Loading...", "labels.welcome": "Welcome,", "placeholders.undefined": "Undefined", "sidebar.dashboard": "Dashboard", "sidebar.purchases": "My Purchases", "sidebar.raffles": "Raffles", "sidebar.referrals": "Referrals", "sidebar.catalog": "Catalog", "sidebar.settings": "Settings", "sidebar.logout": "Sign out", "raffles.activeTickets": "Active tickets", "raffles.date": "Date", "empty.noPurchases": "No purchases", "empty.noReferrals": "No referrals", "empty.noRaffles": "No participations", "catalog.title": "Catalog", "catalog.moreInfo": "More information", "account.settings.title": "Account settings", "account.settings.personalData": "Personal data", "account.settings.security": "Security", "account.settings.save": "Save changes", "account.settings.updatePassword": "Update password", "accountForm.labels.fullName": "Full name", "accountForm.labels.phone": "Phone", "accountForm.labels.address": "Address", "accountForm.labels.country": "Country", "accountForm.labels.city": "City", "accountForm.labels.zip": "ZIP / Postal code", "accountForm.labels.newPassword": "New password", "accountForm.labels.repeatPassword": "Repeat password", "buttons.details": "Details", "buttons.claim": "Make a claim", "buttons.copy": "Copy", "buttons.copied": "Copied!", "status.active": "Active", "status.pending": "Pending", "status.completed": "Completed", "status.cancelled": "Cancelled", "status.inactive": "Inactive", "status.paid": "Paid", "status.disputed": "Disputed"}, "es": {"labels.loading": "Cargando...", "labels.welcome": "Bienvenido,", "placeholders.undefined": "No definido", "sidebar.dashboard": "Dashboard", "sidebar.purchases": "Mis Compras", "sidebar.raffles": "Sorteos", "sidebar.referrals": "Referidos", "sidebar.catalog": "Catálogo", "sidebar.settings": "Configuración", "sidebar.logout": "Cerrar Sesión", "raffles.activeTickets": "Tickets activos", "raffles.date": "Fecha", "empty.noPurchases": "No hay compras", "empty.noReferrals": "No hay referidos", "empty.noRaffles": "No hay participaciones", "catalog.title": "Catálogo", "catalog.moreInfo": "Más información", "account.settings.title": "Configuración de la Cuenta", "account.settings.personalData": "Datos Personales", "account.settings.security": "Seguridad", "account.settings.save": "Guardar cambios", "account.settings.updatePassword": "Actualizar contraseña", "accountForm.labels.fullName": "Nombre Completo", "accountForm.labels.phone": "Teléfono", "accountForm.labels.address": "Dirección", "accountForm.labels.country": "País", "accountForm.labels.city": "Ciudad", "accountForm.labels.zip": "Código Postal", "accountForm.labels.newPassword": "Nueva contraseña", "accountForm.labels.repeatPassword": "Repetir contraseña", "buttons.details": "Detalles", "buttons.claim": "Hacer reclamo", "buttons.copy": "Copiar", "buttons.copied": "¡Copiado!", "status.active": "Activo", "status.pending": "Pendiente", "status.completed": "Completado", "status.cancelled": "Cancelado", "status.inactive": "Inactivo", "status.paid": "Pagado", "status.disputed": "En disputa"}, "pt": {"labels.loading": "Carregando...", "labels.welcome": "Bem-vindo,", "placeholders.undefined": "Não definido", "sidebar.dashboard": "Painel", "sidebar.purchases": "Minhas Compras", "sidebar.raffles": "Sorteios", "sidebar.referrals": "Indicados", "sidebar.catalog": "Catálogo", "sidebar.settings": "Configurações", "sidebar.logout": "Sair", "raffles.activeTickets": "Bilhetes ativos", "raffles.date": "Data", "empty.noPurchases": "Não há compras", "empty.noReferrals": "Não há indicados", "empty.noRaffles": "Sem participações", "catalog.title": "Catálogo", "catalog.moreInfo": "Mais informações", "account.settings.title": "Configurações da Conta", "account.settings.personalData": "Dados Pessoais", "account.settings.security": "Segurança", "account.settings.save": "Salvar alterações", "account.settings.updatePassword": "Atualizar senha", "accountForm.labels.fullName": "Nome completo", "accountForm.labels.phone": "Telefone", "accountForm.labels.address": "Endereço", "accountForm.labels.country": "País", "accountForm.labels.city": "Cidade", "accountForm.labels.zip": "CEP", "accountForm.labels.newPassword": "Nova senha", "accountForm.labels.repeatPassword": "Repetir senha", "buttons.details": "Detalhes", "buttons.claim": "Fazer reclamação", "buttons.copy": "Copiar", "buttons.copied": "Copiado!", "status.active": "Ativo", "status.pending": "Pendente", "status.completed": "Concluído", "status.cancelled": "Cancelado", "status.inactive": "Inativo", "status.paid": "Pago", "status.disputed": "Em disputa"}};
@@ -3943,9 +3943,8 @@ var R = {
     var lang = normalizeLang(l);
     try { localStorage.setItem('lang', lang); } catch(e) {}
     I18N.lang = lang;
-    I18N.apply();
-    if (typeof I18N.updateStatusBadges === 'function') I18N.updateStatusBadges();
-    if (typeof I18N.updateLangUI === 'function') I18N.updateLangUI(lang);
+    I18N.apply(); I18N.updateStatusBadges();
+    I18N.updateLangUI && I18N.updateLangUI(lang);
   }
   window.I18N = window.I18N || {
     lang: 'en',
@@ -3956,27 +3955,21 @@ var R = {
     apply: function(){
       var nodes = document.querySelectorAll('[data-i18n]');
       for (var i=0;i<nodes.length;i++){
-        var el = nodes[i];
-        var k = el.getAttribute('data-i18n');
-        var v = I18N.t(k);
+        var el = nodes[i], k = el.getAttribute('data-i18n'), v = I18N.t(k);
         if (v && v !== k) el.textContent = v;
       }
       var ph = document.querySelectorAll('[data-i18n-ph]');
       for (var j=0;j<ph.length;j++){
-        var el2 = ph[j];
-        var k2 = el2.getAttribute('data-i18n-ph');
-        var v2 = I18N.t(k2);
+        var el2 = ph[j], k2 = el2.getAttribute('data-i18n-ph'), v2 = I18N.t(k2);
         if (v2 && v2 !== k2) el2.setAttribute('placeholder', v2);
       }
     },
     updateLangUI: function(lang){
       try{
         var items = document.querySelectorAll('.lang-item');
-        for (var i=0;i<items.length;i++){
-          items[i].setAttribute('aria-selected', items[i].dataset.lang===lang ? 'true':'false');
-        }
+        for (var i=0;i<items.length;i++){ items[i].setAttribute('aria-selected', (items[i].dataset.lang===lang)?'true':'false'); }
         var current = document.getElementById('langCurrentText');
-        if(current){ current.textContent = (lang==='en'?'English':(lang==='es'?'Español':'Português')); }
+        if(current) current.textContent = (lang==='en'?'English':(lang==='es'?'Español':'Português'));
       }catch(e){}
     },
     normStatus: function(x){
@@ -3990,12 +3983,9 @@ var R = {
       if(['disputed','disputa','disputado','em disputa'].indexOf(s)>-1) return 'disputed';
       return 'pending';
     },
-    statusLabel: function(key){
-      var canon = I18N.normStatus(key);
-      return I18N.t('status.'+canon);
-    },
+    statusLabel: function(key){ return I18N.t('status.'+I18N.normStatus(key)); },
     updateStatusBadges: function(){
-      var badges = document.querySelectorAll('.status, .status-badge, .badge-status');
+      var badges = document.querySelectorAll('.status, .status-badge, .badge-status, [data-status]');
       for (var i=0;i<badges.length;i++){
         var el = badges[i];
         var raw = el.getAttribute('data-status') || el.textContent;
@@ -4010,163 +4000,68 @@ var R = {
   };
   window.__i18n = { setLang: setLang, getLang: getLang, dI18n: I18N };
 
-  // primer load: forzar EN si no hay lang guardado
+  // default EN
   if(!localStorage.getItem('lang')){ try{ localStorage.setItem('lang', 'en'); }catch(e){} }
 
-  // Clic en dropdown idioma (si existe)
-  document.addEventListener('DOMContentLoaded', function(){
-    var btn = document.getElementById('langBtn');
-    var menu = document.getElementById('langMenu');
-    var dd = document.getElementById('langDropdown');
-    if(btn && menu && dd){
-      btn.addEventListener('click', function(){ dd.classList.toggle('open'); });
-      var items = menu.querySelectorAll('.lang-item');
-      for(var i=0;i<items.length;i++){
-        items[i].addEventListener('click', function(){ dd.classList.remove('open'); setLang(this.dataset.lang); });
-      }
-      document.addEventListener('click', function(e){ if(dd && !dd.contains(e.target)) dd.classList.remove('open'); });
-    }
+  // Universal event delegation para selects de idioma existentes (por texto)
+  document.addEventListener('click', function(e){
+    var txt = (e.target && e.target.textContent || '').trim().toLowerCase();
+    if(!txt) return;
+    if(txt==='english' || txt==='inglés' || txt==='ingles') return setLang('en');
+    if(txt==='español' || txt==='espanol' || txt==='spanish') return setLang('es');
+    if(txt==='português' || txt==='portugues' || txt==='portuguese') return setLang('pt');
   });
 })();
 </script>
 
-<!-- Fase 3: auto-etiquetado de estáticos + aplicación en DOMContentLoaded -->
+<!-- Fase 3 fix: auto-tag estáticos + aplicar en carga -->
 <script>
 (function(){
   function autoTagStatics(){
-    // Sidebar
+    // Sidebar (best-effort)
     var sidebar = document.querySelector('.sidebar, nav');
     if(sidebar){
-      var lis = sidebar.querySelectorAll('li, .menu-item, a');
-      for (var i=0;i<lis.length;i++){
-        var el = lis[i];
+      var items = sidebar.querySelectorAll('li, .menu-item, a');
+      for (var i=0;i<items.length;i++){
+        var el = items[i];
+        if(el.querySelector('[data-i18n]')) continue;
         var txt = (el.textContent||'').trim().toLowerCase();
-        if(!el.querySelector('[data-i18n]')){
-          if(/dashboard|painel/.test(txt)) el.innerHTML = el.innerHTML.replace(/(Dashboard|Painel)/i, '<span data-i18n="sidebar.dashboard">Dashboard</span>');
-          else if(/mis compras|minhas compras|my purchases/.test(txt)) el.innerHTML = el.innerHTML.replace(/(Mis Compras|Minhas Compras|My Purchases)/i, '<span data-i18n="sidebar.purchases">My Purchases</span>');
-          else if(/sorteos|raffles/.test(txt)) el.innerHTML = el.innerHTML.replace(/(Sorteos|Raffles)/i, '<span data-i18n="sidebar.raffles">Raffles</span>');
-          else if(/referidos|indicados|referrals/.test(txt)) el.innerHTML = el.innerHTML.replace(/(Referidos|Indicados|Referrals)/i, '<span data-i18n="sidebar.referrals">Referrals</span>');
-          else if(/cat[aá]logo|catalog/.test(txt)) el.innerHTML = el.innerHTML.replace(/(Cat[aá]logo|Catalog)/i, '<span data-i18n="sidebar.catalog">Catalog</span>');
-          else if(/configuraci[oó]n|configura[cç][aã]o|settings/.test(txt)) el.innerHTML = el.innerHTML.replace(/(Configuraci[oó]n|Configura[cç][aã]o|Settings)/i, '<span data-i18n="sidebar.settings">Settings</span>');
-          else if(/salir|sair|sign out|log out|cerrar sesi[oó]n/.test(txt)) el.innerHTML = el.innerHTML.replace(/(Salir|Sair|Sign out|Log out|Cerrar Sesi[oó]n)/i, '<span data-i18n="sidebar.logout">Sign out</span>');
-        }
+        if(/dashboard|painel/.test(txt)) el.setAttribute('data-i18n','sidebar.dashboard');
+        else if(/mis compras|minhas compras|my purchases/.test(txt)) el.setAttribute('data-i18n','sidebar.purchases');
+        else if(/sorteos|raffles/.test(txt)) el.setAttribute('data-i18n','sidebar.raffles');
+        else if(/referidos|indicados|referrals/.test(txt)) el.setAttribute('data-i18n','sidebar.referrals');
+        else if(/cat[aá]logo|catalog/.test(txt)) el.setAttribute('data-i18n','sidebar.catalog');
+        else if(/configuraci[oó]n|configura[cç][aã]o|settings/.test(txt)) el.setAttribute('data-i18n','sidebar.settings');
+        else if(/salir|sair|sign out|log out|cerrar sesi[oó]n/.test(txt)) el.setAttribute('data-i18n','sidebar.logout');
       }
     }
-    // Botones "Más información"
-    var moreBtns = document.querySelectorAll('button, a');
-    for (var j=0;j<moreBtns.length;j++){
-      var b = moreBtns[j];
-      var t = (b.textContent||'').trim().toLowerCase();
-      if(/m[aá]s informaci[oó]n|mais informa[cç][aã]o|more info|more information/.test(t)){
-        b.setAttribute('data-i18n','catalog.moreInfo');
-      }
-      if(/detalles|detalhes|details/.test(t)){
-        b.setAttribute('data-i18n','buttons.details');
-      }
-      if(/hacer reclamo|reclamar|claim|make a claim/.test(t)){
-        b.setAttribute('data-i18n','buttons.claim');
-      }
+    // Títulos frecuentes
+    var h = document.querySelectorAll('h1,h2,h3');
+    for(var j=0;j<h.length;j++){
+      var t = (h[j].textContent||'').trim().toLowerCase();
+      if(/cat[aá]logo|catalog/.test(t)) h[j].setAttribute('data-i18n','catalog.title');
+      if(/account settings|configuraci[oó]n.*cuenta|configura[cç][aã]o.*conta/.test(t)) h[j].setAttribute('data-i18n','account.settings.title');
+      if(/security|seguridad|seguran[çc]a/.test(t)) h[j].setAttribute('data-i18n','account.settings.security');
+      if(/personal data|datos personales|dados pessoais/.test(t)) h[j].setAttribute('data-i18n','account.settings.personalData');
     }
-    // Títulos típicos
-    var titles = document.querySelectorAll('h1,h2,h3');
-    for (var k=0;k<titles.length;k++){
-      var h = titles[k];
-      var t2 = (h.textContent||'').trim().toLowerCase();
-      if(/cat[aá]logo|catalog/.test(t2)) h.setAttribute('data-i18n','catalog.title');
-      if(/account settings|configuraci[oó]n.*cuenta|configura[cç][aã]o.*conta/.test(t2)) h.setAttribute('data-i18n','account.settings.title');
-      if(/security|seguridad|seguran[çc]a/.test(t2)) h.setAttribute('data-i18n','account.settings.security');
-      if(/personal data|datos personales|dados pessoais/.test(t2)) h.setAttribute('data-i18n','account.settings.personalData');
+    // Botones
+    var btns = document.querySelectorAll('button,a');
+    for(var b=0;b<btns.length;b++){
+      var t2 = (btns[b].textContent||'').trim().toLowerCase();
+      if(/m[aá]s informaci[oó]n|mais informa[cç][aã]o|more info|more information/.test(t2)) btns[b].setAttribute('data-i18n','catalog.moreInfo');
+      if(/detalles|detalhes|details/.test(t2)) btns[b].setAttribute('data-i18n','buttons.details');
+      if(/hacer reclamo|reclamar|claim|make a claim/.test(t2)) btns[b].setAttribute('data-i18n','buttons.claim');
     }
   }
-  document.addEventListener('DOMContentLoaded', function(){
-    try{ autoTagStatics(); }catch(e){}
+  // aplicar en carga
+  (function init(){
     try{ I18N.lang = (localStorage.getItem('lang') || 'en'); }catch(e){ I18N.lang='en'; }
-    I18N.apply();
-  });
-})();
-</script>
-
-<!-- Fase 4: dinámicos (observer + estados + botones) -->
-<script>
-(function(){
-  function translateTableCells(root){
-    // Estados
-    var cells = (root||document).querySelectorAll('td, span, button');
-    for (var i=0;i<cells.length;i++){
-      var el = cells[i];
-      var t = (el.textContent||'').trim().toLowerCase();
-      if(['activo','active','ativo','pendiente','pending','pendente','completado','concluído','concluido','completed','cancelado','cancelled','inactivo','inativo','inactive','pagado','pago','paid','disputed','disputa','disputado','em disputa'].indexOf(t)>-1){
-        el.classList.add('status');
-        el.setAttribute('data-status', I18N.normStatus(t));
-      }
+    if (document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', function(){ autoTagStatics(); I18N.apply(); I18N.updateStatusBadges(); });
+    } else {
+      autoTagStatics(); I18N.apply(); I18N.updateStatusBadges();
     }
-    I18N.updateStatusBadges();
-    I18N.apply();
-  }
-
-  // Reinforce after any DOM change
-  var mo = new MutationObserver(function(muts){ translateTableCells(document); });
-  document.addEventListener('DOMContentLoaded', function(){
-    try{ translateTableCells(document); }catch(e){}
-    try{ mo.observe(document.body, {childList:true, subtree:true}); }catch(e){}
-  });
-
-  // Post fetch hook (best-effort)
-  (function(open){
-    if(!window.fetch) return;
-    window.fetch = function(){
-      return open.apply(this, arguments).then(function(res){
-        setTimeout(function(){ I18N.apply(); I18N.updateStatusBadges(); }, 0);
-        return res;
-      });
-    };
-  })(window.fetch);
-})();
-</script>
-
-<!-- Fase 5: persistencia total + anti-flicker + polyfills + fixes -->
-<script>
-(function(){
-  // anti-flicker: oculto hasta aplicar idioma
-  document.documentElement.style.visibility = "hidden";
-  document.addEventListener('DOMContentLoaded', function(){
-    try{ I18N.lang = (localStorage.getItem('lang') || 'en'); }catch(e){ I18N.lang='en'; }
-    I18N.apply();
-    if (typeof I18N.updateStatusBadges === 'function') I18N.updateStatusBadges();
-    document.documentElement.style.visibility = "visible";
-  });
-
-  // polyfill setText si el código original lo usa
-  if (typeof window.setText !== 'function'){
-    window.setText = function(id,val){
-      try{
-        var el = document.getElementById(id);
-        if(!el) return;
-        var undef = I18N.t('placeholders.undefined');
-        el.textContent = (val===undefined||val===null||String(val).trim()==='') ? undef : val;
-      }catch(e){}
-    };
-  }
-
-  // por si hay errores de try/catch mal apareados en otros bloques, no tocamos nada,
-  // solo evitamos introducir sintaxis nueva peligrosa aquí.
-
-  // Re-aplicar al cambiar de pestañas (sidebar)
-  document.addEventListener('click', function(e){
-    var item = e.target.closest && e.target.closest('.menu-item');
-    if(item && item.hasAttribute('data-target')){
-      setTimeout(function(){ I18N.apply(); I18N.updateStatusBadges(); }, 0);
-    }
-  });
-
-  // sync entre pestañas
-  window.addEventListener('storage', function(e){
-    if(e.key === 'lang'){
-      try{ I18N.lang = (localStorage.getItem('lang') || 'en'); }catch(err){ I18N.lang='en'; }
-      I18N.apply();
-      I18N.updateStatusBadges();
-    }
-  });
+  })();
 })();
 </script>
 </body>
