@@ -406,17 +406,6 @@
           return '<span data-i18n=\"'+key+'\">'+(dI18n.t(key) || name)+'</span>';
         } catch(_){ return name; }
       };
-      function i18nKeysForSKU(sku){
-        try{
-          const id = String(sku || '').toUpperCase();
-          if (id.includes('GOLD') || id === 'GOLD-100G') return {name:'catalog.goldTitle', desc:'catalog.goldDesc'};
-          if (id.includes('PLAT') || id === 'PLAT-100G') return {name:'catalog.platinumTitle', desc:'catalog.platinumDesc'};
-          if (id.includes('ROLEX') || id.includes('126610L')) return {name:'productNames.rolex126610lv', desc:'catalog.rolexDesc'};
-          if (id.includes('BRACELET')) return {name:'catalog.braceletTitle', desc:'catalog.braceletDesc'};
-        }catch(_){}
-        return null;
-      }
-
 
       function i18nProductName(name){
         try{
@@ -1133,8 +1122,8 @@ document.addEventListener('DOMContentLoaded', function(){
     lastTrigger = trigger || document.activeElement;
 
     if (skuEl)  skuEl.textContent  = p.sku;
-    if(nameEl){ var k=i18nKeysForSKU(sku); if(k){ nameEl.innerHTML = '<span data-i18n="'+k.name+'">'+(dI18n.t(k.name)||p.name)+'</span>'; } else { nameEl.textContent=p.name; } }
-    if(descEl){ var k=i18nKeysForSKU(sku); if(k){ descEl.innerHTML = '<span data-i18n="'+k.desc+'">'+(dI18n.t(k.desc)||p.desc)+'</span>'; } else { descEl.textContent=p.desc; } }
+    if (nameEl) nameEl.textContent = p.name;
+    if (descEl) descEl.textContent = p.desc;
     if (priceEl)priceEl.textContent= money(p.price);
     if (imgEl)  imgEl.src          = p.img;
 
