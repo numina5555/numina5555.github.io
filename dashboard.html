@@ -143,6 +143,30 @@
     #sorteos-table th{ background:var(--dark-lighter); color:var(--primary); font-weight:600; text-transform:uppercase; font-size:.8rem; }
     #sorteos-table td{ color:var(--text-light); border-bottom:1px solid rgba(255,255,255,.05); }
   
+
+  /* === NUMINA: Modal de producto pantalla completa === */
+  .nm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;z-index:1000;}
+  .nm-overlay.show{display:block;}
+  .nm-modal{position:relative;min-height:100vh;background:#111214;color:#fff;display:flex;flex-direction:column;}
+  .nm-modal header{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;background:#1a1b1f;border-bottom:1px solid #24262b}
+  .nm-modal header h3{margin:0;font-size:18px;color:#ffd700;letter-spacing:.3px}
+  .nm-close{background:transparent;border:0;color:#b7b7b7;font-size:22px;cursor:pointer}
+  .nm-body{flex:1;display:grid;grid-template-columns:0.85fr 1.15fr;gap:22px;padding:22px;max-width:1200px;margin:0 auto}
+  .nm-imgbox{background:#222;border-radius:16px;display:flex;align-items:center;justify-content:center;overflow:hidden;aspect-ratio:1/1;max-width:520px;width:100%;margin:0 auto}
+  .nm-imgbox img{width:100%;height:100%;display:block;object-fit:contain}
+  .nm-info h4{margin:.2rem 0 .6rem;font-size:22px}
+  .nm-desc{color:#d0d0d0;line-height:1.55;margin:0 0 14px}
+  .nm-price{font-size:24px;font-weight:900;margin:10px 0 18px;color:#ffd700}
+  .nm-actions{display:flex;gap:10px;align-items:center;margin-top:6px}
+  .nm-btn{background:transparent;border:1px solid #3a3a3a;color:#fafafa;padding:11px 14px;border-radius:12px;cursor:pointer}
+  .nm-buy{background:#ffd700;color:#111;border:0;padding:12px 18px;border-radius:12px;font-weight:900;cursor:pointer}
+  .nm-note{font-size:12px;color:#9aa0a6;margin-top:8px}
+  @media(max-width:900px){.nm-body{flex:1;display:grid;grid-template-columns:0.85fr 1.15fr;gap:22px;padding:22px;max-width:1200px;margin:0 auto}
+
+  .nm-pitch{margin:10px 0 14px;padding:12px 14px;border:1px solid #2b2e34;background:#16181d;border-radius:12px;line-height:1.55;color:#e7e7e7}
+  .nm-pitch strong{color:#ffd700}
+}
+
 </style>
 
   <script>
@@ -212,7 +236,8 @@
           "catalog.braceletDesc": "Exclusive design with high‑quality materials. Limited edition.",
           "catalog.rolexDesc": "Submariner Date with green bezel and Oystersteel case. Automatic.",
           "actions.copy": "Copy",
-          "actions.copied": "Copied!"
+          "actions.copied": "Copied!",
+          "product.buy": "Buy"
         },
         es: {
           "labels.welcome": "Bienvenido",
@@ -278,7 +303,8 @@
           "catalog.braceletDesc": "Diseño exclusivo con materiales de alta calidad. Edición limitada.",
           "catalog.rolexDesc": "Submariner Date con bisel verde y caja Oystersteel. Automático.",
           "actions.copy": "Copiar",
-          "actions.copied": "¡Copiado!"
+          "actions.copied": "¡Copiado!",
+          "product.buy": "Comprar"
         },
         pt: {
           "labels.welcome": "Bem-vindo",
@@ -363,7 +389,8 @@
             }
           }catch(_){}
           const L = this.lang || 'es';
-          return (DICT[L] && DICT[L][key]) || key;
+          return (DICT[L] && DICT[L][key]) || key;,
+          "product.buy": "Comprar"
         },
         set: function(l){ this.lang = canon(l); try{ localStorage.setItem('lang', this.lang); }catch(_){}; this.apply(); },
         apply: function(){
@@ -719,7 +746,28 @@
           </section>
         </div>
       </section>
-    </main>
+    <div class="nm-overlay" hidden="" id="nmOverlay" inert="">
+<div aria-labelledby="nmTitle" aria-modal="true" class="nm-modal" role="dialog">
+<header>
+<h3 id="nmTitle"><span data-i18n="raffles.activeTickets"></span></h3>
+<button aria-label="Cerrar" class="nm-close" id="nmClose">✕</button>
+</header>
+<div class="nm-body">
+<div class="nm-imgbox"><img alt="Producto" id="nmImg"/></div>
+<div class="nm-info">
+<span class="label" id="nmSku" style="display:inline-block;padding:.15rem .5rem;border-radius:999px;background:#2a2a2a;color:#d7d7d7;font-size:12px;margin-bottom:12px"></span>
+<h4 id="nmName">—</h4>
+<p class="nm-desc" id="nmDesc">—</p>
+<div class="nm-price" id="nmPrice">—</div>
+<div class="nm-pitch" id="nmPitch" style="display:none"></div>
+<div class="nm-actions">
+<button class="nm-buy" id="nmBuy"><span data-i18n="product.buy">Comprar</span></button>
+</div>
+<p class="nm-note">Envíos asegurados con seguimiento. Certificado incluido.</p>
+</div>
+</div>
+</div>
+</main>
   </div>
 
   <script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
@@ -965,6 +1013,194 @@
       document.getElementById('logout-btn')?.addEventListener('click', async ()=>{ await getSupabase().auth.signOut(); window.location.href = '/login.html'; });
     });
   </script>
+<script>
+
+// NUMINA: Catálogo y modal a pantalla completa (sin aria-hidden warnings)
+document.addEventListener('DOMContentLoaded', function(){
+  const CATALOG = {
+    "GOLD-100G": { sku:"GOLD-100G", name:"Lingote 100g Oro Fino 999.9", price:13500,
+      img:"https://images.unsplash.com/photo-1623301762237-5b1056f3ce2d?q=80&w=1600&auto=format&fit=crop",
+      pitch:"\ud83d\udcb0 <strong>Oro: Proteg\u00e9 tu dinero, asegur\u00e1 tu futuro</strong><br>Cuando todo sube y baja, el oro se mantiene firme. Es el activo refugio elegido por inversores de todo el mundo para proteger su patrimonio frente a la inflaci\u00f3n y la inestabilidad. El oro no depende de gobiernos ni bancos centrales: su valor es global, tangible y eterno. Comprarlo hoy es asegurarte un respaldo real que pod\u00e9s tener en tus manos y vender en cualquier momento. Invert\u00ed en oro y transform\u00e1 tu dinero en un activo que nunca pasa de moda y siempre vale.",
+      desc:"Lingote de 100 g de oro 999.9 con número de serie y certificado internacional. Alta liquidez y resguardo de valor." },
+    "PLAT-100G": { sku:"PLAT-100G", name:"Lingote 100g Platino Fino 999.5", price:6500,
+      img:"https://images.unsplash.com/photo-1617195737499-1d6bf14acaa7?q=80&w=1600&auto=format&fit=crop",
+      pitch:"\ud83d\udc8e <strong>Platino: Exclusividad y potencial de crecimiento</strong><br>M\u00e1s escaso que el oro y con aplicaciones industriales cr\u00edticas (catalizadores, tecnolog\u00eda y joyer\u00eda), el platino combina lujo con oportunidad. Su rareza y demanda lo posicionan como un metal con fuerte potencial de revalorizaci\u00f3n a largo plazo. Asegur\u00e1 una parte de un recurso limitado, valioso y buscado en todo el mundo.",
+      desc:"Lingote de 100 g de platino 999.5. Metal escaso, con potencial de revalorización a largo plazo." },
+    "ROLEX-126610L": { sku:"ROLEX-126610L", name:"Rolex Submariner Date 126610LV", price:19600,
+      img:"https://images.unsplash.com/photo-1524805444758-089113d48a6d?q=80&w=1600&auto=format&fit=crop",
+      pitch:"\u231a <strong>Rolex Submariner \u201cStarbucks\u201d \u2013 S\u00faper Deportiva y Atemporal</strong><br>Con una caja Oystersteel de 41\u202fmm y bisel verde Cerachrom rotatorio unidireccional, este Submariner conserva ese dise\u00f1o ic\u00f3nico y elegante que lo define. Resistente al agua hasta 300 metros, cuenta con cristal de zafiro con lupa Cyclops y corona Triplock, combinando resistencia con claridad. Su calibre autom\u00e1tico 3235 de manufactura Rolex ofrece 70 horas de reserva de marcha, precisi\u00f3n certificada tipo cron\u00f3metro y protecci\u00f3n avanzada como resistencia a golpes y a campos magn\u00e9ticos. El brazalete Oyster con cierre Oysterlock y sistema Glidelock permite ajustes finos sin herramientas, adapt\u00e1ndose tanto a buceo como a uso diario. En conjunto, es el equilibrio perfecto entre tradici\u00f3n, ingenier\u00eda moderna y estilo deportivo de lujo.",
+      desc:"Modelo 'Starbucks' con bisel cerámico verde y caja Oystersteel. Movimiento automático y hermeticidad profesional." },
+    "NUMINA-BRACELET": { sku:"NUMINA-BRACELET", name:"Pulsera Numina – Edición Limitada", price:35,
+      img:"https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1600&auto=format&fit=crop",
+      pitch:"\ud83d\udc8e <strong>Pulsera Numina \u2013 Estilo que te acerca a un Rolex</strong><br>Fabricada en <em>acero inoxidable premium</em>, dise\u00f1ada para durar y lucir impecable. Con cada pulsera obten\u00e9s <strong>1 ticket</strong> para participar en el <strong>sorteo de un Rolex Submariner</strong>.<br><br>\ud83c\udf9f <u>Mec\u00e1nica del sorteo</u>:<br>\u2022 Pulsera = 1 ticket<br>\u2022 Rolex = 5 tickets<br>\u2022 Oro Fino = 2 tickets<br>\u2022 Platino Fino = 2 tickets<br><br>\ud83c\udf81 <u>Premios especiales</u>:<br>\u2022 El comprador n\u00famero 2.500 recibir\u00e1 una <strong>Pulsera de Platino</strong>.<br>\u2022 El comprador n\u00famero 5.000 recibir\u00e1 una <strong>Pulsera de Oro</strong>.<br>\u2022 Si un usuario compra 2.500 pulseras en total, se le enviar\u00e1 una <strong>Pulsera de Platino</strong>.<br>\u2022 Si un usuario compra 5.000 pulseras en total, se le enviar\u00e1 una <strong>Pulsera de Oro</strong>.<br>\u2022 Si un usuario compra 10.000 pulseras en total, se le enviar\u00e1 una <strong>Pulsera de Oro Full Ice con diamantes</strong>.<br><br>Cuando llegue el momento del sorteo, <strong>asegurate de tener tu lugar</strong>.",
+      desc:"Pulsera exclusiva con diseño minimalista y materiales de alta calidad. Incluye bolsita de microfibra." }
+  };
+
+  const $ = (s, c=document) => c.querySelector(s);
+  const overlay = $("#nmOverlay");
+  const modal    = overlay ? overlay.querySelector(".nm-modal") : null;
+  const closeBtn = $("#nmClose");
+  const buyBtn   = $("#nmBuy");
+  const imgEl    = $("#nmImg");
+  const nameEl   = $("#nmName");
+  const descEl   = $("#nmDesc");
+  const priceEl  = $("#nmPrice");
+  const skuEl    = $("#nmSku");
+
+  function money(v){ return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(v); }
+
+  let currentSku = null;
+  let lastTrigger = null;
+
+  function trapFocus(e){
+    if (!overlay || overlay.hasAttribute('hidden')) return;
+    const focusable = overlay.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last  = focusable[focusable.length - 1];
+    if (e.key === 'Tab'){
+      if (e.shiftKey && document.activeElement === first){ last.focus(); e.preventDefault(); }
+      else if (!e.shiftKey && document.activeElement === last){ first.focus(); e.preventDefault(); }
+    }
+  }
+
+  function openSKU(sku, trigger){
+    const p = CATALOG[sku];
+    if(!p || !overlay) return;
+    currentSku = sku;
+    lastTrigger = trigger || document.activeElement;
+
+    if (skuEl)  skuEl.textContent  = p.sku;
+    if (nameEl) nameEl.textContent = p.name;
+    if (descEl) descEl.textContent = p.desc;
+    if (priceEl)priceEl.textContent= money(p.price);
+    if (imgEl)  imgEl.src          = p.img;
+
+    
+    // Ensure price appears before description and pitch is placed after price
+    try {
+      if (descEl && priceEl && descEl.previousElementSibling !== priceEl) {
+        descEl.parentNode.insertBefore(priceEl, descEl);
+      }
+      var pitchEl = document.getElementById('nmPitch');
+      if (pitchEl) {
+        if (p.pitch) {
+          pitchEl.innerHTML = p.pitch;
+          pitchEl.style.display = '';
+          // make sure pitch is right after price
+          if (priceEl.nextElementSibling !== pitchEl) {
+            priceEl.parentNode.insertBefore(pitchEl, descEl);
+          }
+        } else {
+          pitchEl.style.display = 'none';
+          pitchEl.innerHTML = '';
+        }
+      }
+    } catch(e) { console.warn('Pitch render skipped:', e); }
+      if (!pitchEl) {
+        if (p.pitch && descEl) {
+          try {
+            descEl.innerHTML = p.pitch + '<br><br>' + (p.desc || '');
+          } catch(_) {
+            descEl.textContent = (p.desc || '');
+          }
+        }
+      }
+
+overlay.classList.add("show");
+    overlay.removeAttribute("hidden");
+    overlay.removeAttribute("inert");
+    if (modal) { modal.setAttribute("tabindex","-1"); modal.focus({preventScroll:true}); }
+    if (closeBtn) closeBtn.focus({preventScroll:true});
+    document.addEventListener('keydown', trapFocus);
+  }
+
+  function close(){
+    if (!overlay) return;
+    overlay.classList.remove("show");
+    overlay.setAttribute("hidden","");
+    overlay.setAttribute("inert","");
+    document.removeEventListener('keydown', trapFocus);
+    if (lastTrigger && typeof lastTrigger.focus === 'function') {
+      setTimeout(()=> lastTrigger.focus(), 0);
+    }
+  }
+
+  // Delegación: abrir modal
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest('button[data-action=\"more\"][data-sku], button[data-product]');
+    if (btn) {
+      e.preventDefault();
+      const sku = btn.getAttribute('data-sku') || btn.getAttribute('data-product');
+      openSKU(sku, btn);
+    }
+  });
+
+  // Botón comprar (crea purchase -> invoca Edge Function -> redirige)
+  if (buyBtn) buyBtn.addEventListener('click', async () => {
+    try {
+      if (!currentSku) return;
+      // 1) validar sesión
+      const supabase = getSupabase();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('Inicia sesión para continuar con la compra.');
+        window.location.href = '/login.html';
+        return;
+      }
+      // 2) obtener datos del producto
+      const p = CATALOG[currentSku];
+      if (!p) { alert('Producto desconocido'); return; }
+
+      // 3) crear registro local de compra
+      const { data: purchase, error: insertErr } = await supabase
+        .from('purchases')
+        .insert({
+          user_id: user.id,
+          product_name: p.name,
+          sku: p.sku,
+          value: p.price,
+          currency: 'USD',
+          status: 'pending'
+        })
+        .select('id')
+        .single();
+      if (insertErr || !purchase) {
+        console.error(insertErr);
+        alert('No se pudo crear la compra. Intenta nuevamente.');
+        return;
+      }
+
+      // 4) invocar Edge Function autenticada (maneja CORS internamente)
+      const { data, error } = await supabase.functions.invoke('create-invoice', {
+        body: { purchase_id: purchase.id, test_amount_usdt: p.price }
+      });
+      if (error) {
+        console.error(error);
+        alert('Error al crear la factura: ' + (error.message || 'desconocido'));
+        return;
+      }
+
+      // 5) redirigir al checkout
+      const payment_url = data?.payment_url || data?.paymentUrl || null;
+      if (payment_url) {
+        window.location.href = payment_url;
+      } else {
+        alert('No se recibió la URL de pago.'); 
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error inesperado: ' + (e?.message || e));
+    }
+  });
+
+  // Cerrar modal
+  if (closeBtn) closeBtn.addEventListener('click', close);
+  if (overlay) overlay.addEventListener('click', (e)=>{ if(e.target===overlay) close(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
+});
+
+</script>
 </body>
 </html>
 <script>
