@@ -173,6 +173,7 @@
     (function(){
       const DICT = {
         en: {
+          "account.undefined": "Undefined",
           "labels.welcome": "Welcome",
           "labels.loading": "Loading…",
           "sections.dashboard": "Dashboard",
@@ -240,6 +241,7 @@
           "product.buy": "Buy"
         },
         es: {
+          "account.undefined": "No definido",
           "labels.welcome": "Bienvenido",
           "labels.loading": "Cargando…",
           "sections.dashboard": "Dashboard",
@@ -307,6 +309,7 @@
           "product.buy": "Comprar"
         },
         pt: {
+          "account.undefined": "Não definido",
           "labels.welcome": "Bem-vindo",
           "labels.loading": "Carregando…",
           "sections.dashboard": "Painel",
@@ -426,10 +429,15 @@
         }
       });
       window.setText = function(id, val){
-        const el = document.getElementById(id); if(!el) return;
-        const empty = (val === undefined || val === null || String(val).trim()==='');
-        el.textContent = empty ? (dI18n.lang==='es' ? 'No definido' : dI18n.lang==='pt' ? 'Não definido' : 'Undefined') : val;
-      };
+  const el = document.getElementById(id); if(!el) return;
+  const empty = (val === undefined || val === null || String(val).trim()==='');
+  if (empty) {
+    // put a translatable span so language switches re-translate automatically
+    el.innerHTML = '<span data-i18n="account.undefined">' + dI18n.t('account.undefined') + '</span>';
+  } else {
+    el.textContent = val;
+  }
+};
       const STATUS_FALLBACK = {
         es: { active:'Activo', pending:'Pendiente', completed:'Completado', cancelled:'Cancelado', inactive:'Inactivo', paid:'Pagado', disputed:'En disputa' },
         en: { active:'Active', pending:'Pending',  completed:'Completed', cancelled:'Cancelled', inactive:'Inactive', paid:'Paid',    disputed:'Disputed' },
