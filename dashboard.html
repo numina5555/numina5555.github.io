@@ -1010,6 +1010,7 @@
       if (!tbody) return;
       if (!entries || !entries.length){
         tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;"><span data-i18n="raffles.noParticipations">Sin participaciones</span></td></tr>';
+        try { if (window.dI18n && typeof dI18n.apply === 'function') { dI18n.apply(); } } catch(_) {}
       } else {
         tbody.innerHTML = entries.map(e => {
           const fecha = new Date(e.created_at).toLocaleDateString();
