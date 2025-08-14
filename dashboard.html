@@ -167,6 +167,16 @@
   .nm-pitch strong{color:#ffd700}
 }
 
+
+/* --- Ensure sidebar labels are visible next to icons --- */
+.sidebar .nav-label{display:inline-block;margin-left:.75rem;white-space:nowrap}
+.sidebar a{display:flex;align-items:center}
+
+
+/* --- Ensure sidebar labels are visible next to icons --- */
+.sidebar .nav-label{display:inline-block;margin-left:.75rem;white-space:nowrap}
+.sidebar a{display:flex;align-items:center}
+
 </style>
 
   <script>
@@ -440,6 +450,54 @@
             if (DICT[L]) Object.assign(DICT[L], EXTRA[L]);
           });
         } catch(_) {}
+      })();
+
+      // === Extra NAV labels (merged into DICT) ===
+      (function(){
+        const EXTRA = {
+          es: {
+            "nav.dashboard": "Dashboard",
+            "nav.purchases": "Compras",
+            "nav.raffles": "Sorteos",
+            "nav.referrals": "Referidos",
+            "nav.catalog": "Catálogo",
+            "nav.settings": "Configuración",
+            "nav.logout": "Cerrar sesión"
+          },
+          en: {
+            "nav.dashboard": "Dashboard",
+            "nav.purchases": "Purchases",
+            "nav.raffles": "Raffles",
+            "nav.referrals": "Referrals",
+            "nav.catalog": "Catalog",
+            "nav.settings": "Settings",
+            "nav.logout": "Log out"
+          },
+          pt: {
+            "nav.dashboard": "Painel",
+            "nav.purchases": "Compras",
+            "nav.raffles": "Sorteios",
+            "nav.referrals": "Indicações",
+            "nav.catalog": "Catálogo",
+            "nav.settings": "Configurações",
+            "nav.logout": "Sair"
+          }
+        };
+        try{
+          Object.keys(EXTRA).forEach(function(L){
+            if (DICT[L]) Object.assign(DICT[L], EXTRA[L]);
+          });
+        }catch(_){}
+      })();
+
+      // === Extra NAV labels (merged into DICT) ===
+      (function(){
+        const EXTRA = {
+          es: {"nav.dashboard":"Dashboard","nav.purchases":"Compras","nav.raffles":"Sorteos","nav.referrals":"Referidos","nav.catalog":"Catálogo","nav.settings":"Configuración","nav.logout":"Cerrar sesión"},
+          en: {"nav.dashboard":"Dashboard","nav.purchases":"Purchases","nav.raffles":"Raffles","nav.referrals":"Referrals","nav.catalog":"Catalog","nav.settings":"Settings","nav.logout":"Log out"},
+          pt: {"nav.dashboard":"Painel","nav.purchases":"Compras","nav.raffles":"Sorteios","nav.referrals":"Indicações","nav.catalog":"Catálogo","nav.settings":"Configurações","nav.logout":"Sair"}
+        };
+        try{ Object.keys(EXTRA).forEach(function(L){ if (DICT[L]) Object.assign(DICT[L], EXTRA[L]); }); }catch(_){}
       })();
 
       // Global helper to translate product names in tables (available before first render)
@@ -973,7 +1031,7 @@
           </tr>`;
         }).join('');
       } else {
-        purchasesBody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><span data-i18n="purchases.none">'+dI18n.t('purchases.none')+'</span></td></tr>';
+        purchasesBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">—</td></tr>';
       }
       const referralsBody = document.getElementById('referrals-body');
       if (userData.referrals?.length){
@@ -1409,6 +1467,89 @@ overlay.classList.add("show");
   OVERLAY?.addEventListener('click', function(e){
     if (e.target === OVERLAY){ BTN_CLOSE?.click(); }
   });
+})();
+</script>
+
+
+<script>
+// === Ensure sidebar labels are present and translated ===
+(function(){
+  function qsAll(sel, ctx){ return Array.from((ctx||document).querySelectorAll(sel)); }
+  function ensureLabel(anchor, key, fallback){
+    if (!anchor) return;
+    var label = anchor.querySelector('.nav-label');
+    if (!label){
+      label = document.createElement('span');
+      label.className = 'nav-label';
+      label.setAttribute('data-i18n', key);
+      try{
+        label.textContent = (window.dI18n && dI18n.t(key)) || fallback;
+      }catch(_){
+        label.textContent = fallback;
+      }
+      anchor.appendChild(label);
+    }else{
+      if (!label.getAttribute('data-i18n')) label.setAttribute('data-i18n', key);
+    }
+  }
+
+  var MAP = [
+    {selector: 'a[href="#dashboard"], a[data-nav="dashboard"], a.nav-dashboard', key:'nav.dashboard', fallback:'Dashboard'},
+    {selector: 'a[href="#compras"], a[data-nav="purchases"], a.nav-purchases', key:'nav.purchases', fallback:'Compras'},
+    {selector: 'a[href="#sorteos"], a[data-nav="raffles"], a.nav-raffles', key:'nav.raffles', fallback:'Sorteos'},
+    {selector: 'a[href="#referidos"], a[data-nav="referrals"], a.nav-referrals', key:'nav.referrals', fallback:'Referidos'},
+    {selector: 'a[href="#catalogo"], a[data-nav="catalog"], a.nav-catalog', key:'nav.catalog', fallback:'Catálogo'},
+    {selector: 'a[href="#configuracion"], a[data-nav="settings"], a.nav-settings', key:'nav.settings', fallback:'Configuración'},
+    {selector: 'a[href="#logout"], a[data-nav="logout"], a.nav-logout', key:'nav.logout', fallback:'Cerrar sesión'}
+  ];
+
+  function apply(){
+    MAP.forEach(function(m){
+      qsAll(m.selector).forEach(function(a){ ensureLabel(a, m.key, m.fallback); });
+    });
+    try{ if (window.dI18n && dI18n.apply) dI18n.apply(); }catch(_){}
+  }
+
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', apply);
+  }else{
+    apply();
+  }
+})();
+</script>
+
+
+<script>
+// === Ensure sidebar labels are present and translated ===
+(function(){
+  function qsAll(sel, ctx){ return Array.from((ctx||document).querySelectorAll(sel)); }
+  function ensureLabel(anchor, key, fallback){
+    if (!anchor) return;
+    var label = anchor.querySelector('.nav-label');
+    if (!label){
+      label = document.createElement('span');
+      label.className = 'nav-label';
+      label.setAttribute('data-i18n', key);
+      try{ label.textContent = (window.dI18n && dI18n.t(key)) || fallback; }catch(_){ label.textContent = fallback; }
+      anchor.appendChild(label);
+    }else{
+      if (!label.getAttribute('data-i18n')) label.setAttribute('data-i18n', key);
+    }
+  }
+  var MAP = [
+    {selector: '.sidebar a[href="#dashboard"], .sidebar a[data-nav="dashboard"], .sidebar a.nav-dashboard', key:'nav.dashboard', fallback:'Dashboard'},
+    {selector: '.sidebar a[href="#compras"], .sidebar a[data-nav="purchases"], .sidebar a.nav-purchases', key:'nav.purchases', fallback:'Compras'},
+    {selector: '.sidebar a[href="#sorteos"], .sidebar a[data-nav="raffles"], .sidebar a.nav-raffles', key:'nav.raffles', fallback:'Sorteos'},
+    {selector: '.sidebar a[href="#referidos"], .sidebar a[data-nav="referrals"], .sidebar a.nav-referrals', key:'nav.referrals', fallback:'Referidos'},
+    {selector: '.sidebar a[href="#catalogo"], .sidebar a[data-nav="catalog"], .sidebar a.nav-catalog', key:'nav.catalog', fallback:'Catálogo'},
+    {selector: '.sidebar a[href="#configuracion"], .sidebar a[data-nav="settings"], .sidebar a.nav-settings', key:'nav.settings', fallback:'Configuración'},
+    {selector: '.sidebar a[href="#logout"], .sidebar a[data-nav="logout"], .sidebar a.nav-logout', key:'nav.logout', fallback:'Cerrar sesión'}
+  ];
+  function apply(){
+    MAP.forEach(function(m){ qsAll(m.selector).forEach(function(a){ ensureLabel(a, m.key, m.fallback); }); });
+    try{ if (window.dI18n && dI18n.apply) dI18n.apply(); }catch(_){}
+  }
+  if (document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', apply); } else { apply(); }
 })();
 </script>
 
