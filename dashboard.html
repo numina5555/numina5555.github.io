@@ -173,6 +173,7 @@
           "tables.purchases": "Purchases",
           "tables.commission": "Commission",
           "tables.details": "Details",
+          "raffles.noParticipations": "No participations",
           "sections.sorteoTitle": "Raffles",
           "raffles.activeTickets": "Active tickets",
           "sections.raffleHistory": "Raffles history",
@@ -229,6 +230,7 @@
           "tables.purchases": "Compras",
           "tables.commission": "Comisión",
           "tables.details": "Detalles",
+          "raffles.noParticipations": "Sin participaciones",
           "sections.sorteoTitle": "Sorteos",
           "raffles.activeTickets": "Tickets activos",
           "sections.raffleHistory": "Historial de Sorteos",
@@ -285,6 +287,7 @@
           "tables.purchases": "Compras",
           "tables.commission": "Comissão",
           "tables.details": "Detalhes",
+          "raffles.noParticipations": "Sem participações",
           "sections.sorteoTitle": "Sorteios",
           "raffles.activeTickets": "Tickets ativos",
           "sections.raffleHistory": "Histórico de Sorteios",
@@ -1006,7 +1009,7 @@
 
       if (!tbody) return;
       if (!entries || !entries.length){
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Sin participaciones</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;"><span data-i18n="raffles.noParticipations">Sin participaciones</span></td></tr>';
       } else {
         tbody.innerHTML = entries.map(e => {
           const fecha = new Date(e.created_at).toLocaleDateString();
