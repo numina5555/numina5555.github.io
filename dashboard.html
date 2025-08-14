@@ -45,7 +45,7 @@
 
     /* Welcome */
     .welcome-banner { background: linear-gradient(135deg, rgba(255,215,0,.1), rgba(255,215,0,.05)); border: 1px solid rgba(255,215,0,.1); border-radius:10px; padding:1.5rem; margin-bottom:2rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; }
-    .welcome-text h2 { color: var(--primary); margin-bottom:.5rem; white-space:nowrap; min-height:1.6em; display:flex; align-items:center; }
+    .welcome-text h2 { color: var(--primary); margin-bottom:.5rem; min-height:1.6em; display:flex; align-items:center; }
     .welcome-text p { color: var(--text-light); }
     .welcome-right { display:flex; flex-direction:column; align-items:flex-end; gap:.6rem; }
 
@@ -87,7 +87,7 @@
     td { border-bottom: 1px solid rgba(255,255,255,.05); color: var(--text-light); overflow:hidden; text-overflow:ellipsis; }
     tr:last-child td{ border-bottom: none; }
 
-    /* Table columns (stable widths) */
+    /* Table columns */
     :root { --tbl-col-product: 42%; --tbl-col-date: 16%; --tbl-col-value: 14%; --tbl-col-status: 14%; --tbl-col-actions: 14%; }
     #purchases-table th:nth-child(1), #purchases-table td:nth-child(1),
     #referrals-table th:nth-child(1), #referrals-table td:nth-child(1){ width: var(--tbl-col-product); }
@@ -124,7 +124,7 @@
     .btn{ background:var(--primary); color:var(--dark); border:0; padding:.6rem 1rem; border-radius:8px; font-weight:600; cursor:pointer; }
     .btn:hover{ background: var(--primary-dark); }
 
-    /* Products (compact & centered 2x2) */
+    /* Products */
     #section-productos .products-wrap{ max-width:1100px; margin:0 auto; padding: .5rem 1rem 0; }
     #section-productos .products-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:1.5rem; justify-items:center; }
     #section-productos .product-card{ width:100%; max-width:500px; border-radius:16px; background: var(--dark-light); border:1px solid rgba(255,255,255,.05); overflow:hidden; display:flex; flex-direction:column; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
@@ -148,13 +148,226 @@
     @media (max-width: 900px){ #section-productos .products-grid{ grid-template-columns: 1fr; } }
   </style>
 
-  <!-- i18n shim: harmless defaults until your real i18n loads -->
+  <!-- i18n shim with dictionary fallback -->
   <script>
     (function(){
-      const FALLBACK = {
-        es: { undefined: 'No definido', copy: 'Copiar', copied: '¡Copiado!', welcome: 'Bienvenido,', loading: 'Cargando…' },
-        en: { undefined: 'Undefined',   copy: 'Copy',   copied: 'Copied!',   welcome: 'Welcome,',   loading: 'Loading…' },
-        pt: { undefined: 'Não definido',copy: 'Copiar', copied: 'Copiado!',  welcome: 'Bem-vindo,', loading: 'Carregando…' }
+      const DICT = {
+        es: {
+          "sections.dashboard": "Dashboard",
+          "sections.compras": "Compras",
+          "sections.sorteos": "Sorteos",
+          "sections.referidos": "Referidos",
+          "catalog.title": "Catálogo",
+          "sections.configuracion": "Configuración",
+          "actions.logout": "Cerrar Sesión",
+
+          "labels.loading": "Cargando…",
+          "labels.welcome": "Bienvenido,",
+
+          "stats.balance": "Balance",
+          "stats.activePurchases": "Compras activas",
+          "stats.referrals": "Referidos",
+          "stats.tickets": "Tickets activos",
+          "stats.loading": "Cargando…",
+
+          "sections.comprasActivas": "Compras Activas",
+          "sections.referralsHistory": "Historial de Referidos",
+          "sections.accountInfo": "Información de la Cuenta",
+          "sections.misCompras": "Mis Compras",
+
+          "tables.product": "Producto",
+          "tables.date": "Fecha",
+          "tables.value": "Valor",
+          "tables.status": "Estado",
+          "tables.actions": "Acciones",
+          "tables.referral": "Referido",
+          "tables.purchases": "Compras",
+          "tables.commission": "Comisión",
+          "tables.details": "Detalles",
+
+          "account.settings.title": "Configuración de la Cuenta",
+          "account.settings.personalData": "Datos Personales",
+          "account.settings.security": "Seguridad",
+          "account.settings.save": "Guardar cambios",
+          "account.settings.updatePassword": "Actualizar contraseña",
+
+          "accountForm.labels.fullName": "Nombre Completo",
+          "accountForm.labels.email": "Correo Electrónico",
+          "accountForm.labels.phone": "Teléfono",
+          "accountForm.labels.address": "Dirección",
+          "accountForm.labels.country": "País",
+          "accountForm.labels.city": "Ciudad",
+          "accountForm.labels.zip": "Código postal",
+          "accountForm.labels.newPassword": "Nueva contraseña",
+          "accountForm.labels.repeatPassword": "Repetir contraseña",
+
+          "accountForm.ph.fullName": "Nombre Completo",
+          "accountForm.ph.phone": "Teléfono",
+          "accountForm.ph.address": "Dirección",
+          "accountForm.ph.country": "País",
+          "accountForm.ph.city": "Ciudad",
+          "accountForm.ph.zip": "Código postal",
+
+          "catalog.goldTitle": "Lingote de Oro",
+          "catalog.goldDesc": "Oro 999.9 certificado. Ideal para inversión y resguardo de valor.",
+          "catalog.platinumTitle": "Lingote de Platino",
+          "catalog.platinumDesc": "Platino 999.5 certificado. Inversión de alto valor y rareza.",
+          "catalog.braceletTitle": "Pulsera Numina",
+          "catalog.braceletDesc": "Diseño exclusivo con materiales de alta calidad. Edición limitada.",
+          "catalog.moreInfo": "Más información",
+
+          "actions.copy": "Copiar",
+          "actions.copied": "¡Copiado!",
+
+          "empty.noPurchases": "No hay compras",
+          "empty.noReferrals": "No hay referidos",
+          "loading.purchases": "Cargando compras…",
+          "loading.referrals": "Cargando referidos…"
+        },
+        en: {
+          "sections.dashboard": "Dashboard",
+          "sections.compras": "Purchases",
+          "sections.sorteos": "Raffles",
+          "sections.referidos": "Referrals",
+          "catalog.title": "Catalog",
+          "sections.configuracion": "Settings",
+          "actions.logout": "Log out",
+
+          "labels.loading": "Loading…",
+          "labels.welcome": "Welcome,",
+
+          "stats.balance": "Balance",
+          "stats.activePurchases": "Active purchases",
+          "stats.referrals": "Referrals",
+          "stats.tickets": "Active tickets",
+          "stats.loading": "Loading…",
+
+          "sections.comprasActivas": "Active Purchases",
+          "sections.referralsHistory": "Referrals History",
+          "sections.accountInfo": "Account Information",
+          "sections.misCompras": "My Purchases",
+
+          "tables.product": "Product",
+          "tables.date": "Date",
+          "tables.value": "Value",
+          "tables.status": "Status",
+          "tables.actions": "Actions",
+          "tables.referral": "Referral",
+          "tables.purchases": "Purchases",
+          "tables.commission": "Commission",
+          "tables.details": "Details",
+
+          "account.settings.title": "Account Settings",
+          "account.settings.personalData": "Personal Data",
+          "account.settings.security": "Security",
+          "account.settings.save": "Save changes",
+          "account.settings.updatePassword": "Update password",
+
+          "accountForm.labels.fullName": "Full Name",
+          "accountForm.labels.email": "Email",
+          "accountForm.labels.phone": "Phone",
+          "accountForm.labels.address": "Address",
+          "accountForm.labels.country": "Country",
+          "accountForm.labels.city": "City",
+          "accountForm.labels.zip": "ZIP code",
+          "accountForm.labels.newPassword": "New password",
+          "accountForm.labels.repeatPassword": "Repeat password",
+
+          "accountForm.ph.fullName": "Full Name",
+          "accountForm.ph.phone": "Phone",
+          "accountForm.ph.address": "Address",
+          "accountForm.ph.country": "Country",
+          "accountForm.ph.city": "City",
+          "accountForm.ph.zip": "ZIP code",
+
+          "catalog.goldTitle": "Gold Bar",
+          "catalog.goldDesc": "Certified 999.9 gold. Ideal for investment and store of value.",
+          "catalog.platinumTitle": "Platinum Bar",
+          "catalog.platinumDesc": "Certified 999.5 platinum. High-value, rare investment.",
+          "catalog.braceletTitle": "Numina Bracelet",
+          "catalog.braceletDesc": "Exclusive design with high-quality materials. Limited edition.",
+          "catalog.moreInfo": "More info",
+
+          "actions.copy": "Copy",
+          "actions.copied": "Copied!",
+
+          "empty.noPurchases": "No purchases",
+          "empty.noReferrals": "No referrals",
+          "loading.purchases": "Loading purchases…",
+          "loading.referrals": "Loading referrals…"
+        },
+        pt: {
+          "sections.dashboard": "Painel",
+          "sections.compras": "Compras",
+          "sections.sorteos": "Sorteios",
+          "sections.referidos": "Indicados",
+          "catalog.title": "Catálogo",
+          "sections.configuracion": "Configurações",
+          "actions.logout": "Sair",
+
+          "labels.loading": "Carregando…",
+          "labels.welcome": "Bem-vindo,",
+
+          "stats.balance": "Saldo",
+          "stats.activePurchases": "Compras ativas",
+          "stats.referrals": "Indicados",
+          "stats.tickets": "Tickets ativos",
+          "stats.loading": "Carregando…",
+
+          "sections.comprasActivas": "Compras Ativas",
+          "sections.referralsHistory": "Histórico de Indicados",
+          "sections.accountInfo": "Informações da Conta",
+          "sections.misCompras": "Minhas Compras",
+
+          "tables.product": "Produto",
+          "tables.date": "Data",
+          "tables.value": "Valor",
+          "tables.status": "Status",
+          "tables.actions": "Ações",
+          "tables.referral": "Indicado",
+          "tables.purchases": "Compras",
+          "tables.commission": "Comissão",
+          "tables.details": "Detalhes",
+
+          "account.settings.title": "Configurações da Conta",
+          "account.settings.personalData": "Dados Pessoais",
+          "account.settings.security": "Segurança",
+          "account.settings.save": "Salvar alterações",
+          "account.settings.updatePassword": "Atualizar senha",
+
+          "accountForm.labels.fullName": "Nome Completo",
+          "accountForm.labels.email": "E-mail",
+          "accountForm.labels.phone": "Telefone",
+          "accountForm.labels.address": "Endereço",
+          "accountForm.labels.country": "País",
+          "accountForm.labels.city": "Cidade",
+          "accountForm.labels.zip": "CEP",
+          "accountForm.labels.newPassword": "Nova senha",
+          "accountForm.labels.repeatPassword": "Repetir senha",
+
+          "accountForm.ph.fullName": "Nome Completo",
+          "accountForm.ph.phone": "Telefone",
+          "accountForm.ph.address": "Endereço",
+          "accountForm.ph.country": "País",
+          "accountForm.ph.city": "Cidade",
+          "accountForm.ph.zip": "CEP",
+
+          "catalog.goldTitle": "Lingote de Ouro",
+          "catalog.goldDesc": "Ouro 999.9 certificado. Ideal para investimento e reserva de valor.",
+          "catalog.platinumTitle": "Lingote de Platina",
+          "catalog.platinumDesc": "Platina 999.5 certificada. Investimento raro e valioso.",
+          "catalog.braceletTitle": "Pulseira Numina",
+          "catalog.braceletDesc": "Design exclusivo com materiais de alta qualidade. Edição limitada.",
+          "catalog.moreInfo": "Mais informações",
+
+          "actions.copy": "Copiar",
+          "actions.copied": "Copiado!",
+
+          "empty.noPurchases": "Sem compras",
+          "empty.noReferrals": "Sem indicados",
+          "loading.purchases": "Carregando compras…",
+          "loading.referrals": "Carregando indicados…"
+        }
       };
 
       function canon(lang){
@@ -164,21 +377,33 @@
         return 'es';
       }
 
+      function tr(key){
+        // 1) real i18n if present and returns something different than key
+        try{
+          if (typeof window.dI18nReal?.t === 'function'){
+            const v = window.dI18nReal.t(key);
+            if (v && v !== key) return v;
+          }
+        }catch(_) {}
+        // 2) fallback dictionary
+        const L = window.dI18n?.lang || canon();
+        return (DICT[L] && DICT[L][key]) || (DICT.es && DICT.es[key]) || key;
+      }
+
       const dI18n = window.dI18n || {
         lang: canon(),
-        t: function(key){ return key; },
+        t: tr,
         set: function(l){ this.lang = canon(l); try{ localStorage.setItem('lang', this.lang); }catch(_){}; this.apply(); },
         apply: function(){
-          const L = this.lang || canon();
           // Translate data-i18n
           document.querySelectorAll('[data-i18n]').forEach(el=>{
             const k = el.getAttribute('data-i18n'); if(!k) return;
-            try{ const v = (typeof window.dI18nReal?.t === 'function') ? (window.dI18nReal.t(k) || k) : k; el.textContent = v; }catch(_){ el.textContent = k; }
+            el.textContent = tr(k);
           });
           // Translate placeholders
           document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
             const k = el.getAttribute('data-i18n-ph'); if(!k) return;
-            try{ const v = (typeof window.dI18nReal?.t === 'function') ? (window.dI18nReal.t(k) || k) : k; el.setAttribute('placeholder', v); }catch(_){ el.setAttribute('placeholder', k); }
+            el.setAttribute('placeholder', tr(k));
           });
           // Update status badges
           try{ window.updateStatusBadges && window.updateStatusBadges(); }catch(_){}
@@ -187,12 +412,11 @@
         }
       };
 
-      // Allow plugging in your real i18n later without breaking our shim
+      // Allow plugging a real i18n later
       Object.defineProperty(window, 'dI18n', {
         get(){ return dI18n; },
         set(obj){
-          // keep a reference to the real lib and proxy through our API
-          window.dI18nReal = obj; 
+          window.dI18nReal = obj;
           if (obj && typeof obj.set === 'function') {
             const _set = obj.set.bind(obj);
             obj.set = function(l){ _set(l); dI18n.set(l); };
@@ -204,11 +428,13 @@
         }
       });
 
-      // Helpers available globally
-      window.langFallback = (k) => (FALLBACK[dI18n.lang] || FALLBACK.es)[k];
+      // simple helpers
+      window.langFallback = (k) => ({"undefined":"Undefined","copy":"Copy","copied":"Copied!","welcome":"Welcome,","loading":"Loading…"}[k]) || k;
       window.setText = function(id, val){
         const el = document.getElementById(id); if(!el) return;
-        const v = (val === undefined || val === null || String(val).trim()==='') ? langFallback('undefined') : val;
+        const L = dI18n.lang || canon();
+        const undefStr = (L==='en')? 'Undefined' : (L==='pt')? 'Não definido' : 'No definido';
+        const v = (val === undefined || val === null || String(val).trim()==='') ? undefStr : val;
         el.textContent = v;
       };
 
@@ -230,7 +456,6 @@
       }
       window.statusBadge = function(state){
         const key = normalizeStatus(state);
-        // try real i18n first
         let label = (typeof window.dI18nReal?.t==='function') ? window.dI18nReal.t('status.'+key) : '';
         if (!label || label === 'status.'+key) label = (STATUS_FALLBACK[dI18n.lang] || STATUS_FALLBACK.es)[key] || key;
         return `<span class="status ${key}">${label}</span>`;
@@ -243,6 +468,9 @@
           el.textContent = label;
         });
       };
+
+      // expose translate for other scripts
+      window.__tr = tr;
     })();
   </script>
 </head>
@@ -315,7 +543,7 @@
             <div class="referral-code">
               <i class="fas fa-user-plus"></i>
               <span id="referral-code">---</span>
-              <button class="copy-btn" id="copy-btn">Copiar</button>
+              <button class="copy-btn" id="copy-btn" data-i18n="actions.copy">Copiar</button>
             </div>
           </div>
         </section>
@@ -355,7 +583,7 @@
                 <th data-i18n="tables.actions">Acciones</th>
               </tr>
             </thead>
-            <tbody id="purchases-body"><tr><td colspan="5" style="text-align:center;">Cargando compras…</td></tr></tbody>
+            <tbody id="purchases-body"><tr><td colspan="5" style="text-align:center;" data-i18n="loading.purchases">Cargando compras…</td></tr></tbody>
           </table>
         </div>
 
@@ -371,7 +599,7 @@
                 <th data-i18n="tables.commission">Comisión</th>
               </tr>
             </thead>
-            <tbody id="referrals-body"><tr><td colspan="5" style="text-align:center;">Cargando referidos…</td></tr></tbody>
+            <tbody id="referrals-body"><tr><td colspan="5" style="text-align:center;" data-i18n="loading.referrals">Cargando referidos…</td></tr></tbody>
           </table>
         </div>
 
@@ -433,7 +661,7 @@
                 <th data-i18n="tables.claim">Reclamo</th>
               </tr>
             </thead>
-            <tbody id="miscompras-body"><tr><td colspan="5" style="text-align:center;">Cargando compras…</td></tr></tbody>
+            <tbody id="miscompras-body"><tr><td colspan="5" style="text-align:center;" data-i18n="loading.purchases">Cargando compras…</td></tr></tbody>
           </table>
         </div>
       </section>
@@ -446,7 +674,7 @@
             <!-- Oro -->
             <article class="product-card">
               <figure class="product-media">
-                <svg role="img" aria-label="Lingote de Oro" viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g1" x1="0" x2="1"><stop offset="0%" stop-color="#4b4300"/><stop offset="100%" stop-color="#8a7a00"/></linearGradient></defs><rect width="640" height="360" fill="url(#g1)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="36">Lingote de Oro</text></svg>
+                <svg role="img" aria-label="Lingote de Oro" viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g1" x1="0" x2="1"><stop offset="0%" stop-color="#4b4300"/><stop offset="100%" stop-color="#8a7a00"/></linearGradient></defs><rect width="640" height="360" fill="url(#g1)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="36" data-i18n="catalog.goldTitle">Lingote de Oro</text></svg>
               </figure>
               <div class="product-body">
                 <h3 class="product-title" data-i18n="catalog.goldTitle">Lingote de Oro</h3>
@@ -458,7 +686,7 @@
             <!-- Platino -->
             <article class="product-card">
               <figure class="product-media">
-                <svg role="img" aria-label="Lingote de Platino" viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g2" x1="0" x2="1"><stop offset="0%" stop-color="#2e3136"/><stop offset="100%" stop-color="#6a6f78"/></linearGradient></defs><rect width="640" height="360" fill="url(#g2)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="36">Lingote de Platino</text></svg>
+                <svg role="img" aria-label="Lingote de Platino" viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g2" x1="0" x2="1"><stop offset="0%" stop-color="#2e3136"/><stop offset="100%" stop-color="#6a6f78"/></linearGradient></defs><rect width="640" height="360" fill="url(#g2)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="36" data-i18n="catalog.platinumTitle">Lingote de Platino</text></svg>
               </figure>
               <div class="product-body">
                 <h3 class="product-title" data-i18n="catalog.platinumTitle">Lingote de Platino</h3>
@@ -482,7 +710,7 @@
             <!-- Pulsera -->
             <article class="product-card">
               <figure class="product-media">
-                <svg role="img" aria-label="Pulsera Numina" viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g4" x1="0" x2="1"><stop offset="0%" stop-color="#2a0d2d"/><stop offset="100%" stop-color="#6f1d75"/></linearGradient></defs><rect width="640" height="360" fill="url(#g4)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="34">Pulsera Numina</text></svg>
+                <svg role="img" aria-label="Pulsera Numina" viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g4" x1="0" x2="1"><stop offset="0%" stop-color="#2a0d2d"/><stop offset="100%" stop-color="#6f1d75"/></linearGradient></defs><rect width="640" height="360" fill="url(#g4)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="34" data-i18n="catalog.braceletTitle">Pulsera Numina</text></svg>
               </figure>
               <div class="product-body">
                 <h3 class="product-title" data-i18n="catalog.braceletTitle">Pulsera Numina</h3>
@@ -551,23 +779,23 @@
         try {
           if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(code); }
           else { const ta = document.createElement('textarea'); ta.value = code; ta.style.position='fixed'; ta.style.opacity=0; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
-          btn.textContent = (window.dI18nReal?.t('actions.copied') || langFallback('copied'));
-          setTimeout(()=> btn.textContent = (window.dI18nReal?.t('actions.copy') || langFallback('copy')), 2000);
+          btn.textContent = dI18n.t('actions.copied');
+          setTimeout(()=> btn.textContent = dI18n.t('actions.copy'), 2000);
         } catch(e){ alert('No se pudo copiar el código. Intenta manualmente.'); console.error(e); }
       });
     }
 
     async function cargarDashboard(){
       // Reset skeleton
-      document.getElementById('welcome-title').textContent = (window.dI18nReal?.t('labels.loading') || langFallback('loading'));
+      document.getElementById('welcome-title').textContent = dI18n.t('labels.loading');
       document.getElementById('referral-code').textContent = '---';
       document.getElementById('balance-value').textContent = '$---';
       document.getElementById('purchases-value').textContent = '--';
       document.getElementById('referrals-value').textContent = '--';
       document.getElementById('tickets-value').textContent = '--';
       ['full-name','user-email','user-phone','user-address','user-country','user-city','user-postal'].forEach(id=> setText(id, ''));
-      document.getElementById('purchases-body').innerHTML = '<tr><td colspan="5" style="text-align:center;">Cargando compras…</td></tr>';
-      document.getElementById('referrals-body').innerHTML = '<tr><td colspan="5" style="text-align:center;">Cargando referidos…</td></tr>';
+      document.getElementById('purchases-body').innerHTML = `<tr><td colspan="5" style="text-align:center;" data-i18n="loading.purchases">${dI18n.t('loading.purchases')}</td></tr>`;
+      document.getElementById('referrals-body').innerHTML = `<tr><td colspan="5" style="text-align:center;" data-i18n="loading.referrals">${dI18n.t('loading.referrals')}</td></tr>`;
 
       const supabase = getSupabase();
       const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -583,7 +811,7 @@
       // Top/summary
       document.getElementById('user-avatar').textContent = (userData.full_name?.charAt(0).toUpperCase() || 'U');
       window.__lastUserName = (userData.full_name || userData.email || '').trim();
-      document.getElementById('welcome-title').textContent = `${(window.dI18nReal?.t('labels.welcome') || langFallback('welcome'))} ${window.__lastUserName || ''}`.trim();
+      document.getElementById('welcome-title').textContent = `${dI18n.t('labels.welcome')} ${window.__lastUserName || ''}`.trim();
       document.getElementById('referral-code').textContent = (userData.referral_code || '---');
       document.getElementById('balance-value').textContent = `$${(userData.balance?.toFixed?.(2) || '0.00')}`;
       document.getElementById('purchases-value').textContent = (userData.active_purchases ?? '0');
@@ -609,11 +837,11 @@
             <td>${created}</td>
             <td>$${value}</td>
             <td>${statusBadge(p.status)}</td>
-            <td><button class="action-btn" data-action="details" data-id="${p.id || ''}">${window.dI18nReal?.t('tables.details') || 'Detalles'}</button></td>
+            <td><button class="action-btn" data-action="details" data-id="${p.id || ''}">${dI18n.t('tables.details')}</button></td>
           </tr>`;
         }).join('');
       } else {
-        purchasesBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay compras</td></tr>';
+        purchasesBody.innerHTML = `<tr><td colspan="5" style="text-align:center;" data-i18n="empty.noPurchases">${dI18n.t('empty.noPurchases')}</td></tr>`;
       }
 
       // Referrals
@@ -631,7 +859,7 @@
           </tr>`;
         }).join('');
       } else {
-        referralsBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay referidos</td></tr>';
+        referralsBody.innerHTML = `<tr><td colspan="5" style="text-align:center;" data-i18n="empty.noReferrals">${dI18n.t('empty.noReferrals')}</td></tr>`;
       }
 
       // Hide the little changing arrows once numbers are loaded
