@@ -440,15 +440,33 @@
         const EXTRA = {
           en: {
             "purchases.none": "No purchases",
-            "referrals.none": "No referrals"
+            "referrals.none": "No referrals",
+            "filters.search.purchases": "Search purchases…",
+            "filters.search.referrals": "Search referrals…",
+            "filters.search.miscompras": "Search my purchases…",
+            "filters.search.raffles": "Search raffles…",
+            "filters.clear": "Clear",
+
           },
           es: {
             "purchases.none": "Sin compras",
-            "referrals.none": "Sin referidos"
+            "referrals.none": "Sin referidos",
+            "filters.search.purchases": "Buscar compras…",
+            "filters.search.referrals": "Buscar referidos…",
+            "filters.search.miscompras": "Buscar mis compras…",
+            "filters.search.raffles": "Buscar sorteos…",
+            "filters.clear": "Limpiar",
+
           },
           pt: {
             "purchases.none": "Sem compras",
-            "referrals.none": "Sem indicações"
+            "referrals.none": "Sem indicações",
+            "filters.search.purchases": "Buscar compras…",
+            "filters.search.referrals": "Buscar indicações…",
+            "filters.search.miscompras": "Buscar minhas compras…",
+            "filters.search.raffles": "Buscar sorteios…",
+            "filters.clear": "Limpar",
+
           }
         };
         try {
@@ -750,8 +768,8 @@
         <h2 class="section-title"><i class="fas fa-shopping-bag"></i><span data-i18n="sections.comprasActivas">Compras Activas</span></h2>
         <div class="table-container">
           <div class="table-filter-inline" id="purchases-filterbar">
-  <input id="purchases-search" type="text" placeholder="Buscar compras…" aria-label="Buscar compras" />
-  <button id="purchases-clear" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;">Limpiar</button>
+  <input id="purchases-search" type="text" data-i18n-ph="filters.search.purchases" placeholder="Buscar compras…" aria-label="Buscar compras" />
+  <button id="purchases-clear" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
 </div>
             <table id="purchases-table">
             <thead>
@@ -771,8 +789,8 @@
         <div class="table-container">
           
           <div class="table-filter-inline" id="referrals-filterbar">
-            <input id="referrals-search" type="text" placeholder="Buscar referidos…" aria-label="Buscar referidos" />
-            <button id="referrals-clear" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;">Limpiar</button>
+            <input id="referrals-search" type="text" data-i18n-ph="filters.search.referrals" placeholder="Buscar referidos…" aria-label="Buscar referidos" />
+            <button id="referrals-clear" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
           </div>
             <table id="referrals-table">
             <thead>
@@ -837,8 +855,8 @@
         <div class="table-container">
           
           <div class="table-filter-inline" id="miscompras-filterbar">
-            <input id="miscompras-search" type="text" placeholder="Buscar mis compras…" aria-label="Buscar mis compras" />
-            <button id="miscompras-clear" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;">Limpiar</button>
+            <input id="miscompras-search" type="text" data-i18n-ph="filters.search.miscompras" placeholder="Buscar mis compras…" aria-label="Buscar mis compras" />
+            <button id="miscompras-clear" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
           </div>
             <table id="miscompras-table">
             <thead>
@@ -887,8 +905,8 @@
 <div class="table-container">
 
 <div class="table-filter-inline" id="sorteos-filterbar">
-  <input id="sorteos-search" type="text" placeholder="Buscar sorteos…" aria-label="Buscar sorteos" />
-  <button id="sorteos-clear" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;">Limpiar</button>
+  <input id="sorteos-search" type="text" data-i18n-ph="filters.search.raffles" placeholder="Buscar sorteos…" aria-label="Buscar sorteos" />
+  <button id="sorteos-clear" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
 </div>
   <table id="sorteos-table">
 <thead>
