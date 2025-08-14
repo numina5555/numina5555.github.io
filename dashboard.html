@@ -118,22 +118,31 @@
     }
     @media (max-width: 900px){ #section-productos .products-grid{ grid-template-columns: 1fr; } }
   
-/* Sorteos original styles */
-.srt-stats { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; margin-bottom:1.5rem; align-items:stretch; }
-@media (max-width:900px){ .srt-stats{ grid-template-columns:1fr; } }
-.srt-card{ background:var(--dark-light); border-radius:12px; padding:1.2rem; border:1px solid rgba(255,255,255,.07); }
-.srt-card h3{ color:var(--text-light); font-size:.9rem; text-transform:uppercase; letter-spacing:.6px; margin-bottom:.5rem; }
-.srt-card .val{ font-size:1.5rem; font-weight:800; color:var(--text-light); }
-.srt-card.gold{ background:linear-gradient(135deg, rgba(255,215,0,.12), rgba(255,215,0,.04)); }
-.srt-progress{ margin-top:.8rem; }
-.srt-track{ position:relative; height:14px; background:linear-gradient(180deg,#1a1a1a,#151515); border:1px solid rgba(255,255,255,.06); border-radius:999px; overflow:hidden; }
-.srt-fill{ height:100%; width:0%; background:linear-gradient(90deg, rgba(255,215,0,.85), rgba(255,215,0,1)); box-shadow:0 0 10px rgba(255,215,0,.35) inset; }
-.srt-hit{ position:absolute; top:50%; transform:translate(-50%,-50%); width:14px; height:14px; border-radius:50%; background:#222; border:2px solid #444; }
-.srt-hit.on{ background:var(--primary); border-color:var(--primary); }
-.srt-marks{ position:relative; height:20px; margin-top:.45rem; }
-.srt-mark{ position:absolute; top:0; transform:translateX(-50%); width:2px; height:10px; background:rgba(255,255,255,.2); }
-.srt-mark-label{ position:absolute; top:12px; transform:translateX(-50%); font-size:.8rem; color:var(--text-light); white-space:nowrap; }
+    /* Tarjetas y layout de Sorteos */
+    .srt-stats { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; margin-bottom:1.5rem; align-items:stretch; }
+    @media (max-width:900px){ .srt-stats{ grid-template-columns:1fr; } }
+    .srt-card{ background:var(--dark-light); border-radius:12px; padding:1.2rem; border:1px solid rgba(255,255,255,.07);
+               display:flex; flex-direction:column; min-height:150px; }
+    .srt-card h3{ color:var(--text-light); font-size:.9rem; text-transform:uppercase; letter-spacing:.6px; margin-bottom:.5rem; }
+    .srt-card .val{ font-size:1.5rem; font-weight:800; color:var(--text-light); }
+    .srt-card.gold{ background:linear-gradient(135deg, rgba(255,215,0,.12), rgba(255,215,0,.04)); }
 
+    /* Progreso Upgrade Numina */
+    .srt-progress{ margin-top:.8rem; }
+    .srt-track{ position:relative; height:14px; background:linear-gradient(180deg,#1a1a1a,#151515);
+                border:1px solid rgba(255,255,255,.08); border-radius:999px; overflow:hidden; }
+    .srt-fill{ height:100%; width:0%; background:linear-gradient(90deg, rgba(255,215,0,.85), rgba(255,215,0,1));
+               box-shadow:0 0 12px rgba(255,215,0,.35) inset; transition:width .35s ease; }
+    .srt-hit{ position:absolute; top:50%; transform:translate(-50%,-50%); width:14px; height:14px; border-radius:50%;
+              background:#222; border:2px solid rgba(255,255,255,.25); }
+    .srt-hit.on{ background:var(--primary); border-color:var(--primary); }
+    .srt-marks{ position:relative; height:20px; margin-top:.45rem; }
+    .srt-mark{ position:absolute; top:0; transform:translateX(-50%); font-size:.8rem; color:var(--text-light); white-space:nowrap; }
+
+    /* Tabla */
+    #sorteos-table th{ background:var(--dark-lighter); color:var(--primary); font-weight:600; text-transform:uppercase; font-size:.8rem; }
+    #sorteos-table td{ color:var(--text-light); border-bottom:1px solid rgba(255,255,255,.05); }
+  
 </style>
 
   <script>
@@ -164,6 +173,12 @@
           "tables.purchases": "Purchases",
           "tables.commission": "Commission",
           "tables.details": "Details",
+          "sections.sorteoTitle": "Raffles",
+          "raffles.activeTickets": "Active tickets",
+          "sections.raffleHistory": "Raffles history",
+          "raffles.name": "Raffle",
+          "raffles.date": "Date",
+          "raffles.ticketsUsed": "Tickets used",
           "tables.claim": "Claim",
           "sections.misCompras": "Purchases",
           "account.info.title": "Account Information",
@@ -214,6 +229,12 @@
           "tables.purchases": "Compras",
           "tables.commission": "Comisión",
           "tables.details": "Detalles",
+          "sections.sorteoTitle": "Sorteos",
+          "raffles.activeTickets": "Tickets activos",
+          "sections.raffleHistory": "Historial de Sorteos",
+          "raffles.name": "Sorteo",
+          "raffles.date": "Fecha",
+          "raffles.ticketsUsed": "Tickets usados",
           "tables.claim": "Reclamo",
           "sections.misCompras": "Mis Compras",
           "account.info.title": "Información de la Cuenta",
@@ -264,8 +285,12 @@
           "tables.purchases": "Compras",
           "tables.commission": "Comissão",
           "tables.details": "Detalhes",
-          "tables.tickets": "Tickets",
-          "tables.raffle": "Sorteio",
+          "sections.sorteoTitle": "Sorteios",
+          "raffles.activeTickets": "Tickets ativos",
+          "sections.raffleHistory": "Histórico de Sorteios",
+          "raffles.name": "Sorteio",
+          "raffles.date": "Data",
+          "raffles.ticketsUsed": "Tickets usados",
           "tables.claim": "Reclamação",
           "sections.misCompras": "Minhas Compras",
           "account.info.title": "Informações da Conta",
@@ -568,9 +593,7 @@
         </div>
       </section>
 
-
-      <!-- SORTEOS -->
-      <section class="section-content" id="section-sorteos" style="display:none;">
+<section class="section-content" id="section-sorteos" style="display:none;">
 <h2 class="section-title"><i class="fas fa-ticket-alt"></i><span data-i18n="sections.sorteoTitle"></span></h2>
 <div class="srt-stats">
 <!-- Tickets activos -->
@@ -683,8 +706,7 @@
     })();
   </script>
 
-  <script>;(async function(){
-
+  <script>
     function ready(fn){ if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn); else fn(); }
     function initLangMenu(){
       const dropdown = document.getElementById('langDropdown');
@@ -831,100 +853,6 @@
         </tr>`;
       }).join('');
     }
-
-    
-    async function cargarSorteos(){
-      const tbody = document.getElementById('sorteos-body');
-      if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">'+dI18n.t('labels.loading')+'</td></tr>';
-      const supabase = getSupabase();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user){ window.location.href = '/login.html'; return; }
-
-      async function tryTable(name){
-        try{
-          const { data, error, status } = await supabase.from(name).select('*').order('created_at', { ascending: false });
-          if (error){ 
-            if (String(error.message||'').includes('does not exist') || status===404) return null;
-            return null;
-          }
-          if (!Array.isArray(data)) return null;
-          return data;
-        }catch(_){ return null; }
-      }
-
-      // Try likely table names (no spammy console errors)
-      const candidates = ['sorteos','draws','lotteries','raffles'];
-      let data = null;
-      for (const t of candidates){
-        data = await tryTable(t);
-        if (data){ break; }
-      }
-
-      // Fallback to "purchases" filtered by type/category
-      if (!data){
-        try{
-          const { data: pp } = await supabase
-            .from('purchases')
-            .select('*')
-            .or('type.eq.raffle,category.eq.raffle,category.eq.sorteo,type.eq.sorteo');
-          if (Array.isArray(pp) && pp.length){ data = pp.map(p=> ({
-            id: p.id,
-            name: p.product_name || p.title || '—',
-            draw_date: p.created_at,
-            status: p.status || (p.is_active ? 'active':'inactive'),
-            tickets_count: p.tickets_count || p.tickets || 1
-          })); }
-        }catch(_){/* ignore */}
-      }
-
-      if (!data || !data.length){
-        if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">—</td></tr>';
-        console.debug('[Sorteos] No data found (no matching table or empty).');
-        return;
-      }
-
-      tbody.innerHTML = data.map(r=>{
-        const date = r.draw_date || r.date || r.created_at || '';
-        const when = date ? new Date(date).toLocaleDateString() : '';
-        const tickets = (typeof r.tickets_count === 'number') ? r.tickets_count : (r.tickets || r.available_tickets || '—');
-        return `<tr>
-          <td>${r.name || r.title || ''}</td>
-          <td>${when}</td>
-          <td>${statusBadge(r.status)}</td>
-          <td>${tickets ?? '—'}</td>
-          <td><button class="action-btn" data-action="details" data-id="${r.id || ''}">${dI18n.t('tables.details')}</button></td>
-        </tr>`;
-      }).join('');
-    }
-
-      // Try to fetch raffles list
-      const { data, error } = await supabase
-        .from('raffles')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (error || !Array.isArray(data)){
-        if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">—</td></tr>';
-        console.error(error);
-        return;
-      }
-      if (!data.length){
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">—</td></tr>';
-        return;
-      }
-      tbody.innerHTML = data.map(r=>{
-        const date = r.draw_date || r.created_at || '';
-        const when = date ? new Date(date).toLocaleDateString() : '';
-        const tickets = (typeof r.tickets_count === 'number') ? r.tickets_count : (r.tickets || r.available_tickets || '—');
-        return `<tr>
-          <td>${r.name || r.title || ''}</td>
-          <td>${when}</td>
-          <td>${statusBadge(r.status)}</td>
-          <td>${tickets ?? '—'}</td>
-          <td><button class="action-btn" data-action="details" data-id="${r.id || ''}">${dI18n.t('tables.details')}</button></td>
-        </tr>`;
-      }).join('');
-    }
-
     function initNav(){
       const menuItems = document.querySelectorAll('.menu-item[data-target]');
       const sections = document.querySelectorAll('.section-content');
@@ -939,12 +867,11 @@
           mainDashboard.style.display = 'none';
           sections.forEach(s=> s.style.display = (s.id === 'section-'+target ? 'block' : 'none'));
           if (target === 'compras') { cargarMisCompras(); }
-          if (target === 'sorteos') { cargarSorteos(); }
         });
       });
     }
     function initConfig(supabase){
- ;(async function(){
+      (async function(){
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         const { data } = await supabase
@@ -1007,12 +934,13 @@
       initConfig(supabase);
       document.getElementById('logout-btn')?.addEventListener('click', async ()=>{ await getSupabase().auth.signOut(); window.location.href = '/login.html'; });
     });
-  
-})();</script>
-
-<script>;(async function(){
-
-// ===== Sorteos: carga desde Supabase (users.tickets_count, purchases: NUMINA-BRACELET, historial) =====;const GOAL = 10000;
+  </script>
+</body>
+</html>
+<script>
+// ===== Sorteos: carga desde Supabase (users.tickets_count, purchases: NUMINA-BRACELET, historial) =====
+(function(){
+  const GOAL = 10000;
   const BRACELET_SKU = 'NUMINA-BRACELET';
 
   async function cargarSorteos(){
@@ -1105,6 +1033,4 @@
   });
 })();
 
-})();</script>
-</body>
-</html>
+</script>
