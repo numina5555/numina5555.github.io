@@ -769,7 +769,12 @@
 
         <h2 class="section-title"><i class="fas fa-users"></i><span data-i18n="sections.referralsHistory">Historial de Referidos</span></h2>
         <div class="table-container">
-          <table id="referrals-table">
+          
+          <div class="table-filter-inline" id="referrals-filterbar">
+            <input id="referrals-search" type="text" placeholder="Buscar referidos…" aria-label="Buscar referidos" />
+            <button id="referrals-clear" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;">Limpiar</button>
+          </div>
+            <table id="referrals-table">
             <thead>
               <tr>
                 <th data-i18n="tables.referral">Referido</th>
@@ -1689,6 +1694,42 @@ if (!link) {
   var tb = document.getElementById('purchases-body');
   if (window.MutationObserver && tb){
     var obs = new MutationObserver(function(){ try{ window.__applyPurchasesFilter && __applyPurchasesFilter(); }catch(e){} });
+    obs.observe(tb, {childList:true});
+  }
+})();
+</script>
+
+
+<script>
+(function(){
+  function attachReferralsFilter(){
+    var input = document.getElementById('referrals-search');
+    var clearBtn = document.getElementById('referrals-clear');
+    var tbody = document.getElementById('referrals-body');
+    if(!input || !tbody) return;
+    function apply(){
+      var q = (input.value||'').toLowerCase().trim();
+      Array.prototype.forEach.call(tbody.querySelectorAll('tr'), function(tr){
+        var text = tr.textContent.toLowerCase();
+        tr.style.display = q==='' || text.indexOf(q)!==-1 ? '' : 'none';
+      });
+    }
+    input.addEventListener('input', apply);
+    if (clearBtn){
+      clearBtn.addEventListener('click', function(){
+        input.value='';
+        apply();
+        input.focus();
+      });
+    }
+    window.__applyReferralsFilter = apply;
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attachReferralsFilter);
+  else attachReferralsFilter();
+  // re-apply when tbody updates
+  var tb = document.getElementById('referrals-body');
+  if (window.MutationObserver && tb){
+    var obs = new MutationObserver(function(){ try{ window.__applyReferralsFilter && __applyReferralsFilter(); }catch(e){} });
     obs.observe(tb, {childList:true});
   }
 })();
