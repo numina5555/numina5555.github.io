@@ -619,6 +619,32 @@
       };
     })();
   </script>
+
+<style id="auto-scale-75">
+/* Scale the whole UI to look like browser zoom 75% on large screens only */
+@media (min-width: 1200px) {
+  html.__uiScale75 body {
+    transform: scale(0.75);
+    transform-origin: top left;
+    width: 133.333333%;
+  }
+  /* Safari / iOS */
+  @supports (-webkit-touch-callout: none) {
+    html.__uiScale75 body {
+      -webkit-transform: scale(0.75);
+      -webkit-transform-origin: top left;
+    }
+  }
+}
+@media (max-width: 1199.98px) {
+  html.__uiScale75 body {
+    transform: none;
+    -webkit-transform: none;
+    width: 100%;
+  }
+}
+</style>
+
 </head>
 <body>
   <header class="dashboard-header">
@@ -1550,6 +1576,23 @@ overlay.classList.add("show");
     try{ if (window.dI18n && dI18n.apply) dI18n.apply(); }catch(_){}
   }
   if (document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', apply); } else { apply(); }
+})();
+</script>
+
+
+<script id="auto-scale-75-js">
+(function(){
+  function apply(mq){
+    var doc = document.documentElement;
+    if (mq.matches) doc.classList.add('__uiScale75');
+    else doc.classList.remove('__uiScale75');
+  }
+  var mq = window.matchMedia('(min-width: 1200px)');
+  try{
+    if (mq.addEventListener) mq.addEventListener('change', function(e){ apply(e); });
+    else if (mq.addListener) mq.addListener(apply);
+  }catch(_){}
+  apply(mq);
 })();
 </script>
 
