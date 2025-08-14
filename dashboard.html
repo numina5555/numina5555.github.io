@@ -885,7 +885,12 @@
 </div>
 <h3 class="section-title"><i class="fas fa-history"></i><span data-i18n="sections.raffleHistory"></span></h3>
 <div class="table-container">
-<table id="sorteos-table">
+
+<div class="table-filter-inline" id="sorteos-filterbar">
+  <input id="sorteos-search" type="text" placeholder="Buscar sorteos…" aria-label="Buscar sorteos" />
+  <button id="sorteos-clear" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;">Limpiar</button>
+</div>
+  <table id="sorteos-table">
 <thead>
 <tr>
 <th data-i18n="raffles.date"></th>
@@ -1771,6 +1776,41 @@ if (!link) {
   var tb = document.getElementById('miscompras-body');
   if (window.MutationObserver && tb){
     var obs = new MutationObserver(function(){ try{ window.__applyMisComprasFilter && __applyMisComprasFilter(); }catch(e){} });
+    obs.observe(tb, {childList:true});
+  }
+})();
+</script>
+
+
+<script>
+(function(){
+  function attachSorteosFilter(){
+    var input = document.getElementById('sorteos-search');
+    var clearBtn = document.getElementById('sorteos-clear');
+    var tbody = document.getElementById('sorteos-tbody');
+    if(!input || !tbody) return;
+    function apply(){
+      var q = (input.value||'').toLowerCase().trim();
+      Array.prototype.forEach.call(tbody.querySelectorAll('tr'), function(tr){
+        var text = tr.textContent.toLowerCase();
+        tr.style.display = q==='' || text.indexOf(q)!==-1 ? '' : 'none';
+      });
+    }
+    input.addEventListener('input', apply);
+    if (clearBtn){
+      clearBtn.addEventListener('click', function(){
+        input.value='';
+        apply();
+        input.focus();
+      });
+    }
+    window.__applySorteosFilter = apply;
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attachSorteosFilter);
+  else attachSorteosFilter();
+  var tb = document.getElementById('sorteos-tbody');
+  if (window.MutationObserver && tb){
+    var obs = new MutationObserver(function(){ try{ window.__applySorteosFilter && __applySorteosFilter(); }catch(e){} });
     obs.observe(tb, {childList:true});
   }
 })();
