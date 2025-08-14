@@ -117,7 +117,24 @@
       .action-btn, .status{ min-width:auto; }
     }
     @media (max-width: 900px){ #section-productos .products-grid{ grid-template-columns: 1fr; } }
-  </style>
+  
+/* Sorteos original styles */
+.srt-stats { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; margin-bottom:1.5rem; align-items:stretch; }
+@media (max-width:900px){ .srt-stats{ grid-template-columns:1fr; } }
+.srt-card{ background:var(--dark-light); border-radius:12px; padding:1.2rem; border:1px solid rgba(255,255,255,.07); }
+.srt-card h3{ color:var(--text-light); font-size:.9rem; text-transform:uppercase; letter-spacing:.6px; margin-bottom:.5rem; }
+.srt-card .val{ font-size:1.5rem; font-weight:800; color:var(--text-light); }
+.srt-card.gold{ background:linear-gradient(135deg, rgba(255,215,0,.12), rgba(255,215,0,.04)); }
+.srt-progress{ margin-top:.8rem; }
+.srt-track{ position:relative; height:14px; background:linear-gradient(180deg,#1a1a1a,#151515); border:1px solid rgba(255,255,255,.06); border-radius:999px; overflow:hidden; }
+.srt-fill{ height:100%; width:0%; background:linear-gradient(90deg, rgba(255,215,0,.85), rgba(255,215,0,1)); box-shadow:0 0 10px rgba(255,215,0,.35) inset; }
+.srt-hit{ position:absolute; top:50%; transform:translate(-50%,-50%); width:14px; height:14px; border-radius:50%; background:#222; border:2px solid #444; }
+.srt-hit.on{ background:var(--primary); border-color:var(--primary); }
+.srt-marks{ position:relative; height:20px; margin-top:.45rem; }
+.srt-mark{ position:absolute; top:0; transform:translateX(-50%); width:2px; height:10px; background:rgba(255,255,255,.2); }
+.srt-mark-label{ position:absolute; top:12px; transform:translateX(-50%); font-size:.8rem; color:var(--text-light); white-space:nowrap; }
+
+</style>
 
   <script>
     (function(){
@@ -553,23 +570,50 @@
 
 
       <!-- SORTEOS -->
-      <section class="section-content" id="section-sorteos">
-        <h2 class="section-title"><i class="fas fa-ticket-alt"></i><span data-i18n="sections.sorteos">Sorteos</span></h2>
-        <div class="table-container">
-          <table id="sorteos-table">
-            <thead>
-              <tr>
-                <th data-i18n="tables.raffle">Sorteo</th>
-                <th data-i18n="tables.date">Fecha</th>
-                <th data-i18n="tables.status">Estado</th>
-                <th data-i18n="tables.tickets">Tickets</th>
-                <th data-i18n="tables.actions">Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="sorteos-body"><tr><td colspan="5" style="text-align:center;"><span data-i18n="labels.loading">Cargando…</span></td></tr></tbody>
-          </table>
-        </div>
-      </section>
+      <section class="section-content" id="section-sorteos" style="display:none;">
+<h2 class="section-title"><i class="fas fa-ticket-alt"></i><span data-i18n="sections.sorteoTitle"></span></h2>
+<div class="srt-stats">
+<!-- Tickets activos -->
+<article class="srt-card gold">
+<h3><span data-i18n="raffles.activeTickets"></span></h3>
+<div class="val" id="srt-tickets-activos">--</div>
+</article>
+<!-- Upgrade Numina con barra e hitos -->
+<article class="srt-card">
+<h3><span data-i18n="raffles.activeTickets"></span></h3>
+<div class="val" id="srt-upgrade-valor">0 / 10,000</div>
+<div aria-valuemax="10000" aria-valuemin="0" aria-valuenow="0" class="srt-progress" role="progressbar">
+<div class="srt-track" id="srt-track">
+<div class="srt-fill" id="srt-fill"></div>
+<!-- Hitos -->
+<span class="srt-hit" id="srt-25" style="left:25%"></span>
+<span class="srt-hit" id="srt-50" style="left:50%"></span>
+<span class="srt-hit" id="srt-100" style="left:100%"></span>
+</div>
+<div class="srt-marks">
+<span class="srt-mark" style="left:25%">2,500</span>
+<span class="srt-mark" style="left:50%">5,000</span>
+<span class="srt-mark" style="left:100%">10,000</span>
+</div>
+</div>
+</article>
+</div>
+<h3 class="section-title"><i class="fas fa-history"></i><span data-i18n="sections.raffleHistory"></span></h3>
+<div class="table-container">
+<table id="sorteos-table">
+<thead>
+<tr>
+<th data-i18n="raffles.date"></th>
+<th data-i18n="raffles.name"></th>
+<th data-i18n="raffles.ticketsUsed"></th>
+</tr>
+</thead>
+<tbody id="sorteos-tbody">
+<tr><td colspan="3" style="text-align:center;">Cargando...</td></tr>
+</tbody>
+</table>
+</div>
+</section>
 
       <section class="section-content" id="section-productos">
         <div class="products-wrap">
@@ -787,12 +831,71 @@
       }).join('');
     }
 
+    
     async function cargarSorteos(){
       const tbody = document.getElementById('sorteos-body');
       if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">'+dI18n.t('labels.loading')+'</td></tr>';
       const supabase = getSupabase();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user){ window.location.href = '/login.html'; return; }
+
+      async function tryTable(name){
+        try{
+          const { data, error, status } = await supabase.from(name).select('*').order('created_at', { ascending: false });
+          if (error){ 
+            if (String(error.message||'').includes('does not exist') || status===404) return null;
+            return null;
+          }
+          if (!Array.isArray(data)) return null;
+          return data;
+        }catch(_){ return null; }
+      }
+
+      // Try likely table names (no spammy console errors)
+      const candidates = ['sorteos','draws','lotteries','raffles'];
+      let data = null;
+      for (const t of candidates){
+        data = await tryTable(t);
+        if (data){ break; }
+      }
+
+      // Fallback to "purchases" filtered by type/category
+      if (!data){
+        try{
+          const { data: pp } = await supabase
+            .from('purchases')
+            .select('*')
+            .or('type.eq.raffle,category.eq.raffle,category.eq.sorteo,type.eq.sorteo');
+          if (Array.isArray(pp) && pp.length){ data = pp.map(p=> ({
+            id: p.id,
+            name: p.product_name || p.title || '—',
+            draw_date: p.created_at,
+            status: p.status || (p.is_active ? 'active':'inactive'),
+            tickets_count: p.tickets_count || p.tickets || 1
+          })); }
+        }catch(_){/* ignore */}
+      }
+
+      if (!data || !data.length){
+        if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">—</td></tr>';
+        console.debug('[Sorteos] No data found (no matching table or empty).');
+        return;
+      }
+
+      tbody.innerHTML = data.map(r=>{
+        const date = r.draw_date || r.date || r.created_at || '';
+        const when = date ? new Date(date).toLocaleDateString() : '';
+        const tickets = (typeof r.tickets_count === 'number') ? r.tickets_count : (r.tickets || r.available_tickets || '—');
+        return `<tr>
+          <td>${r.name || r.title || ''}</td>
+          <td>${when}</td>
+          <td>${statusBadge(r.status)}</td>
+          <td>${tickets ?? '—'}</td>
+          <td><button class="action-btn" data-action="details" data-id="${r.id || ''}">${dI18n.t('tables.details')}</button></td>
+        </tr>`;
+      }).join('');
+    }
+
       // Try to fetch raffles list
       const { data, error } = await supabase
         .from('raffles')
@@ -904,5 +1007,102 @@
       document.getElementById('logout-btn')?.addEventListener('click', async ()=>{ await getSupabase().auth.signOut(); window.location.href = '/login.html'; });
     });
   </script>
+
+<script>
+// ===== Sorteos: carga desde Supabase (users.tickets_count, purchases: NUMINA-BRACELET, historial) =====
+(function(){
+  const GOAL = 10000;
+  const BRACELET_SKU = 'NUMINA-BRACELET';
+
+  async function cargarSorteos(){
+    try{
+      const supabase = getSupabase();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) { window.location.href = '/login.html'; return; }
+
+      
+// Tickets activos tomados desde tickets_ledger (saldo = SUM(count))
+      let ticketsActivos = 0;
+      try{
+        const { data: ticketsRows, error: tErr } = await supabase
+          .from('tickets_ledger')
+          .select('count')
+          .eq('user_id', user.id);
+        if (!tErr && ticketsRows) {
+          ticketsActivos = ticketsRows.reduce((acc, r) => acc + (Number(r.count) || 0), 0);
+        }
+      }catch(e){
+        console.warn('tickets_ledger sum error', e);
+      }
+      const $tickets = document.getElementById('srt-tickets-activos');
+      if ($tickets) $tickets.textContent = ticketsActivos.toString();
+
+// Upgrade Numina: sumar unidades de pulseras completadas/pagadas (usa quantity si existe)
+      let totalBracelets = 0;
+      try{
+        const { data: rows } = await supabase
+          .from('purchases')
+          .select('sku, status, qty')
+          .eq('user_id', user.id)
+          .eq('sku', BRACELET_SKU)
+          .in('status', ['completed','paid','success']);
+        totalBracelets = (rows || []).reduce((acc, r)=> acc + (Number(r.qty)||1), 0);
+      }catch(_){/* noop */}
+
+      const current = totalBracelets;
+      const pct = Math.max(0, Math.min(100, (current/GOAL)*100));
+      const fill = document.getElementById('srt-fill');
+      const label = document.getElementById('srt-upgrade-valor');
+      const bar = document.querySelector('.srt-progress');
+      if (fill) fill.style.width = pct + '%';
+      if (bar) bar.setAttribute('aria-valuenow', String(current));
+      if (label) label.textContent = current.toLocaleString() + ' / ' + GOAL.toLocaleString();
+      if (current >= 2500) document.getElementById('srt-25').classList.add('on');
+      if (current >= 5000) document.getElementById('srt-50').classList.add('on');
+      if (current >= 10000) document.getElementById('srt-100').classList.add('on');
+
+      // Historial de participación: probar dos posibles tablas/campos
+      const tbody = document.getElementById('sorteos-tbody');
+      async function loadFrom(table, select){
+        const { data, error } = await supabase
+          .from(table)
+          .select(select)
+          .eq('user_id', user.id)
+          .order('created_at', { ascending:false })
+          .limit(50);
+        if (error) return null;
+        return data || null;
+      }
+      let entries = await loadFrom('tickets_ledger','created_at, sku, count');
+
+      if (!tbody) return;
+      if (!entries || !entries.length){
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Sin participaciones</td></tr>';
+      } else {
+        tbody.innerHTML = entries.map(e => {
+          const fecha = new Date(e.created_at).toLocaleDateString();
+          const sorteo = e.sku ?? '—';
+          const used = (Number(e.count)||0) < 0 ? Math.abs(Number(e.count)) : 0;
+          return '<tr><td>'+fecha+'</td><td>'+sorteo+'</td><td>'+used+'</td></tr>';
+        }).join('');
+      }
+    }catch(err){ console.error('[Sorteos] error:', err); }
+  }
+
+  // Mostrar sección y cargar datos al hacer click en el menú "Sorteos"
+  document.addEventListener('DOMContentLoaded', () => {
+    const menu = document.querySelector('.menu-item[data-target="sorteos"]');
+    const section = document.getElementById('section-sorteos');
+    const mainDash = document.getElementById('main-dashboard');
+    if (menu){
+      menu.addEventListener('click', async () => {
+        if (mainDash) mainDash.style.display = 'none';
+        if (section) section.style.display = 'block';
+        await cargarSorteos();
+      });
+    }
+  });
+})();
+</script>
 </body>
 </html>
