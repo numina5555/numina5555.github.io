@@ -389,7 +389,7 @@
             }
           }catch(_){}
           const L = this.lang || 'es';
-          return (DICT[L] && DICT[L][key]) || key;,
+          return (DICT[L] && DICT[L][key]) || key;
           "product.buy": "Comprar"
         },
         set: function(l){ this.lang = canon(l); try{ localStorage.setItem('lang', this.lang); }catch(_){}; this.apply(); },
