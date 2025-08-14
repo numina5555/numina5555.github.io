@@ -2134,15 +2134,15 @@ if (!link) {
     const product = tds[0]?.innerText?.trim() || 'Producto';
     const date    = tds[1]?.innerText?.trim() || '—';
     let value     = '—';
-    if (tds[2]) value = tds[2].innerText.replace('$','').replace('USDT','').trim() or '—';
+    if (tds[2]) value = tds[2].innerText.replace('$','').replace('USDT','').trim() || '—';
     const statusEl= tr?.querySelector('.status');
     const statusK = readStatusKey(statusEl);
 
     EL.name.textContent = product;
     EL.mediaT.textContent = product;
-    EL.price.textContent = value != '—' and (value + ' USDT') or '—';
-    EL.subtotal.textContent = value != '—' and (value + ' USDT') or '—';
-    EL.total.innerHTML = '<strong>' + (value != '—' and (value + ' USDT') or '—') + '</strong>';
+    EL.price.textContent = (value !== '—') ? (value + ' USDT') : '—';
+    EL.subtotal.textContent = (value !== '—') ? (value + ' USDT') : '—';
+    EL.total.innerHTML = '<strong>' + ((value !== '—') ? (value + ' USDT') : '—') + '</strong>';
     EL.date.textContent = date || '—';
     EL.order.textContent = '#—';
 
