@@ -4123,5 +4123,51 @@ var R = {
   })(window.fetch);
 })();
 </script>
+
+<!-- Fase 5: persistencia total + anti-flicker + polyfills + fixes -->
+<script>
+(function(){
+  // anti-flicker: oculto hasta aplicar idioma
+  document.documentElement.style.visibility = "hidden";
+  document.addEventListener('DOMContentLoaded', function(){
+    try{ I18N.lang = (localStorage.getItem('lang') || 'en'); }catch(e){ I18N.lang='en'; }
+    I18N.apply();
+    if (typeof I18N.updateStatusBadges === 'function') I18N.updateStatusBadges();
+    document.documentElement.style.visibility = "visible";
+  });
+
+  // polyfill setText si el código original lo usa
+  if (typeof window.setText !== 'function'){
+    window.setText = function(id,val){
+      try{
+        var el = document.getElementById(id);
+        if(!el) return;
+        var undef = I18N.t('placeholders.undefined');
+        el.textContent = (val===undefined||val===null||String(val).trim()==='') ? undef : val;
+      }catch(e){}
+    };
+  }
+
+  // por si hay errores de try/catch mal apareados en otros bloques, no tocamos nada,
+  // solo evitamos introducir sintaxis nueva peligrosa aquí.
+
+  // Re-aplicar al cambiar de pestañas (sidebar)
+  document.addEventListener('click', function(e){
+    var item = e.target.closest && e.target.closest('.menu-item');
+    if(item && item.hasAttribute('data-target')){
+      setTimeout(function(){ I18N.apply(); I18N.updateStatusBadges(); }, 0);
+    }
+  });
+
+  // sync entre pestañas
+  window.addEventListener('storage', function(e){
+    if(e.key === 'lang'){
+      try{ I18N.lang = (localStorage.getItem('lang') || 'en'); }catch(err){ I18N.lang='en'; }
+      I18N.apply();
+      I18N.updateStatusBadges();
+    }
+  });
+})();
+</script>
 </body>
 </html>
