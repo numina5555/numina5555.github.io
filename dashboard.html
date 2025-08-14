@@ -247,6 +247,8 @@
           "tables.purchases": "Compras",
           "tables.commission": "Comissão",
           "tables.details": "Detalhes",
+          "tables.tickets": "Tickets",
+          "tables.raffle": "Sorteio",
           "tables.claim": "Reclamação",
           "sections.misCompras": "Minhas Compras",
           "account.info.title": "Informações da Conta",
@@ -549,6 +551,26 @@
         </div>
       </section>
 
+
+      <!-- SORTEOS -->
+      <section class="section-content" id="section-sorteos">
+        <h2 class="section-title"><i class="fas fa-ticket-alt"></i><span data-i18n="sections.sorteos">Sorteos</span></h2>
+        <div class="table-container">
+          <table id="sorteos-table">
+            <thead>
+              <tr>
+                <th data-i18n="tables.raffle">Sorteo</th>
+                <th data-i18n="tables.date">Fecha</th>
+                <th data-i18n="tables.status">Estado</th>
+                <th data-i18n="tables.tickets">Tickets</th>
+                <th data-i18n="tables.actions">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="sorteos-body"><tr><td colspan="5" style="text-align:center;"><span data-i18n="labels.loading">Cargando…</span></td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
       <section class="section-content" id="section-productos">
         <div class="products-wrap">
           <h2 class="section-title"><i class="fas fa-box"></i><span id="productos-title" data-i18n="catalog.title">Catálogo</span></h2>
@@ -764,6 +786,41 @@
         </tr>`;
       }).join('');
     }
+
+    async function cargarSorteos(){
+      const tbody = document.getElementById('sorteos-body');
+      if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">'+dI18n.t('labels.loading')+'</td></tr>';
+      const supabase = getSupabase();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user){ window.location.href = '/login.html'; return; }
+      // Try to fetch raffles list
+      const { data, error } = await supabase
+        .from('raffles')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error || !Array.isArray(data)){
+        if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">—</td></tr>';
+        console.error(error);
+        return;
+      }
+      if (!data.length){
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">—</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.map(r=>{
+        const date = r.draw_date || r.created_at || '';
+        const when = date ? new Date(date).toLocaleDateString() : '';
+        const tickets = (typeof r.tickets_count === 'number') ? r.tickets_count : (r.tickets || r.available_tickets || '—');
+        return `<tr>
+          <td>${r.name || r.title || ''}</td>
+          <td>${when}</td>
+          <td>${statusBadge(r.status)}</td>
+          <td>${tickets ?? '—'}</td>
+          <td><button class="action-btn" data-action="details" data-id="${r.id || ''}">${dI18n.t('tables.details')}</button></td>
+        </tr>`;
+      }).join('');
+    }
+
     function initNav(){
       const menuItems = document.querySelectorAll('.menu-item[data-target]');
       const sections = document.querySelectorAll('.section-content');
@@ -778,6 +835,7 @@
           mainDashboard.style.display = 'none';
           sections.forEach(s=> s.style.display = (s.id === 'section-'+target ? 'block' : 'none'));
           if (target === 'compras') { cargarMisCompras(); }
+          if (target === 'sorteos') { cargarSorteos(); }
         });
       });
     }
