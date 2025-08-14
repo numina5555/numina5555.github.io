@@ -1941,7 +1941,6 @@ if (!link) {
 </div>
 
 <script>
-// ---- i18n keys patch: merge into your existing DICT (es / en / pt) ----
 (function(){
   window.DICT = window.DICT || {};
   const ensure = (lng, entries) => {
@@ -2020,66 +2019,6 @@ if (!link) {
     'status.completed':'Concluído'
   });
 })();
-
-// ---- Modal open/close + fill from table (no backend) ----
-(function(){
-  const OVERLAY = document.getElementById('pdOverlay');
-  const CLOSE   = document.getElementById('pdClose');
-  const EL = {
-    name:   document.getElementById('pdName'),
-    desc:   document.getElementById('pdDesc'),
-    mediaT: document.getElementById('pdMediaText'),
-    price:  document.getElementById('pdPrice'),
-    date:   document.getElementById('pdDate'),
-    order:  document.getElementById('pdOrder'),
-    status: document.getElementById('pdStatus'),
-    subtotal: document.getElementById('pdSubtotal'),
-    total:    document.getElementById('pdTotal'),
-    regen:    document.getElementById('pdRegen'),
-    invoice:  document.getElementById('pdInvoice')
-  };
-
-  function open(){ OVERLAY.classList.add('show'); OVERLAY.removeAttribute('hidden'); document.body.style.overflow='hidden'; }
-  function close(){ OVERLAY.classList.remove('show'); OVERLAY.setAttribute('hidden',''); document.body.style.overflow=''; }
-
-  function currentLang(){
-    // Try to read language from your existing i18n, otherwise from <html>, otherwise 'es'
-    return (window.dI18n && (dI18n.lang || dI18n.current || dI18n.locale)) ||
-           document.documentElement.getAttribute('lang') || 'es';
-  }
-
-  function t(key){
-    const lang = currentLang().slice(0,2);
-    const dict = (window.DICT && window.DICT[lang]) || {};
-    return dict[key] || key;
-  }
-
-  function readStatusKey(el){
-    if(!el) return 'pending';
-    const known = ['pending','active','completed','cancelled','inactive','paid','disputed'];
-    const k = known.find(k => el.classList.contains(k));
-    // Normalize some variants
-    return (k === 'paid') ? 'completed' : (k || 'pending');
-  }
-
-  document.addEventListener('click', (e)=>{
-    const btn = e.target.closest('button.action-btn[data-action="details"]');
-    if(!btn) return;
-
-    const tr = btn.closest('tr');
-    const tds = tr ? tr.querySelectorAll('td') : [];
-    const product = tds[0]?.innerText?.trim() || 'Producto';
-    const date    = tds[1]?.innerText?.trim() || '—';
-    const value   = tds[2]?.innerText?.trim().replace('$','') || '—';
-    const statusEl= tr?.querySelector('.status');
-    const statusK = readStatusKey(statusEl);
-
-    // Fill (static, visual)
-    EL.name.textContent = product;
-    EL.mediaT.textContent = product;
-    EL.desc.setAttribute('data-i18n','purchase.sampleDesc');
-    
-})();
 </script>
 
 <script>
@@ -2128,10 +2067,11 @@ if (!link) {
     const tds = tr ? tr.querySelectorAll('td') : [];
     const product = tds[0]?.innerText?.trim() || 'Producto';
     const date    = tds[1]?.innerText?.trim() || '—';
-    const value   = tds[2]?.innerText?.trim().replace('$','') || '—';
+    const value   = tds[2]?.innerText?.trim().replace('$','').replace('USDT','').trim() || '—';
     const statusEl= tr?.querySelector('.status');
     const statusK = readStatusKey(statusEl);
 
+    // Fill visual
     EL.name.textContent = product;
     EL.mediaT.textContent = product;
     EL.price.textContent = value ? (value + ' USDT') : '—';
@@ -2147,7 +2087,7 @@ if (!link) {
 
     EL.regen.style.display = (statusK === 'pending') ? 'inline-block' : 'none';
 
-    // re-apply i18n to the whole modal if your engine is present
+    // Reaplicar i18n en todo el modal si está tu motor
     if (window.dI18n && typeof dI18n.apply === 'function') {
       dI18n.apply();
     }
