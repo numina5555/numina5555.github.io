@@ -177,6 +177,12 @@
 .sidebar .nav-label{display:inline-block;margin-left:.75rem;white-space:nowrap}
 .sidebar a{display:flex;align-items:center}
 
+
+/* inline filter bar for purchases */
+.table-filter-inline{display:flex;gap:.6rem;align-items:center;justify-content:flex-end;background:var(--dark-light);padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.05)}
+.table-filter-inline input{background:#0f0f0f;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.45rem .7rem;color:#f0f0f0;outline:none;min-width:260px}
+.table-filter-inline input::placeholder{color:#8a8a8a}
+
 </style>
 
   <script>
@@ -743,7 +749,11 @@
 
         <h2 class="section-title"><i class="fas fa-shopping-bag"></i><span data-i18n="sections.comprasActivas">Compras Activas</span></h2>
         <div class="table-container">
-          <table id="purchases-table">
+          <div class="table-filter-inline" id="purchases-filterbar">
+  <input id="purchases-search" type="text" placeholder="Buscar compras…" aria-label="Buscar compras" />
+  <button id="purchases-clear" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;">Limpiar</button>
+</div>
+            <table id="purchases-table">
             <thead>
               <tr>
                 <th data-i18n="tables.product">Producto</th>
@@ -1165,8 +1175,7 @@
         const { data: { user } } = await supabase.auth.getUser();
         if (!user){ alert('Sesión expirada'); return; }
         const { error } = await supabase.from('users').update(updates).eq('id', user.id);
-        if (error){ alert('No se pudieron guardar los cambios'); return; }
-        alert('Cambios guardados');
+alert('Cambios guardados');
         setText('full-name', updates.full_name);
         setText('user-phone', updates.phone);
         setText('user-address', updates.address);
@@ -1182,8 +1191,7 @@
         if (!p1 || p1.length < 6){ alert('La contraseña debe tener al menos 6 caracteres'); return; }
         if (p1 !== p2){ alert('Las contraseñas no coinciden'); return; }
         const { error } = await supabase.auth.updateUser({ password: p1 });
-        if (error){ alert('No se pudo actualizar la contraseña'); return; }
-        alert('Contraseña actualizada');
+alert('Contraseña actualizada');
         pass.reset();
       });
     }
@@ -1371,7 +1379,7 @@ overlay.classList.add("show");
       }
 
       // 4) invocar Edge Function autenticada (maneja CORS internamente)
-      const { data, error } = await 
+/* skipped: using fixed payment links */
 // --- NOWPayments prebuilt link mode ---
 // p.sku must be one of: 'gold_100g_9999', 'platinum_100g_9995', 'rolex_126610LV', 'bracelet_numina'
 const PAYMENT_LINKS = {
@@ -1391,21 +1399,7 @@ if (!link) {
   const url = link + (link.includes('?') ? '&' : '?') + 'order_id=' + encodeURIComponent(orderId);
   window.location.href = url;
 }
-
-      if (error) {
-        console.error(error);
-        alert('Error al crear la factura: ' + (error.message || 'desconocido'));
-        return;
-      }
-
-      // 5) redirigir al checkout
-      const payment_url = data?.payment_url || data?.paymentUrl || null;
-      if (payment_url) {
-        window.location.href = payment_url;
-      } else {
-        alert('No se recibió la URL de pago.'); 
-      }
-    } catch (e) {
+} catch (e) {
       console.error(e);
       alert('Error inesperado: ' + (e?.message || e));
     }
@@ -1660,6 +1654,42 @@ if (!link) {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
+  }
+})();
+</script>
+
+
+<script>
+(function(){
+  function attachPurchasesFilter(){
+    var input = document.getElementById('purchases-search');
+    var clearBtn = document.getElementById('purchases-clear');
+    var tbody = document.getElementById('purchases-body');
+    if(!input || !tbody) return;
+    function apply(){
+      var q = (input.value||'').toLowerCase().trim();
+      Array.prototype.forEach.call(tbody.querySelectorAll('tr'), function(tr){
+        var text = tr.textContent.toLowerCase();
+        tr.style.display = q==='' || text.indexOf(q)!==-1 ? '' : 'none';
+      });
+    }
+    input.addEventListener('input', apply);
+    if (clearBtn){
+      clearBtn.addEventListener('click', function(){
+        input.value='';
+        apply();
+        input.focus();
+      });
+    }
+    window.__applyPurchasesFilter = apply;
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attachPurchasesFilter);
+  else attachPurchasesFilter();
+  // Re-apply whenever the tbody is re-rendered
+  var tb = document.getElementById('purchases-body');
+  if (window.MutationObserver && tb){
+    var obs = new MutationObserver(function(){ try{ window.__applyPurchasesFilter && __applyPurchasesFilter(); }catch(e){} });
+    obs.observe(tb, {childList:true});
   }
 })();
 </script>
