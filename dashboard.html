@@ -419,6 +419,29 @@
           "product.buy": "Comprar"
         }
       };
+      // === Merge extra translation keys without touching the base dictionary ===
+      (function(){
+        const EXTRA = {
+          en: {
+            "purchases.none": "No purchases",
+            "referrals.none": "No referrals"
+          },
+          es: {
+            "purchases.none": "Sin compras",
+            "referrals.none": "Sin referidos"
+          },
+          pt: {
+            "purchases.none": "Sem compras",
+            "referrals.none": "Sem indicações"
+          }
+        };
+        try {
+          Object.keys(EXTRA).forEach(function(L){
+            if (DICT[L]) Object.assign(DICT[L], EXTRA[L]);
+          });
+        } catch(_) {}
+      })();
+
       // Global helper to translate product names in tables (available before first render)
       window.i18nProductName = function(name){
         try{
@@ -767,7 +790,7 @@
 </tr>
 </thead>
 <tbody id="sorteos-tbody">
-<tr><td colspan="3" style="text-align:center;">Cargando...</td></tr>
+<tr><td colspan="3" style="text-align:center;"><span data-i18n="labels.loading">Cargando…</span></td></tr>
 </tbody>
 </table>
 </div>
@@ -966,7 +989,7 @@
           </tr>`;
         }).join('');
       } else {
-        referralsBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">—</td></tr>';
+        referralsBody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><span data-i18n="referrals.none">'+dI18n.t('referrals.none')+'</span></td></tr>';
       }
       ['balance-value','purchases-value','referrals-value','tickets-value'].forEach(id=>{
         const valEl = document.getElementById(id); if (!valEl) return;
@@ -988,12 +1011,12 @@
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       if (error || !Array.isArray(data)){
-        if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">—</td></tr>';
+        if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><span data-i18n="purchases.none">'+dI18n.t('purchases.none')+'</span></td></tr>';
         console.error(error);
         return;
       }
       if (!data.length){
-        if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">—</td></tr>';
+        if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><span data-i18n="purchases.none">'+dI18n.t('purchases.none')+'</span></td></tr>';
         return;
       }
       tbody.innerHTML = data.map(p=>{
@@ -1293,6 +1316,102 @@ overlay.classList.add("show");
 });
 
 </script>
+
+<script>
+// === NUMINA product modal wiring with i18n-safe content ===
+(function(){
+  function $(sel, ctx){ return (ctx||document).querySelector(sel); }
+  function $all(sel, ctx){ return Array.from((ctx||document).querySelectorAll(sel)); }
+
+  const OVERLAY = $('#nmOverlay');
+  const BTN_CLOSE = $('#nmClose');
+  const EL_SKU = $('#nmSku');
+  const EL_NAME = $('#nmName');
+  const EL_DESC = $('#nmDesc');
+  const EL_PRICE = $('#nmPrice');
+  const EL_PITCH = $('#nmPitch');
+  const EL_IMG = $('#nmImg');
+  const EL_TITLE = $('#nmTitle');
+  const EL_BUY = $('#nmBuy');
+
+  const MAP = {
+    "GOLD-100G": {
+      keyName: "product.lingote_100g_oro_fino",
+      keyDesc: "catalog.goldDesc",
+      keyPitch: "catalog.goldPitch",
+      src: null
+    },
+    "PLAT-100G": {
+      keyName: "product.lingote_100g_platino_fino",
+      keyDesc: "catalog.platinumDesc",
+      keyPitch: "catalog.platinumPitch",
+      src: null
+    },
+    "ROLEX-126610L": {
+      keyName: "product.rolex_126610lv",
+      keyDesc: "catalog.rolexDesc",
+      keyPitch: "catalog.rolexPitch",
+      src: null
+    },
+    "NUMINA-BRACELET": {
+      keyName: "product.bracelet",
+      keyDesc: "catalog.braceletDesc",
+      keyPitch: "catalog.braceletPitch",
+      src: null
+    }
+  };
+
+  function trapFocus(open){
+    if (!open){ document.body.style.overflow=''; return; }
+    document.body.style.overflow='hidden';
+  }
+  function openSKU(sku, srcEl){
+    try{
+      const conf = MAP[sku] || {};
+      const card = srcEl?.closest('.product-card');
+      // Trying to get a representative image (svg) snapshot as data url is overkill – just mirror the SVG via outerHTML into an <img> via Blob URL would require extra work.
+      // We'll keep a simple placeholder.
+      if (EL_IMG) { EL_IMG.alt = dI18n.t(conf.keyName || 'catalog.title'); EL_IMG.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='; }
+      if (EL_SKU) EL_SKU.textContent = sku || '';
+      if (EL_PRICE) EL_PRICE.textContent = (card ? (card.querySelector('.price')?.textContent || '—') : '—');
+
+      // Build i18n-wrapped elements so switching language updates instantly
+      if (EL_NAME) EL_NAME.innerHTML = '<span data-i18n="'+(conf.keyName||'catalog.title')+'">'+dI18n.t(conf.keyName||'catalog.title')+'</span>';
+      if (EL_TITLE) EL_TITLE.innerHTML = '<span data-i18n="'+(conf.keyName||'catalog.title')+'">'+dI18n.t(conf.keyName||'catalog.title')+'</span>';
+      if (EL_DESC) EL_DESC.innerHTML = '<span data-i18n="'+(conf.keyDesc||'catalog.title')+'">'+dI18n.t(conf.keyDesc||'catalog.title')+'</span>';
+      if (EL_PITCH){
+        EL_PITCH.style.display = 'block';
+        EL_PITCH.innerHTML = '<span data-i18n="'+(conf.keyPitch||'catalog.title')+'">'+dI18n.t(conf.keyPitch||'catalog.title')+'</span>';
+      }
+
+      OVERLAY?.classList.add('show');
+      OVERLAY?.removeAttribute('hidden');
+      OVERLAY?.removeAttribute('inert');
+      trapFocus(true);
+      dI18n.apply && dI18n.apply();
+    }catch(e){ console.error(e); }
+  }
+  window.openSKU = openSKU;
+
+  // Wire buttons
+  $all('[data-action="more"]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      openSKU(this.getAttribute('data-sku'), this);
+    });
+  });
+
+  BTN_CLOSE?.addEventListener('click', function(){
+    OVERLAY?.classList.remove('show');
+    OVERLAY?.setAttribute('hidden','');
+    OVERLAY?.setAttribute('inert','');
+    trapFocus(false);
+  });
+  OVERLAY?.addEventListener('click', function(e){
+    if (e.target === OVERLAY){ BTN_CLOSE?.click(); }
+  });
+})();
+</script>
+
 </body>
 </html>
 <script>
