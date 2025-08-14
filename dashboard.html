@@ -235,6 +235,10 @@
           "catalog.platinumTitle": "Platinum Bar",
           "catalog.platinumDesc": "Certified 999.5 platinum. High-value and rare investment.",
           "catalog.braceletTitle": "Numina Bracelet",
+          "product.lingote_100g_oro_fino": "100g Fine Gold Bar 999.9",
+          "product.lingote_100g_platino_fino": "100g Fine Platinum Bar 999.5",
+          "product.rolex_126610lv": "Rolex Submariner Date 126610LV",
+          "product.bracelet": "Numina Bracelet",
           "catalog.braceletDesc": "Exclusive design with high‑quality materials. Limited edition.",
           "productNames.gold100": "100g Fine Gold Bar 999.9",
           "productNames.plat100": "100g Fine Platinum Bar 999.5",
@@ -308,6 +312,10 @@
           "catalog.platinumTitle": "Lingote de Platino",
           "catalog.platinumDesc": "Platino 999.5 certificado. Inversión de alto valor y rareza.",
           "catalog.braceletTitle": "Pulsera Numina",
+          "product.lingote_100g_oro_fino": "Lingote 100g Oro Fino 999.9",
+          "product.lingote_100g_platino_fino": "Lingote 100g Platino Fino 999.5",
+          "product.rolex_126610lv": "Rolex Submariner Date 126610LV",
+          "product.bracelet": "Pulsera Numina",
           "catalog.braceletDesc": "Diseño exclusivo con materiales de alta calidad. Edición limitada.",
           "productNames.gold100": "Lingote 100g Oro Fino 999.9",
           "productNames.plat100": "Lingote 100g Platino Fino 999.5",
@@ -381,6 +389,10 @@
           "catalog.platinumTitle": "Barra de Platina",
           "catalog.platinumDesc": "Platina 999,5 certificada. Investimento de alto valor e raridade.",
           "catalog.braceletTitle": "Pulseira Numina",
+          "product.lingote_100g_oro_fino": "Lingote 100g Ouro Fino 999,9",
+          "product.lingote_100g_platino_fino": "Lingote 100g Platina Fina 999,5",
+          "product.rolex_126610lv": "Rolex Submariner Date 126610LV",
+          "product.bracelet": "Pulseira Numina",
           "catalog.braceletDesc": "Design exclusivo com materiais de alta qualidade. Edição limitada.",
           "productNames.gold100": "Lingote 100g Ouro Fino 999,9",
           "productNames.plat100": "Lingote 100g Platina Fina 999,5",
@@ -1120,7 +1132,7 @@ function i18nKeysForSKU(sku){
   try{
     const id = String(sku || '').toUpperCase();
     if (id.includes('GOLD') || id === 'GOLD-100G') return {name:'product.lingote_100g_oro_fino'};
-    if (id.includes('PLAT') || id === 'PLAT-100G') return {name:'product.lingote_100g_plata_fina'};
+    if (id.includes('PLAT') || id === 'PLAT-100G') return {name:'product.lingote_100g_platino_fino'};
     if (id.includes('ROLEX') || id.includes('126610L')) return {name:'product.rolex_126610lv'};
     if (id.includes('BRACELET')) return {name:'product.bracelet'};
   }catch(_){}
@@ -1138,6 +1150,7 @@ function openSKU(sku, trigger){
     if (descEl) descEl.textContent = p.desc;
     if (priceEl)priceEl.textContent= money(p.price);
     if (imgEl)  imgEl.src          = p.img;
+    try{ if(window.dI18n) dI18n.apply(); }catch(_){ }
     try{ if(window.dI18n) dI18n.apply(); }catch(_){ }
 
     
