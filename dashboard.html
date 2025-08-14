@@ -4116,5 +4116,52 @@ var R = {
   } else { start(); }
 })();
 </script>
+
+<!-- Fase 5 fix: anti-flicker seguro + polyfills + re-aplicación -->
+<script>
+(function(){
+  function safeApply(){
+    try{ I18N.lang = (localStorage.getItem('lang') || 'en'); }catch(e){ I18N.lang='en'; }
+    I18N.apply(); I18N.updateStatusBadges();
+    document.documentElement.style.visibility = "visible";
+  }
+  // anti-flicker (con fallback)
+  document.documentElement.style.visibility = "hidden";
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', safeApply);
+  } else {
+    safeApply();
+  }
+  setTimeout(function(){ document.documentElement.style.visibility = "visible"; }, 2500);
+
+  // polyfill de setText (si el original lo usa)
+  if (typeof window.setText !== 'function'){
+    window.setText = function(id,val){
+      try{
+        var el = document.getElementById(id);
+        if(!el) return;
+        var undef = I18N.t('placeholders.undefined');
+        el.textContent = (val===undefined||val===null||String(val).trim()==='') ? undef : val;
+      }catch(e){}
+    };
+  }
+
+  // Reaplicar al cambiar pestañas (delegación)
+  document.addEventListener('click', function(e){
+    var item = e.target.closest ? e.target.closest('.menu-item') : null;
+    if(item && item.hasAttribute('data-target')){
+      setTimeout(function(){ I18N.apply(); I18N.updateStatusBadges(); }, 0);
+    }
+  });
+
+  // Sincronizar entre pestañas
+  window.addEventListener('storage', function(e){
+    if(e.key === 'lang'){
+      try{ I18N.lang = (localStorage.getItem('lang') || 'en'); }catch(err){ I18N.lang='en'; }
+      I18N.apply(); I18N.updateStatusBadges();
+    }
+  });
+})();
+</script>
 </body>
 </html>
