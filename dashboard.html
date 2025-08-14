@@ -2013,6 +2013,50 @@ if (!link) {
 </script>
 
 <!-- END PD MODAL -->
+
+<script>
+// --- Hardening patch: force-translate the modal even if other i18n mutates texts ---
+(function(){
+  function lang(){
+    try {
+      if (window.dI18n && (dI18n.lang || dI18n.current || dI18n.locale)) return (dI18n.lang||dI18n.current||dI18n.locale);
+    } catch(_) {}
+    return document.documentElement.getAttribute('lang') || localStorage.getItem('lang') || 'es';
+  }
+  function dict(){
+    const L = (lang()||'es').slice(0,2);
+    // Prefer PD_I18N (our local dict); fallback to global DICT if available
+    const local = (window.PD_I18N && window.PD_I18N[L]) || {};
+    const global = (window.DICT && window.DICT[L]) || {};
+    return Object.assign({}, global, local);
+  }
+  function translate(root){
+    const d = dict();
+    (root || document).querySelectorAll('#pdOverlay [data-i18n]').forEach(el=>{
+      const k = el.getAttribute('data-i18n');
+      if (d[k]) el.textContent = d[k];
+    });
+  }
+  // Apply on ready and after a tick (in case other scripts run late)
+  document.addEventListener('DOMContentLoaded', ()=>{
+    translate(document);
+    setTimeout(()=>translate(document), 50);
+    setTimeout(()=>translate(document), 200);
+  });
+  // Re-apply whenever Details opens (the open handler should be present)
+  document.addEventListener('click', (e)=>{
+    if (e.target.closest('button.action-btn[data-action="details"]')) {
+      setTimeout(()=>translate(document), 0);
+      setTimeout(()=>translate(document), 50);
+    }
+  });
+  // Observe changes inside the modal and translate any new nodes
+  const obs = new MutationObserver(()=>translate(document));
+  const overlay = document.getElementById('pdOverlay');
+  if (overlay) obs.observe(overlay, {childList:true, subtree:true, characterData:true});
+})();
+</script>
+
 </body>
 </html>
 <script>
