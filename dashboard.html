@@ -1115,17 +1115,30 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   }
 
-  function openSKU(sku, trigger){
+  
+function i18nKeysForSKU(sku){
+  try{
+    const id = String(sku || '').toUpperCase();
+    if (id.includes('GOLD') || id === 'GOLD-100G') return {name:'product.lingote_100g_oro_fino'};
+    if (id.includes('PLAT') || id === 'PLAT-100G') return {name:'product.lingote_100g_plata_fina'};
+    if (id.includes('ROLEX') || id.includes('126610L')) return {name:'product.rolex_126610lv'};
+    if (id.includes('BRACELET')) return {name:'product.bracelet'};
+  }catch(_){}
+  return null;
+}
+
+function openSKU(sku, trigger){
     const p = CATALOG[sku];
     if(!p || !overlay) return;
     currentSku = sku;
     lastTrigger = trigger || document.activeElement;
 
     if (skuEl)  skuEl.textContent  = p.sku;
-    if (nameEl) nameEl.textContent = p.name;
+    if(nameEl){ var k=i18nKeysForSKU(sku); if(k){ nameEl.innerHTML='<span data-i18n="'+k.name+'">'+(dI18n.t(k.name)||p.name)+'</span>'; } else { nameEl.textContent=p.name; } }
     if (descEl) descEl.textContent = p.desc;
     if (priceEl)priceEl.textContent= money(p.price);
     if (imgEl)  imgEl.src          = p.img;
+    try{ if(window.dI18n) dI18n.apply(); }catch(_){ }
 
     
     // Ensure price appears before description and pitch is placed after price
