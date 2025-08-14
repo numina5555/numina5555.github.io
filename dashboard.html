@@ -835,7 +835,12 @@
       <section class="section-content" id="section-compras">
         <h2 class="section-title"><i class="fas fa-shopping-bag"></i><span data-i18n="sections.misCompras">Mis Compras</span></h2>
         <div class="table-container">
-          <table id="miscompras-table">
+          
+          <div class="table-filter-inline" id="miscompras-filterbar">
+            <input id="miscompras-search" type="text" placeholder="Buscar mis compras…" aria-label="Buscar mis compras" />
+            <button id="miscompras-clear" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;">Limpiar</button>
+          </div>
+            <table id="miscompras-table">
             <thead>
               <tr>
                 <th data-i18n="tables.product">Producto</th>
@@ -1730,6 +1735,42 @@ if (!link) {
   var tb = document.getElementById('referrals-body');
   if (window.MutationObserver && tb){
     var obs = new MutationObserver(function(){ try{ window.__applyReferralsFilter && __applyReferralsFilter(); }catch(e){} });
+    obs.observe(tb, {childList:true});
+  }
+})();
+</script>
+
+
+<script>
+(function(){
+  function attachMisComprasFilter(){
+    var input = document.getElementById('miscompras-search');
+    var clearBtn = document.getElementById('miscompras-clear');
+    var tbody = document.getElementById('miscompras-body');
+    if(!input || !tbody) return;
+    function apply(){
+      var q = (input.value||'').toLowerCase().trim();
+      Array.prototype.forEach.call(tbody.querySelectorAll('tr'), function(tr){
+        var text = tr.textContent.toLowerCase();
+        tr.style.display = q==='' || text.indexOf(q)!==-1 ? '' : 'none';
+      });
+    }
+    input.addEventListener('input', apply);
+    if (clearBtn){
+      clearBtn.addEventListener('click', function(){
+        input.value='';
+        apply();
+        input.focus();
+      });
+    }
+    window.__applyMisComprasFilter = apply;
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attachMisComprasFilter);
+  else attachMisComprasFilter();
+  // re-apply when tbody updates
+  var tb = document.getElementById('miscompras-body');
+  if (window.MutationObserver && tb){
+    var obs = new MutationObserver(function(){ try{ window.__applyMisComprasFilter && __applyMisComprasFilter(); }catch(e){} });
     obs.observe(tb, {childList:true});
   }
 })();
