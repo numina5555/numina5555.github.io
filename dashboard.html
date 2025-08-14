@@ -236,6 +236,9 @@
           "catalog.platinumDesc": "Certified 999.5 platinum. High-value and rare investment.",
           "catalog.braceletTitle": "Numina Bracelet",
           "catalog.braceletDesc": "Exclusive design with high‑quality materials. Limited edition.",
+          "productNames.gold100": "100g Fine Gold Bar 999.9",
+          "productNames.plat100": "100g Fine Platinum Bar 999.5",
+          "productNames.rolex126610lv": "Rolex Submariner Date 126610LV",
           "catalog.rolexDesc": "Submariner Date with green bezel and Oystersteel case. Automatic.",
           "actions.copy": "Copy",
           "actions.copied": "Copied!",
@@ -306,6 +309,9 @@
           "catalog.platinumDesc": "Platino 999.5 certificado. Inversión de alto valor y rareza.",
           "catalog.braceletTitle": "Pulsera Numina",
           "catalog.braceletDesc": "Diseño exclusivo con materiales de alta calidad. Edición limitada.",
+          "productNames.gold100": "Lingote 100g Oro Fino 999.9",
+          "productNames.plat100": "Lingote 100g Platino Fino 999.5",
+          "productNames.rolex126610lv": "Rolex Submariner Date 126610LV",
           "catalog.rolexDesc": "Submariner Date con bisel verde y caja Oystersteel. Automático.",
           "actions.copy": "Copiar",
           "actions.copied": "¡Copiado!",
@@ -376,6 +382,9 @@
           "catalog.platinumDesc": "Platina 999,5 certificada. Investimento de alto valor e raridade.",
           "catalog.braceletTitle": "Pulseira Numina",
           "catalog.braceletDesc": "Design exclusivo com materiais de alta qualidade. Edição limitada.",
+          "productNames.gold100": "Lingote 100g Ouro Fino 999,9",
+          "productNames.plat100": "Lingote 100g Platina Fina 999,5",
+          "productNames.rolex126610lv": "Rolex Submariner Date 126610LV",
           "catalog.rolexDesc": "Submariner Date com aro verde e caixa Oystersteel. Automático.",
           "actions.copy": "Copiar",
           "actions.copied": "Copiado!",
@@ -383,6 +392,19 @@
           "product.buy": "Comprar"
         }
       };
+      function i18nProductName(name){
+        try{
+          if(!name) return '';
+          let key = null;
+          const n = String(name).toLowerCase();
+          if (n.includes('126610lv')) key = 'productNames.rolex126610lv';
+          else if (/(platino|platinum)/i.test(name)) key = 'productNames.plat100';
+          else if (/(oro|gold)/i.test(name)) key = 'productNames.gold100';
+          if (!key) return name;
+          return '<span data-i18n="'+key+'">'+(dI18n.t(key) || name)+'</span>';
+        }catch(_){ return name; }
+      }
+
       function canon(lang){
         try{ lang = (lang || localStorage.getItem('lang') || navigator.language || 'es').toLowerCase(); }catch(_){ lang = 'es'; }
         if (lang.startsWith('en')) return 'en';
@@ -878,7 +900,7 @@
           const created = p.created_at ? new Date(p.created_at).toLocaleDateString() : '';
           const value = (typeof p.value === 'number') ? p.value.toFixed(2) : '0.00';
           return `<tr>
-            <td>${p.product_name || ''}</td>
+            <td>${i18nProductName(p.product_name || '')}</td>
             <td>${created}</td>
             <td>$${value}</td>
             <td>${statusBadge(p.status)}</td>
@@ -937,7 +959,7 @@
         const value = (typeof p.value === 'number') ? p.value.toFixed(2) : '0.00';
         const claimCell = '<button class="action-btn" data-action="claim" data-id="'+(p.id||'')+'">'+('<span data-i18n="tables.claim">'+(dI18n.t('tables.claim')||'Claim')+'</span>')+'</button>';
         return `<tr>
-          <td>${p.product_name || ''}</td>
+          <td>${i18nProductName(p.product_name || '')}</td>
           <td>${created}</td>
           <td>$${value}</td>
           <td>${statusBadge(p.status)}</td>
