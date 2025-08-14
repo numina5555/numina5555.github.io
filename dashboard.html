@@ -4030,5 +4030,50 @@ var R = {
   window.__i18n = { setLang, getLang, dI18n };
 })();
 </script>
+
+<!-- i18n v2 extras para Fase 2: persistencia y auto-apply -->
+<script>
+(function(){
+  // anti-flicker
+  document.documentElement.style.visibility="hidden";
+  document.addEventListener('DOMContentLoaded', function(){
+    const L = (window.__i18n?.getLang && __i18n.getLang()) || localStorage.getItem('lang') || 'en';
+    window.__i18n?.dI18n?.set(L);
+    window.__i18n?.dI18n?.apply();
+    if(typeof window.updateStatusBadges==='function'){ window.updateStatusBadges(); }
+    document.documentElement.style.visibility="visible";
+  });
+
+  // mutation observer: re-aplicar traducción cuando cambie el DOM (tablas/estados dinámicos)
+  const mo = new MutationObserver((muts)=>{
+    if(!window.__i18n || !window.__i18n.dI18n) return;
+    window.__i18n.dI18n.apply();
+    if(typeof window.updateStatusBadges==='function'){ window.updateStatusBadges(); }
+  });
+  document.addEventListener('DOMContentLoaded', ()=>{
+    try{ mo.observe(document.body, { childList:true, subtree:true }); }catch(_){}
+  });
+
+  // re-apply al cambiar de pestaña en el sidebar (si usan data-target)
+  document.addEventListener('click', (e)=>{
+    const item = e.target.closest('.menu-item[data-target]');
+    if(item && window.__i18n && window.__i18n.dI18n){
+      setTimeout(()=>{
+        window.__i18n.dI18n.apply();
+        if(typeof window.updateStatusBadges==='function'){ window.updateStatusBadges(); }
+      }, 0);
+    }
+  });
+
+  // sync entre pestañas
+  window.addEventListener('storage', (e)=>{
+    if(e.key==="lang" && window.__i18n && window.__i18n.dI18n){
+      window.__i18n.dI18n.set(localStorage.getItem("lang")||"en");
+      window.__i18n.dI18n.apply();
+      if(typeof window.updateStatusBadges==='function'){ window.updateStatusBadges(); }
+    }
+  });
+})();
+</script>
 </body>
 </html>
