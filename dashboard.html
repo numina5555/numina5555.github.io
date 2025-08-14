@@ -1843,164 +1843,6 @@ if (!link) {
 })();
 </script>
 
-
-
-<!-- Purchase Details Modal (static, no backend) -->
-
-<style id="pd-modal-styles">
-  .pd-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);display:none;z-index:1100;padding:24px}
-  .pd-overlay.show{display:block}
-  .pd-modal{width:min(920px,95vw);margin:auto;border-radius:16px;
-    background:linear-gradient(135deg,rgba(255,215,0,.06),rgba(255,215,0,.02) 24%,#111 60%);
-    border:1px solid rgba(255,215,0,.14);box-shadow:0 18px 50px rgba(0,0,0,.55);color:#fff;font-family:Montserrat,system-ui,sans-serif}
-  .pd-modal header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid rgba(255,215,0,.14)}
-  .pd-modal header h3{margin:0;color:var(--primary);font-size:1.35rem;letter-spacing:.3px}
-  .pd-x{background:transparent;border:0;color:#cfcfcf;font-size:22px;font-weight:700;cursor:pointer}
-  .pd-content{display:grid;grid-template-columns:260px 1fr;gap:18px;padding:20px 22px 8px}
-  .pd-media{background:#1f1f1f;border:1px solid rgba(255,255,255,.08);border-radius:12px;aspect-ratio:5/6;display:flex;align-items:center;justify-content:center;overflow:hidden}
-  .pd-details h4{margin:.15rem 0 .4rem;font-size:1.25rem}
-  .pd-desc{color:#d5d5d5;line-height:1.55;margin:0 0 .6rem}
-  .pd-meta{display:flex;flex-wrap:wrap;gap:12px;color:#e8e8e8;margin:.2rem 0 .6rem}
-  .pd-pill{display:inline-flex;align-items:center;gap:.5ch;padding:.28rem .65rem;border-radius:999px;font-weight:700;font-size:.82rem;border:1px solid rgba(255,255,255,.09);background:#161616}
-  .pd-status{border:none}
-  .pd-status.pending{background:rgba(255,193,7,.18);color:var(--warning);}
-  .pd-status.active{background:rgba(40,167,69,.18);color:var(--success);}
-  .pd-status.cancelled{background:rgba(220,53,69,.18);color:var(--danger);}
-  .pd-status.completed{background:rgba(13,110,253,.20);color:#0d6efd;}
-  .pd-hr{height:1px;background:linear-gradient(90deg,transparent,rgba(255,215,0,.25),transparent);margin:12px 0}
-  .pd-actions{display:flex;flex-wrap:wrap;gap:.7rem;padding:0 22px 18px}
-  .pd-btn{border-radius:12px;padding:.6rem 1rem;font-weight:800;letter-spacing:.2px;border:1px solid transparent;cursor:pointer}
-  .pd-btn.gold{background:var(--primary);color:#111;border-color:var(--primary)}
-  .pd-btn.warn{background:#ffc107;color:#111;border-color:#ffc107}
-  .pd-btn.outline{background:transparent;color:var(--primary);border-color:rgba(255,215,0,.7)}
-  .pd-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:0 22px 22px}
-  .pd-card{background:linear-gradient(180deg,#141414,#101010);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 14px}
-  .pd-card h5{margin:0 0 .4rem;color:var(--primary);font-size:.95rem}
-  .pd-kv{display:grid;grid-template-columns:150px 1fr;gap:.4rem .8rem;color:#eaeaea;font-size:.92rem}
-  .pd-kv .k{color:#a7a7a7}
-  .pd-timeline{display:grid;gap:.6rem}.pd-tl{display:grid;grid-template-columns:18px 1fr;gap:.6rem;align-items:start}
-  .pd-dot{width:10px;height:10px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 3px rgba(255,215,0,.15)}
-  @media(max-width:860px){.pd-content{grid-template-columns:1fr}}
-</style>
-<div id="pdOverlay" class="pd-overlay" hidden>
-  <section class="pd-modal" role="dialog" aria-modal="true" aria-labelledby="pdTitle">
-    <header>
-      <h3 id="pdTitle">Detalles de la Compra</h3>
-      <button class="pd-x" id="pdClose" aria-label="Cerrar">✕</button>
-    </header>
-    <div class="pd-content">
-      <figure class="pd-media" aria-label="Imagen del producto">
-        <svg viewBox="0 0 600 720" role="img" aria-label="Producto">
-          <defs><linearGradient id="pdg" x1="0" x2="1"><stop offset="0" stop-color="#2a0d2d"/><stop offset="1" stop-color="#6f1d75"/></linearGradient></defs>
-          <rect width="600" height="720" fill="url(#pdg)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-size="34" font-weight="800" font-family="Montserrat, sans-serif" id="pdMediaText">Producto</text>
-        </svg>
-      </figure>
-      <div class="pd-details">
-        <h4 id="pdName">—</h4>
-        <p class="pd-desc" id="pdDesc">Diseño exclusivo con materiales premium.</p>
-        <div class="pd-meta">
-          <span class="pd-pill" id="pdPrice">—</span>
-          <span class="pd-pill" id="pdDate">—</span>
-          <span class="pd-pill" id="pdOrder">—</span>
-          <span class="pd-pill pd-status pending" id="pdStatus">Pending</span>
-          <span class="pd-pill">USDT</span>
-        </div>
-        <div class="pd-hr"></div>
-      </div>
-    </div>
-    <div class="pd-actions">
-      <button class="pd-btn gold" id="pdInvoice">Descargar factura</button>
-      <button class="pd-btn warn" id="pdRegen">Generar nuevo link de pago</button>
-      <button class="pd-btn outline" id="pdSupport">Contactar soporte</button>
-    </div>
-    <div class="pd-grid">
-      <div class="pd-card">
-        <h5>Información de pago</h5>
-        <div class="pd-kv">
-          <div class="k">Método</div><div>Cripto · USDT</div>
-          <div class="k">Moneda</div><div>USDT</div>
-          <div class="k">Subtotal</div><div id="pdSubtotal">—</div>
-          <div class="k">Comisiones</div><div>0 USDT</div>
-          <div class="k">Total</div><div id="pdTotal"><strong>—</strong></div>
-        </div>
-      </div>
-      <div class="pd-card">
-        <h5>Historial</h5>
-        <div class="pd-timeline" id="pdTimeline">
-          <div class="pd-tl"><span class="pd-dot"></span><div><div class="t">Pedido creado</div><div class="s">—</div></div></div>
-          <div class="pd-tl"><span class="pd-dot"></span><div><div class="t">Link de pago generado</div><div class="s">—</div></div></div>
-        </div>
-      </div>
-    </div>
-  </section>
-</div>
-
-
-<script>
-(function(){
-  const OVERLAY = document.getElementById('pdOverlay');
-  const CLOSE   = document.getElementById('pdClose');
-  const EL = {
-    name:   document.getElementById('pdName'),
-    desc:   document.getElementById('pdDesc'),
-    mediaT: document.getElementById('pdMediaText'),
-    price:  document.getElementById('pdPrice'),
-    date:   document.getElementById('pdDate'),
-    order:  document.getElementById('pdOrder'),
-    status: document.getElementById('pdStatus'),
-    subtotal: document.getElementById('pdSubtotal'),
-    total:    document.getElementById('pdTotal'),
-    regen:    document.getElementById('pdRegen'),
-    invoice:  document.getElementById('pdInvoice')
-  };
-
-  function open(){ OVERLAY.classList.add('show'); OVERLAY.removeAttribute('hidden'); document.body.style.overflow='hidden'; }
-  function close(){ OVERLAY.classList.remove('show'); OVERLAY.setAttribute('hidden',''); document.body.style.overflow=''; }
-
-  function readStatusKey(el){
-    if(!el) return 'pending';
-    const known = ['pending','active','completed','cancelled','inactive','paid','disputed'];
-    const k = known.find(k => el.classList.contains(k));
-    return k || 'pending';
-  }
-
-  document.addEventListener('click', (e)=>{
-    const btn = e.target.closest('button.action-btn[data-action="details"]');
-    if(!btn) return;
-
-    const tr = btn.closest('tr');
-    const tds = tr ? tr.querySelectorAll('td') : [];
-    const product = tds[0]?.innerText?.trim() || 'Producto';
-    const date    = tds[1]?.innerText?.trim() || '—';
-    const value   = tds[2]?.innerText?.trim().replace('$','') || '—';
-    const statusEl= tr?.querySelector('.status');
-    const statusK = readStatusKey(statusEl);
-    const statusLabel = statusEl ? statusEl.textContent.trim() : 'Pending';
-
-    EL.name.textContent = product.replace(/\s+/g,' ').trim();
-    EL.mediaT.textContent = product.replace(/\s+/g,' ').trim();
-    EL.desc.textContent = 'Diseño exclusivo con materiales premium.';
-    EL.price.textContent = (value ? (value + ' USDT') : '—');
-    EL.subtotal.textContent = (value ? (value + ' USDT') : '—');
-    EL.total.innerHTML = '<strong>' + (value ? (value + ' USDT') : '—') + '</strong>';
-    EL.date.textContent = date || '—';
-    EL.order.textContent = '#—';
-
-    EL.status.classList.remove('pending','active','cancelled','completed');
-    EL.status.classList.add(statusK);
-    EL.status.textContent = statusLabel || 'Pending';
-
-    EL.regen.style.display = (statusK === 'pending') ? 'inline-block' : 'none';
-
-    open();
-  });
-
-  CLOSE?.addEventListener('click', close);
-  OVERLAY?.addEventListener('click', (e)=>{ if(e.target === OVERLAY) close(); });
-  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') close(); });
-})();
-</script>
-
 </body>
 </html>
 <script>
@@ -2100,4 +1942,250 @@ if (!link) {
   });
 })();
 
+</script>
+
+<style id="pd-modal-styles">
+  .pd-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);display:none;z-index:1100;padding:24px}
+  .pd-overlay.show{display:block}
+  .pd-modal{width:min(920px,95vw);margin:auto;border-radius:16px;
+    background:linear-gradient(135deg,rgba(255,215,0,.06),rgba(255,215,0,.02) 24%,#111 60%);
+    border:1px solid rgba(255,215,0,.14);box-shadow:0 18px 50px rgba(0,0,0,.55);color:#fff;font-family:Montserrat,system-ui,sans-serif}
+  .pd-modal header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid rgba(255,215,0,.14)}
+  .pd-modal header h3{margin:0;color:var(--primary);font-size:1.35rem;letter-spacing:.3px}
+  .pd-x{background:transparent;border:0;color:#cfcfcf;font-size:22px;font-weight:700;cursor:pointer}
+  .pd-content{display:grid;grid-template-columns:260px 1fr;gap:18px;padding:20px 22px 8px}
+  .pd-media{background:#1f1f1f;border:1px solid rgba(255,255,255,.08);border-radius:12px;aspect-ratio:5/6;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .pd-details h4{margin:.15rem 0 .4rem;font-size:1.25rem}
+  .pd-desc{color:#d5d5d5;line-height:1.55;margin:0 0 .6rem}
+  .pd-meta{display:flex;flex-wrap:wrap;gap:12px;color:#e8e8e8;margin:.2rem 0 .6rem}
+  .pd-pill{display:inline-flex;align-items:center;gap:.5ch;padding:.28rem .65rem;border-radius:999px;font-weight:700;font-size:.82rem;border:1px solid rgba(255,255,255,.09);background:#161616}
+  .pd-status{border:none}
+  .pd-status.pending{background:rgba(255,193,7,.18);color:var(--warning);}
+  .pd-status.active{background:rgba(40,167,69,.18);color:var(--success);}
+  .pd-status.cancelled{background:rgba(220,53,69,.18);color:#dc3545;}
+  .pd-status.completed{background:rgba(13,110,253,.20);color:#0d6efd;}
+  .pd-hr{height:1px;background:linear-gradient(90deg,transparent,rgba(255,215,0,.25),transparent);margin:12px 0}
+  .pd-actions{display:flex;flex-wrap:wrap;gap:.7rem;padding:0 22px 18px}
+  .pd-btn{border-radius:12px;padding:.6rem 1rem;font-weight:800;letter-spacing:.2px;border:1px solid transparent;cursor:pointer}
+  .pd-btn.gold{background:var(--primary);color:#111;border-color:var(--primary)}
+  .pd-btn.warn{background:#ffc107;color:#111;border-color:#ffc107}
+  .pd-btn.outline{background:transparent;color:var(--primary);border-color:rgba(255,215,0,.7)}
+  .pd-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:0 22px 22px}
+  .pd-card{background:linear-gradient(180deg,#141414,#101010);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 14px}
+  .pd-card h5{margin:0 0 .4rem;color:var(--primary);font-size:.95rem}
+  .pd-kv{display:grid;grid-template-columns:150px 1fr;gap:.4rem .8rem;color:#eaeaea;font-size:.92rem}
+  .pd-kv .k{color:#a7a7a7}
+  .pd-timeline{display:grid;gap:.6rem}.pd-tl{display:grid;grid-template-columns:18px 1fr;gap:.6rem;align-items:start}
+  .pd-dot{width:10px;height:10px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 3px rgba(255,215,0,.15)}
+  @media(max-width:860px){.pd-content{grid-template-columns:1fr}}
+</style>
+
+<!-- MODAL · Detalles de la compra (solo visual / sin backend) -->
+<div id="pdOverlay" class="pd-overlay" hidden>
+  <section class="pd-modal" role="dialog" aria-modal="true" aria-labelledby="pdTitle">
+    <header>
+      <h3 id="pdTitle" data-i18n="purchase.detailsTitle">Detalles de la Compra</h3>
+      <button class="pd-x" id="pdClose" aria-label="Cerrar">✕</button>
+    </header>
+
+    <div class="pd-content">
+      <figure class="pd-media" aria-label="Imagen del producto">
+        <svg viewBox="0 0 600 720" role="img" aria-label="Producto">
+          <defs><linearGradient id="pdg" x1="0" x2="1"><stop offset="0" stop-color="#2a0d2d"/><stop offset="1" stop-color="#6f1d75"/></linearGradient></defs>
+          <rect width="600" height="720" fill="url(#pdg)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-size="34" font-weight="800" font-family="Montserrat, sans-serif" id="pdMediaText">Producto</text>
+        </svg>
+      </figure>
+
+      <div class="pd-details">
+        <h4 id="pdName">—</h4>
+        <p class="pd-desc" id="pdDesc" data-i18n="purchase.sampleDesc">Diseño exclusivo con materiales premium.</p>
+        <div class="pd-meta">
+          <span class="pd-pill" id="pdPrice">—</span>
+          <span class="pd-pill" id="pdDate">—</span>
+          <span class="pd-pill" id="pdOrder">—</span>
+          <span class="pd-pill pd-status pending" id="pdStatus"><span data-i18n="status.pending">Pendiente</span></span>
+          <span class="pd-pill" data-i18n="purchase.usdt">USDT</span>
+        </div>
+        <div class="pd-hr"></div>
+      </div>
+    </div>
+
+    <div class="pd-actions">
+      <button class="pd-btn gold" id="pdInvoice"><span data-i18n="purchase.downloadInvoice">Descargar factura</span></button>
+      <button class="pd-btn warn" id="pdRegen"><span data-i18n="purchase.regeneratePayment">Generar nuevo link de pago</span></button>
+      <button class="pd-btn outline" id="pdSupport"><span data-i18n="purchase.contactSupport">Contactar soporte</span></button>
+    </div>
+
+    <div class="pd-grid">
+      <div class="pd-card">
+        <h5 data-i18n="purchase.paymentInfo">Información de pago</h5>
+        <div class="pd-kv">
+          <div class="k" data-i18n="purchase.method">Método</div><div data-i18n="purchase.methodValue">Cripto · USDT</div>
+          <div class="k" data-i18n="purchase.currency">Moneda</div><div data-i18n="purchase.usdt">USDT</div>
+          <div class="k" data-i18n="purchase.subtotal">Subtotal</div><div id="pdSubtotal">—</div>
+          <div class="k" data-i18n="purchase.fees">Comisiones</div><div data-i18n="purchase.zeroUsdt">0 USDT</div>
+          <div class="k" data-i18n="purchase.total">Total</div><div id="pdTotal"><strong>—</strong></div>
+        </div>
+      </div>
+      <div class="pd-card">
+        <h5 data-i18n="purchase.history">Historial</h5>
+        <div class="pd-timeline" id="pdTimeline">
+          <div class="pd-tl"><span class="pd-dot"></span><div><div class="t" data-i18n="purchase.orderCreated">Pedido creado</div><div class="s">—</div></div></div>
+          <div class="pd-tl"><span class="pd-dot"></span><div><div class="t" data-i18n="purchase.paymentLinkGenerated">Link de pago generado</div><div class="s">—</div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  const OVERLAY = document.getElementById('pdOverlay');
+  if (!OVERLAY) return;
+  const CLOSE   = document.getElementById('pdClose');
+  const EL = {
+    name:   document.getElementById('pdName'),
+    desc:   document.getElementById('pdDesc'),
+    mediaT: document.getElementById('pdMediaText'),
+    price:  document.getElementById('pdPrice'),
+    date:   document.getElementById('pdDate'),
+    order:  document.getElementById('pdOrder'),
+    status: document.getElementById('pdStatus'),
+    subtotal: document.getElementById('pdSubtotal'),
+    total:    document.getElementById('pdTotal'),
+    regen:    document.getElementById('pdRegen'),
+    invoice:  document.getElementById('pdInvoice')
+  };
+
+  function open(){ OVERLAY.classList.add('show'); OVERLAY.removeAttribute('hidden'); document.body.style.overflow='hidden'; try{ window.dI18n && dI18n.apply && dI18n.apply(); }catch(_){}};
+  function close(){ OVERLAY.classList.remove('show'); OVERLAY.setAttribute('hidden',''); document.body.style.overflow=''; }
+
+  function readStatusKey(el){
+    if(!el) return 'pending';
+    const known = ['pending','active','completed','cancelled','inactive','paid','disputed','pendiente','ativo','pendente','cancelado','completado'];
+    const map = { 'pendiente':'pending','ativo':'active','pendente':'pending','cancelado':'cancelled','completado':'completed' };
+    // check class first
+    for (const k of ['pending','active','completed','cancelled']) if (el.classList?.contains(k)) return k;
+    const s = (el.textContent||'').trim().toLowerCase();
+    return map[s] || (known.includes(s)? s : 'pending');
+  }
+
+  // Delegación: botón Details
+  document.addEventListener('click', (e)=>{
+    const btn = e.target.closest('button.action-btn[data-action="details"]');
+    if(!btn) return;
+
+    const tr = btn.closest('tr');
+    const tds = tr ? tr.querySelectorAll('td') : [];
+    const product = tds[0]?.innerText?.trim() || 'Producto';
+    const date    = tds[1]?.innerText?.trim() || '—';
+    const value   = tds[2]?.innerText?.trim().replace('$','') || '—';
+    const statusEl= tr?.querySelector('.status');
+    const statusK = readStatusKey(statusEl);
+
+    EL.name.textContent = product.replace(/\s+/g,' ').trim();
+    EL.mediaT.textContent = product.replace(/\s+/g,' ').trim();
+    EL.price.textContent = (value ? (value + ' USDT') : '—');
+    EL.subtotal.textContent = (value ? (value + ' USDT') : '—');
+    EL.total.innerHTML = '<strong>' + (value ? (value + ' USDT') : '—') + '</strong>';
+    EL.date.textContent = date || '—';
+    EL.order.textContent = '#—';
+
+    EL.status.classList.remove('pending','active','cancelled','completed');
+    EL.status.classList.add('pd-status', statusK);
+    // status label via i18n
+    const span = EL.status.querySelector('[data-i18n]') || document.createElement('span');
+    span.setAttribute('data-i18n', 'status.'+statusK);
+    EL.status.innerHTML = ''; EL.status.appendChild(span);
+
+    // Mostrar regenerar solo si Pending
+    EL.regen.style.display = (statusK === 'pending') ? 'inline-block' : 'none';
+
+    open();
+  });
+
+  CLOSE?.addEventListener('click', close);
+  OVERLAY?.addEventListener('click', (e)=>{ if(e.target === OVERLAY) close(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') close(); });
+
+  // ====== I18N INJECTION: añadir llaves faltantes ======
+  try{
+    const add = {
+      en: {
+        "purchase.detailsTitle":"Purchase Details",
+        "purchase.sampleDesc":"Exclusive design with premium materials.",
+        "purchase.usdt":"USDT",
+        "purchase.downloadInvoice":"Download invoice",
+        "purchase.regeneratePayment":"Generate new payment link",
+        "purchase.contactSupport":"Contact support",
+        "purchase.paymentInfo":"Payment information",
+        "purchase.method":"Method",
+        "purchase.methodValue":"Crypto · USDT",
+        "purchase.currency":"Currency",
+        "purchase.subtotal":"Subtotal",
+        "purchase.fees":"Fees",
+        "purchase.zeroUsdt":"0 USDT",
+        "purchase.total":"Total",
+        "purchase.history":"History",
+        "purchase.orderCreated":"Order created",
+        "purchase.paymentLinkGenerated":"Payment link generated",
+        "status.pending":"Pending",
+        "status.active":"Active",
+        "status.cancelled":"Cancelled",
+        "status.completed":"Completed"
+      },
+      es: {
+        "purchase.detailsTitle":"Detalles de la Compra",
+        "purchase.sampleDesc":"Diseño exclusivo con materiales premium.",
+        "purchase.usdt":"USDT",
+        "purchase.downloadInvoice":"Descargar factura",
+        "purchase.regeneratePayment":"Generar nuevo link de pago",
+        "purchase.contactSupport":"Contactar soporte",
+        "purchase.paymentInfo":"Información de pago",
+        "purchase.method":"Método",
+        "purchase.methodValue":"Cripto · USDT",
+        "purchase.currency":"Moneda",
+        "purchase.subtotal":"Subtotal",
+        "purchase.fees":"Comisiones",
+        "purchase.zeroUsdt":"0 USDT",
+        "purchase.total":"Total",
+        "purchase.history":"Historial",
+        "purchase.orderCreated":"Pedido creado",
+        "purchase.paymentLinkGenerated":"Link de pago generado",
+        "status.pending":"Pendiente",
+        "status.active":"Activo",
+        "status.cancelled":"Cancelado",
+        "status.completed":"Completado"
+      },
+      pt: {
+        "purchase.detailsTitle":"Detalhes da Compra",
+        "purchase.sampleDesc":"Design exclusivo com materiais premium.",
+        "purchase.usdt":"USDT",
+        "purchase.downloadInvoice":"Baixar fatura",
+        "purchase.regeneratePayment":"Gerar novo link de pagamento",
+        "purchase.contactSupport":"Contatar suporte",
+        "purchase.paymentInfo":"Informações de pagamento",
+        "purchase.method":"Método",
+        "purchase.methodValue":"Cripto · USDT",
+        "purchase.currency":"Moeda",
+        "purchase.subtotal":"Subtotal",
+        "purchase.fees":"Comissões",
+        "purchase.zeroUsdt":"0 USDT",
+        "purchase.total":"Total",
+        "purchase.history":"Histórico",
+        "purchase.orderCreated":"Pedido criado",
+        "purchase.paymentLinkGenerated":"Link de pagamento gerado",
+        "status.pending":"Pendente",
+        "status.active":"Ativo",
+        "status.cancelled":"Cancelado",
+        "status.completed":"Concluído"
+      }
+    };
+    if (window.DICT) {
+      for (const k in add) { window.DICT[k] = Object.assign(window.DICT[k]||{}, add[k]); }
+    }
+    // aplicar traducciones por si el modal se inyecta después del set de idioma
+    window.dI18n && dI18n.apply && dI18n.apply();
+  }catch(_){}
+})();
 </script>
