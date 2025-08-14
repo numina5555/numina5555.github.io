@@ -683,7 +683,8 @@
     })();
   </script>
 
-  <script>
+  <script>(async function(){
+
     function ready(fn){ if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn); else fn(); }
     function initLangMenu(){
       const dropdown = document.getElementById('langDropdown');
@@ -1006,7 +1007,8 @@
       initConfig(supabase);
       document.getElementById('logout-btn')?.addEventListener('click', async ()=>{ await getSupabase().auth.signOut(); window.location.href = '/login.html'; });
     });
-  </script>
+  
+})();</script>
 
 <script>(async function(){
 
