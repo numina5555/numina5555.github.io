@@ -392,6 +392,21 @@
           "product.buy": "Comprar"
         }
       };
+      // Global helper to translate product names in tables (available before first render)
+      window.i18nProductName = function(name){
+        try{
+          if(!name) return '';
+          let key = null;
+          const n = String(name).toLowerCase();
+          if (n.includes('126610lv')) key = 'productNames.rolex126610lv';
+          else if (/(platino|platinum)/i.test(name)) key = 'productNames.plat100';
+          else if (/(oro|gold)/i.test(name)) key = 'productNames.gold100';
+          if (!key) return name;
+          // return a translatable span so language switches re-translate automatically
+          return '<span data-i18n=\"'+key+'\">'+(dI18n.t(key) || name)+'</span>';
+        } catch(_){ return name; }
+      };
+
       function i18nProductName(name){
         try{
           if(!name) return '';
@@ -900,7 +915,7 @@
           const created = p.created_at ? new Date(p.created_at).toLocaleDateString() : '';
           const value = (typeof p.value === 'number') ? p.value.toFixed(2) : '0.00';
           return `<tr>
-            <td>${i18nProductName(p.product_name || '')}</td>
+            <td>${(window.i18nProductName?window.i18nProductName(p.product_name||''):(p.product_name||''))}</td>
             <td>${created}</td>
             <td>$${value}</td>
             <td>${statusBadge(p.status)}</td>
@@ -959,7 +974,7 @@
         const value = (typeof p.value === 'number') ? p.value.toFixed(2) : '0.00';
         const claimCell = '<button class="action-btn" data-action="claim" data-id="'+(p.id||'')+'">'+('<span data-i18n="tables.claim">'+(dI18n.t('tables.claim')||'Claim')+'</span>')+'</button>';
         return `<tr>
-          <td>${i18nProductName(p.product_name || '')}</td>
+          <td>${(window.i18nProductName?window.i18nProductName(p.product_name||''):(p.product_name||''))}</td>
           <td>${created}</td>
           <td>$${value}</td>
           <td>${statusBadge(p.status)}</td>
