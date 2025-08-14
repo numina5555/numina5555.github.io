@@ -1137,12 +1137,6 @@ function i18nKeysForSKU(sku){
     if (id.includes('BRACELET')) return {name:'product.bracelet', desc:'catalog.braceletDesc'};
   }catch(_){}
   return null;
-};
-    if (id.includes('PLAT') || id === 'PLAT-100G') return {name:'product.lingote_100g_platino_fino'};
-    if (id.includes('ROLEX') || id.includes('126610L')) return {name:'product.rolex_126610lv'};
-    if (id.includes('BRACELET')) return {name:'product.bracelet'};
-  }catch(_){}
-  return null;
 }
 
 function openSKU(sku, trigger){
