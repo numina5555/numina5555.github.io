@@ -4085,5 +4085,43 @@ var R = {
   });
 })();
 </script>
+
+<!-- Fase 4: dinámicos (observer + estados + botones) -->
+<script>
+(function(){
+  function translateTableCells(root){
+    // Estados
+    var cells = (root||document).querySelectorAll('td, span, button');
+    for (var i=0;i<cells.length;i++){
+      var el = cells[i];
+      var t = (el.textContent||'').trim().toLowerCase();
+      if(['activo','active','ativo','pendiente','pending','pendente','completado','concluído','concluido','completed','cancelado','cancelled','inactivo','inativo','inactive','pagado','pago','paid','disputed','disputa','disputado','em disputa'].indexOf(t)>-1){
+        el.classList.add('status');
+        el.setAttribute('data-status', I18N.normStatus(t));
+      }
+    }
+    I18N.updateStatusBadges();
+    I18N.apply();
+  }
+
+  // Reinforce after any DOM change
+  var mo = new MutationObserver(function(muts){ translateTableCells(document); });
+  document.addEventListener('DOMContentLoaded', function(){
+    try{ translateTableCells(document); }catch(e){}
+    try{ mo.observe(document.body, {childList:true, subtree:true}); }catch(e){}
+  });
+
+  // Post fetch hook (best-effort)
+  (function(open){
+    if(!window.fetch) return;
+    window.fetch = function(){
+      return open.apply(this, arguments).then(function(res){
+        setTimeout(function(){ I18N.apply(); I18N.updateStatusBadges(); }, 0);
+        return res;
+      });
+    };
+  })(window.fetch);
+})();
+</script>
 </body>
 </html>
