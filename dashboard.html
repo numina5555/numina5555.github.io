@@ -878,7 +878,7 @@
             <td>${created}</td>
             <td>$${value}</td>
             <td>${statusBadge(p.status)}</td>
-            <td><button class="action-btn" data-action="details" data-id="${p.id || ''}">${dI18n.t('tables.details')}</button></td>
+            <td><button class="action-btn" data-action="details" data-id="${p.id || ''}"><span data-i18n="tables.details">${dI18n.t('tables.details')}</span></button></td>
           </tr>`;
         }).join('');
       } else {
@@ -931,7 +931,7 @@
       tbody.innerHTML = data.map(p=>{
         const created = p.created_at ? new Date(p.created_at).toLocaleDateString() : '';
         const value = (typeof p.value === 'number') ? p.value.toFixed(2) : '0.00';
-        const claimCell = '<button class="action-btn" data-action="claim" data-id="'+(p.id||'')+'">'+(dI18n.t('tables.claim')||'Claim')+'</button>';
+        const claimCell = '<button class="action-btn" data-action="claim" data-id="'+(p.id||'')+'">'+('<span data-i18n="tables.claim">'+(dI18n.t('tables.claim')||'Claim')+'</span>')+'</button>';
         return `<tr>
           <td>${p.product_name || ''}</td>
           <td>${created}</td>
