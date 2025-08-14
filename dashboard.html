@@ -173,6 +173,11 @@
     (function(){
       const DICT = {
         en: {
+          "catalog.goldPitch": "🪙 Gold: Protect your money, secure your future",
+          "catalog.platinumPitch": "🪙 Platinum: Solid value to diversify your wealth",
+          "catalog.rolexPitch": "⏱️ Rolex: An icon of precision and prestige",
+          "catalog.braceletPitch": "✨ Numina Bracelet: Exclusive design and premium materials",
+
           "account.undefined": "Undefined",
           "labels.welcome": "Welcome",
           "labels.loading": "Loading…",
@@ -250,6 +255,11 @@
           "product.buy": "Buy"
         },
         es: {
+          "catalog.goldPitch": "🪙 Oro: Protegé tu dinero, asegurá tu futuro",
+          "catalog.platinumPitch": "🪙 Platino: Valor sólido para diversificar tu patrimonio",
+          "catalog.rolexPitch": "⏱️ Rolex: Icono de precisión y prestigio",
+          "catalog.braceletPitch": "✨ Pulsera Numina: Diseño exclusivo y materiales premium",
+
           "account.undefined": "No definido",
           "labels.welcome": "Bienvenido",
           "labels.loading": "Cargando…",
@@ -327,6 +337,11 @@
           "product.buy": "Comprar"
         },
         pt: {
+          "catalog.goldPitch": "🪙 Ouro: Proteja seu dinheiro, garanta seu futuro",
+          "catalog.platinumPitch": "🪙 Platina: Valor sólido para diversificar seu patrimônio",
+          "catalog.rolexPitch": "⏱️ Rolex: Ícone de precisão e prestígio",
+          "catalog.braceletPitch": "✨ Pulseira Numina: Design exclusivo e materiais premium",
+
           "account.undefined": "Não definido",
           "labels.welcome": "Bem-vindo",
           "labels.loading": "Carregando…",
@@ -1131,10 +1146,10 @@ document.addEventListener('DOMContentLoaded', function(){
 function i18nKeysForSKU(sku){
   try{
     const id = String(sku || '').toUpperCase();
-    if (id.includes('GOLD') || id === 'GOLD-100G') return {name:'product.lingote_100g_oro_fino', desc:'catalog.goldDesc'};
-    if (id.includes('PLAT') || id === 'PLAT-100G') return {name:'product.lingote_100g_platino_fino', desc:'catalog.platinumDesc'};
-    if (id.includes('ROLEX') || id.includes('126610L')) return {name:'product.rolex_126610lv', desc:'catalog.rolexDesc'};
-    if (id.includes('BRACELET')) return {name:'product.bracelet', desc:'catalog.braceletDesc'};
+    if (id.includes('GOLD') || id === 'GOLD-100G') return {name:'product.lingote_100g_oro_fino', desc:'catalog.goldDesc', pitch:'catalog.goldPitch'};
+    if (id.includes('PLAT') || id === 'PLAT-100G') return {name:'product.lingote_100g_platino_fino', desc:'catalog.platinumDesc', pitch:'catalog.platinumPitch'};
+    if (id.includes('ROLEX') || id.includes('126610L')) return {name:'product.rolex_126610lv', desc:'catalog.rolexDesc', pitch:'catalog.rolexPitch'};
+    if (id.includes('BRACELET')) return {name:'product.bracelet', desc:'catalog.braceletDesc', pitch:'catalog.braceletPitch'};
   }catch(_){}
   return null;
 }
@@ -1161,10 +1176,10 @@ function openSKU(sku, trigger){
       }
       var pitchEl = document.getElementById('nmPitch');
       if (pitchEl) {
-        if (p.pitch) {
-          pitchEl.innerHTML = p.pitch;
+        if (p.pitch) { var __k=i18nKeysForSKU(sku); if(__k && __k.pitch){ pitchEl.innerHTML = '<span data-i18n="'+__k.pitch+'">'+(dI18n.t(__k.pitch)||p.pitch)+'</span>'; } else { pitchEl.innerHTML = p.pitch; }
           pitchEl.style.display = '';
-          // make sure pitch is right after price
+          try{ if(window.dI18n) dI18n.apply(); }catch(_){ }
+        // make sure pitch is right after price
           if (priceEl.nextElementSibling !== pitchEl) {
             priceEl.parentNode.insertBefore(pitchEl, descEl);
           }
