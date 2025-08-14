@@ -1940,86 +1940,7 @@ if (!link) {
   </section>
 </div>
 
-<script>
-(function(){
-  window.DICT = window.DICT || {};
-  const ensure = (lng, entries) => {
-    window.DICT[lng] = Object.assign({}, window.DICT[lng] || {}, entries);
-  };
 
-  ensure('es', {
-    'purchase.detailsTitle':'Detalles de la Compra',
-    'purchase.sampleDesc':'Diseño exclusivo con materiales premium.',
-    'purchase.usdt':'USDT',
-    'purchase.downloadInvoice':'Descargar factura',
-    'purchase.regeneratePayment':'Generar nuevo link de pago',
-    'purchase.contactSupport':'Contactar soporte',
-    'purchase.paymentInfo':'Información de pago',
-    'purchase.method':'Método',
-    'purchase.methodValue':'Cripto · USDT',
-    'purchase.currency':'Moneda',
-    'purchase.subtotal':'Subtotal',
-    'purchase.fees':'Comisiones',
-    'purchase.zeroUsdt':'0 USDT',
-    'purchase.total':'Total',
-    'purchase.history':'Historial',
-    'purchase.orderCreated':'Pedido creado',
-    'purchase.paymentLinkGenerated':'Link de pago generado',
-    'status.pending':'Pendiente',
-    'status.active':'Activo',
-    'status.cancelled':'Cancelado',
-    'status.completed':'Completado'
-  });
-
-  ensure('en', {
-    'purchase.detailsTitle':'Purchase Details',
-    'purchase.sampleDesc':'Exclusive design with premium materials.',
-    'purchase.usdt':'USDT',
-    'purchase.downloadInvoice':'Download invoice',
-    'purchase.regeneratePayment':'Generate new payment link',
-    'purchase.contactSupport':'Contact support',
-    'purchase.paymentInfo':'Payment information',
-    'purchase.method':'Method',
-    'purchase.methodValue':'Crypto · USDT',
-    'purchase.currency':'Currency',
-    'purchase.subtotal':'Subtotal',
-    'purchase.fees':'Fees',
-    'purchase.zeroUsdt':'0 USDT',
-    'purchase.total':'Total',
-    'purchase.history':'History',
-    'purchase.orderCreated':'Order created',
-    'purchase.paymentLinkGenerated':'Payment link generated',
-    'status.pending':'Pending',
-    'status.active':'Active',
-    'status.cancelled':'Cancelled',
-    'status.completed':'Completed'
-  });
-
-  ensure('pt', {
-    'purchase.detailsTitle':'Detalhes da Compra',
-    'purchase.sampleDesc':'Design exclusivo com materiais premium.',
-    'purchase.usdt':'USDT',
-    'purchase.downloadInvoice':'Baixar fatura',
-    'purchase.regeneratePayment':'Gerar novo link de pagamento',
-    'purchase.contactSupport':'Contactar suporte',
-    'purchase.paymentInfo':'Informações de pagamento',
-    'purchase.method':'Método',
-    'purchase.methodValue':'Cripto · USDT',
-    'purchase.currency':'Moeda',
-    'purchase.subtotal':'Subtotal',
-    'purchase.fees':'Comissões',
-    'purchase.zeroUsdt':'0 USDT',
-    'purchase.total':'Total',
-    'purchase.history':'Histórico',
-    'purchase.orderCreated':'Pedido criado',
-    'purchase.paymentLinkGenerated':'Link de pagamento gerado',
-    'status.pending':'Pendente',
-    'status.active':'Ativo',
-    'status.cancelled':'Cancelado',
-    'status.completed':'Concluído'
-  });
-})();
-</script>
 
 <script>
 (function(){
@@ -2041,17 +1962,6 @@ if (!link) {
   function open(){ OVERLAY.classList.add('show'); OVERLAY.removeAttribute('hidden'); document.body.style.overflow='hidden'; }
   function close(){ OVERLAY.classList.remove('show'); OVERLAY.setAttribute('hidden',''); document.body.style.overflow=''; }
 
-  function currentLang(){
-    return (window.dI18n && (dI18n.lang || dI18n.current || dI18n.locale)) ||
-           document.documentElement.getAttribute('lang') || 'es';
-  }
-
-  function t(key){
-    const lang = currentLang().slice(0,2);
-    const dict = (window.DICT && window.DICT[lang]) || {};
-    return dict[key] || key;
-  }
-
   function readStatusKey(el){
     if(!el) return 'pending';
     const known = ['pending','active','completed','cancelled','inactive','paid','disputed'];
@@ -2067,30 +1977,31 @@ if (!link) {
     const tds = tr ? tr.querySelectorAll('td') : [];
     const product = tds[0]?.innerText?.trim() || 'Producto';
     const date    = tds[1]?.innerText?.trim() || '—';
-    const value   = tds[2]?.innerText?.trim().replace('$','').replace('USDT','').trim() || '—';
+    let value     = '—';
+    if (tds[2]) {
+      value = tds[2].innerText.replace('$','').replace('USDT','').trim() || '—';
+    }
     const statusEl= tr?.querySelector('.status');
     const statusK = readStatusKey(statusEl);
 
-    // Fill visual
+    // Fill
     EL.name.textContent = product;
     EL.mediaT.textContent = product;
-    EL.price.textContent = value ? (value + ' USDT') : '—';
-    EL.subtotal.textContent = value ? (value + ' USDT') : '—';
-    EL.total.innerHTML = '<strong>' + (value ? (value + ' USDT') : '—') + '</strong>';
+    EL.price.textContent = value !== '—' ? (value + ' USDT') : '—';
+    EL.subtotal.textContent = value !== '—' ? (value + ' USDT') : '—';
+    EL.total.innerHTML = '<strong>' + (value !== '—' ? (value + ' USDT') : '—') + '</strong>';
     EL.date.textContent = date || '—';
     EL.order.textContent = '#—';
 
     EL.status.classList.remove('pending','active','cancelled','completed');
     EL.status.classList.add(statusK);
     EL.status.setAttribute('data-i18n','status.'+statusK);
-    EL.status.textContent = t('status.'+statusK);
+
+    if (window.pdI18n && typeof pdI18n.apply === 'function') {
+      pdI18n.apply(document); // translate all keys inside modal
+    }
 
     EL.regen.style.display = (statusK === 'pending') ? 'inline-block' : 'none';
-
-    // Reaplicar i18n en todo el modal si está tu motor
-    if (window.dI18n && typeof dI18n.apply === 'function') {
-      dI18n.apply();
-    }
 
     open();
   });
@@ -2101,6 +2012,7 @@ if (!link) {
 })();
 </script>
 
+<!-- END PD MODAL -->
 </body>
 </html>
 <script>
