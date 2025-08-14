@@ -264,6 +264,7 @@
           "productNames.gold100": "100g Fine Gold Bar 999.9",
           "productNames.plat100": "100g Fine Platinum Bar 999.5",
           "productNames.rolex126610lv": "Rolex Submariner Date 126610LV",
+          "productNames.braceletLimited": "Numina Bracelet \u2013 Limited Edition",
           "catalog.rolexDesc": "Submariner Date with green bezel and Oystersteel case. Automatic.",
           "actions.copy": "Copy",
           "actions.copied": "Copied!",
@@ -346,6 +347,7 @@
           "productNames.gold100": "Lingote 100g Oro Fino 999.9",
           "productNames.plat100": "Lingote 100g Platino Fino 999.5",
           "productNames.rolex126610lv": "Rolex Submariner Date 126610LV",
+          "productNames.braceletLimited": "Pulsera Numina \u2013 Edici\u00f3n Limitada",
           "catalog.rolexDesc": "Submariner Date con bisel verde y caja Oystersteel. Automático.",
           "actions.copy": "Copiar",
           "actions.copied": "¡Copiado!",
@@ -428,6 +430,7 @@
           "productNames.gold100": "Lingote 100g Ouro Fino 999,9",
           "productNames.plat100": "Lingote 100g Platina Fina 999,5",
           "productNames.rolex126610lv": "Rolex Submariner Date 126610LV",
+          "productNames.braceletLimited": "Pulseira Numina \u2013 Edi\u00e7\u00e3o Limitada",
           "catalog.rolexDesc": "Submariner Date com aro verde e caixa Oystersteel. Automático.",
           "actions.copy": "Copiar",
           "actions.copied": "Copiado!",
@@ -533,6 +536,9 @@
           if (n.includes('126610lv')) key = 'productNames.rolex126610lv';
           else if (/(platino|platinum)/i.test(name)) key = 'productNames.plat100';
           else if (/(oro|gold)/i.test(name)) key = 'productNames.gold100';
+          else if (/(pulsera|bracelet)/i.test(name)) {
+            key = (/(edici[oó]n limitada|limited)/i.test(name)) ? 'productNames.braceletLimited' : 'product.bracelet';
+          }
           if (!key) return name;
           // return a translatable span so language switches re-translate automatically
           return '<span data-i18n=\"'+key+'\">'+(dI18n.t(key) || name)+'</span>';
@@ -547,6 +553,9 @@
           if (n.includes('126610lv')) key = 'productNames.rolex126610lv';
           else if (/(platino|platinum)/i.test(name)) key = 'productNames.plat100';
           else if (/(oro|gold)/i.test(name)) key = 'productNames.gold100';
+          else if (/(pulsera|bracelet)/i.test(name)) {
+            key = (/(edici[oó]n limitada|limited)/i.test(name)) ? 'productNames.braceletLimited' : 'product.bracelet';
+          }
           if (!key) return name;
           return '<span data-i18n="'+key+'">'+(dI18n.t(key) || name)+'</span>';
         }catch(_){ return name; }
