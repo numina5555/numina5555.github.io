@@ -1,1 +1,1367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NUMINA | Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    :root {
+      --primary: #ffd700;
+      --primary-dark: #e6c200;
+      --dark: #111;
+      --dark-light: #1a1a1a;
+      --dark-lighter: #222;
+      --text: #fff;
+      --text-light: #ccc;
+      --success: #28a745;
+      --warning: #ffc107;
+      --danger: #dc3545;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { overflow-y: scroll; }
+    body { font-family: 'Montserrat', sans-serif; background: var(--dark); color: var(--text); min-height: 100vh; display:flex; flex-direction:column; }
+    .dashboard-header { background: linear-gradient(to right, var(--dark), var(--dark-lighter)); padding: 1rem 2rem; display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid rgba(255,215,0,.1); }
+    .logo { color: var(--primary); font-size: 1.8rem; font-weight: 700; letter-spacing: 1px; }
+    .user-menu { display:flex; align-items:center; gap:1rem; }
+    .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: var(--dark); display:flex; align-items:center; justify-content:center; font-weight:700; cursor: default; }
+    .dashboard-container { display:flex; flex:1; }
+    .sidebar { width: 250px; background: var(--dark-light); padding: 1.5rem 0; border-right: 1px solid rgba(255,255,255,.05); }
+    .sidebar-menu { list-style: none; }
+    .menu-item { padding: .8rem 1.5rem; display:flex; align-items:center; gap:.8rem; cursor:pointer; transition: .2s ease; border-left: 3px solid transparent; }
+    .menu-item:hover, .menu-item.active { background-color: rgba(255,215,0,.1); border-left-color: var(--primary); color: var(--primary); }
+    .menu-item i { width: 20px; text-align:center; }
+    .main-content { flex:1; padding: 2rem; background: var(--dark); }
+    .welcome-banner { background: linear-gradient(135deg, rgba(255,215,0,.1), rgba(255,215,0,.05)); border: 1px solid rgba(255,215,0,.1); border-radius:10px; padding:1.5rem; margin-bottom:2rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; }
+    .welcome-text h2 { color: var(--primary); margin-bottom:.5rem; white-space:nowrap; min-height:1.6em; display:flex; align-items:center; }
+    .welcome-text p { color: var(--text-light); }
+    .welcome-right { display:flex; flex-direction:column; align-items:flex-end; gap:.6rem; }
+    .lang-dropdown{ position:relative; display:inline-block; }
+    .lang-btn{ background:#ffd700; border:0; border-radius:999px; padding:6px 12px; cursor:pointer; color:#111; font-weight:800; display:inline-flex; align-items:center; gap:8px; box-shadow:inset 0 -2px 0 rgba(0,0,0,.15), 0 2px 8px rgba(0,0,0,.25); }
+    .lang-btn:focus{ outline:none; box-shadow:0 0 0 3px rgba(255,215,0,.3); }
+    .lang-btn .chevron{ width:12px; height:12px; fill:none; stroke:#111; stroke-width:2px; transition:transform .18s ease; }
+    .lang-dropdown.open .chevron{ transform: rotate(180deg); }
+    .lang-menu{ position:absolute; top:110%; right:0; z-index:100; background:#fff; color:#111; border-radius:12px; padding:6px 0; margin:8px 0 0; box-shadow:0 12px 28px rgba(0,0,0,.25), 0 2px 8px rgba(0,0,0,.2); min-width:170px; list-style:none; display:none; max-height:260px; overflow:auto; }
+    .lang-dropdown.open .lang-menu{ display:block; }
+    .lang-item{ display:flex; align-items:center; gap:10px; padding:10px 14px; cursor:pointer; font-weight:700; user-select:none; white-space:nowrap; }
+    .lang-item:hover, .lang-item[aria-selected="true"]{ background:#ffd700; color:#111; }
+    .lang-flag{ width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; }
+    .referral-code{ background: var(--dark-light); padding:.8rem 1.2rem; border-radius:8px; display:flex; align-items:center; gap:.8rem; }
+    .copy-btn{ background: var(--primary); color: var(--dark); border:0; padding:.3rem .6rem; border-radius:5px; cursor:pointer; transition:.2s ease; }
+    .copy-btn:hover{ background: var(--primary-dark); }
+    .stats-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap:1.5rem; margin-bottom:2rem; }
+    .stat-card{ background: var(--dark-light); border-radius:10px; padding:1.5rem; border-left: 4px solid var(--primary); }
+    .stat-card h3{ color: var(--text-light); font-size:.9rem; font-weight:500; margin-bottom:.5rem; text-transform:uppercase; letter-spacing:1px; }
+    .stat-card .value{ font-size:1.8rem; font-weight:700; color: var(--primary); margin-bottom:.5rem; }
+    .change{ font-size:.8rem; display:flex; align-items:center; gap:.3rem; }
+    .positive{ color: var(--success); }
+    .negative{ color: var(--danger); }
+    .section-title{ color: var(--primary); margin: 2rem 0 1rem; font-size: 1.3rem; font-weight: 600; display:flex; align-items:center; gap:.8rem; }
+    .section-content{ display:none; }
+    .table-container{ background: var(--dark-light); border-radius:10px; overflow:hidden; margin-bottom:2rem; }
+    table { width:100%; border-collapse: collapse; table-layout: fixed; }
+    th, td { padding:1rem; text-align:left; }
+    th { background: var(--dark-lighter); color: var(--primary); font-weight:600; text-transform:uppercase; font-size:.8rem; letter-spacing:1px; }
+    td { border-bottom: 1px solid rgba(255,255,255,.05); color: var(--text-light); overflow:hidden; text-overflow:ellipsis; }
+    tr:last-child td{ border-bottom: none; }
+    .account-info-table td:first-child{ width:30%; font-weight:700; color:#f1f1f1; }
+    :root { --tbl-col-product: 42%; --tbl-col-date: 16%; --tbl-col-value: 14%; --tbl-col-status: 14%; --tbl-col-actions: 14%; }
+    #purchases-table th:nth-child(1), #purchases-table td:nth-child(1),
+    #referrals-table th:nth-child(1), #referrals-table td:nth-child(1){ width: var(--tbl-col-product); }
+    #purchases-table th:nth-child(2), #purchases-table td:nth-child(2),
+    #referrals-table th:nth-child(2), #referrals-table td:nth-child(2){ width: var(--tbl-col-date); white-space:nowrap; }
+    #purchases-table th:nth-child(3), #purchases-table td:nth-child(3),
+    #referrals-table th:nth-child(3), #referrals-table td:nth-child(3){ width: var(--tbl-col-value); white-space:nowrap; }
+    #purchases-table th:nth-child(4), #purchases-table td:nth-child(4),
+    #referrals-table th:nth-child(4), #referrals-table td:nth-child(4){ width: var(--tbl-col-status); }
+    #purchases-table th:nth-child(5), #purchases-table td:nth-child(5),
+    #referrals-table th:nth-child(5), #referrals-table td:nth-child(5){ width: var(--tbl-col-actions); }
+    .status{ display:inline-block; text-align:center; min-width:10ch; white-space:nowrap; border-radius:20px; padding:.3rem .6rem; font-size:.8rem; font-weight:600; }
+    .status.active{ background: rgba(40,167,69,.2); color: var(--success); }
+    .status.pending{ background: rgba(255,193,7,.2); color: var(--warning); }
+    .status.completed{ background: rgba(13,110,253,.2); color:#0d6efd; }
+    .status.cancelled{ background: rgba(220,53,69,.2); color: var(--danger); }
+    .status.inactive{ background: rgba(255,255,255,.12); color: #aaa; }
+    .status.paid{ background: rgba(0,255,127,.18); color:#58d68d; }
+    .status.disputed{ background: rgba(255,99,132,.18); color:#ff718f; }
+    .action-btn{ background:transparent; border:1px solid var(--primary); color: var(--primary); padding:.3rem .8rem; border-radius:5px; cursor:pointer; transition:.2s ease; min-width:9ch; text-align:center; }
+    .action-btn:hover{ background: var(--primary); color: var(--dark); }
+    .settings-card{ background: var(--dark-light); border: 1px solid rgba(255,255,255,.05); border-radius:10px; padding:1.5rem; margin-bottom:1.5rem; }
+    .settings-card h3{ color: var(--primary); margin-bottom:.8rem; font-size:1.05rem; }
+    .form-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:1rem; }
+    .form-row{ display:flex; flex-direction:column; gap:.4rem; }
+    .form-row label{ color: var(--text-light); font-size:.9rem; }
+    .form-row input, .form-row select{ background: var(--dark); border:1px solid var(--dark-lighter); border-radius:8px; padding:.7rem .8rem; color: var(--text); outline:none; }
+    .form-actions{ display:flex; gap:.6rem; justify-content:flex-end; margin-top:1rem; }
+    .btn{ background:var(--primary); color:var(--dark); border:0; padding:.6rem 1rem; border-radius:8px; font-weight:600; cursor:pointer; }
+    .btn:hover{ background: var(--primary-dark); }
+    #section-productos .products-wrap{ max-width:1100px; margin:0 auto; padding: .5rem 1rem 0; }
+    #section-productos .products-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:1.5rem; justify-items:center; }
+    #section-productos .product-card{ width:100%; max-width:500px; border-radius:16px; background: var(--dark-light); border:1px solid rgba(255,255,255,.05); overflow:hidden; display:flex; flex-direction:column; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+    #section-productos .product-card:hover{ transform: translateY(-2px); border-color: rgba(255,215,0,.25); box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+    #section-productos .product-media{ background: var(--dark-lighter); aspect-ratio:16/9; display:block; }
+    #section-productos .product-body{ padding:1rem; display:flex; flex-direction:column; gap:.6rem; }
+    #section-productos .product-title{ font-size:1rem; font-weight:700; color: var(--text); }
+    #section-productos .product-desc{ font-size:.9rem; color: var(--text-light); }
+    #section-productos .price{ color: var(--primary); font-weight:700; font-size:1.1rem; }
+    @media (max-width: 992px) {
+      .sidebar { width: 70px; }
+      .menu-item span { display:none; }
+      .menu-item { justify-content:center; }
+      .welcome-right { align-items:center; width:100%; }
+      .welcome-right .referral-code{ align-self:center; }
+      table { table-layout:auto; }
+      .action-btn, .status{ min-width:auto; }
+    }
+    @media (max-width: 900px){ #section-productos .products-grid{ grid-template-columns: 1fr; } }
+  
+    /* Tarjetas y layout de Sorteos */
+    .srt-stats { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; margin-bottom:1.5rem; align-items:stretch; }
+    @media (max-width:900px){ .srt-stats{ grid-template-columns:1fr; } }
+    .srt-card{ background:var(--dark-light); border-radius:12px; padding:1.2rem; border:1px solid rgba(255,255,255,.07);
+               display:flex; flex-direction:column; min-height:150px; }
+    .srt-card h3{ color:var(--text-light); font-size:.9rem; text-transform:uppercase; letter-spacing:.6px; margin-bottom:.5rem; }
+    .srt-card .val{ font-size:1.5rem; font-weight:800; color:var(--text-light); }
+    .srt-card.gold{ background:linear-gradient(135deg, rgba(255,215,0,.12), rgba(255,215,0,.04)); }
 
+    /* Progreso Upgrade Numina */
+    .srt-progress{ margin-top:.8rem; }
+    .srt-track{ position:relative; height:14px; background:linear-gradient(180deg,#1a1a1a,#151515);
+                border:1px solid rgba(255,255,255,.08); border-radius:999px; overflow:hidden; }
+    .srt-fill{ height:100%; width:0%; background:linear-gradient(90deg, rgba(255,215,0,.85), rgba(255,215,0,1));
+               box-shadow:0 0 12px rgba(255,215,0,.35) inset; transition:width .35s ease; }
+    .srt-hit{ position:absolute; top:50%; transform:translate(-50%,-50%); width:14px; height:14px; border-radius:50%;
+              background:#222; border:2px solid rgba(255,255,255,.25); }
+    .srt-hit.on{ background:var(--primary); border-color:var(--primary); }
+    .srt-marks{ position:relative; height:20px; margin-top:.45rem; }
+    .srt-mark{ position:absolute; top:0; transform:translateX(-50%); font-size:.8rem; color:var(--text-light); white-space:nowrap; }
+
+    /* Tabla */
+    #sorteos-table th{ background:var(--dark-lighter); color:var(--primary); font-weight:600; text-transform:uppercase; font-size:.8rem; }
+    #sorteos-table td{ color:var(--text-light); border-bottom:1px solid rgba(255,255,255,.05); }
+  
+
+  /* === NUMINA: Modal de producto pantalla completa === */
+  .nm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;z-index:1000;}
+  .nm-overlay.show{display:block;}
+  .nm-modal{position:relative;min-height:100vh;background:#111214;color:#fff;display:flex;flex-direction:column;}
+  .nm-modal header{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;background:#1a1b1f;border-bottom:1px solid #24262b}
+  .nm-modal header h3{margin:0;font-size:18px;color:#ffd700;letter-spacing:.3px}
+  .nm-close{background:transparent;border:0;color:#b7b7b7;font-size:22px;cursor:pointer}
+  .nm-body{flex:1;display:grid;grid-template-columns:0.85fr 1.15fr;gap:22px;padding:22px;max-width:1200px;margin:0 auto}
+  .nm-imgbox{background:#222;border-radius:16px;display:flex;align-items:center;justify-content:center;overflow:hidden;aspect-ratio:1/1;max-width:520px;width:100%;margin:0 auto}
+  .nm-imgbox img{width:100%;height:100%;display:block;object-fit:contain}
+  .nm-info h4{margin:.2rem 0 .6rem;font-size:22px}
+  .nm-desc{color:#d0d0d0;line-height:1.55;margin:0 0 14px}
+  .nm-price{font-size:24px;font-weight:900;margin:10px 0 18px;color:#ffd700}
+  .nm-actions{display:flex;gap:10px;align-items:center;margin-top:6px}
+  .nm-btn{background:transparent;border:1px solid #3a3a3a;color:#fafafa;padding:11px 14px;border-radius:12px;cursor:pointer}
+  .nm-buy{background:#ffd700;color:#111;border:0;padding:12px 18px;border-radius:12px;font-weight:900;cursor:pointer}
+  .nm-note{font-size:12px;color:#9aa0a6;margin-top:8px}
+  @media(max-width:900px){.nm-body{flex:1;display:grid;grid-template-columns:0.85fr 1.15fr;gap:22px;padding:22px;max-width:1200px;margin:0 auto}
+
+  .nm-pitch{margin:10px 0 14px;padding:12px 14px;border:1px solid #2b2e34;background:#16181d;border-radius:12px;line-height:1.55;color:#e7e7e7}
+  .nm-pitch strong{color:#ffd700}
+}
+
+</style>
+
+  <script>
+    (function(){
+      const DICT = {
+        en: {
+          "account.undefined": "Undefined",
+          "labels.welcome": "Welcome",
+          "labels.loading": "Loading…",
+          "sections.dashboard": "Dashboard",
+          "sections.compras": "Purchases",
+          "sections.sorteos": "Raffles",
+          "sections.referidos": "Referrals",
+          "sections.configuracion": "Settings",
+          "actions.logout": "Log out",
+          "catalog.title": "Catalog",
+          "stats.balance": "Balance",
+          "stats.activePurchases": "Active Purchases",
+          "stats.referrals": "Referrals",
+          "stats.tickets": "Active Tickets",
+          "sections.comprasActivas": "Active Purchases",
+          "sections.referralsHistory": "Referrals History",
+          "tables.product": "Product",
+          "tables.date": "Date",
+          "tables.value": "Value",
+          "tables.status": "Status",
+          "tables.details": "Details",
+          "tables.actions": "Actions",
+          "tables.referral": "Referral",
+          "tables.purchases": "Purchases",
+          "tables.commission": "Commission",
+          "tables.details": "Details",
+          "raffles.noParticipations": "No participations",
+          "sections.sorteoTitle": "Raffles",
+          "raffles.activeTickets": "Active tickets",
+          "sections.raffleHistory": "Raffles history",
+          "raffles.name": "Raffle",
+          "raffles.date": "Date",
+          "raffles.ticketsUsed": "Tickets used",
+          "tables.claim": "Claim",
+          "sections.misCompras": "Purchases",
+          "account.info.title": "Account Information",
+          "accountForm.labels.fullName": "Full Name",
+          "accountForm.labels.email": "Email",
+          "accountForm.labels.phone": "Phone",
+          "accountForm.labels.address": "Address",
+          "accountForm.labels.country": "Country",
+          "accountForm.labels.city": "City",
+          "accountForm.labels.zip": "ZIP code",
+          "accountForm.ph.fullName": "Full name",
+          "accountForm.ph.phone": "Phone",
+          "accountForm.ph.address": "Address",
+          "accountForm.ph.country": "Country",
+          "accountForm.ph.city": "City",
+          "accountForm.ph.zip": "ZIP code",
+          "account.settings.title": "Account Settings",
+          "account.settings.personalData": "Personal Data",
+          "account.settings.save": "Save changes",
+          "account.settings.security": "Security",
+          "accountForm.labels.newPassword": "New password",
+          "accountForm.labels.repeatPassword": "Repeat password",
+          "account.settings.updatePassword": "Update password",
+          "catalog.moreInfo": "More information",
+          "catalog.goldTitle": "Gold Bar",
+          "catalog.goldDesc": "Certified 999.9 gold. Ideal for investment and store of value.",
+          "catalog.platinumTitle": "Platinum Bar",
+          "catalog.platinumDesc": "Certified 999.5 platinum. High-value and rare investment.",
+          "catalog.braceletTitle": "Numina Bracelet",
+          "catalog.braceletDesc": "Exclusive design with high‑quality materials. Limited edition.",
+          "productNames.gold100": "100g Fine Gold Bar 999.9",
+          "productNames.plat100": "100g Fine Platinum Bar 999.5",
+          "productNames.rolex126610lv": "Rolex Submariner Date 126610LV",
+          "catalog.rolexDesc": "Submariner Date with green bezel and Oystersteel case. Automatic.",
+          "actions.copy": "Copy",
+          "actions.copied": "Copied!",
+          "product.shippingNote": "Insured shipping with tracking. Certificate included.",
+          "product.buy": "Buy"
+        },
+        es: {
+          "account.undefined": "No definido",
+          "labels.welcome": "Bienvenido",
+          "labels.loading": "Cargando…",
+          "sections.dashboard": "Dashboard",
+          "sections.compras": "Compras",
+          "sections.sorteos": "Sorteos",
+          "sections.referidos": "Referidos",
+          "sections.configuracion": "Configuración",
+          "actions.logout": "Cerrar Sesión",
+          "catalog.title": "Catálogo",
+          "stats.balance": "Balance",
+          "stats.activePurchases": "Compras activas",
+          "stats.referrals": "Referidos",
+          "stats.tickets": "Tickets activos",
+          "sections.comprasActivas": "Compras Activas",
+          "sections.referralsHistory": "Historial de Referidos",
+          "tables.product": "Producto",
+          "tables.date": "Fecha",
+          "tables.value": "Valor",
+          "tables.status": "Estado",
+          "tables.details": "Detalles",
+          "tables.actions": "Acciones",
+          "tables.referral": "Referido",
+          "tables.purchases": "Compras",
+          "tables.commission": "Comisión",
+          "tables.details": "Detalles",
+          "raffles.noParticipations": "Sin participaciones",
+          "sections.sorteoTitle": "Sorteos",
+          "raffles.activeTickets": "Tickets activos",
+          "sections.raffleHistory": "Historial de Sorteos",
+          "raffles.name": "Sorteo",
+          "raffles.date": "Fecha",
+          "raffles.ticketsUsed": "Tickets usados",
+          "tables.claim": "Reclamo",
+          "sections.misCompras": "Mis Compras",
+          "account.info.title": "Información de la Cuenta",
+          "accountForm.labels.fullName": "Nombre Completo",
+          "accountForm.labels.email": "Correo Electrónico",
+          "accountForm.labels.phone": "Teléfono",
+          "accountForm.labels.address": "Dirección",
+          "accountForm.labels.country": "País",
+          "accountForm.labels.city": "Ciudad",
+          "accountForm.labels.zip": "Código postal",
+          "accountForm.ph.fullName": "Nombre completo",
+          "accountForm.ph.phone": "Teléfono",
+          "accountForm.ph.address": "Dirección",
+          "accountForm.ph.country": "País",
+          "accountForm.ph.city": "Ciudad",
+          "accountForm.ph.zip": "Código postal",
+          "account.settings.title": "Configuración de la Cuenta",
+          "account.settings.personalData": "Datos Personales",
+          "account.settings.save": "Guardar cambios",
+          "account.settings.security": "Seguridad",
+          "accountForm.labels.newPassword": "Nueva contraseña",
+          "accountForm.labels.repeatPassword": "Repetir contraseña",
+          "account.settings.updatePassword": "Actualizar contraseña",
+          "catalog.moreInfo": "Más información",
+          "catalog.goldTitle": "Lingote de Oro",
+          "catalog.goldDesc": "Oro 999.9 certificado. Ideal para inversión y resguardo de valor.",
+          "catalog.platinumTitle": "Lingote de Platino",
+          "catalog.platinumDesc": "Platino 999.5 certificado. Inversión de alto valor y rareza.",
+          "catalog.braceletTitle": "Pulsera Numina",
+          "catalog.braceletDesc": "Diseño exclusivo con materiales de alta calidad. Edición limitada.",
+          "productNames.gold100": "Lingote 100g Oro Fino 999.9",
+          "productNames.plat100": "Lingote 100g Platino Fino 999.5",
+          "productNames.rolex126610lv": "Rolex Submariner Date 126610LV",
+          "catalog.rolexDesc": "Submariner Date con bisel verde y caja Oystersteel. Automático.",
+          "actions.copy": "Copiar",
+          "actions.copied": "¡Copiado!",
+          "product.shippingNote": "Envíos asegurados con seguimiento. Certificado incluido.",
+          "product.buy": "Comprar"
+        },
+        pt: {
+          "account.undefined": "Não definido",
+          "labels.welcome": "Bem-vindo",
+          "labels.loading": "Carregando…",
+          "sections.dashboard": "Painel",
+          "sections.compras": "Compras",
+          "sections.sorteos": "Sorteios",
+          "sections.referidos": "Referências",
+          "sections.configuracion": "Configurações",
+          "actions.logout": "Sair",
+          "catalog.title": "Catálogo",
+          "stats.balance": "Saldo",
+          "stats.activePurchases": "Compras ativas",
+          "stats.referrals": "Indicações",
+          "stats.tickets": "Tickets ativos",
+          "sections.comprasActivas": "Compras Ativas",
+          "sections.referralsHistory": "Histórico de Indicações",
+          "tables.product": "Produto",
+          "tables.date": "Data",
+          "tables.value": "Valor",
+          "tables.status": "Status",
+          "tables.details": "Detalhes",
+          "tables.actions": "Ações",
+          "tables.referral": "Indicação",
+          "tables.purchases": "Compras",
+          "tables.commission": "Comissão",
+          "tables.details": "Detalhes",
+          "raffles.noParticipations": "Sem participações",
+          "sections.sorteoTitle": "Sorteios",
+          "raffles.activeTickets": "Tickets ativos",
+          "sections.raffleHistory": "Histórico de Sorteios",
+          "raffles.name": "Sorteio",
+          "raffles.date": "Data",
+          "raffles.ticketsUsed": "Tickets usados",
+          "tables.claim": "Reclamação",
+          "sections.misCompras": "Minhas Compras",
+          "account.info.title": "Informações da Conta",
+          "accountForm.labels.fullName": "Nome completo",
+          "accountForm.labels.email": "E-mail",
+          "accountForm.labels.phone": "Telefone",
+          "accountForm.labels.address": "Endereço",
+          "accountForm.labels.country": "País",
+          "accountForm.labels.city": "Cidade",
+          "accountForm.labels.zip": "CEP",
+          "accountForm.ph.fullName": "Nome completo",
+          "accountForm.ph.phone": "Telefone",
+          "accountForm.ph.address": "Endereço",
+          "accountForm.ph.country": "País",
+          "accountForm.ph.city": "Cidade",
+          "accountForm.ph.zip": "CEP",
+          "account.settings.title": "Configurações da Conta",
+          "account.settings.personalData": "Dados Pessoais",
+          "account.settings.save": "Salvar alterações",
+          "account.settings.security": "Segurança",
+          "accountForm.labels.newPassword": "Nova senha",
+          "accountForm.labels.repeatPassword": "Repetir senha",
+          "account.settings.updatePassword": "Atualizar senha",
+          "catalog.moreInfo": "Mais informações",
+          "catalog.goldTitle": "Barra de Ouro",
+          "catalog.goldDesc": "Ouro 999,9 certificado. Ideal para investimento e reserva de valor.",
+          "catalog.platinumTitle": "Barra de Platina",
+          "catalog.platinumDesc": "Platina 999,5 certificada. Investimento de alto valor e raridade.",
+          "catalog.braceletTitle": "Pulseira Numina",
+          "catalog.braceletDesc": "Design exclusivo com materiais de alta qualidade. Edição limitada.",
+          "productNames.gold100": "Lingote 100g Ouro Fino 999,9",
+          "productNames.plat100": "Lingote 100g Platina Fina 999,5",
+          "productNames.rolex126610lv": "Rolex Submariner Date 126610LV",
+          "catalog.rolexDesc": "Submariner Date com aro verde e caixa Oystersteel. Automático.",
+          "actions.copy": "Copiar",
+          "actions.copied": "Copiado!",
+          "product.shippingNote": "Envio assegurado com rastreamento. Certificado incluído.",
+          "product.buy": "Comprar"
+        }
+      };
+      // Global helper to translate product names in tables (available before first render)
+      window.i18nProductName = function(name){
+        try{
+          if(!name) return '';
+          let key = null;
+          const n = String(name).toLowerCase();
+          if (n.includes('126610lv')) key = 'productNames.rolex126610lv';
+          else if (/(platino|platinum)/i.test(name)) key = 'productNames.plat100';
+          else if (/(oro|gold)/i.test(name)) key = 'productNames.gold100';
+          if (!key) return name;
+          // return a translatable span so language switches re-translate automatically
+          return '<span data-i18n=\"'+key+'\">'+(dI18n.t(key) || name)+'</span>';
+        } catch(_){ return name; }
+      };
+
+      function i18nProductName(name){
+        try{
+          if(!name) return '';
+          let key = null;
+          const n = String(name).toLowerCase();
+          if (n.includes('126610lv')) key = 'productNames.rolex126610lv';
+          else if (/(platino|platinum)/i.test(name)) key = 'productNames.plat100';
+          else if (/(oro|gold)/i.test(name)) key = 'productNames.gold100';
+          if (!key) return name;
+          return '<span data-i18n="'+key+'">'+(dI18n.t(key) || name)+'</span>';
+        }catch(_){ return name; }
+      }
+
+      function canon(lang){
+        try{ lang = (lang || localStorage.getItem('lang') || navigator.language || 'es').toLowerCase(); }catch(_){ lang = 'es'; }
+        if (lang.startsWith('en')) return 'en';
+        if (lang.startsWith('pt')) return 'pt';
+        return 'es';
+      }
+      const dI18n = window.dI18n || {
+        lang: canon(),
+        t: function(key){
+          try{
+            if (window.dI18nReal && typeof window.dI18nReal.t === 'function') {
+              const v = window.dI18nReal.t(key);
+              if (v && v !== key) return v;
+            }
+          }catch(_){}
+          const L = this.lang || 'es';
+          return (DICT[L] && DICT[L][key]) || key;
+        },
+        set: function(l){ this.lang = canon(l); try{ localStorage.setItem('lang', this.lang); }catch(_){}; this.apply(); },
+        apply: function(){
+          document.querySelectorAll('[data-i18n]').forEach(el=>{
+            const k = el.getAttribute('data-i18n'); if(!k) return;
+            el.textContent = this.t(k);
+          });
+          document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+            const k = el.getAttribute('data-i18n-ph'); if(!k) return;
+            el.setAttribute('placeholder', this.t(k));
+          });
+          try{ window.updateStatusBadges && window.updateStatusBadges(); }catch(_){}
+          try{ window.__updateLangLabel && window.__updateLangLabel(); }catch(_){}
+          try{
+            const el = document.getElementById('welcome-title');
+            if (el && window.__lastUserName != null){
+              el.textContent = (dI18n.t('labels.welcome') + ', ' + String(window.__lastUserName || '')).trim();
+            }
+          }catch(_){}
+        }
+      };
+      Object.defineProperty(window, 'dI18n', {
+        get(){ return dI18n; },
+        set(obj){
+          window.dI18nReal = obj;
+          if (obj && typeof obj.set === 'function') {
+            const _set = obj.set.bind(obj);
+            obj.set = function(l){ _set(l); dI18n.set(l); };
+          }
+          if (obj && typeof obj.apply === 'function') {
+            const _apply = obj.apply.bind(obj);
+            obj.apply = function(){ _apply(); dI18n.apply(); };
+          }
+        }
+      });
+      window.setText = function(id, val){
+  const el = document.getElementById(id); if(!el) return;
+  const empty = (val === undefined || val === null || String(val).trim()==='');
+  if (empty) {
+    // put a translatable span so language switches re-translate automatically
+    el.innerHTML = '<span data-i18n="account.undefined">' + dI18n.t('account.undefined') + '</span>';
+  } else {
+    el.textContent = val;
+  }
+};
+      const STATUS_FALLBACK = {
+        es: { active:'Activo', pending:'Pendiente', completed:'Completado', cancelled:'Cancelado', inactive:'Inactivo', paid:'Pagado', disputed:'En disputa' },
+        en: { active:'Active', pending:'Pending',  completed:'Completed', cancelled:'Cancelled', inactive:'Inactive', paid:'Paid',    disputed:'Disputed' },
+        pt: { active:'Ativo',  pending:'Pendente',completed:'Concluído',  cancelled:'Cancelado', inactive:'Inativo',  paid:'Pago',   disputed:'Em disputa' }
+      };
+      function normalizeStatus(x){
+        const s = String(x ?? '').toLowerCase();
+        if (s==='true' || s==='activo' || s==='active') return 'active';
+        if (s==='completed' || s==='completado' || s==='complete') return 'completed';
+        if (s==='cancelled' || s==='canceled' || s==='cancelado') return 'cancelled';
+        if (s==='inactive' || s==='inactivo') return 'inactive';
+        if (s==='paid' || s==='pagado') return 'paid';
+        if (s==='disputed' || s==='disputado' || s==='disputa') return 'disputed';
+        return 'pending';
+      }
+      window.statusBadge = function(state){
+        const key = normalizeStatus(state);
+        const label = (STATUS_FALLBACK[dI18n.lang] || STATUS_FALLBACK.es)[key] || key;
+        return `<span class="status ${key}">${label}</span>`;
+      };
+      window.updateStatusBadges = function(){
+        document.querySelectorAll('.status').forEach(el=>{
+          const key = ['completed','active','cancelled','inactive','paid','disputed'].find(k=> el.classList.contains(k)) || 'pending';
+          let label = (STATUS_FALLBACK[dI18n.lang] || STATUS_FALLBACK.es)[key] || key;
+          el.textContent = label;
+        });
+      };
+    })();
+  </script>
+</head>
+<body>
+  <header class="dashboard-header">
+    <div style="flex-grow:1; text-align:center;">
+      <div class="logo">NUMINA</div>
+    </div>
+    <div class="user-menu">
+      <div class="user-avatar" id="user-avatar">U</div>
+    </div>
+  </header>
+
+  <div class="dashboard-container">
+    <nav class="sidebar">
+      <ul class="sidebar-menu">
+        <li class="menu-item active" data-target="dashboard">
+          <i class="fas fa-home"></i>
+          <span data-i18n="sections.dashboard">Dashboard</span>
+        </li>
+        <li class="menu-item" data-target="compras">
+          <i class="fas fa-shopping-bag"></i>
+          <span data-i18n="sections.compras">Compras</span>
+        </li>
+        <li class="menu-item" data-target="sorteos">
+          <i class="fas fa-ticket-alt"></i>
+          <span data-i18n="sections.sorteos">Sorteos</span>
+        </li>
+        <li class="menu-item" data-target="referidos">
+          <i class="fas fa-users"></i>
+          <span data-i18n="sections.referidos">Referidos</span>
+        </li>
+        <li class="menu-item" data-target="productos">
+          <i class="fas fa-box"></i>
+          <span id="sidebar-productos-text-nav" data-i18n="catalog.title">Catálogo</span>
+        </li>
+        <li class="menu-item" data-target="configuracion">
+          <i class="fas fa-cog"></i>
+          <span data-i18n="sections.configuracion">Configuración</span>
+        </li>
+        <li class="menu-item" data-target="logout" id="logout-btn">
+          <i class="fas fa-sign-out-alt"></i>
+          <span data-i18n="actions.logout">Cerrar Sesión</span>
+        </li>
+      </ul>
+    </nav>
+
+    <main class="main-content">
+      <div id="main-dashboard">
+        <section class="welcome-banner" id="welcome-banner">
+          <div class="welcome-text">
+            <h2 id="welcome-title">Cargando…</h2>
+            <p id="welcome-subtitle" style="display:none;">Por favor espera</p>
+          </div>
+          <div class="welcome-right">
+            <div class="lang-dropdown" id="langDropdown">
+              <button id="langBtn" class="lang-btn" aria-haspopup="listbox" aria-expanded="false">
+                <span aria-hidden="true">🌐</span>
+                <span id="langCurrentText">Español</span>
+                <svg class="chevron" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
+              </button>
+              <ul id="langMenu" class="lang-menu" role="listbox" aria-label="Language">
+                <li class="lang-item" role="option" data-lang="es" aria-selected="true"><span class="lang-flag">🇪🇸</span><span>Español</span></li>
+                <li class="lang-item" role="option" data-lang="en" aria-selected="false"><span class="lang-flag">🇬🇧</span><span>English</span></li>
+                <li class="lang-item" role="option" data-lang="pt" aria-selected="false"><span class="lang-flag">🇧🇷</span><span>Português</span></li>
+              </ul>
+            </div>
+            <div class="referral-code">
+              <i class="fas fa-user-plus"></i>
+              <span id="referral-code">---</span>
+              <button class="copy-btn" id="copy-btn" data-i18n="actions.copy">Copiar</button>
+            </div>
+          </div>
+        </section>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3 data-i18n="stats.balance">Balance</h3>
+            <div class="value" id="balance-value">$---</div>
+            <div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</span></div>
+          </div>
+          <div class="stat-card">
+            <h3 data-i18n="stats.activePurchases">Compras activas</h3>
+            <div class="value" id="purchases-value">--</div>
+            <div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</span></div>
+          </div>
+          <div class="stat-card">
+            <h3 data-i18n="stats.referrals">Referidos</h3>
+            <div class="value" id="referrals-value">--</div>
+            <div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</span></div>
+          </div>
+          <div class="stat-card">
+            <h3 data-i18n="stats.tickets">Tickets activos</h3>
+            <div class="value" id="tickets-value">--</div>
+            <div class="change negative"><i class="fas fa-arrow-down"></i><span data-i18n="labels.loading">Cargando…</span></div>
+          </div>
+        </div>
+
+        <h2 class="section-title"><i class="fas fa-shopping-bag"></i><span data-i18n="sections.comprasActivas">Compras Activas</span></h2>
+        <div class="table-container">
+          <table id="purchases-table">
+            <thead>
+              <tr>
+                <th data-i18n="tables.product">Producto</th>
+                <th data-i18n="tables.date">Fecha</th>
+                <th data-i18n="tables.value">Valor</th>
+                <th data-i18n="tables.status">Estado</th>
+                <th data-i18n="tables.actions">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="purchases-body"><tr><td colspan="5" style="text-align:center;"><span data-i18n="labels.loading">Cargando…</span></td></tr></tbody>
+          </table>
+        </div>
+
+        <h2 class="section-title"><i class="fas fa-users"></i><span data-i18n="sections.referralsHistory">Historial de Referidos</span></h2>
+        <div class="table-container">
+          <table id="referrals-table">
+            <thead>
+              <tr>
+                <th data-i18n="tables.referral">Referido</th>
+                <th data-i18n="tables.date">Fecha</th>
+                <th data-i18n="tables.purchases">Compras</th>
+                <th data-i18n="tables.status">Estado</th>
+                <th data-i18n="tables.commission">Comisión</th>
+              </tr>
+            </thead>
+            <tbody id="referrals-body"><tr><td colspan="5" style="text-align:center;"><span data-i18n="labels.loading">Cargando…</span></td></tr></tbody>
+          </table>
+        </div>
+
+        <h2 class="section-title"><i class="fas fa-user-circle"></i><span data-i18n="account.info.title">Información de la Cuenta</span></h2>
+        <div class="table-container">
+          <table class="account-info-table">
+            <tbody>
+              <tr><td data-i18n="accountForm.labels.fullName">Nombre Completo</td><td id="full-name">Cargando…</td></tr>
+              <tr><td data-i18n="accountForm.labels.email">Correo Electrónico</td><td id="user-email">Cargando…</td></tr>
+              <tr><td data-i18n="accountForm.labels.phone">Teléfono</td><td id="user-phone">Cargando…</td></tr>
+              <tr><td data-i18n="accountForm.labels.address">Dirección</td><td id="user-address">Cargando…</td></tr>
+              <tr><td data-i18n="accountForm.labels.country">País</td><td id="user-country">Cargando…</td></tr>
+              <tr><td data-i18n="accountForm.labels.city">Ciudad</td><td id="user-city">Cargando…</td></tr>
+              <tr><td data-i18n="accountForm.labels.zip">Código postal</td><td id="user-postal">Cargando…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <section class="section-content" id="section-configuracion">
+        <h2 class="section-title"><i class="fas fa-cog"></i><span data-i18n="account.settings.title">Configuración de la Cuenta</span></h2>
+        <div class="settings-card">
+          <h3><i class="fas fa-id-card"></i> <span data-i18n="account.settings.personalData">Datos Personales</span></h3>
+          <form id="config-datos-form">
+            <div class="form-grid">
+              <div class="form-row"><label for="cfg-fullname" data-i18n="accountForm.labels.fullName">Nombre completo</label><input id="cfg-fullname" type="text" data-i18n-ph="accountForm.ph.fullName" /></div>
+              <div class="form-row"><label for="cfg-phone" data-i18n="accountForm.labels.phone">Teléfono</label><input id="cfg-phone" type="tel" data-i18n-ph="accountForm.ph.phone" /></div>
+              <div class="form-row"><label for="cfg-address" data-i18n="accountForm.labels.address">Dirección</label><input id="cfg-address" type="text" data-i18n-ph="accountForm.ph.address" /></div>
+              <div class="form-row"><label for="cfg-country" data-i18n="accountForm.labels.country">País</label><input id="cfg-country" type="text" data-i18n-ph="accountForm.ph.country" /></div>
+              <div class="form-row"><label for="cfg-city" data-i18n="accountForm.labels.city">Ciudad</label><input id="cfg-city" type="text" data-i18n-ph="accountForm.ph.city" /></div>
+              <div class="form-row"><label for="cfg-postal" data-i18n="accountForm.labels.zip">Código postal</label><input id="cfg-postal" type="text" data-i18n-ph="accountForm.ph.zip" /></div>
+            </div>
+            <div class="form-actions"><button class="btn" type="submit" data-i18n="account.settings.save">Guardar cambios</button></div>
+          </form>
+        </div>
+        <div class="settings-card">
+          <h3><i class="fas fa-shield-alt"></i> <span data-i18n="account.settings.security">Seguridad</span></h3>
+          <form id="config-pass-form">
+            <div class="form-grid">
+              <div class="form-row"><label for="cfg-pass1" data-i18n="accountForm.labels.newPassword">Nueva contraseña</label><input id="cfg-pass1" type="password" placeholder="********" /></div>
+              <div class="form-row"><label for="cfg-pass2" data-i18n="accountForm.labels.repeatPassword">Repetir contraseña</label><input id="cfg-pass2" type="password" placeholder="********" /></div>
+            </div>
+            <div class="form-actions"><button class="btn" type="submit" data-i18n="account.settings.updatePassword">Actualizar contraseña</button></div>
+          </form>
+        </div>
+      </section>
+
+      <section class="section-content" id="section-compras">
+        <h2 class="section-title"><i class="fas fa-shopping-bag"></i><span data-i18n="sections.misCompras">Mis Compras</span></h2>
+        <div class="table-container">
+          <table id="miscompras-table">
+            <thead>
+              <tr>
+                <th data-i18n="tables.product">Producto</th>
+                <th data-i18n="tables.date">Fecha</th>
+                <th data-i18n="tables.value">Valor</th>
+                <th data-i18n="tables.status">Estado</th>
+                <th data-i18n="tables.claim">Reclamo</th>
+              </tr>
+            </thead>
+            <tbody id="miscompras-body"><tr><td colspan="5" style="text-align:center;"><span data-i18n="labels.loading">Cargando…</span></td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+<section class="section-content" id="section-sorteos" style="display:none;">
+<h2 class="section-title"><i class="fas fa-ticket-alt"></i><span data-i18n="sections.sorteoTitle"></span></h2>
+<div class="srt-stats">
+<!-- Tickets activos -->
+<article class="srt-card gold">
+<h3><span data-i18n="raffles.activeTickets"></span></h3>
+<div class="val" id="srt-tickets-activos">--</div>
+</article>
+<!-- Upgrade Numina con barra e hitos -->
+<article class="srt-card">
+<h3><span data-i18n="raffles.activeTickets"></span></h3>
+<div class="val" id="srt-upgrade-valor">0 / 10,000</div>
+<div aria-valuemax="10000" aria-valuemin="0" aria-valuenow="0" class="srt-progress" role="progressbar">
+<div class="srt-track" id="srt-track">
+<div class="srt-fill" id="srt-fill"></div>
+<!-- Hitos -->
+<span class="srt-hit" id="srt-25" style="left:25%"></span>
+<span class="srt-hit" id="srt-50" style="left:50%"></span>
+<span class="srt-hit" id="srt-100" style="left:100%"></span>
+</div>
+<div class="srt-marks">
+<span class="srt-mark" style="left:25%">2,500</span>
+<span class="srt-mark" style="left:50%">5,000</span>
+<span class="srt-mark" style="left:100%">10,000</span>
+</div>
+</div>
+</article>
+</div>
+<h3 class="section-title"><i class="fas fa-history"></i><span data-i18n="sections.raffleHistory"></span></h3>
+<div class="table-container">
+<table id="sorteos-table">
+<thead>
+<tr>
+<th data-i18n="raffles.date"></th>
+<th data-i18n="raffles.name"></th>
+<th data-i18n="raffles.ticketsUsed"></th>
+</tr>
+</thead>
+<tbody id="sorteos-tbody">
+<tr><td colspan="3" style="text-align:center;">Cargando...</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+      <section class="section-content" id="section-productos">
+        <div class="products-wrap">
+          <h2 class="section-title"><i class="fas fa-box"></i><span id="productos-title" data-i18n="catalog.title">Catálogo</span></h2>
+          <section class="products-grid">
+            <article class="product-card">
+              <figure class="product-media">
+                <svg role="img" aria-label="Lingote de Oro" viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g1" x1="0" x2="1"><stop offset="0%" stop-color="#4b4300"/><stop offset="100%" stop-color="#8a7a00"/></linearGradient></defs><rect width="640" height="360" fill="url(#g1)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="36">Lingote de Oro</text></svg>
+              </figure>
+              <div class="product-body">
+                <h3 class="product-title" data-i18n="catalog.goldTitle">Lingote de Oro</h3>
+                <p class="product-desc" data-i18n="catalog.goldDesc">Oro 999.9 certificado. Ideal para inversión y resguardo de valor.</p>
+                <span class="price">US$ 13,500</span>
+                <button class="btn" data-action="more" data-sku="GOLD-100G" data-i18n="catalog.moreInfo">Más información</button>
+              </div>
+            </article>
+            <article class="product-card">
+              <figure class="product-media">
+                <svg role="img" aria-label="Lingote de Platino" viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g2" x1="0" x2="1"><stop offset="0%" stop-color="#2e3136"/><stop offset="100%" stop-color="#6a6f78"/></linearGradient></defs><rect width="640" height="360" fill="url(#g2)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="36">Lingote de Platino</text></svg>
+              </figure>
+              <div class="product-body">
+                <h3 class="product-title" data-i18n="catalog.platinumTitle">Lingote de Platino</h3>
+                <p class="product-desc" data-i18n="catalog.platinumDesc">Platino 999.5 certificado. Inversión de alto valor y rareza.</p>
+                <span class="price">US$ 6,500</span>
+                <button class="btn" data-action="more" data-sku="PLAT-100G" data-i18n="catalog.moreInfo">Más información</button>
+              </div>
+            </article>
+            <article class="product-card">
+              <figure class="product-media">
+                <svg role="img" aria-label="Rolex 126610L" viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g3" x1="0" x2="1"><stop offset="0%" stop-color="#0d1f14"/><stop offset="100%" stop-color="#1d6c3a"/></linearGradient></defs><rect width="640" height="360" fill="url(#g3)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="34">Rolex 126610L</text></svg>
+              </figure>
+              <div class="product-body">
+                <h3 class="product-title">Rolex 126610L</h3>
+                <p class="product-desc" data-i18n="catalog.rolexDesc">Submariner Date con bisel verde y caja Oystersteel. Automático.</p>
+                <span class="price">US$ 19,600</span>
+                <button class="btn" data-action="more" data-sku="ROLEX-126610L" data-i18n="catalog.moreInfo">Más información</button>
+              </div>
+            </article>
+            <article class="product-card">
+              <figure class="product-media">
+                <svg role="img" aria-label="Pulsera Numina" viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g4" x1="0" x2="1"><stop offset="0%" stop-color="#2a0d2d"/><stop offset="100%" stop-color="#6f1d75"/></linearGradient></defs><rect width="640" height="360" fill="url(#g4)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="34">Pulsera Numina</text></svg>
+              </figure>
+              <div class="product-body">
+                <h3 class="product-title" data-i18n="catalog.braceletTitle">Pulsera Numina</h3>
+                <p class="product-desc" data-i18n="catalog.braceletDesc">Diseño exclusivo con materiales de alta calidad. Edición limitada.</p>
+                <span class="price">US$ 35</span>
+                <button class="btn" data-action="more" data-sku="NUMINA-BRACELET" data-i18n="catalog.moreInfo">Más información</button>
+              </div>
+            </article>
+          </section>
+        </div>
+      </section>
+    <div class="nm-overlay" hidden="" id="nmOverlay" inert="">
+<div aria-labelledby="nmTitle" aria-modal="true" class="nm-modal" role="dialog">
+<header>
+<h3 id="nmTitle"><span data-i18n="raffles.activeTickets"></span></h3>
+<button aria-label="Cerrar" class="nm-close" id="nmClose">✕</button>
+</header>
+<div class="nm-body">
+<div class="nm-imgbox"><img alt="Producto" id="nmImg"/></div>
+<div class="nm-info">
+<span class="label" id="nmSku" style="display:inline-block;padding:.15rem .5rem;border-radius:999px;background:#2a2a2a;color:#d7d7d7;font-size:12px;margin-bottom:12px"></span>
+<h4 id="nmName">—</h4>
+<p class="nm-desc" id="nmDesc">—</p>
+<div class="nm-price" id="nmPrice">—</div>
+<div class="nm-pitch" id="nmPitch" style="display:none"></div>
+<div class="nm-actions">
+<button class="nm-buy" id="nmBuy"><span data-i18n="product.buy">Comprar</span></button>
+</div>
+<p class="nm-note"><span data-i18n="product.shippingNote">Envíos asegurados con seguimiento. Certificado incluido.</span></p>
+</div>
+</div>
+</div>
+</main>
+  </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
+  <script>
+    (function(){
+      const URL = 'https://xaeybhscsxpvtnqzpgwj.supabase.co';
+      const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU';
+      let _client = null;
+      window.getSupabase = function(){
+        if (_client) return _client;
+        _client = window.supabase.createClient(URL, KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: localStorage } });
+        return _client;
+      };
+    })();
+  </script>
+
+  <script>
+    function ready(fn){ if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn); else fn(); }
+    function initLangMenu(){
+      const dropdown = document.getElementById('langDropdown');
+      const btn = document.getElementById('langBtn');
+      const menu = document.getElementById('langMenu');
+      const currentSpan = document.getElementById('langCurrentText');
+      window.__updateLangLabel = function(){
+        const L = (window.dI18n && dI18n.lang) || 'es';
+        currentSpan.textContent = (L==='en')? 'English' : (L==='pt')? 'Português' : 'Español';
+      };
+      __updateLangLabel();
+      const openMenu = ()=>{ dropdown.classList.add('open'); btn.setAttribute('aria-expanded','true'); };
+      const closeMenu = ()=>{ dropdown.classList.remove('open'); btn.setAttribute('aria-expanded','false'); };
+      btn.addEventListener('click', (e)=>{ e.stopPropagation(); dropdown.classList.contains('open')? closeMenu() : openMenu(); });
+      menu.querySelectorAll('.lang-item').forEach(item=>{
+        item.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          const lang = item.dataset.lang;
+          dI18n.set(lang);
+          menu.querySelectorAll('.lang-item').forEach(li=> li.setAttribute('aria-selected', li.dataset.lang===lang? 'true':'false'));
+          closeMenu();
+        });
+      });
+      document.addEventListener('click', (e)=>{ if (!dropdown.contains(e.target)) closeMenu(); });
+    }
+    function initCopyButton(){
+      const btn = document.getElementById('copy-btn');
+      const codeEl = document.getElementById('referral-code');
+      if (!btn || !codeEl) return;
+      btn.addEventListener('click', async ()=>{
+        const code = codeEl.textContent;
+        try {
+          if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(code); }
+          else { const ta = document.createElement('textarea'); ta.value = code; ta.style.position='fixed'; ta.style.opacity=0; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
+          btn.textContent = dI18n.t('actions.copied');
+          setTimeout(()=> btn.textContent = dI18n.t('actions.copy'), 2000);
+        } catch(e){ alert('No se pudo copiar el código. Intenta manualmente.'); console.error(e); }
+      });
+    }
+    async function cargarDashboard(){
+      document.getElementById('welcome-title').textContent = dI18n.t('labels.loading');
+      document.getElementById('referral-code').textContent = '---';
+      document.getElementById('balance-value').textContent = '$---';
+      document.getElementById('purchases-value').textContent = '--';
+      document.getElementById('referrals-value').textContent = '--';
+      document.getElementById('tickets-value').textContent = '--';
+      ['full-name','user-email','user-phone','user-address','user-country','user-city','user-postal'].forEach(id=> setText(id, ''));
+      document.getElementById('purchases-body').innerHTML = '<tr><td colspan="5" style="text-align:center;">'+dI18n.t('labels.loading')+'</td></tr>';
+      document.getElementById('referrals-body').innerHTML = '<tr><td colspan="5" style="text-align:center;">'+dI18n.t('labels.loading')+'</td></tr>';
+      const supabase = getSupabase();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) { window.location.href = '/login.html'; return; }
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('*, purchases(*), referrals:referrals!referrer_id(*)')
+        .eq('id', user.id)
+        .maybeSingle();
+      if (userError || !userData) { console.error(userError); return; }
+      document.getElementById('user-avatar').textContent = (userData.full_name?.charAt(0).toUpperCase() || 'U');
+      window.__lastUserName = (userData.full_name || userData.email || '').trim();
+      document.getElementById('welcome-title').textContent = (dI18n.t('labels.welcome') + ', ' + (window.__lastUserName || '')).trim();
+      document.getElementById('referral-code').textContent = (userData.referral_code || '---');
+      document.getElementById('balance-value').textContent = '$' + ((userData.balance?.toFixed?.(2)) || '0.00');
+      document.getElementById('purchases-value').textContent = (userData.active_purchases ?? '0');
+      document.getElementById('referrals-value').textContent = (typeof userData.referrals_count !== 'undefined' ? userData.referrals_count : (userData.referrals?.length || '0'));
+      document.getElementById('tickets-value').textContent = (userData.tickets_count || '0');
+      setText('full-name', userData.full_name);
+      setText('user-email', userData.email);
+      setText('user-phone', userData.phone);
+      setText('user-address', userData.address);
+      setText('user-country', userData.country);
+      setText('user-city', userData.city);
+      setText('user-postal', userData.postal_code);
+      const purchasesBody = document.getElementById('purchases-body');
+      if (userData.purchases?.length){
+        purchasesBody.innerHTML = userData.purchases.map(p=>{
+          const created = p.created_at ? new Date(p.created_at).toLocaleDateString() : '';
+          const value = (typeof p.value === 'number') ? p.value.toFixed(2) : '0.00';
+          return `<tr>
+            <td>${(window.i18nProductName?window.i18nProductName(p.product_name||''):(p.product_name||''))}</td>
+            <td>${created}</td>
+            <td>$${value}</td>
+            <td>${statusBadge(p.status)}</td>
+            <td><button class="action-btn" data-action="details" data-id="${p.id || ''}"><span data-i18n="tables.details">${dI18n.t('tables.details')}</span></button></td>
+          </tr>`;
+        }).join('');
+      } else {
+        purchasesBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">—</td></tr>';
+      }
+      const referralsBody = document.getElementById('referrals-body');
+      if (userData.referrals?.length){
+        referralsBody.innerHTML = userData.referrals.map(r=>{
+          const created = r.created_at ? new Date(r.created_at).toLocaleDateString() : '';
+          const commiss = (typeof r.commission === 'number') ? r.commission.toFixed(2) : '0.00';
+          return `<tr>
+            <td>${r.referred_email || ''}</td>
+            <td>${created}</td>
+            <td>${r.purchases_count || '0'}</td>
+            <td>${statusBadge(r.is_active ? 'active' : 'inactive')}</td>
+            <td>$${commiss}</td>
+          </tr>`;
+        }).join('');
+      } else {
+        referralsBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">—</td></tr>';
+      }
+      ['balance-value','purchases-value','referrals-value','tickets-value'].forEach(id=>{
+        const valEl = document.getElementById(id); if (!valEl) return;
+        if (!/\$?---|--/.test(valEl.textContent)){
+          const change = valEl.parentElement.querySelector('.change');
+          if (change) change.style.display = 'none';
+        }
+      });
+    }
+    async function cargarMisCompras(){
+      const tbody = document.getElementById('miscompras-body');
+      if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">'+dI18n.t('labels.loading')+'</td></tr>';
+      const supabase = getSupabase();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user){ window.location.href = '/login.html'; return; }
+      const { data, error } = await supabase
+        .from('purchases')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (error || !Array.isArray(data)){
+        if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">—</td></tr>';
+        console.error(error);
+        return;
+      }
+      if (!data.length){
+        if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">—</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.map(p=>{
+        const created = p.created_at ? new Date(p.created_at).toLocaleDateString() : '';
+        const value = (typeof p.value === 'number') ? p.value.toFixed(2) : '0.00';
+        const claimCell = '<button class="action-btn" data-action="claim" data-id="'+(p.id||'')+'">'+('<span data-i18n="tables.claim">'+(dI18n.t('tables.claim')||'Claim')+'</span>')+'</button>';
+        return `<tr>
+          <td>${(window.i18nProductName?window.i18nProductName(p.product_name||''):(p.product_name||''))}</td>
+          <td>${created}</td>
+          <td>$${value}</td>
+          <td>${statusBadge(p.status)}</td>
+          <td>${claimCell}</td>
+        </tr>`;
+      }).join('');
+    }
+    function initNav(){
+      const menuItems = document.querySelectorAll('.menu-item[data-target]');
+      const sections = document.querySelectorAll('.section-content');
+      const mainDashboard = document.getElementById('main-dashboard');
+      menuItems.forEach(item=>{
+        item.addEventListener('click', ()=>{
+          const target = item.getAttribute('data-target');
+          menuItems.forEach(i=> i.classList.remove('active'));
+          item.classList.add('active');
+          if (target === 'dashboard'){ mainDashboard.style.display = 'block'; sections.forEach(s=> s.style.display='none'); cargarDashboard(); return; }
+          if (target === 'logout'){ return; }
+          mainDashboard.style.display = 'none';
+          sections.forEach(s=> s.style.display = (s.id === 'section-'+target ? 'block' : 'none'));
+          if (target === 'compras') { cargarMisCompras(); }
+        });
+      });
+    }
+    function initConfig(supabase){
+      (async function(){
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data } = await supabase
+          .from('users')
+          .select('full_name,phone,address,country,city,postal_code')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (!data) return;
+        const $ = (id)=>document.getElementById(id);
+        if ($('cfg-fullname')) $('cfg-fullname').value = data.full_name || '';
+        if ($('cfg-phone')) $('cfg-phone').value = data.phone || '';
+        if ($('cfg-address')) $('cfg-address').value = data.address || '';
+        if ($('cfg-country')) $('cfg-country').value = data.country || '';
+        if ($('cfg-city')) $('cfg-city').value = data.city || '';
+        if ($('cfg-postal')) $('cfg-postal').value = data.postal_code || '';
+      })();
+      const datos = document.getElementById('config-datos-form');
+      if (datos) datos.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        const updates = {
+          full_name: (document.getElementById('cfg-fullname').value||'').trim() || null,
+          phone:     (document.getElementById('cfg-phone').value||'').trim() || null,
+          address:   (document.getElementById('cfg-address').value||'').trim() || null,
+          country:   (document.getElementById('cfg-country').value||'').trim() || null,
+          city:      (document.getElementById('cfg-city').value||'').trim() || null,
+          postal_code:(document.getElementById('cfg-postal').value||'').trim() || null,
+        };
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user){ alert('Sesión expirada'); return; }
+        const { error } = await supabase.from('users').update(updates).eq('id', user.id);
+        if (error){ alert('No se pudieron guardar los cambios'); return; }
+        alert('Cambios guardados');
+        setText('full-name', updates.full_name);
+        setText('user-phone', updates.phone);
+        setText('user-address', updates.address);
+        setText('user-country', updates.country);
+        setText('user-city', updates.city);
+        setText('user-postal', updates.postal_code);
+      });
+      const pass = document.getElementById('config-pass-form');
+      if (pass) pass.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        const p1 = document.getElementById('cfg-pass1').value;
+        const p2 = document.getElementById('cfg-pass2').value;
+        if (!p1 || p1.length < 6){ alert('La contraseña debe tener al menos 6 caracteres'); return; }
+        if (p1 !== p2){ alert('Las contraseñas no coinciden'); return; }
+        const { error } = await supabase.auth.updateUser({ password: p1 });
+        if (error){ alert('No se pudo actualizar la contraseña'); return; }
+        alert('Contraseña actualizada');
+        pass.reset();
+      });
+    }
+    ready(async ()=>{
+      initLangMenu();
+      initCopyButton();
+      initNav();
+      dI18n.apply();
+      const supabase = getSupabase();
+      await cargarDashboard();
+      initConfig(supabase);
+      document.getElementById('logout-btn')?.addEventListener('click', async ()=>{ await getSupabase().auth.signOut(); window.location.href = '/login.html'; });
+    });
+  </script>
+<script>
+
+// NUMINA: Catálogo y modal a pantalla completa (sin aria-hidden warnings)
+document.addEventListener('DOMContentLoaded', function(){
+  const CATALOG = {
+    "GOLD-100G": { sku:"GOLD-100G", name:"Lingote 100g Oro Fino 999.9", price:13500,
+      img:"https://images.unsplash.com/photo-1623301762237-5b1056f3ce2d?q=80&w=1600&auto=format&fit=crop",
+      pitch:"\ud83d\udcb0 <strong>Oro: Proteg\u00e9 tu dinero, asegur\u00e1 tu futuro</strong><br>Cuando todo sube y baja, el oro se mantiene firme. Es el activo refugio elegido por inversores de todo el mundo para proteger su patrimonio frente a la inflaci\u00f3n y la inestabilidad. El oro no depende de gobiernos ni bancos centrales: su valor es global, tangible y eterno. Comprarlo hoy es asegurarte un respaldo real que pod\u00e9s tener en tus manos y vender en cualquier momento. Invert\u00ed en oro y transform\u00e1 tu dinero en un activo que nunca pasa de moda y siempre vale.",
+      desc:"Lingote de 100 g de oro 999.9 con número de serie y certificado internacional. Alta liquidez y resguardo de valor." },
+    "PLAT-100G": { sku:"PLAT-100G", name:"Lingote 100g Platino Fino 999.5", price:6500,
+      img:"https://images.unsplash.com/photo-1617195737499-1d6bf14acaa7?q=80&w=1600&auto=format&fit=crop",
+      pitch:"\ud83d\udc8e <strong>Platino: Exclusividad y potencial de crecimiento</strong><br>M\u00e1s escaso que el oro y con aplicaciones industriales cr\u00edticas (catalizadores, tecnolog\u00eda y joyer\u00eda), el platino combina lujo con oportunidad. Su rareza y demanda lo posicionan como un metal con fuerte potencial de revalorizaci\u00f3n a largo plazo. Asegur\u00e1 una parte de un recurso limitado, valioso y buscado en todo el mundo.",
+      desc:"Lingote de 100 g de platino 999.5. Metal escaso, con potencial de revalorización a largo plazo." },
+    "ROLEX-126610L": { sku:"ROLEX-126610L", name:"Rolex Submariner Date 126610LV", price:19600,
+      img:"https://images.unsplash.com/photo-1524805444758-089113d48a6d?q=80&w=1600&auto=format&fit=crop",
+      pitch:"\u231a <strong>Rolex Submariner \u201cStarbucks\u201d \u2013 S\u00faper Deportiva y Atemporal</strong><br>Con una caja Oystersteel de 41\u202fmm y bisel verde Cerachrom rotatorio unidireccional, este Submariner conserva ese dise\u00f1o ic\u00f3nico y elegante que lo define. Resistente al agua hasta 300 metros, cuenta con cristal de zafiro con lupa Cyclops y corona Triplock, combinando resistencia con claridad. Su calibre autom\u00e1tico 3235 de manufactura Rolex ofrece 70 horas de reserva de marcha, precisi\u00f3n certificada tipo cron\u00f3metro y protecci\u00f3n avanzada como resistencia a golpes y a campos magn\u00e9ticos. El brazalete Oyster con cierre Oysterlock y sistema Glidelock permite ajustes finos sin herramientas, adapt\u00e1ndose tanto a buceo como a uso diario. En conjunto, es el equilibrio perfecto entre tradici\u00f3n, ingenier\u00eda moderna y estilo deportivo de lujo.",
+      desc:"Modelo 'Starbucks' con bisel cerámico verde y caja Oystersteel. Movimiento automático y hermeticidad profesional." },
+    "NUMINA-BRACELET": { sku:"NUMINA-BRACELET", name:"Pulsera Numina – Edición Limitada", price:35,
+      img:"https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1600&auto=format&fit=crop",
+      pitch:"\ud83d\udc8e <strong>Pulsera Numina \u2013 Estilo que te acerca a un Rolex</strong><br>Fabricada en <em>acero inoxidable premium</em>, dise\u00f1ada para durar y lucir impecable. Con cada pulsera obten\u00e9s <strong>1 ticket</strong> para participar en el <strong>sorteo de un Rolex Submariner</strong>.<br><br>\ud83c\udf9f <u>Mec\u00e1nica del sorteo</u>:<br>\u2022 Pulsera = 1 ticket<br>\u2022 Rolex = 5 tickets<br>\u2022 Oro Fino = 2 tickets<br>\u2022 Platino Fino = 2 tickets<br><br>\ud83c\udf81 <u>Premios especiales</u>:<br>\u2022 El comprador n\u00famero 2.500 recibir\u00e1 una <strong>Pulsera de Platino</strong>.<br>\u2022 El comprador n\u00famero 5.000 recibir\u00e1 una <strong>Pulsera de Oro</strong>.<br>\u2022 Si un usuario compra 2.500 pulseras en total, se le enviar\u00e1 una <strong>Pulsera de Platino</strong>.<br>\u2022 Si un usuario compra 5.000 pulseras en total, se le enviar\u00e1 una <strong>Pulsera de Oro</strong>.<br>\u2022 Si un usuario compra 10.000 pulseras en total, se le enviar\u00e1 una <strong>Pulsera de Oro Full Ice con diamantes</strong>.<br><br>Cuando llegue el momento del sorteo, <strong>asegurate de tener tu lugar</strong>.",
+      desc:"Pulsera exclusiva con diseño minimalista y materiales de alta calidad. Incluye bolsita de microfibra." }
+  };
+
+  const $ = (s, c=document) => c.querySelector(s);
+  const overlay = $("#nmOverlay");
+  const modal    = overlay ? overlay.querySelector(".nm-modal") : null;
+  const closeBtn = $("#nmClose");
+  const buyBtn   = $("#nmBuy");
+  const imgEl    = $("#nmImg");
+  const nameEl   = $("#nmName");
+  const descEl   = $("#nmDesc");
+  const priceEl  = $("#nmPrice");
+  const skuEl    = $("#nmSku");
+
+  function money(v){ return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(v); }
+
+  let currentSku = null;
+  let lastTrigger = null;
+
+  function trapFocus(e){
+    if (!overlay || overlay.hasAttribute('hidden')) return;
+    const focusable = overlay.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last  = focusable[focusable.length - 1];
+    if (e.key === 'Tab'){
+      if (e.shiftKey && document.activeElement === first){ last.focus(); e.preventDefault(); }
+      else if (!e.shiftKey && document.activeElement === last){ first.focus(); e.preventDefault(); }
+    }
+  }
+
+  
+function i18nKeysForSKU(sku){
+  try{
+    const id = String(sku || '').toUpperCase();
+    if (id.includes('GOLD') || id === 'GOLD-100G') return {name:'product.lingote_100g_oro_fino'};
+    if (id.includes('PLAT') || id === 'PLAT-100G') return {name:'product.lingote_100g_plata_fina'};
+    if (id.includes('ROLEX') || id.includes('126610L')) return {name:'product.rolex_126610lv'};
+    if (id.includes('BRACELET')) return {name:'product.bracelet'};
+  }catch(_){}
+  return null;
+}
+
+function openSKU(sku, trigger){
+    const p = CATALOG[sku];
+    if(!p || !overlay) return;
+    currentSku = sku;
+    lastTrigger = trigger || document.activeElement;
+
+    if (skuEl)  skuEl.textContent  = p.sku;
+    if(nameEl){ var k=i18nKeysForSKU(sku); if(k){ nameEl.innerHTML='<span data-i18n="'+k.name+'">'+(dI18n.t(k.name)||p.name)+'</span>'; } else { nameEl.textContent=p.name; } }
+    if (descEl) descEl.textContent = p.desc;
+    if (priceEl)priceEl.textContent= money(p.price);
+    if (imgEl)  imgEl.src          = p.img;
+    try{ if(window.dI18n) dI18n.apply(); }catch(_){ }
+
+    
+    // Ensure price appears before description and pitch is placed after price
+    try {
+      if (descEl && priceEl && descEl.previousElementSibling !== priceEl) {
+        descEl.parentNode.insertBefore(priceEl, descEl);
+      }
+      var pitchEl = document.getElementById('nmPitch');
+      if (pitchEl) {
+        if (p.pitch) {
+          pitchEl.innerHTML = p.pitch;
+          pitchEl.style.display = '';
+          // make sure pitch is right after price
+          if (priceEl.nextElementSibling !== pitchEl) {
+            priceEl.parentNode.insertBefore(pitchEl, descEl);
+          }
+        } else {
+          pitchEl.style.display = 'none';
+          pitchEl.innerHTML = '';
+        }
+      }
+    } catch(e) { console.warn('Pitch render skipped:', e); }
+      if (!pitchEl) {
+        if (p.pitch && descEl) {
+          try {
+            descEl.innerHTML = p.pitch + '<br><br>' + (p.desc || '');
+          } catch(_) {
+            descEl.textContent = (p.desc || '');
+          }
+        }
+      }
+
+overlay.classList.add("show");
+    overlay.removeAttribute("hidden");
+    overlay.removeAttribute("inert");
+    if (modal) { modal.setAttribute("tabindex","-1"); modal.focus({preventScroll:true}); }
+    if (closeBtn) closeBtn.focus({preventScroll:true});
+    document.addEventListener('keydown', trapFocus);
+  }
+
+  function close(){
+    if (!overlay) return;
+    overlay.classList.remove("show");
+    overlay.setAttribute("hidden","");
+    overlay.setAttribute("inert","");
+    document.removeEventListener('keydown', trapFocus);
+    if (lastTrigger && typeof lastTrigger.focus === 'function') {
+      setTimeout(()=> lastTrigger.focus(), 0);
+    }
+  }
+
+  // Delegación: abrir modal
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest('button[data-action=\"more\"][data-sku], button[data-product]');
+    if (btn) {
+      e.preventDefault();
+      const sku = btn.getAttribute('data-sku') || btn.getAttribute('data-product');
+      openSKU(sku, btn);
+    }
+  });
+
+  // Botón comprar (crea purchase -> invoca Edge Function -> redirige)
+  if (buyBtn) buyBtn.addEventListener('click', async () => {
+    try {
+      if (!currentSku) return;
+      // 1) validar sesión
+      const supabase = getSupabase();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('Inicia sesión para continuar con la compra.');
+        window.location.href = '/login.html';
+        return;
+      }
+      // 2) obtener datos del producto
+      const p = CATALOG[currentSku];
+      if (!p) { alert('Producto desconocido'); return; }
+
+      // 3) crear registro local de compra
+      const { data: purchase, error: insertErr } = await supabase
+        .from('purchases')
+        .insert({
+          user_id: user.id,
+          product_name: p.name,
+          sku: p.sku,
+          value: p.price,
+          currency: 'USD',
+          status: 'pending'
+        })
+        .select('id')
+        .single();
+      if (insertErr || !purchase) {
+        console.error(insertErr);
+        alert('No se pudo crear la compra. Intenta nuevamente.');
+        return;
+      }
+
+      // 4) invocar Edge Function autenticada (maneja CORS internamente)
+      const { data, error } = await supabase.functions.invoke('create-invoice', {
+        body: { purchase_id: purchase.id, test_amount_usdt: p.price }
+      });
+      if (error) {
+        console.error(error);
+        alert('Error al crear la factura: ' + (error.message || 'desconocido'));
+        return;
+      }
+
+      // 5) redirigir al checkout
+      const payment_url = data?.payment_url || data?.paymentUrl || null;
+      if (payment_url) {
+        window.location.href = payment_url;
+      } else {
+        alert('No se recibió la URL de pago.'); 
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error inesperado: ' + (e?.message || e));
+    }
+  });
+
+  // Cerrar modal
+  if (closeBtn) closeBtn.addEventListener('click', close);
+  if (overlay) overlay.addEventListener('click', (e)=>{ if(e.target===overlay) close(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
+});
+
+</script>
+</body>
+</html>
+<script>
+// ===== Sorteos: carga desde Supabase (users.tickets_count, purchases: NUMINA-BRACELET, historial) =====
+(function(){
+  const GOAL = 10000;
+  const BRACELET_SKU = 'NUMINA-BRACELET';
+
+  async function cargarSorteos(){
+    try{
+      const supabase = getSupabase();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) { window.location.href = '/login.html'; return; }
+
+      
+// Tickets activos tomados desde tickets_ledger (saldo = SUM(count))
+      let ticketsActivos = 0;
+      try{
+        const { data: ticketsRows, error: tErr } = await supabase
+          .from('tickets_ledger')
+          .select('count')
+          .eq('user_id', user.id);
+        if (!tErr && ticketsRows) {
+          ticketsActivos = ticketsRows.reduce((acc, r) => acc + (Number(r.count) || 0), 0);
+        }
+      }catch(e){
+        console.warn('tickets_ledger sum error', e);
+      }
+      const $tickets = document.getElementById('srt-tickets-activos');
+      if ($tickets) $tickets.textContent = ticketsActivos.toString();
+
+// Upgrade Numina: sumar unidades de pulseras completadas/pagadas (usa quantity si existe)
+      let totalBracelets = 0;
+      try{
+        const { data: rows } = await supabase
+          .from('purchases')
+          .select('sku, status, qty')
+          .eq('user_id', user.id)
+          .eq('sku', BRACELET_SKU)
+          .in('status', ['completed','paid','success']);
+        totalBracelets = (rows || []).reduce((acc, r)=> acc + (Number(r.qty)||1), 0);
+      }catch(_){/* noop */}
+
+      const current = totalBracelets;
+      const pct = Math.max(0, Math.min(100, (current/GOAL)*100));
+      const fill = document.getElementById('srt-fill');
+      const label = document.getElementById('srt-upgrade-valor');
+      const bar = document.querySelector('.srt-progress');
+      if (fill) fill.style.width = pct + '%';
+      if (bar) bar.setAttribute('aria-valuenow', String(current));
+      if (label) label.textContent = current.toLocaleString() + ' / ' + GOAL.toLocaleString();
+      if (current >= 2500) document.getElementById('srt-25').classList.add('on');
+      if (current >= 5000) document.getElementById('srt-50').classList.add('on');
+      if (current >= 10000) document.getElementById('srt-100').classList.add('on');
+
+      // Historial de participación: probar dos posibles tablas/campos
+      const tbody = document.getElementById('sorteos-tbody');
+      async function loadFrom(table, select){
+        const { data, error } = await supabase
+          .from(table)
+          .select(select)
+          .eq('user_id', user.id)
+          .order('created_at', { ascending:false })
+          .limit(50);
+        if (error) return null;
+        return data || null;
+      }
+      let entries = await loadFrom('tickets_ledger','created_at, sku, count');
+
+      if (!tbody) return;
+      if (!entries || !entries.length){
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;"><span data-i18n="raffles.noParticipations">Sin participaciones</span></td></tr>';
+        try { if (window.dI18n && typeof dI18n.apply === 'function') { dI18n.apply(); } } catch(_) {}
+      } else {
+        tbody.innerHTML = entries.map(e => {
+          const fecha = new Date(e.created_at).toLocaleDateString();
+          const sorteo = e.sku ?? '—';
+          const used = (Number(e.count)||0) < 0 ? Math.abs(Number(e.count)) : 0;
+          return '<tr><td>'+fecha+'</td><td>'+sorteo+'</td><td>'+used+'</td></tr>';
+        }).join('');
+      }
+    }catch(err){ console.error('[Sorteos] error:', err); }
+  }
+
+  // Mostrar sección y cargar datos al hacer click en el menú "Sorteos"
+  document.addEventListener('DOMContentLoaded', () => {
+    const menu = document.querySelector('.menu-item[data-target="sorteos"]');
+    const section = document.getElementById('section-sorteos');
+    const mainDash = document.getElementById('main-dashboard');
+    if (menu){
+      menu.addEventListener('click', async () => {
+        if (mainDash) mainDash.style.display = 'none';
+        if (section) section.style.display = 'block';
+        await cargarSorteos();
+      });
+    }
+  });
+})();
+
+</script>
