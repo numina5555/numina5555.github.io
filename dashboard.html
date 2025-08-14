@@ -4064,5 +4064,57 @@ var R = {
   })();
 })();
 </script>
+
+<!-- Fase 4 fix: observer con *throttle* y sin escanear todo -->
+<script>
+(function(){
+  function processMutations(muts){
+    // procesar solo nodos agregados; muy barato
+    for (var i=0;i<muts.length;i++){
+      var m = muts[i];
+      if (!m.addedNodes) continue;
+      for (var j=0;j<m.addedNodes.length;j++){
+        var n = m.addedNodes[j];
+        if (n.nodeType !== 1) continue; // solo elementos
+        // Si el nodo trae data-status, lo normalizamos
+        if (n.hasAttribute && n.hasAttribute('data-status')){
+          n.setAttribute('data-status', I18N.normStatus(n.getAttribute('data-status')));
+        }
+        // Si hay badges dentro
+        var badges = n.querySelectorAll ? n.querySelectorAll('.status, .status-badge, .badge-status, [data-status]') : [];
+        for (var k=0;k<badges.length;k++){
+          var el = badges[k];
+          var raw = el.getAttribute('data-status') || el.textContent;
+          el.setAttribute('data-status', I18N.normStatus(raw));
+        }
+        // Si el nodo trae textos con data-i18n, los aplicamos
+        if (n.matches && n.matches('[data-i18n],[data-i18n-ph]')){ /* will be applied below */ }
+      }
+    }
+    // Una sola pasada global (ligera) para pintar
+    I18N.apply(); I18N.updateStatusBadges();
+  }
+
+  var scheduled = false;
+  var mo = new MutationObserver(function(muts){
+    if (scheduled) return;
+    scheduled = true;
+    // coalescencia
+    (window.requestAnimationFrame || setTimeout)(function(){
+      try { processMutations(muts); } finally { scheduled = false; }
+    }, 0);
+  });
+
+  function start(){
+    try{ mo.observe(document.body, { childList:true, subtree:true }); }catch(e){}
+    // pase inicial
+    I18N.apply(); I18N.updateStatusBadges();
+  }
+
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', start);
+  } else { start(); }
+})();
+</script>
 </body>
 </html>
