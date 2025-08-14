@@ -1372,7 +1372,17 @@ overlay.classList.add("show");
 
       // 4) invocar Edge Function autenticada (maneja CORS internamente)
       const { data, error } = await supabase.functions.invoke('create-invoice', {
-        body: { purchase_id: purchase.id, test_amount_usdt: p.price }
+        body: {
+          purchase_id: purchase.id,
+mode: 'fixed',
+price_currency: 'usd',
+price_amount: p.price,
+pay_currency: 'usdttrc20',
+// Backwards-compat fields for older function versions:
+fixed_amount_usdt: p.price,
+fixed_pay_amount_usdt: p.price,
+test_amount_usdt: p.price
+        }
       });
       if (error) {
         console.error(error);
