@@ -1374,15 +1374,19 @@ overlay.classList.add("show");
       const { data, error } = await supabase.functions.invoke('create-invoice', {
         body: {
           purchase_id: purchase.id,
-mode: 'fixed',
-price_currency: 'usd',
-price_amount: p.price,
-pay_currency: 'usdttrc20',
-// Backwards-compat fields for older function versions:
-fixed_amount_usdt: p.price,
-fixed_pay_amount_usdt: p.price,
-test_amount_usdt: p.price
-        }
+          mode: 'fixed',
+          // Use crypto as price currency to avoid FX conversion
+          price_currency: 'usdt',
+          price_amount: p.price,
+          pay_currency: 'usdttrc20',
+          is_fixed_rate: true,
+          // Make sure buyer does NOT pay the gateway fee
+          is_fee_paid_by_user: false,
+          // Backwards-compat fields
+          fixed_amount_usdt: p.price,
+          fixed_pay_amount_usdt: p.price,
+          test_amount_usdt: p.price
+    }
       });
       if (error) {
         console.error(error);
