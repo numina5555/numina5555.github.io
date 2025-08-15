@@ -1658,6 +1658,8 @@ if (!link) {
     'PLAT-100G':       'https://nowpayments.io/payment/?iid=5742431610', // USDT 6500
     'ROLEX-126610L':   'https://nowpayments.io/payment/?iid=5388824453'  // USDT 19600
   };
+  window.FIXED_PAY_URL = FIXED_PAY_URL;
+
 
   // 2) Garantiza que el SKU del botón "Más información" quede en el modal
   function wireMoreInfoButtons() {
@@ -2176,6 +2178,63 @@ if (!link) {
 })();
 </script>
 <!-- END PD MODAL -->
+
+
+<script>
+(function(){
+  function resolveSKUFromModal(){
+    try{
+      var priceText = (document.getElementById('pdPrice')?.textContent || '').replace(/[^0-9.,]/g,'');
+      if (priceText) {
+        var norm = priceText.replace(/\./g, '').replace(',', '.');
+        var price = parseFloat(norm);
+        if (!isNaN(price)) {
+          if (Math.abs(price - 13500) < 0.01) return 'GOLD-100G';
+          if (Math.abs(price - 6500)  < 0.01) return 'PLAT-100G';
+          if (Math.abs(price - 19600) < 0.01) return 'ROLEX-126610L';
+          if (Math.abs(price - 35)    < 0.01) return 'NUMINA-BRACELET';
+        }
+      }
+      var name = (document.getElementById('pdName')?.textContent || '').toLowerCase();
+      if (/oro|gold/.test(name)) return 'GOLD-100G';
+      if (/platino|platinum/.test(name)) return 'PLAT-100G';
+      if (/rolex|126610/.test(name)) return 'ROLEX-126610L';
+      if (/pulsera|bracelet/.test(name)) return 'NUMINA-BRACELET';
+    }catch(e){ console.warn('resolveSKUFromModal error', e); }
+    return null;
+  }
+
+  function handleRegen(){
+    try{
+      var sku = resolveSKUFromModal();
+      var map = (window.FIXED_PAY_URL || {});
+      var url = sku ? map[sku] : null;
+      if (url) {
+        window.open(url, '_blank', 'noopener'); // abre NOWPayments en una nueva pestaña
+      } else {
+        alert('No se encontró un link de pago para este producto.');
+      }
+    }catch(e){
+      console.error(e);
+      alert('Ocurrió un error al generar el link de pago.');
+    }
+  }
+
+  function init(){
+    var btn = document.getElementById('pdRegen');
+    if (btn && !btn.__wired) {
+      btn.addEventListener('click', handleRegen);
+      btn.__wired = true;
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
 
 </body>
 </html>
