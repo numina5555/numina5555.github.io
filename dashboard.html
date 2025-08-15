@@ -2494,5 +2494,163 @@ ${watermark}
 })();
 </script>
 
+
+<style>
+/* === Support Claim Modal (sc-*) === */
+.sc-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;z-index:2000;}
+.sc-overlay.show{display:block;}
+.sc-modal{position:relative;width:min(1100px,92vw);margin:6vh auto;background:#161616;color:#fff;
+  border:1px solid rgba(255,215,0,.25); border-radius:18px; box-shadow:0 18px 60px rgba(0,0,0,.5);}
+.sc-close{position:absolute;right:16px;top:16px;width:40px;height:40px;border-radius:999px;border:1px solid #333;
+  background:transparent;color:#cfcfcf;font-size:20px;cursor:pointer}
+.sc-modal h3{font-size:28px; font-weight:900; color:var(--primary,#ffd700); margin:24px 24px 10px}
+.sc-body{padding:0 24px 24px}
+.sc-grid{display:grid;grid-template-columns: 1fr 1fr; gap:20px; margin-top:8px}
+@media(max-width:900px){.sc-grid{grid-template-columns:1fr}}
+.sc-card{background:linear-gradient(180deg,#141414,#101010); border:1px solid rgba(255,255,255,.08);
+  border-radius:16px; padding:22px}
+.sc-card h5{font-size:20px; margin:0 0 12px 0}
+.sc-kv{display:grid;grid-template-columns:120px 1fr;gap:10px 16px; font-size:16px}
+.sc-kv .k{color:#9ea3aa}
+.sc-badge{display:inline-block;padding:6px 12px;border-radius:999px;font-weight:800;font-size:14px}
+.sc-badge.pending{background:rgba(255,193,7,.16);color:#ffc107;border:1px solid rgba(255,193,7,.35)}
+.sc-badge.paid{background:rgba(60,179,113,.18);color:#5ad69a;border:1px solid rgba(60,179,113,.35)}
+.sc-label{color:#a9a9a9;font-size:14px;margin:6px 0 4px}
+.sc-input, .sc-textarea{width:100%;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:12px;
+  color:#fff;padding:12px 14px;outline:none}
+.sc-textarea{min-height:140px;resize:vertical}
+.sc-actions{display:flex;gap:12px; align-items:center; padding:0 24px 24px}
+.sc-btn{border-radius:12px;padding:12px 18px;font-weight:900;cursor:pointer;border:1px solid transparent}
+.sc-btn-gold{background:var(--primary,#ffd700); color:#111}
+.sc-btn-ghost{background:transparent; color:#ffd700; border-color:rgba(255,215,0,.45)}
+.sc-err{color:#f87171; font-size:13px; margin-top:6px; display:none}
+</style>
+
+<!-- === SUPPORT CLAIM MODAL === -->
+<div id="scOverlay" class="sc-overlay" aria-hidden="true">
+  <div class="sc-modal" role="dialog" aria-modal="true" aria-labelledby="scTitle" tabindex="-1">
+    <button class="sc-close" id="scClose" aria-label="Cerrar">×</button>
+    <h3 id="scTitle">Contacto de soporte</h3>
+    <div class="sc-body">
+      <div class="sc-grid">
+        <!-- Columna izquierda: detalle -->
+        <div class="sc-card">
+          <h5>Detalle de la compra</h5>
+          <div class="sc-kv">
+            <div class="k">Producto</div> <div id="scProduct">—</div>
+            <div class="k">Fecha</div>    <div id="scDate">—</div>
+            <div class="k">Monto</div>    <div id="scAmount">—</div>
+            <div class="k">Estado</div>   <div><span id="scStatusBadge" class="sc-badge pending">Pendiente</span></div>
+          </div>
+        </div>
+
+        <!-- Columna derecha: formulario -->
+        <div class="sc-card">
+          <h5>Contacto con soporte</h5>
+          <label class="sc-label" for="scReason">Motivo</label>
+          <select id="scReason" class="sc-input">
+            <option value="payment_pending">Realicé el pago y no cambió el estado</option>
+            <option value="no_delivery">Nunca recibí mi producto</option>
+            <option value="wrong_item">El producto recibido no corresponde</option>
+            <option value="otros">Otros</option>
+          </select>
+          <label class="sc-label" for="scMessage">Descripción</label>
+          <textarea id="scMessage" class="sc-textarea" placeholder="Contanos qué pasó…"></textarea>
+          <div id="scError" class="sc-err">Escribí una breve descripción (mínimo 10 caracteres).</div>
+        </div>
+      </div>
+    </div>
+    <div class="sc-actions">
+      <button id="scSubmit" class="sc-btn sc-btn-gold">Enviar</button>
+      <button id="scCancel" class="sc-btn sc-btn-ghost">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// === Support Claim Modal wiring ===
+(function(){
+  const SUPPORT_EMAIL = ''; // ej: 'soporte@tu-dominio.com'
+  function $(id){ return document.getElementById(id); }
+  function textOf(el){ return (el?.textContent || '').trim(); }
+
+  function openModal(){ const ov = $('scOverlay'); if(!ov) return; ov.classList.add('show'); ov.removeAttribute('aria-hidden'); $('scMessage').focus(); }
+  function closeModal(){ const ov = $('scOverlay'); if(!ov) return; ov.classList.remove('show'); ov.setAttribute('aria-hidden','true'); }
+
+  function fillFromRow(tr){
+    const tds = tr.querySelectorAll('td');
+    const product = (tds[0]?.innerText || '—').trim();
+    const date    = (tds[1]?.innerText || '—').trim();
+    const amount  = (tds[2]?.innerText || '—').trim();
+    const statusT = (tds[3]?.innerText || 'Pendiente').trim();
+    $('scProduct').textContent = product;
+    $('scDate').textContent = date;
+    $('scAmount').textContent = /USDT|USD|\$/.test(amount) ? amount : (amount + ' USDT');
+    const badge = $('scStatusBadge');
+    const isPending = /pendiente|pending/i.test(statusT);
+    badge.textContent = isPending ? 'Pendiente' : (/pagad|paid|complet/i.test(statusT) ? 'Pagado' : statusT);
+    badge.className = 'sc-badge ' + (isPending ? 'pending' : 'paid');
+  }
+
+  // Delegación: detecta botón "Reclamo" en la tabla
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('button.action-btn');
+    if (!btn) return;
+    const label = textOf(btn).toLowerCase();
+    if (!/reclamo/.test(label) && btn.dataset.action !== 'claim') return;
+    e.preventDefault();
+    const tr = btn.closest('tr');
+    if (!tr) return;
+    fillFromRow(tr);
+    openModal();
+  });
+
+  // Cerrar modal
+  $('scClose')?.addEventListener('click', closeModal);
+  $('scCancel')?.addEventListener('click', function(e){ e.preventDefault(); closeModal(); });
+  $('scOverlay')?.addEventListener('click', function(e){ if(e.target === this) closeModal(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeModal(); });
+
+  // Enviar: validación + mailto
+  $('scSubmit')?.addEventListener('click', async function(){
+    const reasonKey = $('scReason')?.value || 'otros';
+    const reasonMap = {
+      payment_pending: 'Realicé el pago y no cambió el estado',
+      no_delivery: 'Nunca recibí mi producto',
+      wrong_item: 'El producto recibido no corresponde',
+      otros: 'Otros',
+    };
+    const reason = reasonMap[reasonKey] || 'Otros';
+    const msg = ($('scMessage')?.value || '').trim();
+    if (msg.length < 10){ $('scError').style.display = 'block'; return; }
+    $('scError').style.display = 'none';
+
+    // Datos
+    const product = textOf($('scProduct'));
+    const date    = textOf($('scDate'));
+    const amount  = textOf($('scAmount'));
+    const status  = textOf($('scStatusBadge'));
+    // Si existe un #pdOrder en tu Detalle, lo usamos como ID
+    const orderRaw = (document.getElementById('pdOrder')?.textContent || '').trim();
+    const orderId  = orderRaw.replace(/^#/, '') || '';
+
+    const subject = `Reclamo - ${product} (${reason})`;
+    const bodyTxt =
+`Motivo: ${reason}
+${orderId ? `Pedido: #${orderId}\n` : ''}Producto: ${product}
+Fecha: ${date}
+Monto: ${amount}
+Estado: ${status}
+
+Descripción:
+${msg}`;
+
+    const to = SUPPORT_EMAIL ? `mailto:${SUPPORT_EMAIL}` : 'mailto:';
+    const url = `${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyTxt)}`;
+    window.location.href = url;
+    closeModal();
+  });
+})();
+</script>
 </body>
 </html>
