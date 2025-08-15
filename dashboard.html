@@ -940,7 +940,7 @@
 
         <div class="card" style="background:#0f0f0f;border:1px solid #222;border-radius:16px;padding:16px;margin-bottom:16px;">
           <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
-            <div style="color:#cfcfcf;font-size:14px;" id="refs-count-wrap"><span data-i18n="referrals.confirmed">Referidos confirmados</span>: <strong id="refs-count">0/0</strong></div>
+            <div style="color:#cfcfcf;font-size:14px;" id="refs-count-wrap"><span id="refs-label-confirmed" data-i18n="referrals.confirmed" data-fallback-es="Referidos confirmados" data-fallback-pt="Indicações confirmadas" data-fallback-en="Confirmed referrals">Referidos confirmados</span>: <strong id="refs-count">0/0</strong></div>
             <div style="color:#facc15;font-weight:800;font-size:14px;">Tickets: <strong id="refs-tickets">0</strong></div>
           </div>
           <div style="width:100%;background:#232323;border-radius:9999px;height:12px;overflow:hidden;margin-bottom:14px;">
@@ -948,7 +948,7 @@
           </div>
 
           <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:10px 0 8px;">
-            <div style="color:#cfcfcf;font-size:14px;"><span data-i18n="referrals.progress">Progreso hacia próximo ticket</span>: <strong id="refs-progress-count">0/3</strong></div>
+            <div style="color:#cfcfcf;font-size:14px;"><span id="refs-label-progress" data-i18n="referrals.progress" data-fallback-es="Progreso hacia próximo ticket" data-fallback-pt="Progresso para o próximo ticket" data-fallback-en="Progress to next ticket">Progreso hacia próximo ticket</span>: <strong id="refs-progress-count">0/3</strong></div>
           </div>
           <div style="width:100%;background:#232323;border-radius:9999px;height:12px;overflow:hidden;">
             <div id="refs-bar-progress" style="height:12px;background:#10b981;width:0;border-radius:9999px;"></div>
@@ -1301,6 +1301,23 @@ alert('Contraseña actualizada');
 // NUMINA: Catálogo y modal a pantalla completa (sin aria-hidden warnings)
 
   function applyI18n(container){
+
+  function ensureLabelFallbacks(){
+    var lang = (document.documentElement.getAttribute('lang') || (window.APP_LANG||'es')).toLowerCase().slice(0,2);
+    function fix(id){
+      var el = document.getElementById(id);
+      if (!el) return;
+      var txt = (el.textContent||'').trim();
+      // If library left the key as-is (e.g., 'referrals.confirmed'), replace with a sensible fallback
+      if (!txt || txt.indexOf('.') !== -1 || /^referrals\./i.test(txt)){
+        var fallback = el.getAttribute('data-fallback-'+lang) || el.getAttribute('data-fallback-es') || txt;
+        if (fallback) el.textContent = fallback;
+      }
+    }
+    fix('refs-label-confirmed');
+    fix('refs-label-progress');
+  }
+
     try{
       if (window.dI18n && typeof dI18n.translateNode === 'function'){ dI18n.translateNode(container||document.body); }
       else if (window.applyTranslations){ window.applyTranslations(container||document); }
@@ -2893,6 +2910,7 @@ function bindShare(){
         ev.preventDefault();
         showReferidos();
         applyI18n(document.getElementById('section-referidos'));
+        ensureLabelFallbacks();
         loadReferidos();
         bindShare();
         bindFilter();
