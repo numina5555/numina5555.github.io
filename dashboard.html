@@ -955,7 +955,12 @@
           </div>
         </div>
 
-        <div class="table-container">
+        
+          <div class="table-filter-inline" id="referrals-filterbar">
+            <input id="referrals-search" type="text" data-i18n-placeholder="filters.search.referrals" placeholder="Buscar referidos…" aria-label="Buscar referidos" />
+            <button id="referrals-clear" type="button" class="action-btn" style="padding:.45rem .9rem;border:1px solid rgba(212,175,55,.35);background:transparent;color:#facc15;border-radius:.7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
+          </div>
+    <div class="table-container">
           <table class="table" style="width:100%;border-collapse:collapse;">
             <thead>
               <tr style="text-align:left;background:#121212;color:#facc15;text-transform:uppercase;font-size:12px;letter-spacing:.08em;">
@@ -2812,7 +2817,47 @@ ${msg}`;
       ]);
     }
   }
-  function bindShare(){
+  
+  function filterReferrals(term){
+    term = (term||'').toLowerCase().trim();
+    var tbody = document.getElementById('refs-tbody');
+    if (!tbody) return;
+    var rows = tbody.querySelectorAll('tr');
+    var anyVisible = false;
+    for (var i=0;i<rows.length;i++){
+      var row = rows[i];
+      // row text content
+      var txt = row.textContent.toLowerCase();
+      var match = term === '' || txt.indexOf(term) !== -1;
+      row.style.display = match ? '' : 'none';
+      if (match) anyVisible = true;
+    }
+    // empty-state row when no matches
+    if (!anyVisible){
+      var tr = document.createElement('tr'); tr.setAttribute('data-empty','1'); tr.style.borderTop='1px solid #1f1f1f';
+      var td = document.createElement('td'); td.colSpan = 3; td.style.padding='16px'; td.style.textAlign='center';
+      td.textContent = (window.dI18n && dI18n.t) ? dI18n.t('referrals.none') : 'Sin referidos';
+      tr.appendChild(td); tbody.appendChild(tr);
+    } else {
+      var empties = tbody.querySelectorAll('tr[data-empty="1"]');
+      for (var j=0;j<empties.length;j++){ empties[j].remove(); }
+    }
+  }
+  function bindFilter(){
+    var input = document.getElementById('referrals-search');
+    var clearBtn = document.getElementById('referrals-clear');
+    if (input){
+      input.addEventListener('input', function(){ filterReferrals(input.value); });
+    }
+    if (clearBtn){
+      clearBtn.addEventListener('click', function(){
+        if (input){ input.value=''; }
+        filterReferrals('');
+        input && input.focus();
+      });
+    }
+  }
+function bindShare(){
     var btn = document.getElementById('refs-share');
     if (!btn) return;
     btn.addEventListener('click', function(){
@@ -2850,6 +2895,7 @@ ${msg}`;
         applyI18n(document.getElementById('section-referidos'));
         loadReferidos();
         bindShare();
+        bindFilter();
       });
     }
   });
