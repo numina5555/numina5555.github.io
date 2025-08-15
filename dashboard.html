@@ -750,6 +750,43 @@
             </div>
           </div>
         </section>
+<section class="section-content" id="section-referidos" style="display:none;">
+        <h2 class="section-title"><i class="fas fa-users"></i><span>Mis Referidos</span></h2>
+
+        <!-- Métricas -->
+        <div class="card" style="background:#0f0f0f;border:1px solid #222;border-radius:16px;padding:16px;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="color:#cfcfcf;font-size:14px;">Referidos confirmados: <strong id="refs-count">0/0</strong></div>
+            <div style="color:#facc15;font-weight:800;font-size:14px;">Tickets: <strong id="refs-tickets">0</strong></div>
+          </div>
+          <!-- Barra general confirmados/total -->
+          <div style="width:100%;background:#232323;border-radius:9999px;height:12px;overflow:hidden;margin-bottom:14px;">
+            <div id="refs-bar-general" style="height:12px;background:#facc15;width:0;border-radius:9999px;"></div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:10px 0 8px;">
+            <div style="color:#cfcfcf;font-size:14px;">Progreso hacia próximo ticket: <strong id="refs-progress-count">0/3</strong></div>
+          </div>
+          <!-- Barra hacia siguiente ticket (mod 3) -->
+          <div style="width:100%;background:#232323;border-radius:9999px;height:12px;overflow:hidden;">
+            <div id="refs-bar-progress" style="height:12px;background:#10b981;width:0;border-radius:9999px;"></div>
+          </div>
+        </div>
+
+        <!-- Lista -->
+        <div class="card" style="background:#0f0f0f;border:1px solid #222;border-radius:16px;padding:0;">
+          <table class="table" style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr style="text-align:left;background:#121212;color:#facc15;text-transform:uppercase;font-size:12px;letter-spacing:.08em;">
+                <th style="padding:12px 16px;border-bottom:1px solid #1f1f1f;">Nombre</th>
+                <th style="padding:12px 16px;border-bottom:1px solid #1f1f1f;">Estado</th>
+              </tr>
+            </thead>
+            <tbody id="refs-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
 
         <div class="stats-grid">
           <div class="stat-card">
@@ -2415,6 +2452,103 @@ ${watermark}
     <div class="muted">N.º de pedido: #${orderId} • Fecha: ${date}</div>
     <div class="muted">Cliente: ${customerName || '-'}</div>
   </section>
+      <!-- ===================== REFERIDOS ===================== -->
+      
+
+
+<script>
+// ===== Referidos: métricas y lista (con Supabase opcional) =====
+(function(){
+  function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
+  function badge(text, ok){
+    var cls = ok
+      ? 'display:inline-block;padding:6px 12px;border-radius:9999px;font-weight:800;font-size:12px;background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.35)'
+      : 'display:inline-block;padding:6px 12px;border-radius:9999px;font-weight:800;font-size:12px;background:rgba(250,204,21,.15);color:#facc15;border:1px solid rgba(250,204,21,.35)';
+    return '<span style="'+cls+'">'+esc(text)+'</span>';
+  }
+  function hideAllSections(){
+    document.querySelectorAll('.section-content').forEach(function(el){ el.style.display='none'; });
+  }
+  function showReferidos(){
+    var section = document.getElementById('section-referidos');
+    var mainDash = document.getElementById('main-dashboard');
+    hideAllSections();
+    if (mainDash) mainDash.style.display='none';
+    if (section) section.style.display='block';
+  }
+  function renderReferidos(rows){
+    var total = rows.length;
+    var confirmed = rows.filter(function(r){ return !!(r.confirmed || r.confirmado); }).length;
+    var tickets = Math.floor(confirmed/3);
+    var progress = confirmed % 3;
+    var generalPct = total ? (confirmed/total)*100 : 0;
+    var progressPct = (progress/3)*100;
+    var byId = function(id){ return document.getElementById(id); };
+    var countEl = byId('refs-count');
+    var ticketsEl = byId('refs-tickets');
+    var progEl = byId('refs-progress-count');
+    var barGeneral = byId('refs-bar-general');
+    var barProg = byId('refs-bar-progress');
+    var tbody = byId('refs-tbody');
+    if (countEl) countEl.textContent = confirmed + '/' + total;
+    if (ticketsEl) ticketsEl.textContent = tickets;
+    if (progEl) progEl.textContent = progress + '/3';
+    if (barGeneral) barGeneral.style.width = generalPct + '%';
+    if (barProg) barProg.style.width = progressPct + '%';
+    if (tbody){
+      tbody.innerHTML = rows.map(function(r){
+        var name = r.name || r.nombre || '—';
+        var ok = !!(r.confirmed || r.confirmado);
+        return '<tr style="border-top:1px solid #1f1f1f;">' +
+               '<td style="padding:12px 16px;">'+esc(name)+'</td>' +
+               '<td style="padding:12px 16px;">'+badge(ok?'Confirmado':'Pendiente', ok)+'</td>' +
+               '</tr>';
+      }).join('');
+    }
+  }
+  async function cargarReferidos(){
+    var rows = null;
+    try{
+      if (typeof getSupabase === 'function'){
+        var supabase = getSupabase();
+        var who = await supabase.auth.getUser();
+        var uid = who && who.data && who.data.user && who.data.user.id;
+        if (uid){
+          var q = await supabase.from('referrals_status').select('name,confirmed').eq('referrer_id', uid).limit(200);
+          if (!q.error && q.data && q.data.length) rows = q.data;
+          if (!rows){
+            var q2 = await supabase.from('referrals').select('name,confirmed').eq('referrer_id', uid).limit(200);
+            if (!q2.error) rows = q2.data;
+          }
+        }
+      }
+    }catch(e){ console.warn('Referidos: error consultando Supabase', e); }
+    if (!rows){
+      rows = [
+        { name:'Juan Pérez', confirmed:true },
+        { name:'María Gómez', confirmed:false },
+        { name:'Carlos López', confirmed:true },
+        { name:'Ana Torres', confirmed:true },
+        { name:'Luis Martínez', confirmed:false },
+      ];
+    }
+    renderReferidos(rows);
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    var menu = document.querySelector('.menu-item[data-target="referidos"]');
+    if (menu){
+      menu.addEventListener('click', function(ev){ ev.preventDefault(); showReferidos(); cargarReferidos(); });
+      // Fallback: si otro script marca active, observamos y mostramos sección
+      var obs = new MutationObserver(function(){
+        if (menu.classList.contains('active')){ showReferidos(); cargarReferidos(); }
+      });
+      obs.observe(menu, { attributes:true, attributeFilter:['class'] });
+    }
+  });
+})();
+</script>
+
+
 
   <table>
     <thead><tr><th>Concepto</th><th>Cant.</th><th>Precio</th><th>Total</th></tr></thead>
