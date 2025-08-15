@@ -797,9 +797,9 @@
         <h2 class="section-title"><i class="fas fa-users"></i><span data-i18n="sections.referralsHistory">Historial de Referidos</span></h2>
         <div class="table-container">
           
-          <div class="table-filter-inline" id="referrals-filterbar">
-            <input id="referrals-search-ref" type="text" data-i18n-ph="filters.search.referrals" placeholder="Buscar referidos…" aria-label="Buscar referidos" />
-            <button id="referrals-clear-ref" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
+          <div class="table-filter-inline" id="referrals-filterbar-hist">
+            <input id="referrals-search-hist" type="text" data-i18n-ph="filters.search.referrals" placeholder="Buscar referidos…" aria-label="Buscar referidos" />
+            <button id="referrals-clear-hist" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
           </div>
             <table id="referrals-table">
             <thead>
@@ -957,8 +957,8 @@
 
         
           <div class="table-filter-inline" id="referrals-filterbar">
-            <input id="referrals-search-ref" type="text" data-i18n-placeholder="filters.search.referrals" placeholder="Buscar referidos…" aria-label="Buscar referidos" />
-            <button id="referrals-clear-ref" type="button" class="action-btn" style="padding:.45rem .9rem;border:1px solid rgba(212,175,55,.35);background:transparent;color:#facc15;border-radius:.7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
+            <input id="refs-search" type="text" data-i18n-placeholder="filters.search.referrals" placeholder="Buscar referidos…" aria-label="Buscar referidos" />
+            <button id="refs-clear" type="button" class="action-btn" style="padding:.45rem .9rem;border:1px solid rgba(212,175,55,.35);background:transparent;color:#facc15;border-radius:.7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
           </div>
     <div class="table-container">
           <table class="table" style="width:100%;border-collapse:collapse;">
@@ -1303,8 +1303,8 @@ alert('Contraseña actualizada');
   function applyI18n(container){
 
   }
-    fix('refs-label-confirmed');
-    fix('refs-label-progress');
+    /* i18n fallback handled inline on open */
+    /* i18n fallback handled inline on open */
   }
 
     try{
@@ -1805,8 +1805,8 @@ if (!link) {
 <script>
 (function(){
   function attachReferralsFilter(){
-    var input = document.getElementById('referrals-search-ref');
-    var clearBtn = document.getElementById('referrals-clear-ref');
+    var input = document.getElementById('refs-search');
+    var clearBtn = document.getElementById('refs-clear');
     var tbody = document.getElementById('referrals-body');
     if(!input || !tbody) return;
     function apply(){
@@ -2780,31 +2780,45 @@ ${msg}`;
       }
     }
   }
-  function loadReferidos(){
-    // Si hay Supabase, usamos datos reales; si no, demo
-    if (typeof getSupabase === 'function'){
-      try{
-        var supabase = getSupabase();
-        supabase.auth.getUser().then(function(who){
-          var uid = who && who.data && who.data.user && who.data.user.id;
-          if (!uid) throw new Error('no-user');
-          return supabase.from('referrals_status').select('*').eq('referrer_id', uid).limit(200);
-        }).then(function(res){
-          if (res && !res.error && res.data && res.data.length){ renderReferidos(res.data); return; }
-          return getSupabase().from('referrals').select('*').limit(200);
-        }).then(function(res2){
-          if (res2 && !res2.error && res2.data){ renderReferidos(res2.data); }
-          else { renderReferidos([]); }
-        }).catch(function(){
-          renderReferidos([
-            { name:'Juan Pérez', confirmed:true, date:'2025-08-12' },
-            { name:'María Gómez', confirmed:false, date:'2025-08-10' },
-            { name:'Carlos López', confirmed:true, date:'2025-08-08' },
-            { name:'Ana Torres', confirmed:true, date:'2025-08-07' },
-            { name:'Luis Martínez', confirmed:false, date:'2025-08-06' }
-          ]);
-        });
-      }catch(e){
+  
+function loadReferidos(){
+  // Lee desde 'referrals' y deriva nombre, confirmado y fecha.
+  if (typeof getSupabase === 'function'){
+    try{
+      var supabase = getSupabase();
+      supabase.auth.getUser().then(function(who){
+        var uid = who && who.data && who.data.user && who.data.user.id;
+        if (!uid) throw new Error('no-user');
+        // Intento 1: join a users por referred_id para traer full_name
+        return supabase
+          .from('referrals')
+          .select('referred_email,purchases_count,created_at,is_active,users:referred_id(full_name)')
+          .eq('referrer_id', uid)
+          .order('created_at', { ascending: false })
+          .limit(500);
+      }).then(function(res){
+        if (res && !res.error && Array.isArray(res.data)){
+          var mapped = res.data.map(function(row){
+            var name = (row.users && row.users.full_name) || row.full_name || (row.referred_email ? String(row.referred_email).split('@')[0] : '—');
+            var confirmed = !!(row.purchases_count && Number(row.purchases_count) > 0);
+            return { nombre:name, name:name, confirmed:confirmed, confirmado:confirmed, date:row.created_at };
+          });
+          renderReferidos(mapped);
+          return;
+        }
+        // Intento 2: sin join (por si el FK no permite embed)
+        return getSupabase().from('referrals').select('referred_email,purchases_count,created_at').limit(500);
+      }).then(function(res2){
+        if (res2 && !res2.error && Array.isArray(res2.data)){
+          var mapped2 = res2.data.map(function(row){
+            var name = row.referred_email ? String(row.referred_email).split('@')[0] : '—';
+            var confirmed = !!(row.purchases_count && Number(row.purchases_count) > 0);
+            return { nombre:name, name:name, confirmed:confirmed, confirmado:confirmed, date:row.created_at };
+          });
+          if (mapped2) renderReferidos(mapped2);
+          else renderReferidos([]);
+        } else if (!res2){ /* no-op */ }
+      }).catch(function(){
         renderReferidos([
           { name:'Juan Pérez', confirmed:true, date:'2025-08-12' },
           { name:'María Gómez', confirmed:false, date:'2025-08-10' },
@@ -2812,8 +2826,8 @@ ${msg}`;
           { name:'Ana Torres', confirmed:true, date:'2025-08-07' },
           { name:'Luis Martínez', confirmed:false, date:'2025-08-06' }
         ]);
-      }
-    } else {
+      });
+    }catch(e){
       renderReferidos([
         { name:'Juan Pérez', confirmed:true, date:'2025-08-12' },
         { name:'María Gómez', confirmed:false, date:'2025-08-10' },
@@ -2822,7 +2836,17 @@ ${msg}`;
         { name:'Luis Martínez', confirmed:false, date:'2025-08-06' }
       ]);
     }
+  } else {
+    renderReferidos([
+      { name:'Juan Pérez', confirmed:true, date:'2025-08-12' },
+      { name:'María Gómez', confirmed:false, date:'2025-08-10' },
+      { name:'Carlos López', confirmed:true, date:'2025-08-08' },
+      { name:'Ana Torres', confirmed:true, date:'2025-08-07' },
+      { name:'Luis Martínez', confirmed:false, date:'2025-08-06' }
+    ]);
   }
+}
+
   
   function filterReferrals(term){
     term = (term||'').toLowerCase().trim();
@@ -2850,8 +2874,8 @@ ${msg}`;
     }
   }
   function bindFilter(){
-    var input = document.getElementById('referrals-search-ref');
-    var clearBtn = document.getElementById('referrals-clear-ref');
+    var input = document.getElementById('refs-search');
+    var clearBtn = document.getElementById('refs-clear');
     if (input){
       input.addEventListener('input', function(){ filterReferrals(input.value); });
     }
