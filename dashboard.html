@@ -750,42 +750,7 @@
             </div>
           </div>
         </section>
-<section class="section-content" id="section-referidos" style="display:none;">
-        <h2 class="section-title"><i class="fas fa-users"></i><span>Mis Referidos</span></h2>
 
-        <!-- Métricas -->
-        <div class="card" style="background:#0f0f0f;border:1px solid #222;border-radius:16px;padding:16px;margin-bottom:16px;">
-          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
-            <div style="color:#cfcfcf;font-size:14px;">Referidos confirmados: <strong id="refs-count">0/0</strong></div>
-            <div style="color:#facc15;font-weight:800;font-size:14px;">Tickets: <strong id="refs-tickets">0</strong></div>
-          </div>
-          <!-- Barra general confirmados/total -->
-          <div style="width:100%;background:#232323;border-radius:9999px;height:12px;overflow:hidden;margin-bottom:14px;">
-            <div id="refs-bar-general" style="height:12px;background:#facc15;width:0;border-radius:9999px;"></div>
-          </div>
-
-          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:10px 0 8px;">
-            <div style="color:#cfcfcf;font-size:14px;">Progreso hacia próximo ticket: <strong id="refs-progress-count">0/3</strong></div>
-          </div>
-          <!-- Barra hacia siguiente ticket (mod 3) -->
-          <div style="width:100%;background:#232323;border-radius:9999px;height:12px;overflow:hidden;">
-            <div id="refs-bar-progress" style="height:12px;background:#10b981;width:0;border-radius:9999px;"></div>
-          </div>
-        </div>
-
-        <!-- Lista -->
-        <div class="card" style="background:#0f0f0f;border:1px solid #222;border-radius:16px;padding:0;">
-          <table class="table" style="width:100%;border-collapse:collapse;">
-            <thead>
-              <tr style="text-align:left;background:#121212;color:#facc15;text-transform:uppercase;font-size:12px;letter-spacing:.08em;">
-                <th style="padding:12px 16px;border-bottom:1px solid #1f1f1f;">Nombre</th>
-                <th style="padding:12px 16px;border-bottom:1px solid #1f1f1f;">Estado</th>
-              </tr>
-            </thead>
-            <tbody id="refs-tbody"></tbody>
-          </table>
-        </div>
-      </section>
 
 
         <div class="stats-grid">
@@ -2456,6 +2421,58 @@ ${watermark}
       
 
 
+
+
+
+
+  <table>
+    <thead><tr><th>Concepto</th><th>Cant.</th><th>Precio</th><th>Total</th></tr></thead>
+    <tbody>
+      <tr><td>${product}</td><td>1</td><td>${amount} ${currency}</td><td>${amount} ${currency}</td></tr>
+    </tbody>
+    <tfoot><tr><td colspan="3">Total</td><td>${amount} ${currency}</td></tr></tfoot>
+  </table>
+
+  <p class="muted" style="margin-top:16px">
+    ${isPending ? 'Documento proforma (pendiente de pago).' : 'Pago recibido. ¡Gracias!'}
+  </p>
+</div></body></html>`;
+
+      <!-- ===================== REFERIDOS ===================== -->
+      <section class="section-content" id="section-referidos" style="display:none;">
+        <h2 class="section-title"><i class="fas fa-users"></i><span>Mis Referidos</span></h2>
+
+        <!-- Métricas -->
+        <div class="card" style="background:#0f0f0f;border:1px solid #222;border-radius:16px;padding:16px;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="color:#cfcfcf;font-size:14px;">Referidos confirmados: <strong id="refs-count">0/0</strong></div>
+            <div style="color:#facc15;font-weight:800;font-size:14px;">Tickets: <strong id="refs-tickets">0</strong></div>
+          </div>
+          <div style="width:100%;background:#232323;border-radius:9999px;height:12px;overflow:hidden;margin-bottom:14px;">
+            <div id="refs-bar-general" style="height:12px;background:#facc15;width:0;border-radius:9999px;"></div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:10px 0 8px;">
+            <div style="color:#cfcfcf;font-size:14px;">Progreso hacia próximo ticket: <strong id="refs-progress-count">0/3</strong></div>
+          </div>
+          <div style="width:100%;background:#232323;border-radius:9999px;height:12px;overflow:hidden;">
+            <div id="refs-bar-progress" style="height:12px;background:#10b981;width:0;border-radius:9999px;"></div>
+          </div>
+        </div>
+
+        <div class="card" style="background:#0f0f0f;border:1px solid #222;border-radius:16px;padding:0;">
+          <table class="table" style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr style="text-align:left;background:#121212;color:#facc15;text-transform:uppercase;font-size:12px;letter-spacing:.08em;">
+                <th style="padding:12px 16px;border-bottom:1px solid #1f1f1f;">Nombre</th>
+                <th style="padding:12px 16px;border-bottom:1px solid #1f1f1f;">Estado</th>
+              </tr>
+            </thead>
+            <tbody id="refs-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
 <script>
 // ===== Referidos: métricas y lista (con Supabase opcional) =====
 (function(){
@@ -2538,7 +2555,6 @@ ${watermark}
     var menu = document.querySelector('.menu-item[data-target="referidos"]');
     if (menu){
       menu.addEventListener('click', function(ev){ ev.preventDefault(); showReferidos(); cargarReferidos(); });
-      // Fallback: si otro script marca active, observamos y mostramos sección
       var obs = new MutationObserver(function(){
         if (menu.classList.contains('active')){ showReferidos(); cargarReferidos(); }
       });
@@ -2548,20 +2564,6 @@ ${watermark}
 })();
 </script>
 
-
-
-  <table>
-    <thead><tr><th>Concepto</th><th>Cant.</th><th>Precio</th><th>Total</th></tr></thead>
-    <tbody>
-      <tr><td>${product}</td><td>1</td><td>${amount} ${currency}</td><td>${amount} ${currency}</td></tr>
-    </tbody>
-    <tfoot><tr><td colspan="3">Total</td><td>${amount} ${currency}</td></tr></tfoot>
-  </table>
-
-  <p class="muted" style="margin-top:16px">
-    ${isPending ? 'Documento proforma (pendiente de pago).' : 'Pago recibido. ¡Gracias!'}
-  </p>
-</div></body></html>`;
   }
 
   // (Opcional) Intentar descargar desde Supabase Storage si USE_STORAGE = true
