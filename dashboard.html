@@ -798,8 +798,8 @@
         <div class="table-container">
           
           <div class="table-filter-inline" id="referrals-filterbar">
-            <input id="referrals-search" type="text" data-i18n-ph="filters.search.referrals" placeholder="Buscar referidos…" aria-label="Buscar referidos" />
-            <button id="referrals-clear" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
+            <input id="referrals-search-ref" type="text" data-i18n-ph="filters.search.referrals" placeholder="Buscar referidos…" aria-label="Buscar referidos" />
+            <button id="referrals-clear-ref" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
           </div>
             <table id="referrals-table">
             <thead>
@@ -957,8 +957,8 @@
 
         
           <div class="table-filter-inline" id="referrals-filterbar">
-            <input id="referrals-search" type="text" data-i18n-placeholder="filters.search.referrals" placeholder="Buscar referidos…" aria-label="Buscar referidos" />
-            <button id="referrals-clear" type="button" class="action-btn" style="padding:.45rem .9rem;border:1px solid rgba(212,175,55,.35);background:transparent;color:#facc15;border-radius:.7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
+            <input id="referrals-search-ref" type="text" data-i18n-placeholder="filters.search.referrals" placeholder="Buscar referidos…" aria-label="Buscar referidos" />
+            <button id="referrals-clear-ref" type="button" class="action-btn" style="padding:.45rem .9rem;border:1px solid rgba(212,175,55,.35);background:transparent;color:#facc15;border-radius:.7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
           </div>
     <div class="table-container">
           <table class="table" style="width:100%;border-collapse:collapse;">
@@ -1302,18 +1302,7 @@ alert('Contraseña actualizada');
 
   function applyI18n(container){
 
-  function ensureLabelFallbacks(){
-    var lang = (document.documentElement.getAttribute('lang') || (window.APP_LANG||'es')).toLowerCase().slice(0,2);
-    function fix(id){
-      var el = document.getElementById(id);
-      if (!el) return;
-      var txt = (el.textContent||'').trim();
-      // If library left the key as-is (e.g., 'referrals.confirmed'), replace with a sensible fallback
-      if (!txt || txt.indexOf('.') !== -1 || /^referrals\./i.test(txt)){
-        var fallback = el.getAttribute('data-fallback-'+lang) || el.getAttribute('data-fallback-es') || txt;
-        if (fallback) el.textContent = fallback;
-      }
-    }
+  }
     fix('refs-label-confirmed');
     fix('refs-label-progress');
   }
@@ -1816,8 +1805,8 @@ if (!link) {
 <script>
 (function(){
   function attachReferralsFilter(){
-    var input = document.getElementById('referrals-search');
-    var clearBtn = document.getElementById('referrals-clear');
+    var input = document.getElementById('referrals-search-ref');
+    var clearBtn = document.getElementById('referrals-clear-ref');
     var tbody = document.getElementById('referrals-body');
     if(!input || !tbody) return;
     function apply(){
@@ -2861,8 +2850,8 @@ ${msg}`;
     }
   }
   function bindFilter(){
-    var input = document.getElementById('referrals-search');
-    var clearBtn = document.getElementById('referrals-clear');
+    var input = document.getElementById('referrals-search-ref');
+    var clearBtn = document.getElementById('referrals-clear-ref');
     if (input){
       input.addEventListener('input', function(){ filterReferrals(input.value); });
     }
@@ -2910,7 +2899,20 @@ function bindShare(){
         ev.preventDefault();
         showReferidos();
         applyI18n(document.getElementById('section-referidos'));
-        ensureLabelFallbacks();
+        (function(){
+          function fix(id, es, pt, en){
+            var el = document.getElementById(id); if(!el) return;
+            var txt = (el.textContent||'').trim();
+            if (!txt || txt.indexOf('.') !== -1 || /^referrals\./i.test(txt)){
+              var lang = (document.documentElement.getAttribute('lang') || (window.APP_LANG||'es')).toLowerCase().slice(0,2);
+              var map = { es:es, pt:pt, en:en };
+              el.textContent = map[lang] || es;
+            }
+          }
+          fix('refs-label-confirmed','Referidos confirmados','Indicações confirmadas','Confirmed referrals');
+          fix('refs-label-progress','Progreso hacia próximo ticket','Progresso para o próximo ticket','Progress to next ticket');
+        })();
+        // ensureLabelFallbacks removed (inlined fallback below)
         loadReferidos();
         bindShare();
         bindFilter();
