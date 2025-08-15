@@ -2337,6 +2337,162 @@ if (!link) {
 })();
 
 </script>
+<script>
+/**
+ * Descargar invoice: intenta primero en Supabase Storage (opcional),
+ * si no existe, genera una factura HTML al vuelo con estado PAGADO/PENDIENTE.
+ */
+(function () {
+  // === CONFIG: poné en true si querés que intente Storage primero ===
+  const USE_STORAGE = false;               // <- poné true si ya tenés bucket y archivos subidos
+  const STORAGE_BUCKET = 'invoices';       // invoices/{userId}/{orderId}-paid.pdf|pending.pdf
+
+  // Helpers DOM
+  const $ = (id) => document.getElementById(id);
+  const txt = (id, fallback='—') => (($(id)?.textContent || '').trim()) || fallback;
+
+  // Lee el estado desde el chip del modal (#pdStatus): pending / paid
+  function getStatusKey(){
+    const el = $('pdStatus');
+    if (!el) return 'pending';
+    const raw = (el.textContent || '').toLowerCase() + ' ' + (el.className || '').toLowerCase();
+    if (/(completed|paid|success|activo|active)/.test(raw)) return 'paid';
+    if (/(pending|pendiente)/.test(raw)) return 'pending';
+    if (/cancel/.test(raw)) return 'cancelled';
+    // por defecto, lo tratamos como pendiente
+    return 'pending';
+  }
+
+  // Lee el # de pedido mostrado (si viene con #, lo limpia)
+  function getOrderId(){
+    const raw = txt('pdOrder', '#—');
+    return raw.replace(/^#/, '').replace(/[^\w\-]+/g, '') || 'ORD';
+  }
+
+  // Dispara una descarga de blob/archivo
+  function downloadBlob(blob, filename){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
+  }
+
+  // Genera la factura HTML con marca de agua PENDIENTE si corresponde
+  function buildInvoiceHTML({orderId, statusKey, date, product, amount, currency, customerName}){
+    const isPending = (statusKey === 'pending');
+    const statusLabel = isPending ? 'PENDIENTE' : 'PAGADO';
+    const watermark = isPending ? `
+      <div style="position:fixed;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;opacity:.08;font-size:120px;font-weight:900;transform:rotate(-20deg)">
+        PENDIENTE
+      </div>` : '';
+
+    return `<!doctype html><html lang="es"><head><meta charset="utf-8">
+<title>Factura ${orderId}</title><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  body{font-family:Montserrat,Arial,sans-serif;margin:0;color:#111}
+  .wrap{max-width:800px;margin:0 auto;padding:32px}
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+  .brand{font-weight:900;font-size:24px;letter-spacing:.5px}
+  .badge{padding:6px 10px;border-radius:999px;font-weight:800;font-size:12px}
+  .pending{background:#fff3cd;color:#856404;border:1px solid #ffeeba}
+  .paid{background:#e8f5e9;color:#1b5e20;border:1px solid #c8e6c9}
+  h2{margin:0 0 4px}
+  table{width:100%;border-collapse:collapse;margin-top:18px}
+  th,td{padding:10px;border-bottom:1px solid #eee;text-align:left}
+  tfoot td{font-weight:800}
+  .muted{color:#666;font-size:13px}
+</style></head><body>
+${watermark}
+<div class="wrap">
+  <header>
+    <div class="brand">NUMINA</div>
+    <div class="badge ${isPending?'pending':'paid'}">${statusLabel}</div>
+  </header>
+
+  <section>
+    <h2>Factura / Invoice</h2>
+    <div class="muted">N.º de pedido: #${orderId} • Fecha: ${date}</div>
+    <div class="muted">Cliente: ${customerName || '-'}</div>
+  </section>
+
+  <table>
+    <thead><tr><th>Concepto</th><th>Cant.</th><th>Precio</th><th>Total</th></tr></thead>
+    <tbody>
+      <tr><td>${product}</td><td>1</td><td>${amount} ${currency}</td><td>${amount} ${currency}</td></tr>
+    </tbody>
+    <tfoot><tr><td colspan="3">Total</td><td>${amount} ${currency}</td></tr></tfoot>
+  </table>
+
+  <p class="muted" style="margin-top:16px">
+    ${isPending ? 'Documento proforma (pendiente de pago).' : 'Pago recibido. ¡Gracias!'}
+  </p>
+</div></body></html>`;
+  }
+
+  // (Opcional) Intentar descargar desde Supabase Storage si USE_STORAGE = true
+  async function tryDownloadFromStorage(userId, orderId, statusKey){
+    try{
+      if (!USE_STORAGE) return false;
+      if (typeof getSupabase !== 'function') return false;
+      const supabase = getSupabase();
+      const base = `${userId}/${orderId}`;
+      const suffix = (statusKey === 'pending') ? 'pending' : 'paid';
+      const paths = [`${base}-${suffix}.pdf`, `${base}-${suffix}.html`];
+      for (const path of paths){
+        const { data, error } = await supabase.storage.from(STORAGE_BUCKET).download(path);
+        if (data && !error){ 
+          const ext = path.split('.').pop();
+          downloadBlob(data, `invoice-${orderId}-${suffix}.${ext}`);
+          return true;
+        }
+      }
+    }catch(e){ console.warn('Storage download error', e); }
+    return false;
+  }
+
+  async function handleDownload(){
+    try{
+      // Tomo datos desde el modal que ya tenés en pantalla
+      const orderId  = getOrderId();
+      const status   = getStatusKey();  // "pending" | "paid" | "cancelled"
+      const product  = txt('pdName', 'Producto');
+      const date     = txt('pdDate',  '—');
+      const currency = 'USDT';
+      const amount   = (txt('pdTotal','').replace(/[^\d.,]/g,'') || txt('pdPrice','').replace(/[^\d.,]/g,'')) || '0.00';
+
+      // Si tenés Supabase y querés usar Storage, intento primero ahí
+      if (typeof getSupabase === 'function'){
+        const { data: { user } = {} } = await getSupabase().auth.getUser().catch(()=>({}));
+        const userId = user?.id || 'anon';
+        const ok = await tryDownloadFromStorage(userId, orderId, status);
+        if (ok) return;
+      }
+
+      // Fallback: generar HTML al vuelo y descargarlo
+      const html = buildInvoiceHTML({
+        orderId, statusKey: status, date, product, amount, currency,
+        customerName: txt('full-name','')
+      });
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      const suffix = status === 'pending' ? 'pending' : 'paid';
+      downloadBlob(blob, `invoice-${orderId}-${suffix}.html`);
+    }catch(e){
+      console.error(e);
+      alert('No se pudo generar la factura.');
+    }
+  }
+
+  function init(){
+    const btn = document.getElementById('pdInvoice');
+    if (btn && !btn.__wired){
+      btn.addEventListener('click', (ev)=>{ ev.preventDefault(); handleDownload(); });
+      btn.__wired = true;
+    }
+  }
+  (document.readyState === 'loading') ? document.addEventListener('DOMContentLoaded', init) : init();
+})();
+</script>
 
 </body>
 </html>
