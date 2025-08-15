@@ -479,7 +479,11 @@
         } catch(_) {}
       })();
 
-      // Global helper to translate product names in tables (available before first render)
+      // === Extra NAV labels (merged into DICT) ===
+      
+
+      // === Extra NAV labels (merged into DICT) ===
+      })();
 
       // Global helper to translate product names in tables (available before first render)
       window.i18nProductName = function(name){
@@ -529,6 +533,7 @@
               const v = window.dI18nReal.t(key);
               if (v && v !== key) return v;
             }
+          }catch(_){}
           const L = this.lang || 'es';
           return (DICT[L] && DICT[L][key]) || key;
         },
@@ -549,6 +554,7 @@
             if (el && window.__lastUserName != null){
               el.textContent = (dI18n.t('labels.welcome') + ', ' + String(window.__lastUserName || '')).trim();
             }
+          }catch(_){}
         }
       };
       Object.defineProperty(window, 'dI18n', {
@@ -1259,6 +1265,7 @@ function i18nKeysForSKU(sku){
     if (id.includes('PLAT') || id === 'PLAT-100G') return {name:'product.lingote_100g_platino_fino', desc:'catalog.platinumDesc', pitch:'catalog.platinumPitch'};
     if (id.includes('ROLEX') || id.includes('126610L')) return {name:'product.rolex_126610lv', desc:'catalog.rolexDesc', pitch:'catalog.rolexPitch'};
     if (id.includes('BRACELET')) return {name:'product.bracelet', desc:'catalog.braceletDesc', pitch:'catalog.braceletPitch'};
+  }catch(_){}
   return null;
 }
 
@@ -1596,6 +1603,7 @@ if (!link) {
   try{
     if (mq.addEventListener) mq.addEventListener('change', function(e){ apply(e); });
     else if (mq.addListener) mq.addListener(apply);
+  }catch(_){}
   apply(mq);
 })();
 </script>
@@ -1804,6 +1812,7 @@ if (!link) {
   function lang(){
     try {
       if (window.dI18n && (dI18n.lang || dI18n.current || dI18n.locale)) return (dI18n.lang||dI18n.current||dI18n.locale);
+    } catch(_) {}
     return document.documentElement.getAttribute('lang') || localStorage.getItem('lang') || 'es';
   }
   function dict(){
@@ -2016,6 +2025,7 @@ if (!link) {
   function getLang(){
     try {
       if (window.dI18n && (dI18n.lang || dI18n.current || dI18n.locale)) return (dI18n.lang||dI18n.current||dI18n.locale);
+    } catch(_) {}
     return document.documentElement.getAttribute('lang') || localStorage.getItem('lang') || 'es';
   }
   function t(key){
@@ -2300,6 +2310,9 @@ if (!link) {
         var date    = (tds[1] && tds[1].innerText || '').trim();
         var value   = (tds[2] && tds[2].innerText || '').replace(/[^0-9.,]/g,'').trim();
         var subject = encodeURIComponent('Reclamo - ' + (product || 'Compra'));
+        var body    = encodeURIComponent(
+          'Quiero iniciar un reclamo sobre una compra.' + '
+' +
         var body    = encodeURIComponent(`Quiero iniciar un reclamo sobre una compra.
 Producto: ${product}
 ${date ? `Fecha: ${date}` : ''}
@@ -2317,93 +2330,5 @@ Por favor, indíquenme los pasos a seguir.`);
   })();
   </script>
 
-
-<script>
-// Wire PD modal buttons: Invoice / Regenerate Link / Support
-(function(){
-  function text(id){ return (document.getElementById(id)?.textContent || '').trim(); }
-  var btnInvoice = document.getElementById('pdInvoice');
-  var btnRegen   = document.getElementById('pdRegen');
-  var btnSupport = document.getElementById('pdSupport');
-  // Fallback resolver (already present above, but defensive access)
-  var resolveSKU = (typeof resolveSKUFromModal === 'function') ? resolveSKUFromModal : function(){
-    var name = text('pdName').toLowerCase();
-    if (/oro|gold/.test(name)) return 'GOLD-100G';
-    if (/platino|platinum/.test(name)) return 'PLAT-100G';
-    if (/rolex|126610/.test(name)) return 'ROLEX-126610L';
-    if (/pulsera|bracelet/.test(name)) return 'NUMINA-BRACELET';
-    return null;
-  };
-
-  if (btnRegen){
-    btnRegen.addEventListener('click', function(){
-      try{
-        var sku = resolveSKU();
-        var map = {
-          'GOLD-100G':'gold_100g_9999',
-          'PLAT-100G':'platinum_100g_9995',
-          'ROLEX-126610L':'rolex_126610LV',
-          'NUMINA-BRACELET':'bracelet_numina'
-        };
-        var key = map[sku];
-        var link = (typeof PAYMENT_LINKS !== 'undefined') ? PAYMENT_LINKS[key] : null;
-        if (link) window.open(link, '_blank');
-        else alert('No se pudo generar el link de pago para este producto.');
-      }catch(e){ console.error(e); alert('Error al generar el link de pago.'); }
-    });
-  }
-
-  if (btnSupport){
-    btnSupport.addEventListener('click', function(){
-      try{
-        var product = text('pdName') || 'Compra';
-        var date    = text('pdDate') || '';
-        var amount  = (text('pdTotal') || '').replace(/[^0-9.,]/g,'');
-        var subject = encodeURIComponent('Consulta sobre compra - ' + product);
-        var body    = encodeURIComponent(
-          'Hola soporte,\n\n' +
-          'Quiero consultar sobre la siguiente compra.\n' +
-          'Producto: ' + product + '\n' +
-          (date ? ('Fecha: ' + date + '\n') : '') +
-          (amount ? ('Total: ' + amount + ' USDT\n') : '') +
-          '\nGracias.'
-        );
-        window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
-      }catch(e){ console.error(e); alert('No se pudo abrir el correo.'); }
-    });
-  }
-
-  if (btnInvoice){
-    btnInvoice.addEventListener('click', function(){
-      try{
-        // 1) If overlay has data-invoice-url, open it
-        var overlay = document.getElementById('pdOverlay');
-        var url = overlay ? overlay.getAttribute('data-invoice-url') : null;
-        if (url) { window.open(url, '_blank'); return; }
-
-        // 2) Fallback: build a printable HTML invoice and download it
-        var product = text('pdName') || 'Producto';
-        var date    = text('pdDate') || '';
-        var totalT  = (text('pdTotal') || '').replace(/[^0-9.,]/g,'');
-        var order   = text('pdOrder') || '#—';
-        var html = '<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Factura - ' + product +
-                   '</title><style>body{font-family:Montserrat,system-ui,sans-serif;padding:24px;color:#111}h1{margin:0 0 8px}table{border-collapse:collapse;margin-top:12px}td,th{border:1px solid #ccc;padding:8px 10px}th{text-align:left;background:#f5f5f5}</style></head><body>' +
-                   '<h1>Factura</h1><p><strong>Pedido:</strong> ' + order + '</p>' +
-                   (date ? ('<p><strong>Fecha:</strong> ' + date + '</p>') : '') +
-                   '<table><tr><th>Producto</th><th>Monto</th><th>Moneda</th></tr>' +
-                   '<tr><td>' + product + '</td><td style="text-align:right">' + (totalT || '—') + '</td><td>USDT</td></tr></table>' +
-                   '<p style="margin-top:16px;font-size:.9rem;color:#333">Documento generado desde el panel de usuario.</p>' +
-                   '</body></html>';
-        var blob = new Blob([html], {type:'text/html'});
-        var a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        var fname = 'Factura_' + (date?date.replace(/\W+/g,'-'):'') + '_' + product.replace(/\W+/g,'_') + '.html';
-        a.download = fname.replace(/_+/g,'_');
-        document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 100);
-      }catch(e){ console.error(e); alert('No se pudo generar la factura.'); }
-    });
-  }
-})();
-</script>
 </body>
 </html>
