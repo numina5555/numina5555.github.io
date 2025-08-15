@@ -479,14 +479,7 @@
         } catch(_) {}
       })();
 
-      // === Extra NAV labels (merged into DICT) ===
-      
-        }catch(_){}
-      })();
-
-      // === Extra NAV labels (merged into DICT) ===
-       }catch(_){}
-      })();
+      // Global helper to translate product names in tables (available before first render)
 
       // Global helper to translate product names in tables (available before first render)
       window.i18nProductName = function(name){
@@ -536,7 +529,6 @@
               const v = window.dI18nReal.t(key);
               if (v && v !== key) return v;
             }
-          }catch(_){}
           const L = this.lang || 'es';
           return (DICT[L] && DICT[L][key]) || key;
         },
@@ -557,7 +549,6 @@
             if (el && window.__lastUserName != null){
               el.textContent = (dI18n.t('labels.welcome') + ', ' + String(window.__lastUserName || '')).trim();
             }
-          }catch(_){}
         }
       };
       Object.defineProperty(window, 'dI18n', {
@@ -1268,7 +1259,6 @@ function i18nKeysForSKU(sku){
     if (id.includes('PLAT') || id === 'PLAT-100G') return {name:'product.lingote_100g_platino_fino', desc:'catalog.platinumDesc', pitch:'catalog.platinumPitch'};
     if (id.includes('ROLEX') || id.includes('126610L')) return {name:'product.rolex_126610lv', desc:'catalog.rolexDesc', pitch:'catalog.rolexPitch'};
     if (id.includes('BRACELET')) return {name:'product.bracelet', desc:'catalog.braceletDesc', pitch:'catalog.braceletPitch'};
-  }catch(_){}
   return null;
 }
 
@@ -1606,7 +1596,6 @@ if (!link) {
   try{
     if (mq.addEventListener) mq.addEventListener('change', function(e){ apply(e); });
     else if (mq.addListener) mq.addListener(apply);
-  }catch(_){}
   apply(mq);
 })();
 </script>
@@ -1815,7 +1804,6 @@ if (!link) {
   function lang(){
     try {
       if (window.dI18n && (dI18n.lang || dI18n.current || dI18n.locale)) return (dI18n.lang||dI18n.current||dI18n.locale);
-    } catch(_) {}
     return document.documentElement.getAttribute('lang') || localStorage.getItem('lang') || 'es';
   }
   function dict(){
@@ -2028,7 +2016,6 @@ if (!link) {
   function getLang(){
     try {
       if (window.dI18n && (dI18n.lang || dI18n.current || dI18n.locale)) return (dI18n.lang||dI18n.current||dI18n.locale);
-    } catch(_) {}
     return document.documentElement.getAttribute('lang') || localStorage.getItem('lang') || 'es';
   }
   function t(key){
@@ -2313,19 +2300,12 @@ if (!link) {
         var date    = (tds[1] && tds[1].innerText || '').trim();
         var value   = (tds[2] && tds[2].innerText || '').replace(/[^0-9.,]/g,'').trim();
         var subject = encodeURIComponent('Reclamo - ' + (product || 'Compra'));
-        var body    = encodeURIComponent(
-          'Quiero iniciar un reclamo sobre una compra.' + '
-' +
-          'Producto: ' + product + '
-' +
-          'Fecha: ' + date + '
-' +
-          (value ? ('Monto: ' + value + ' USDT
-') : '') +
-          '
-Por favor, indíquenme los pasos a seguir.'
-        );
-        // Open default email client without forcing a recipient
+        var body    = encodeURIComponent(`Quiero iniciar un reclamo sobre una compra.
+Producto: ${product}
+${date ? `Fecha: ${date}` : ''}
+${value ? `Monto: ${value} USDT` : ''}
+
+Por favor, indíquenme los pasos a seguir.`);
         window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
         // Small UX hint
         if (navigator.clipboard) {
