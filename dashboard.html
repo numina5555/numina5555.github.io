@@ -2472,7 +2472,7 @@ ${watermark}
       // Fallback: generar HTML al vuelo y descargarlo
       const html = buildInvoiceHTML({
         orderId, statusKey: status, date, product, amount, currency,
-        customerName: txt('full-name','')
+        customerName: txt('full-name',''
       });
       const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
       const suffix = status === 'pending' ? 'pending' : 'paid';
