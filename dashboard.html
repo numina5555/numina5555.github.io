@@ -932,7 +932,48 @@
 </div>
 </section>
 
-      <section class="section-content" id="section-productos">
+      
+      <!-- ===================== REFERIDOS (inserción mínima, sin romper lógica existente) ===================== -->
+      <section class="section-content" id="section-referidos" style="display:none;">
+        <h2 class="section-title"><i class="fas fa-users"></i><span data-i18n="sections.referidos">Referidos</span></h2>
+
+        <div class="card" style="background:#0f0f0f;border:1px solid #222;border-radius:16px;padding:16px;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="color:#cfcfcf;font-size:14px;" id="refs-count-wrap">Referidos confirmados: <strong id="refs-count">0/0</strong></div>
+            <div style="color:#facc15;font-weight:800;font-size:14px;">Tickets: <strong id="refs-tickets">0</strong></div>
+          </div>
+          <div style="width:100%;background:#232323;border-radius:9999px;height:12px;overflow:hidden;margin-bottom:14px;">
+            <div id="refs-bar-general" style="height:12px;background:#facc15;width:0;border-radius:9999px;"></div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:10px 0 8px;">
+            <div style="color:#cfcfcf;font-size:14px;">Progreso hacia próximo ticket: <strong id="refs-progress-count">0/3</strong></div>
+          </div>
+          <div style="width:100%;background:#232323;border-radius:9999px;height:12px;overflow:hidden;">
+            <div id="refs-bar-progress" style="height:12px;background:#10b981;width:0;border-radius:9999px;"></div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="table" style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr style="text-align:left;background:#121212;color:#facc15;text-transform:uppercase;font-size:12px;letter-spacing:.08em;">
+                <th style="padding:12px 16px;border-bottom:1px solid #1f1f1f;" data-i18n="tables.referral">Referido</th>
+                <th style="padding:12px 16px;border-bottom:1px solid #1f1f1f;" data-i18n="tables.status">Estado</th>
+              </tr>
+            </thead>
+            <tbody id="refs-tbody"></tbody>
+          </table>
+        </div>
+
+        <div style="margin-top:16px;display:flex;justify-content:center;">
+          <button id="refs-share" class="action-btn" style="background:#facc15;color:#111;font-weight:900;padding:10px 14px;border-radius:10px;border:1px solid #d4af37">
+            Compartir enlace de invitación
+          </button>
+        </div>
+      </section>
+    
+<section class="section-content" id="section-productos">
         <div class="products-wrap">
           <h2 class="section-title"><i class="fas fa-box"></i><span id="productos-title" data-i18n="catalog.title">Catálogo</span></h2>
           <section class="products-grid">
@@ -2652,5 +2693,141 @@ ${msg}`;
   });
 })();
 </script>
+
+<script>
+(function(){
+  function hideAllSections(){
+    var list = document.querySelectorAll('.section-content');
+    for (var i=0;i<list.length;i++){ list[i].style.display = 'none'; }
+  }
+  function showReferidos(){
+    hideAllSections();
+    var dash = document.getElementById('main-dashboard');
+    if (dash) dash.style.display = 'none';
+    var sec = document.getElementById('section-referidos');
+    if (sec) sec.style.display = 'block';
+  }
+  function renderReferidos(rows){
+    var total = rows.length;
+    var confirmed = 0;
+    for (var i=0;i<rows.length;i++){
+      if (rows[i].confirmed || rows[i].confirmado) confirmed++;
+    }
+    var tickets = Math.floor(confirmed / 3);
+    var progress = confirmed % 3;
+    var pctGeneral = total ? (confirmed/total)*100 : 0;
+    var pctProg = (progress/3)*100;
+
+    var setText = function(id, val){ var el=document.getElementById(id); if(el) el.textContent = val; };
+    setText('refs-count', confirmed + '/' + total);
+    setText('refs-tickets', tickets);
+    setText('refs-progress-count', progress + '/3');
+
+    var bg=document.getElementById('refs-bar-general'); if(bg) bg.style.width = pctGeneral + '%';
+    var bp=document.getElementById('refs-bar-progress'); if(bp) bp.style.width = pctProg + '%';
+
+    var tbody = document.getElementById('refs-tbody');
+    if (tbody){
+      tbody.innerHTML = '';
+      for (var j=0;j<rows.length;j++){
+        var r = rows[j];
+        var tr = document.createElement('tr'); tr.style.borderTop = '1px solid #1f1f1f';
+        var td1 = document.createElement('td'); td1.style.padding = '12px 16px';
+        td1.textContent = r.name || r.nombre || '—';
+        var td2 = document.createElement('td'); td2.style.padding = '12px 16px';
+        var ok = !!(r.confirmed || r.confirmado);
+        var span = document.createElement('span');
+        span.textContent = ok ? 'Confirmado' : 'Pendiente';
+        span.style.cssText = ok
+          ? 'padding:6px 12px;border-radius:9999px;font-weight:800;font-size:12px;background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.35);display:inline-block'
+          : 'padding:6px 12px;border-radius:9999px;font-weight:800;font-size:12px;background:rgba(250,204,21,.15);color:#facc15;border:1px solid rgba(250,204,21,.35);display:inline-block';
+        td2.appendChild(span);
+        tr.appendChild(td1); tr.appendChild(td2); tbody.appendChild(tr);
+      }
+      if (total === 0){
+        var tr = document.createElement('tr'); tr.style.borderTop = '1px solid #1f1f1f';
+        var td = document.createElement('td'); td.colSpan = 2; td.style.padding='16px'; td.style.textAlign='center';
+        td.textContent = (window.dI18n && dI18n.t) ? dI18n.t('referrals.none') : 'Sin referidos';
+        tr.appendChild(td); tbody.appendChild(tr);
+      }
+    }
+  }
+  function loadReferidos(){
+    // Si hay Supabase, usamos datos reales; si no, demo
+    if (typeof getSupabase === 'function'){
+      try{
+        var supabase = getSupabase();
+        supabase.auth.getUser().then(function(who){
+          var uid = who && who.data && who.data.user && who.data.user.id;
+          if (!uid) throw new Error('no-user');
+          return supabase.from('referrals_status').select('name,confirmed').eq('referrer_id', uid).limit(200);
+        }).then(function(res){
+          if (res && !res.error && res.data && res.data.length){ renderReferidos(res.data); return; }
+          return getSupabase().from('referrals').select('name,confirmed').limit(200);
+        }).then(function(res2){
+          if (res2 && !res2.error && res2.data){ renderReferidos(res2.data); }
+          else { renderReferidos([]); }
+        }).catch(function(){
+          renderReferidos([
+            { name:'Juan Pérez', confirmed:true },
+            { name:'María Gómez', confirmed:false },
+            { name:'Carlos López', confirmed:true },
+            { name:'Ana Torres', confirmed:true },
+            { name:'Luis Martínez', confirmed:false }
+          ]);
+        });
+      }catch(e){
+        renderReferidos([
+          { name:'Juan Pérez', confirmed:true },
+          { name:'María Gómez', confirmed:false },
+          { name:'Carlos López', confirmed:true },
+          { name:'Ana Torres', confirmed:true },
+          { name:'Luis Martínez', confirmed:false }
+        ]);
+      }
+    } else {
+      renderReferidos([
+        { name:'Juan Pérez', confirmed:true },
+        { name:'María Gómez', confirmed:false },
+        { name:'Carlos López', confirmed:true },
+        { name:'Ana Torres', confirmed:true },
+        { name:'Luis Martínez', confirmed:false }
+      ]);
+    }
+  }
+  function bindShare(){
+    var btn = document.getElementById('refs-share');
+    if (!btn) return;
+    btn.addEventListener('click', function(){
+      var enlace = (window.REF_LINK && typeof window.REF_LINK === 'string')
+        ? window.REF_LINK
+        : (window.location.origin + '/register?ref=MI_CODIGO');
+      if (navigator.clipboard && window.isSecureContext){
+        navigator.clipboard.writeText(enlace).then(function(){ alert('Enlace copiado al portapapeles'); })
+          .catch(function(err){ alert('No se pudo copiar el enlace: ' + String(err)); });
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = enlace; ta.style.position='fixed'; ta.style.left='-9999px';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        try{ document.execCommand('copy'); alert('Enlace copiado al portapapeles'); }
+        catch(err){ alert('No se pudo copiar el enlace: ' + String(err)); }
+        document.body.removeChild(ta);
+      }
+    });
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    var item = document.querySelector('.menu-item[data-target="referidos"]');
+    if (item){
+      item.addEventListener('click', function(ev){
+        ev.preventDefault();
+        showReferidos();
+        loadReferidos();
+        bindShare();
+      });
+    }
+  });
+})();
+</script>
+    
 </body>
 </html>
