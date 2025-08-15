@@ -805,6 +805,7 @@
             <thead>
               <tr>
                 <th data-i18n="tables.referral">Referido</th>
+                <th style="padding:12px 16px;border-bottom:1px solid #1f1f1f;" data-i18n="tables.date">Fecha</th>
                 <th data-i18n="tables.date">Fecha</th>
                 <th data-i18n="tables.purchases">Compras</th>
                 <th data-i18n="tables.status">Estado</th>
@@ -959,6 +960,7 @@
             <thead>
               <tr style="text-align:left;background:#121212;color:#facc15;text-transform:uppercase;font-size:12px;letter-spacing:.08em;">
                 <th style="padding:12px 16px;border-bottom:1px solid #1f1f1f;" data-i18n="tables.referral">Referido</th>
+                <th style="padding:12px 16px;border-bottom:1px solid #1f1f1f;" data-i18n="tables.date">Fecha</th>
                 <th style="padding:12px 16px;border-bottom:1px solid #1f1f1f;" data-i18n="tables.status">Estado</th>
               </tr>
             </thead>
@@ -2734,6 +2736,12 @@ ${msg}`;
         var tr = document.createElement('tr'); tr.style.borderTop = '1px solid #1f1f1f';
         var td1 = document.createElement('td'); td1.style.padding = '12px 16px';
         td1.textContent = r.name || r.nombre || '—';
+        var tdDate = document.createElement('td'); tdDate.style.padding = '12px 16px';
+        var rawDate = r.date || r.fecha || r.created_at || r.createdAt || r.confirmed_at || r.purchase_date;
+        var dTxt = '—';
+        try { if (rawDate){ var d = new Date(rawDate); if(!isNaN(d.getTime())){ dTxt = ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear(); } } } catch(e) {}
+        tdDate.textContent = dTxt;
+
         var td2 = document.createElement('td'); td2.style.padding = '12px 16px';
         var ok = !!(r.confirmed || r.confirmado);
         var span = document.createElement('span');
@@ -2742,11 +2750,11 @@ ${msg}`;
           ? 'padding:6px 12px;border-radius:9999px;font-weight:800;font-size:12px;background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.35);display:inline-block'
           : 'padding:6px 12px;border-radius:9999px;font-weight:800;font-size:12px;background:rgba(250,204,21,.15);color:#facc15;border:1px solid rgba(250,204,21,.35);display:inline-block';
         td2.appendChild(span);
-        tr.appendChild(td1); tr.appendChild(td2); tbody.appendChild(tr);
+        tr.appendChild(td1); tr.appendChild(tdDate); tr.appendChild(td2); tbody.appendChild(tr);
       }
       if (total === 0){
         var tr = document.createElement('tr'); tr.style.borderTop = '1px solid #1f1f1f';
-        var td = document.createElement('td'); td.colSpan = 2; td.style.padding='16px'; td.style.textAlign='center';
+        var td = document.createElement('td'); td.colSpan = 3; td.style.padding='16px'; td.style.textAlign='center';
         td.textContent = (window.dI18n && dI18n.t) ? dI18n.t('referrals.none') : 'Sin referidos';
         tr.appendChild(td); tbody.appendChild(tr);
       }
@@ -2760,38 +2768,38 @@ ${msg}`;
         supabase.auth.getUser().then(function(who){
           var uid = who && who.data && who.data.user && who.data.user.id;
           if (!uid) throw new Error('no-user');
-          return supabase.from('referrals_status').select('name,confirmed').eq('referrer_id', uid).limit(200);
+          return supabase.from('referrals_status').select('*').eq('referrer_id', uid).limit(200);
         }).then(function(res){
           if (res && !res.error && res.data && res.data.length){ renderReferidos(res.data); return; }
-          return getSupabase().from('referrals').select('name,confirmed').limit(200);
+          return getSupabase().from('referrals').select('*').limit(200);
         }).then(function(res2){
           if (res2 && !res2.error && res2.data){ renderReferidos(res2.data); }
           else { renderReferidos([]); }
         }).catch(function(){
           renderReferidos([
-            { name:'Juan Pérez', confirmed:true },
-            { name:'María Gómez', confirmed:false },
-            { name:'Carlos López', confirmed:true },
-            { name:'Ana Torres', confirmed:true },
-            { name:'Luis Martínez', confirmed:false }
+            { name:'Juan Pérez', confirmed:true, date:'2025-08-12' },
+            { name:'María Gómez', confirmed:false, date:'2025-08-10' },
+            { name:'Carlos López', confirmed:true, date:'2025-08-08' },
+            { name:'Ana Torres', confirmed:true, date:'2025-08-07' },
+            { name:'Luis Martínez', confirmed:false, date:'2025-08-06' }
           ]);
         });
       }catch(e){
         renderReferidos([
-          { name:'Juan Pérez', confirmed:true },
-          { name:'María Gómez', confirmed:false },
-          { name:'Carlos López', confirmed:true },
-          { name:'Ana Torres', confirmed:true },
-          { name:'Luis Martínez', confirmed:false }
+          { name:'Juan Pérez', confirmed:true, date:'2025-08-12' },
+          { name:'María Gómez', confirmed:false, date:'2025-08-10' },
+          { name:'Carlos López', confirmed:true, date:'2025-08-08' },
+          { name:'Ana Torres', confirmed:true, date:'2025-08-07' },
+          { name:'Luis Martínez', confirmed:false, date:'2025-08-06' }
         ]);
       }
     } else {
       renderReferidos([
-        { name:'Juan Pérez', confirmed:true },
-        { name:'María Gómez', confirmed:false },
-        { name:'Carlos López', confirmed:true },
-        { name:'Ana Torres', confirmed:true },
-        { name:'Luis Martínez', confirmed:false }
+        { name:'Juan Pérez', confirmed:true, date:'2025-08-12' },
+        { name:'María Gómez', confirmed:false, date:'2025-08-10' },
+        { name:'Carlos López', confirmed:true, date:'2025-08-08' },
+        { name:'Ana Torres', confirmed:true, date:'2025-08-07' },
+        { name:'Luis Martínez', confirmed:false, date:'2025-08-06' }
       ]);
     }
   }
