@@ -480,12 +480,51 @@
       })();
 
       // === Extra NAV labels (merged into DICT) ===
-      
+      (function(){
+        const EXTRA = {
+          es: {
+            "nav.dashboard": "Dashboard",
+            "nav.purchases": "Compras",
+            "nav.raffles": "Sorteos",
+            "nav.referrals": "Referidos",
+            "nav.catalog": "Catálogo",
+            "nav.settings": "Configuración",
+            "nav.logout": "Cerrar sesión"
+          },
+          en: {
+            "nav.dashboard": "Dashboard",
+            "nav.purchases": "Purchases",
+            "nav.raffles": "Raffles",
+            "nav.referrals": "Referrals",
+            "nav.catalog": "Catalog",
+            "nav.settings": "Settings",
+            "nav.logout": "Log out"
+          },
+          pt: {
+            "nav.dashboard": "Painel",
+            "nav.purchases": "Compras",
+            "nav.raffles": "Sorteios",
+            "nav.referrals": "Indicações",
+            "nav.catalog": "Catálogo",
+            "nav.settings": "Configurações",
+            "nav.logout": "Sair"
+          }
+        };
+        try{
+          Object.keys(EXTRA).forEach(function(L){
+            if (DICT[L]) Object.assign(DICT[L], EXTRA[L]);
+          });
         }catch(_){}
       })();
 
       // === Extra NAV labels (merged into DICT) ===
-       }catch(_){}
+      (function(){
+        const EXTRA = {
+          es: {"nav.dashboard":"Dashboard","nav.purchases":"Compras","nav.raffles":"Sorteos","nav.referrals":"Referidos","nav.catalog":"Catálogo","nav.settings":"Configuración","nav.logout":"Cerrar sesión"},
+          en: {"nav.dashboard":"Dashboard","nav.purchases":"Purchases","nav.raffles":"Raffles","nav.referrals":"Referrals","nav.catalog":"Catalog","nav.settings":"Settings","nav.logout":"Log out"},
+          pt: {"nav.dashboard":"Painel","nav.purchases":"Compras","nav.raffles":"Sorteios","nav.referrals":"Indicações","nav.catalog":"Catálogo","nav.settings":"Configurações","nav.logout":"Sair"}
+        };
+        try{ Object.keys(EXTRA).forEach(function(L){ if (DICT[L]) Object.assign(DICT[L], EXTRA[L]); }); }catch(_){}
       })();
 
       // Global helper to translate product names in tables (available before first render)
@@ -1139,7 +1178,7 @@
           menuItems.forEach(i=> i.classList.remove('active'));
           item.classList.add('active');
           if (target === 'dashboard'){ mainDashboard.style.display = 'block'; sections.forEach(s=> s.style.display='none'); cargarDashboard(); return; }
-          if (target === 'logout') { try{ getSupabase().auth.signOut().catch(()=>{}); }catch(_){ } window.location.href = '/login.html'; return; }
+          if (target === 'logout'){ return; }
           mainDashboard.style.display = 'none';
           sections.forEach(s=> s.style.display = (s.id === 'section-'+target ? 'block' : 'none'));
           if (target === 'compras') { cargarMisCompras(); }
@@ -2298,44 +2337,6 @@ if (!link) {
 })();
 
 </script>
-
-
-  <script>
-  // Delegated handler for "Reclamo" buttons
-  (function(){
-    document.addEventListener('click', function(e){
-      var btn = e.target.closest && e.target.closest('button.action-btn[data-action="claim"]');
-      if (!btn) return;
-      try{
-        var tr = btn.closest('tr');
-        var tds = tr ? tr.querySelectorAll('td') : [];
-        var product = (tds[0] && tds[0].innerText || '').trim();
-        var date    = (tds[1] && tds[1].innerText || '').trim();
-        var value   = (tds[2] && tds[2].innerText || '').replace(/[^0-9.,]/g,'').trim();
-        var subject = encodeURIComponent('Reclamo - ' + (product || 'Compra'));
-        var body    = encodeURIComponent(
-          'Quiero iniciar un reclamo sobre una compra.' + '
-' +
-          'Producto: ' + product + '
-' +
-          'Fecha: ' + date + '
-' +
-          (value ? ('Monto: ' + value + ' USDT
-') : '') +
-          '
-Por favor, indíquenme los pasos a seguir.'
-        );
-        // Open default email client without forcing a recipient
-        window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
-        // Small UX hint
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText('Reclamo
-' + product + ' - ' + date + (value?(' - ' + value + ' USDT'):'')).catch(function(){});
-        }
-      }catch(_){ alert('No se pudo procesar el reclamo.'); }
-    }, true);
-  })();
-  </script>
 
 </body>
 </html>
