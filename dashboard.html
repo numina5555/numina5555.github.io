@@ -940,7 +940,7 @@
 
         <div class="card" style="background:#0f0f0f;border:1px solid #222;border-radius:16px;padding:16px;margin-bottom:16px;">
           <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
-            <div style="color:#cfcfcf;font-size:14px;" id="refs-count-wrap">Referidos confirmados: <strong id="refs-count">0/0</strong></div>
+            <div style="color:#cfcfcf;font-size:14px;" id="refs-count-wrap"><span data-i18n="referrals.confirmed">Referidos confirmados</span>: <strong id="refs-count">0/0</strong></div>
             <div style="color:#facc15;font-weight:800;font-size:14px;">Tickets: <strong id="refs-tickets">0</strong></div>
           </div>
           <div style="width:100%;background:#232323;border-radius:9999px;height:12px;overflow:hidden;margin-bottom:14px;">
@@ -948,7 +948,7 @@
           </div>
 
           <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:10px 0 8px;">
-            <div style="color:#cfcfcf;font-size:14px;">Progreso hacia próximo ticket: <strong id="refs-progress-count">0/3</strong></div>
+            <div style="color:#cfcfcf;font-size:14px;"><span data-i18n="referrals.progress">Progreso hacia próximo ticket</span>: <strong id="refs-progress-count">0/3</strong></div>
           </div>
           <div style="width:100%;background:#232323;border-radius:9999px;height:12px;overflow:hidden;">
             <div id="refs-bar-progress" style="height:12px;background:#10b981;width:0;border-radius:9999px;"></div>
@@ -1294,7 +1294,16 @@ alert('Contraseña actualizada');
 <script>
 
 // NUMINA: Catálogo y modal a pantalla completa (sin aria-hidden warnings)
-document.addEventListener('DOMContentLoaded', function(){
+
+  function applyI18n(container){
+    try{
+      if (window.dI18n && typeof dI18n.translateNode === 'function'){ dI18n.translateNode(container||document.body); }
+      else if (window.applyTranslations){ window.applyTranslations(container||document); }
+      else if (window.dI18n && typeof dI18n.refresh === 'function'){ dI18n.refresh(); }
+    }catch(e){}
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
   const CATALOG = {
     "GOLD-100G": { sku:"GOLD-100G", name:"Lingote 100g Oro Fino 999.9", price:13500,
       img:"https://images.unsplash.com/photo-1623301762237-5b1056f3ce2d?q=80&w=1600&auto=format&fit=crop",
@@ -2823,12 +2832,22 @@ ${msg}`;
       }
     });
   }
+  
+  function applyI18n(container){
+    try{
+      if (window.dI18n && typeof dI18n.translateNode === 'function'){ dI18n.translateNode(container||document.body); }
+      else if (window.applyTranslations){ window.applyTranslations(container||document); }
+      else if (window.dI18n && typeof dI18n.refresh === 'function'){ dI18n.refresh(); }
+    }catch(e){}
+  }
+
   document.addEventListener('DOMContentLoaded', function(){
     var item = document.querySelector('.menu-item[data-target="referidos"]');
     if (item){
       item.addEventListener('click', function(ev){
         ev.preventDefault();
         showReferidos();
+        applyI18n(document.getElementById('section-referidos'));
         loadReferidos();
         bindShare();
       });
