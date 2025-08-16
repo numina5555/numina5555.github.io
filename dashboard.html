@@ -2648,7 +2648,7 @@ ${watermark}
 <script>
 // === Support Claim Modal wiring ===
 (function(){
-  const SUPPORT_EMAIL = ''; // ej: 'soporte@tu-dominio.com'
+  const SUPPORT_EMAIL = "numina5555@gmail.com"; // ej: 'soporte@tu-dominio.com'
   function $(id){ return document.getElementById(id); }
   function textOf(el){ return (el?.textContent || '').trim(); }
 
@@ -2690,30 +2690,33 @@ ${watermark}
   document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeModal(); });
 
   // Enviar: validación + mailto
-  $('scSubmit')?.addEventListener('click', async function(){
-    const reasonKey = $('scReason')?.value || 'otros';
-    const reasonMap = {
-      payment_pending: 'Realicé el pago y no cambió el estado',
-      no_delivery: 'Nunca recibí mi producto',
-      wrong_item: 'El producto recibido no corresponde',
-      otros: 'Otros',
-    };
-    const reason = reasonMap[reasonKey] || 'Otros';
-    const msg = ($('scMessage')?.value || '').trim();
-    if (msg.length < 10){ $('scError').style.display = 'block'; return; }
-    $('scError').style.display = 'none';
+  
+$('scSubmit')?.addEventListener('click', async function(){
+  const btn = this;
+  const reasonKey = $('scReason')?.value || 'otros';
+  const reasonMap = {
+    payment_pending: 'Realicé el pago y no cambió el estado',
+    no_delivery: 'Nunca recibí mi producto',
+    wrong_item: 'El producto recibido no corresponde',
+    otros: 'Otros',
+  };
+  const reason = reasonMap[reasonKey] || 'Otros';
+  const msg = ($('scMessage')?.value || '').trim();
+  if (msg.length < 10){ $('scError').style.display = 'block'; return; }
+  $('scError').style.display = 'none';
 
-    // Datos
-    const product = textOf($('scProduct'));
-    const date    = textOf($('scDate'));
-    const amount  = textOf($('scAmount'));
-    const status  = textOf($('scStatusBadge'));
-    // Si existe un #pdOrder en tu Detalle, lo usamos como ID
-    const orderRaw = (document.getElementById('pdOrder')?.textContent || '').trim();
-    const orderId  = orderRaw.replace(/^#/, '') || '';
+  // Datos mostrados en el modal
+  const product = textOf($('scProduct'));
+  const date    = textOf($('scDate'));
+  const amount  = textOf($('scAmount'));
+  const status  = textOf($('scStatusBadge'));
 
-    const subject = `Reclamo - ${product} (${reason})`;
-    const bodyTxt =
+  // Si existe un #pdOrder en tu Detalle, lo usamos como ID
+  const orderRaw = (document.getElementById('pdOrder')?.textContent || '').trim();
+  const orderId  = orderRaw.replace(/^#/, '') || '';
+
+  const subject = `Reclamo - ${product} (${reason})`;
+  const bodyTxt =
 `Motivo: ${reason}
 ${orderId ? `Pedido: #${orderId}\n` : ''}Producto: ${product}
 Fecha: ${date}
@@ -2723,11 +2726,69 @@ Estado: ${status}
 Descripción:
 ${msg}`;
 
-    const to = SUPPORT_EMAIL ? `mailto:${SUPPORT_EMAIL}` : 'mailto:';
-    const url = `${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyTxt)}`;
-    window.location.href = url;
+  // Enviar a Supabase y notificar por Edge Function
+  try {
+    btn.disabled = true;
+    const originalLabel = btn.textContent;
+    btn.textContent = 'Enviando…';
+
+    const supabase = getSupabase();
+    const { data: { user }, error: authErr } = await supabase.auth.getUser();
+    if (authErr || !user) throw new Error('No autenticado.');
+
+    // Parsear monto a número (opcional)
+    const amountNum = (amount || '')
+      .replace(/[^0-9,\.\-]/g,'')
+      .replace(/\.(?=\d{3}(\D|$))/g,'') // quita separadores de miles con punto
+      .replace(',', '.'); // usa coma como decimal si aplica
+
+    const claimRow = {
+      user_id: user.id,
+      user_email: user.email || null,
+      product_name: product || null,
+      product_date: date || null,
+      amount_text: amount || null,
+      amount_value: isNaN(parseFloat(amountNum)) ? null : parseFloat(amountNum),
+      status_text: status || null,
+      reason_key: reasonKey,
+      reason_label: reason,
+      message: msg,
+      order_id: orderId || null
+    };
+
+    const { data: inserted, error: insErr } = await supabase
+      .from('claims')
+      .insert(claimRow)
+      .select()
+      .maybeSingle();
+
+    if (insErr) throw insErr;
+
+    // Invocar Edge Function (usa auth del usuario automáticamente)
+    const { data: fnData, error: fnErr } = await supabase.functions.invoke('send-claim-email', {
+      body: {
+        to: SUPPORT_EMAIL,
+        subject,
+        text: bodyTxt,
+        claim_id: inserted?.id || null,
+        user_email: user.email || null,
+        claim: claimRow
+      }
+    });
+    if (fnErr) console.warn('send-claim-email error:', fnErr);
+
+    alert('Tu reclamo fue enviado. Te contactaremos por email.');
     closeModal();
-  });
+  } catch (err) {
+    console.error(err);
+    const el = $('scError');
+    if (el) { el.textContent = 'No pudimos enviar tu reclamo. Intentalo nuevamente.'; el.style.display = 'block'; }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Enviar';
+  }
+});
+
 })();
 </script>
 
