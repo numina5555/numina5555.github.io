@@ -693,6 +693,22 @@
 }
 </style>
 
+
+<!-- sidebar uniform height fix -->
+<style id="sidebar-uniform-fix">
+  /* Ensure the flex container stretches its children */
+  .dashboard-container {
+    align-items: stretch;
+  }
+
+  /* Sidebar same height on all tabs: occupy full viewport height and stay in normal flow */
+  .sidebar {
+    height: 100vh;
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+  }
+</style>
 </head>
 <body>
   <header class="dashboard-header">
