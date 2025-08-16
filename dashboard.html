@@ -957,7 +957,7 @@
 
         
           <div class="table-filter-inline" id="referrals-filterbar">
-            <input id="refs-search" type="text" data-i18n-placeholder="filters.search.referrals" placeholder="Buscar referidos…" aria-label="Buscar referidos" />
+            <input id="refs-search" type="text" data-i18n-ph="filters.search.referrals" placeholder="Buscar referidos…" aria-label="Buscar referidos" />
             <button id="refs-clear" type="button" class="action-btn" style="padding:.45rem .9rem;border:1px solid rgba(212,175,55,.35);background:transparent;color:#facc15;border-radius:.7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
           </div>
     <div class="table-container">
@@ -974,7 +974,7 @@
         </div>
 
         <div style="margin-top:16px;display:flex;justify-content:center;">
-          <button id="refs-share" class="action-btn" style="background:#facc15;color:#111;font-weight:900;padding:10px 14px;border-radius:10px;border:1px solid #d4af37">
+          <button id="refs-share" class="action-btn" style="background:#facc15;color:#111;font-weight:900;padding:10px 14px;border-radius:10px;border:1px solid #d4af37" data-i18n="referrals.shareLink">
             Compartir enlace de invitación
           </button>
         </div>
@@ -2490,7 +2490,30 @@ ${watermark}
   <p class="muted" style="margin-top:16px">
     ${isPending ? 'Documento proforma (pendiente de pago).' : 'Pago recibido. ¡Gracias!'}
   </p>
-</div></body></html>`;
+</div><script>
+(function(){
+  const EXTRA = {
+    en: {
+      "referrals.shareLink": "Share invitation link",
+      "referrals.confirmed": "Confirmed referrals",
+      "referrals.progress": "Progress to next ticket"
+    },
+    es: {
+      "referrals.shareLink": "Compartir enlace de invitación",
+      "referrals.confirmed": "Referidos confirmados",
+      "referrals.progress": "Progreso hacia próximo ticket"
+    },
+    pt: {
+      "referrals.shareLink": "Compartilhar link de convite",
+      "referrals.confirmed": "Indicações confirmadas",
+      "referrals.progress": "Progresso para o próximo ticket"
+    }
+  };
+  try { Object.keys(EXTRA).forEach(function(L){ if (typeof DICT !== "undefined" && DICT[L]) Object.assign(DICT[L], EXTRA[L]); }); } catch(_){}
+  if (typeof dI18n !== "undefined" && dI18n && typeof dI18n.apply === "function") { try { dI18n.apply(); } catch(_){ } }
+})();
+</script>
+</body></html>`;
   }
 
   // (Opcional) Intentar descargar desde Supabase Storage si USE_STORAGE = true
