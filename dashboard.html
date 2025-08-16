@@ -694,27 +694,17 @@
 </style>
 
 
-<!-- Sidebar label alignment fix (v5) -->
-<style id="sidebar-align-fix-v5">
-  /* Make every menu item use the exact same 2‑column grid:
-     [icon 26px] [label flex] — this guarantees perfect alignment */
-  .sidebar .menu-item{
-    display: grid !important;
-    grid-template-columns: 26px 1fr !important;
-    align-items: center !important;
-    gap: .8rem !important;
+<!-- Align 'Catálogo' heading with other section titles (v6) -->
+<style id="catalogo-title-align-v6">
+  /* Remove the extra left/right padding on the wrapper so the title lines up */
+  #section-productos .products-wrap{
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
-  .sidebar .menu-item i{
-    width: 26px !important;
-    min-width: 26px !important;
-    text-align: center !important;
-    display: inline-block !important;
-    line-height: 1 !important;
-  }
-  .sidebar .menu-item span{
-    display: inline-block !important;
-    line-height: 1.2 !important;
-    transform: translateY(0); /* ensure no inherited vertical shift */
+  /* Preserve comfortable side gutters for the product grid only */
+  #section-productos .products-grid{
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
   }
 </style>
 </head>
