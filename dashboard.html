@@ -694,21 +694,34 @@
 </style>
 
 
-<!-- sidebar uniform height fix -->
-<style id="sidebar-uniform-fix">
-  /* Ensure the flex container stretches its children */
+<!-- Sidebar full-height fix (viewport minus header) -->
+<style id="sidebar-uniform-fix-v2">
+  :root { --header-h: 0px; }
   .dashboard-container {
-    align-items: stretch;
+    align-items: stretch !important;
+    min-height: calc(100vh - var(--header-h));
   }
-
-  /* Sidebar same height on all tabs: occupy full viewport height and stay in normal flow */
   .sidebar {
-    height: 100vh;
-    min-height: 100vh;
-    position: sticky;
-    top: 0;
+    height: calc(100vh - var(--header-h)) !important;
+    min-height: calc(100vh - var(--header-h)) !important;
   }
 </style>
+<script id="sidebar-uniform-fix-script">
+  (function(){
+    function setHeaderVar(){
+      var header = document.querySelector('.dashboard-header');
+      var h = header ? header.offsetHeight : 0;
+      document.documentElement.style.setProperty('--header-h', h + 'px');
+    }
+    // Run early and after load/resize (fonts may change header height)
+    setHeaderVar();
+    window.addEventListener('load', setHeaderVar);
+    window.addEventListener('resize', setHeaderVar);
+    // Small delayed recalculation
+    setTimeout(setHeaderVar, 150);
+    setTimeout(setHeaderVar, 600);
+  })();
+</script>
 </head>
 <body>
   <header class="dashboard-header">
