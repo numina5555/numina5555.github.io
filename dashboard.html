@@ -1097,6 +1097,7 @@
                 <p class="product-desc" data-i18n="catalog.goldDesc">Oro 999.9 certificado. Ideal para inversión y resguardo de valor.</p>
                 <span class="price">US$ 13,500</span>
                 <button class="btn" data-action="more" data-sku="GOLD-100G" data-i18n="catalog.moreInfo">Más información</button>
+<button class="btn btn-pay" data-action="pay" data-sku="GOLD-100G" data-i18n="catalog.moreInfo" data-i18n="product.buy">Comprar</button>
               </div>
             </article>
             <article class="product-card">
@@ -1108,6 +1109,7 @@
                 <p class="product-desc" data-i18n="catalog.platinumDesc">Platino 999.5 certificado. Inversión de alto valor y rareza.</p>
                 <span class="price">US$ 6,500</span>
                 <button class="btn" data-action="more" data-sku="PLAT-100G" data-i18n="catalog.moreInfo">Más información</button>
+<button class="btn btn-pay" data-action="pay" data-sku="PLAT-100G" data-i18n="catalog.moreInfo" data-i18n="product.buy">Comprar</button>
               </div>
             </article>
             <article class="product-card">
@@ -1119,6 +1121,7 @@
                 <p class="product-desc" data-i18n="catalog.rolexDesc">Submariner Date con bisel verde y caja Oystersteel. Automático.</p>
                 <span class="price">US$ 19,600</span>
                 <button class="btn" data-action="more" data-sku="ROLEX-126610L" data-i18n="catalog.moreInfo">Más información</button>
+<button class="btn btn-pay" data-action="pay" data-sku="ROLEX-126610L" data-i18n="catalog.moreInfo" data-i18n="product.buy">Comprar</button>
               </div>
             </article>
             <article class="product-card">
@@ -1130,6 +1133,7 @@
                 <p class="product-desc" data-i18n="catalog.braceletDesc">Diseño exclusivo con materiales de alta calidad. Edición limitada.</p>
                 <span class="price">US$ 35</span>
                 <button class="btn" data-action="more" data-sku="NUMINA-BRACELET" data-i18n="catalog.moreInfo">Más información</button>
+<button class="btn btn-pay" data-action="pay" data-sku="NUMINA-BRACELET" data-i18n="catalog.moreInfo" data-i18n="product.buy">Comprar</button>
               </div>
             </article>
           </section>
@@ -1588,57 +1592,26 @@ overlay.classList.add("show");
       }
 
       // 4) invocar Edge Function autenticada (maneja CORS internamente)
-// --- NOWPayments: create invoice via Supabase Edge Function ---
-      try {
-        const email = user.email || (await (window.getUserEmail ? window.getUserEmail() : Promise.resolve(null)));
-        const orderId = purchase.id; // usamos el id de la compra como order_id
-        const payload = {
-          order_id: orderId,
-          price_amount: p.price,
-          price_currency: 'USD',       // precios en USD
-          pay_currency: 'USDT',        // la red exacta (TRC20/BEP20/ETH) definila en el Edge Function
-          is_fixed_rate: true,         // tipo de cambio fijo
-          is_fee_paid_by_user: false,  // comisiones a cargo del comerciante
-          customer_email: email || null,
-          success_url: `${location.origin}/success.html?order_id=${encodeURIComponent(orderId)}`,
-          cancel_url: `${location.origin}/cancel.html?order_id=${encodeURIComponent(orderId)}`,
-          metadata: {
-            purchase_id: orderId,
-            user_id: user.id,
-            user_email: email || undefined,
-            sku: p.sku,
-            product_name: p.name
-          }
-        };
+/* skipped: using fixed payment links */
+// --- NOWPayments prebuilt link mode ---
+// p.sku must be one of: 'gold_100g_9999', 'platinum_100g_9995', 'rolex_126610LV', 'bracelet_numina'
+const PAYMENT_LINKS = {
+  
+  gold_100g_9999:    'https://nowpayments.io/payment/?iid=4384021327',  // 13,500 USDT
+  platinum_100g_9995:'https://nowpayments.io/payment/?iid=5742431610',  // 6,500 USDT
+  rolex_126610LV:    'https://nowpayments.io/payment/?iid=5388824453',  // 19,600 USDT
+  bracelet_numina:   'https://nowpayments.io/payment/?iid=4476885766'   // 35 USDT
+};
 
-        // Llama a tu Edge Function segura (debe existir en Supabase) que crea la invoice en NOWPayments
-        const { data: inv, error: invErr } = await supabase.functions.invoke('create_invoice', {
-          body: payload
-        });
-
-        if (invErr || !inv || !inv.invoice_url) {
-          console.error('create_invoice error', invErr || inv);
-          alert('No se pudo crear la factura de pago. Probá nuevamente.');
-          return;
-        }
-
-        // Guarda referencia de la invoice en la compra
-        try {
-          await supabase.from('purchases')
-            .update({
-              order_id: orderId,
-              now_invoice_id: inv.id || inv.invoice_id || null,
-              now_invoice_url: inv.invoice_url
-            })
-            .eq('id', orderId);
-        } catch (_){}
-
-        // Redirige al checkout de NOWPayments
-        window.location.href = inv.invoice_url;
-      } catch (err) {
-        console.error(err);
-        alert('Error creando la orden de pago.');
-      }
+const link = PAYMENT_LINKS[p.sku];
+if (!link) {
+  alert('No payment link configured for product: ' + p.sku);
+} else {
+  // optional: attach order_id so you can reconcile later (NOWPayments ignores unknown params harmlessly)
+  const orderId = `ORD-${p.sku}-${Date.now()}`;
+  const url = link + (link.includes('?') ? '&' : '?') + 'order_id=' + encodeURIComponent(orderId);
+  window.location.href = url;
+}
 } catch (e) {
       console.error(e);
       alert('Error inesperado: ' + (e?.message || e));
@@ -2403,76 +2376,9 @@ overlay.classList.add("show");
   }
 
   function handleRegen(){
-  (async ()=>{
     try{
-      const supabase = getSupabase();
-      const { data: { user } = {} } = await supabase.auth.getUser();
-      if (!user) { alert('Inicia sesión para continuar.'); return; }
-
-      // SKU desde el modal
-      const sku = (typeof resolveSKUFromModal === 'function') ? resolveSKUFromModal() : null;
-      const C = (window.CATALOG || {});
-      const p = sku ? C[sku] : null;
-      if (!p){ alert('Producto desconocido.'); return; }
-
-      // Buscar la última compra pendiente del usuario para ese SKU
-      let purchaseId = null;
-      try{
-        const { data: rows } = await supabase
-          .from('purchases')
-          .select('id,status')
-          .eq('user_id', user.id)
-          .eq('sku', p.sku)
-          .eq('status', 'pending')
-          .order('created_at', { ascending: false })
-          .limit(1);
-        purchaseId = rows && rows[0] && rows[0].id;
-      }catch(_){}
-
-      if (!purchaseId){ alert('No hay una compra pendiente para regenerar.'); return; }
-
-      const payload = {
-        order_id: purchaseId,
-        price_amount: p.price,
-        price_currency: 'USD',
-        pay_currency: 'USDT',
-        is_fixed_rate: true,
-        is_fee_paid_by_user: false,
-        customer_email: user.email || null,
-        success_url: `${location.origin}/success.html?order_id=${encodeURIComponent(purchaseId)}`,
-        cancel_url: `${location.origin}/cancel.html?order_id=${encodeURIComponent(purchaseId)}`,
-        metadata: {
-          purchase_id: purchaseId,
-          user_id: user.id,
-          user_email: user.email || undefined,
-          sku: p.sku,
-          product_name: p.name
-        }
-      };
-
-      const { data: inv, error } = await supabase.functions.invoke('create_invoice', { body: payload });
-      if (error || !inv || !inv.invoice_url) throw error || new Error('No invoice_url');
-
-      try {
-        await supabase.from('purchases').update({
-          now_invoice_id: inv.id || inv.invoice_id || null,
-          now_invoice_url: inv.invoice_url
-        }).eq('id', purchaseId);
-      } catch(_){}
-
-      window.open(inv.invoice_url, '_blank', 'noopener');
-    }catch(e){
-      console.error(e);
-      // Fallback: abrir link fijo si existe
-      try{
-        var sku = (typeof resolveSKUFromModal === 'function') ? resolveSKUFromModal() : null;
-        var url = sku && (window.FIXED_PAY_URL || {})[sku];
-        if (url) window.open(url, '_blank', 'noopener'); else alert('No se pudo regenerar el link de pago.');
-      }catch(_){ alert('No se pudo regenerar el link de pago.'); }
-    }
-  })();
-}
-);
+      var sku = resolveSKUFromModal();
+      var map = (window.FIXED_PAY_URL || {});
       var url = sku ? map[sku] : null;
       if (url) {
         window.open(url, '_blank', 'noopener'); // abre NOWPayments en una nueva pestaña
@@ -3290,5 +3196,124 @@ function bindShare(){
 })();
 </script>
 <!-- END: NOWPayments email param injector -->
+
+    <script id="np-dynamic-pay">
+    (function(){
+      // ===== NOWPayments dynamic invoice creation =====
+      // Configure these (optionally) from your app before this script runs:
+      // window.NP_INVOICE_ENDPOINT = '/api/create-invoice';
+      // window.NP_SUCCESS_URL = location.origin + '/success';
+      // window.NP_CANCEL_URL = location.origin + '/cancel';
+      // window.NP_IPN_URL = undefined; // your webhook listener (server-side)
+      // window.NP_PAY_CURRENCY = undefined; // e.g. 'btc' to force payment currency
+      // window.NP_FEE_PAID_BY_USER = undefined; // true/false
+
+      var ENDPOINT = window.NP_INVOICE_ENDPOINT || '/api/create-invoice';
+
+      function parsePrice(text) {
+        try {
+          if (!text) return 0;
+          // Remove currency symbols and spaces, keep digits, dots and commas
+          var t = String(text).replace(/[^0-9,\.]/g, '');
+          // If both comma and dot appear, assume dot = decimal, commas = thousand
+          if (t.indexOf(',') !== -1 && t.indexOf('.') !== -1) {
+            t = t.replace(/,/g, '');
+          } else if (t.indexOf(',') !== -1 && t.indexOf('.') === -1) {
+            // If only comma, treat it as decimal separator
+            t = t.replace(',', '.');
+          }
+          var n = parseFloat(t);
+          return isNaN(n) ? 0 : Number(n.toFixed(2));
+        } catch (e) { return 0; }
+      }
+
+      function findPriceFromCard(btn){
+        try {
+          var card = btn.closest('.product-card');
+          if (card) {
+            var priceEl = card.querySelector('.price');
+            if (priceEl) return parsePrice(priceEl.textContent || priceEl.innerText);
+          }
+          // Try modal price
+          var modalPrice = document.querySelector('.nm-price');
+          if (modalPrice) return parsePrice(modalPrice.textContent || modalPrice.innerText);
+        } catch (_) {}
+        return 0;
+      }
+
+      function getUserMeta(){
+        var email = (document.getElementById('user-email') || {}).textContent || '';
+        email = email && email.trim() && !/Cargando/i.test(email) ? email.trim() : undefined;
+        return {
+          email: email
+        };
+      }
+
+      async function crearPago(sku, amount, name) {
+        if (!amount || amount <= 0) throw new Error('Precio inválido');
+        var meta = getUserMeta();
+        var payload = {
+          order_id: (sku || 'SKU') + '-' + Date.now(),
+          price_amount: amount,
+          price_currency: 'usd',
+          order_description: name ? ('Compra ' + name) : ('Compra ' + (sku || 'producto')),
+          success_url: window.NP_SUCCESS_URL || (location.origin + '/success'),
+          cancel_url: window.NP_CANCEL_URL || (location.origin + '/cancel')
+        };
+        if (window.NP_IPN_URL) payload.ipn_callback_url = window.NP_IPN_URL;
+        if (window.NP_PAY_CURRENCY) payload.pay_currency = window.NP_PAY_CURRENCY;
+        if (typeof window.NP_FEE_PAID_BY_USER !== 'undefined') payload.is_fee_paid_by_user = !!window.NP_FEE_PAID_BY_USER;
+        if (meta.email) payload.customer_email = meta.email;
+
+        var res = await fetch(ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          var txt = await res.text().catch(function(){ return ''; });
+          throw new Error('HTTP ' + res.status + ' ' + txt);
+        }
+        var data = await res.json().catch(function(){ return {}; });
+        var url = (data && (data.invoice_url || (data.invoice && (data.invoice.url || data.invoice.invoice_url)))) || data.payment_url;
+        if (!url) throw new Error('Respuesta sin invoice_url');
+        window.location.href = url;
+      }
+
+      document.addEventListener('click', function(ev){
+        var btn = ev.target && (ev.target.closest('[data-action="pay"], .btn-pay, .nm-buy'));
+        if (!btn) return;
+        ev.preventDefault();
+        var originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = (window.dI18n && dI18n.t('labels.loading')) || 'Cargando…';
+        Promise.resolve().then(function(){
+          var sku = btn.getAttribute('data-sku') || 'SKU';
+          var name = btn.getAttribute('data-name');
+          if (!name) {
+            try {
+              var card = btn.closest('.product-card');
+              if (card) {
+                var titleEl = card.querySelector('.product-title');
+                name = titleEl && (titleEl.textContent || '').trim();
+              }
+            } catch(_){}
+          }
+          var amount = parseFloat(btn.getAttribute('data-price') || '') || findPriceFromCard(btn);
+          return crearPago(sku, amount, name);
+        }).catch(function(err){
+          alert('Error al generar el link de pago: ' + (err && err.message ? err.message : err));
+        }).finally(function(){
+          btn.disabled = false;
+          btn.textContent = originalText;
+        });
+      });
+
+      // Expose globally in case you need to call it manually
+      window.crearPago = crearPago;
+    })();
+    </script>
+    
 </body>
 </html>
