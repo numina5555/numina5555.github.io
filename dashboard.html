@@ -3022,5 +3022,86 @@ function bindShare(){
 })();
 </script>
     
+
+<!-- BEGIN: NOWPayments email param injector -->
+<script>
+(function(){
+  // Runs after DOM is ready
+  const onReady = (fn) => {
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn, { once: true });
+    else fn();
+  };
+
+  onReady(function(){
+    // Helper: try to get user email from Supabase auth OR from dashboard UI fallback
+    async function getUserEmail() {
+      try {
+        if (window.supabase && window.supabase.auth && typeof window.supabase.auth.getUser === "function") {
+          const { data } = await window.supabase.auth.getUser();
+          if (data && data.user && data.user.email) return data.user.email;
+        }
+      } catch (e) { console.warn("supabase.auth.getUser() falló:", e); }
+
+      try {
+        // Fallback: read from UI element if present
+        const el = document.querySelector("#user-email");
+        if (el) {
+          const txt = (el.textContent || el.innerText || "").trim();
+          if (txt.includes("@")) return txt;
+        }
+      } catch(e){ console.warn("fallback de #user-email falló:", e); }
+
+      return null;
+    }
+
+    function appendEmailParam(url, email){
+      try {
+        const hasQuery = url.includes("?");
+        const sep = hasQuery ? "&" : "?";
+        // If URL already contains an 'email' param, replace it
+        const u = new URL(url, window.location.origin);
+        if (u.searchParams.has("email")) {
+          u.searchParams.set("email", email);
+          return u.toString();
+        }
+        return url + sep + "email=" + encodeURIComponent(email);
+      } catch(_){
+        // If URL() constructor fails (cross-origin relative edge cases), do a best-effort append
+        return url + (url.includes("?") ? "&" : "?") + "email=" + encodeURIComponent(email);
+      }
+    }
+
+    // Public helper in case your markup calls abrirPago('https://nowpayments.io/payment/?iid=...')
+    window.abrirPago = async function(baseUrl){
+      const email = await getUserEmail();
+      if (!email) {
+        alert("Necesitas iniciar sesión para comprar (no pude obtener tu email).");
+        return;
+      }
+      const finalUrl = appendEmailParam(baseUrl, email);
+      window.open(finalUrl, "_blank", "noopener");
+    };
+
+    // Global click interceptor for any <a> that points to NOWPayments
+    document.addEventListener("click", async function(ev){
+      const a = ev.target.closest && ev.target.closest('a[href*="nowpayments.io"]');
+      if (!a) return;
+
+      // Ignore if developer opted-out explicitly
+      if (a.dataset.nowpNoHijack === "true") return;
+
+      ev.preventDefault();
+      const email = await getUserEmail();
+      if (!email) {
+        alert("Necesitas iniciar sesión para comprar (no pude obtener tu email).");
+        return;
+      }
+      const finalUrl = appendEmailParam(a.href, email);
+      window.open(finalUrl, a.target || "_blank", "noopener");
+    }, true);
+  });
+})();
+</script>
+<!-- END: NOWPayments email param injector -->
 </body>
 </html>
