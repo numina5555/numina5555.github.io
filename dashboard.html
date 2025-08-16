@@ -694,21 +694,89 @@
 </style>
 
 
-<!-- v10: Fix alignment of 100% mark circle and label on raffles progress -->
-<style id="v10-raffles-progress-align">
-  /* Keep the end-hit fully inside the track (no clipping) */
-  .srt-track { overflow: hidden; } /* keep existing clipping for fill */
-  .srt-hit { width:14px; height:14px; } /* explicit for calc clarity */
-  #srt-100 {
-    left: calc(100% - 7px) !important;   /* 7px = half of 14px (border-box) */
-    transform: translate(0,-50%) !important;
+<!-- Sidebar uniform height = tallest section (v4) -->
+<style id="sidebar-uniform-fix-v4">
+  :root { --header-h: 0px; --sidebar-h: auto; }
+
+  /* Ensure the main container stretches to the sidebar height */
+  .dashboard-container {
+    align-items: stretch !important;
+    min-height: var(--sidebar-h) !important;
   }
-  /* Pull the "10,000" label fully inside and give it a tiny gutter */
-  .srt-marks { padding-right: 8px; }
-  .srt-marks .srt-mark:last-child {
-    transform: translateX(-100%) !important;
+
+  /* Sidebar takes the height of the tallest panel across tabs */
+  .sidebar {
+    position: relative !important;
+    top: 0 !important;
+    height: var(--sidebar-h) !important;
+    min-height: var(--sidebar-h) !important;
+    overflow: hidden;
   }
 </style>
+<script id="sidebar-uniform-fix-v4-script">
+  (function(){
+    function measureEl(el){
+      if(!el) return 0;
+      var cs = window.getComputedStyle(el);
+      var hidden = cs.display === 'none';
+      var prev = {display: el.style.display, position: el.style.position, visibility: el.style.visibility, height: el.style.height, left: el.style.left, top: el.style.top};
+      if(hidden){
+        el.style.visibility = 'hidden';
+        el.style.display = 'block';
+        el.style.position = 'absolute';
+        el.style.height = 'auto';
+        el.style.left = '-10000px';
+        el.style.top = '0';
+      }
+      var h = Math.max(el.scrollHeight, el.offsetHeight, el.clientHeight);
+      if(hidden){
+        el.style.display = prev.display;
+        el.style.position = prev.position;
+        el.style.visibility = prev.visibility;
+        el.style.height = prev.height;
+        el.style.left = prev.left;
+        el.style.top = prev.top;
+      }
+      return h || 0;
+    }
+
+    function setHeaderVar(){
+      var header = document.querySelector('.dashboard-header');
+      var h = header ? header.offsetHeight : 0;
+      document.documentElement.style.setProperty('--header-h', h + 'px');
+      return h;
+    }
+
+    function recalc(){
+      var headerH = setHeaderVar();
+      var ids = ['main-dashboard','section-configuracion','section-compras','section-sorteos','section-referidos','section-productos'];
+      var maxH = 0;
+      for(var i=0;i<ids.length;i++){
+        var el = document.getElementById(ids[i]);
+        maxH = Math.max(maxH, measureEl(el));
+      }
+      // Ensure at least viewport height minus header so it never shrinks
+      var viewportH = Math.max(0, window.innerHeight - headerH);
+      var sidebarH = Math.max(maxH, viewportH);
+      document.documentElement.style.setProperty('--sidebar-h', sidebarH + 'px');
+    }
+
+    // Recalculate on load, resize, language changes and DOM mutations
+    recalc();
+    window.addEventListener('load', recalc);
+    window.addEventListener('resize', recalc);
+    setTimeout(recalc, 150);
+    setTimeout(recalc, 600);
+    setTimeout(recalc, 1500);
+
+    // Observe dynamic content
+    try{
+      var root = document.querySelector('.main-content') || document.body;
+      var obs = new MutationObserver(function(){ setTimeout(recalc, 30); });
+      obs.observe(root, {childList: true, subtree: true});
+    }catch(_){}
+  })();
+</script>
 </head>
 <body>
   <header class="dashboard-header">
