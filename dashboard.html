@@ -450,6 +450,11 @@
             "filters.search.raffles": "Search raffles…",
             "filters.clear": "Clear",
 
+
+          "referrals.shareLink": "Share invitation link",
+          "referrals.confirmed": "Confirmed referrals",
+          "referrals.progress": "Progress to next ticket",
+
           },
           es: {
             "purchases.none": "Sin compras",
@@ -460,6 +465,11 @@
             "filters.search.raffles": "Buscar sorteos…",
             "filters.clear": "Limpiar",
 
+
+          "referrals.shareLink": "Compartir enlace de invitación",
+          "referrals.confirmed": "Referidos confirmados",
+          "referrals.progress": "Progreso hacia próximo ticket",
+
           },
           pt: {
             "purchases.none": "Sem compras",
@@ -469,6 +479,11 @@
             "filters.search.miscompras": "Buscar minhas compras…",
             "filters.search.raffles": "Buscar sorteios…",
             "filters.clear": "Limpar",
+
+
+          "referrals.shareLink": "Compartilhar link de convite",
+          "referrals.confirmed": "Indicações confirmadas",
+          "referrals.progress": "Progresso para o próximo ticket",
 
           }
         };
@@ -2490,30 +2505,7 @@ ${watermark}
   <p class="muted" style="margin-top:16px">
     ${isPending ? 'Documento proforma (pendiente de pago).' : 'Pago recibido. ¡Gracias!'}
   </p>
-</div><script>
-(function(){
-  const EXTRA = {
-    en: {
-      "referrals.shareLink": "Share invitation link",
-      "referrals.confirmed": "Confirmed referrals",
-      "referrals.progress": "Progress to next ticket"
-    },
-    es: {
-      "referrals.shareLink": "Compartir enlace de invitación",
-      "referrals.confirmed": "Referidos confirmados",
-      "referrals.progress": "Progreso hacia próximo ticket"
-    },
-    pt: {
-      "referrals.shareLink": "Compartilhar link de convite",
-      "referrals.confirmed": "Indicações confirmadas",
-      "referrals.progress": "Progresso para o próximo ticket"
-    }
-  };
-  try { Object.keys(EXTRA).forEach(function(L){ if (typeof DICT !== "undefined" && DICT[L]) Object.assign(DICT[L], EXTRA[L]); }); } catch(_){}
-  if (typeof dI18n !== "undefined" && dI18n && typeof dI18n.apply === "function") { try { dI18n.apply(); } catch(_){ } }
-})();
-</script>
-</body></html>`;
+</div></body></html>`;
   }
 
   // (Opcional) Intentar descargar desde Supabase Storage si USE_STORAGE = true
