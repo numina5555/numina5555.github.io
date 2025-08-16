@@ -694,75 +694,21 @@
 </style>
 
 
-<!-- v7: Catalog title left-align + keep helpful sidebar fixes -->
-<style id="v7-catalog-title-and-sidebar-fixes">
-  /* --- Align "Catálogo" title with other section titles --- */
-  #section-productos .products-wrap{
-    max-width: none !important;   /* stop centering wrapper */
-    margin: 0 !important;         /* remove auto margins */
-    padding-left: 0 !important;   /* same gutter as other sections */
-    padding-right: 0 !important;
-    width: 100% !important;
+<!-- v10: Fix alignment of 100% mark circle and label on raffles progress -->
+<style id="v10-raffles-progress-align">
+  /* Keep the end-hit fully inside the track (no clipping) */
+  .srt-track { overflow: hidden; } /* keep existing clipping for fill */
+  .srt-hit { width:14px; height:14px; } /* explicit for calc clarity */
+  #srt-100 {
+    left: calc(100% - 7px) !important;   /* 7px = half of 14px (border-box) */
+    transform: translate(0,-50%) !important;
   }
-  /* Keep the grid nicely centered with the previous max width */
-  #section-productos .products-grid{
-    max-width: 1100px !important;
-    margin: 0 auto !important;
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-  }
-
-  /* --- Sidebar label alignment (icon column width fixed) --- */
-  .sidebar .menu-item{
-    display: grid !important;
-    grid-template-columns: 26px 1fr !important;
-    align-items: center !important;
-    gap: .8rem !important;
-  }
-  .sidebar .menu-item i{
-    width: 26px !important;
-    min-width: 26px !important;
-    text-align: center !important;
-    display: inline-block !important;
-    line-height: 1 !important;
-  }
-  .sidebar .menu-item span{
-    display: inline-block !important;
-    line-height: 1.2 !important;
+  /* Pull the "10,000" label fully inside and give it a tiny gutter */
+  .srt-marks { padding-right: 8px; }
+  .srt-marks .srt-mark:last-child {
+    transform: translateX(-100%) !important;
   }
 </style>
-
-<!-- v7: Sidebar height = tallest section across tabs -->
-<style id="v7-sidebar-uniform-height">
-  :root { --sidebar-h: auto; }
-  .dashboard-container{ align-items: stretch !important; min-height: var(--sidebar-h) !important; }
-  .sidebar{ height: var(--sidebar-h) !important; min-height: var(--sidebar-h) !important; }
-</style>
-<script id="v7-sidebar-uniform-height-script">
-  (function(){
-    function measure(el){
-      if(!el) return 0;
-      var cs = getComputedStyle(el);
-      var hidden = cs.display === 'none';
-      var prev = {display: el.style.display, position: el.style.position, visibility: el.style.visibility, height: el.style.height, left: el.style.left, top: el.style.top};
-      if(hidden){
-        el.style.visibility = 'hidden'; el.style.display = 'block'; el.style.position = 'absolute'; el.style.height = 'auto'; el.style.left = '-10000px'; el.style.top = '0';
-      }
-      var h = Math.max(el.scrollHeight, el.offsetHeight, el.clientHeight);
-      if(hidden){ el.style.display = prev.display; el.style.position = prev.position; el.style.visibility = prev.visibility; el.style.height = prev.height; el.style.left = prev.left; el.style.top = prev.top; }
-      return h||0;
-    }
-    function recalc(){
-      var ids = ['main-dashboard','section-configuracion','section-compras','section-sorteos','section-referidos','section-productos'];
-      var maxH = 0;
-      for(var i=0;i<ids.length;i++){ maxH = Math.max(maxH, measure(document.getElementById(ids[i]))); }
-      document.documentElement.style.setProperty('--sidebar-h', (maxH||0) + 'px');
-    }
-    recalc(); addEventListener('load', recalc); addEventListener('resize', recalc);
-    setTimeout(recalc, 150); setTimeout(recalc, 600); setTimeout(recalc, 1500);
-    try{ new MutationObserver(function(){ setTimeout(recalc, 30); }).observe(document.body, {childList:true, subtree:true}); }catch(_){}
-  })();
-</script>
 </head>
 <body>
   <header class="dashboard-header">
