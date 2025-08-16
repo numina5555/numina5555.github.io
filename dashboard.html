@@ -2564,7 +2564,31 @@ if (!link) {
   th,td{padding:10px;border-bottom:1px solid #eee;text-align:left}
   tfoot td{font-weight:800}
   .muted{color:#666;font-size:13px}
-</style></head><body>
+</style>
+<style id="gpt-sorteos-progress-fix">
+/* === FIX Sorteos: progreso y marcas (GPT patch 2025-08-16) === */
+
+/* Asegura que el hito (círculo) no se recorte y quede centrado verticalmente */
+.srt-hit{
+  width: 10px !important;
+  height: 10px !important;
+  border-width: 2px !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+/* Permite que el hito sobresalga si se decide usar un tamaño mayor en el futuro */
+.srt-track{
+  overflow: visible !important;
+}
+
+/* Evita que la marca de 100% (10,000) quede pegada al borde derecho */
+.srt-marks .srt-mark:last-child{
+  transform: translateX(-100%) !important;
+  text-align: right;
+}
+</style>
+</head><body>
 ${watermark}
 <div class="wrap">
   <header>
