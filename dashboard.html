@@ -1484,8 +1484,7 @@ function openSKU(sku, trigger){
     if(nameEl){ var k=i18nKeysForSKU(sku); if(k){ nameEl.innerHTML='<span data-i18n="'+k.name+'">'+(dI18n.t(k.name)||p.name)+'</span>'; } else { nameEl.textContent=p.name; } }
     if(descEl){ var k=i18nKeysForSKU(sku); if(k){ descEl.innerHTML='<span data-i18n="'+k.desc+'">'+(dI18n.t(k.desc)||p.desc)+'</span>'; } else { descEl.textContent=p.desc; } }
     if (priceEl)priceEl.textContent= money(p.price);
-    try{var __b=document.getElementById('nmBuy'); if(__b){ __b.dataset.price=String(p.price); __b.dataset.sku=p.sku||''; }}catch(_){ }
-try{ if (window.document && typeof p.price === 'number') { var __buy=document.getElementById('nmBuy'); if(__buy){ __buy.dataset.price = String(p.price); __buy.dataset.sku = p.sku || ''; } } }catch(_){ }
+    try{ if (window.document && typeof p.price === 'number') { var __buy=document.getElementById('nmBuy'); if(__buy){ __buy.dataset.price = String(p.price); __buy.dataset.sku = p.sku || ''; } } }catch(_){ }
 if (imgEl)  imgEl.src          = p.img;
     try{ if(window.dI18n) dI18n.apply(); }catch(_){ }
     try{ if(window.dI18n) dI18n.apply(); }catch(_){ }
@@ -3203,17 +3202,14 @@ function bindShare(){
 (function(){
   function ready(fn){ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded', fn);} else { fn(); } }
   function parseAmountFromText(txt){
-  try{
-    if(!txt) return null;
-    var s = (txt+'').replace(/[^0-9.,]/g,'').trim();
-    if(!s) return null;
-    s = s.replace(/[,.](?=\d{3}(?:\D|$))/g, '');
-    s = s.replace(/,/g, '.');
-    var n = parseFloat(s);
-    return isFinite(n) ? n : null;
-  }catch(_){ return null; }
-}
- else if (clean.indexOf(',')>-1 && clean.indexOf('.')===-1)
+    try{
+      if(!txt) return null;
+      // keep digits, comma, dot
+      var clean = (txt+'').replace(/[^0-9,\.]/g,'');
+      // normalize: if it has both comma and dot, assume comma thousands -> remove commas
+      if (clean.indexOf(',')>-1 && clean.indexOf('.')>-1){
+        clean = clean.replace(/,/g,'');
+      } else if (clean.indexOf(',')>-1 && clean.indexOf('.')===-1){
         // comma as decimal
         clean = clean.replace(',', '.');
       }
@@ -3224,13 +3220,29 @@ function bindShare(){
   function getSku(){ var el=document.getElementById('nmSku'); return (el && el.textContent || '').trim(); }
   function getName(){ var el=document.getElementById('nmName'); return (el && el.textContent || '').trim(); }
   function getPrice(){
-  try{ var buy=document.getElementById('nmBuy'); if(buy&&buy.dataset&&buy.dataset.price){ var v=parseFloat(buy.dataset.price); if(isFinite(v)&&v>0) return v; } }catch(_){ }
-  try{ var sku=(typeof getSku==='function')?getSku():null; if(sku&&window.CATALOG&&window.CATALOG[sku]&&typeof window.CATALOG[sku].price==='number'){ return window.CATALOG[sku].price; } }catch(_){ }
-  try{ var el=document.getElementById('nmPrice'); var n=parseAmountFromText(el?el.textContent:''); if(n&&n>0) return n; }catch(_){ }
-  try{ var opener=(typeof lastTrigger!=='undefined'&&lastTrigger)? lastTrigger.closest('.product-card'):null; var pEl=opener? opener.querySelector('.price,[data-price]'):null; var raw=pEl? (pEl.getAttribute('data-price')||pEl.textContent):''; var m=parseAmountFromText(raw); if(m&&m>0) return m; }catch(_){ }
-  return null;
-}
-
+  try{
+    var buy = document.getElementById('nmBuy');
+    if (buy && buy.dataset && buy.dataset.price){
+      var v = parseFloat(buy.dataset.price);
+      if (isFinite(v) && v>0) return v;
+    }
+  }catch(_){ }
+  try{
+    if (window.CATALOG && window.CATALOG[currentSku] && typeof window.CATALOG[currentSku].price === 'number'){
+      return window.CATALOG[currentSku].price;
+    }
+  }catch(_){ }
+  try{
+    var el = document.getElementById('nmPrice');
+    var txt = el ? el.textContent : '';
+    if (txt){
+      var clean = (txt+'').replace(/[^0-9,\.]/g,'');
+      if (clean.indexOf(',')>-1 && clean.indexOf('.')>-1) clean = clean.replace(/,/g,'');
+      else if (clean.indexOf(',')>-1) clean = clean.replace(',', '.');
+      var f = parseFloat(clean);
+      if (isFinite(f) && f>0) return f;
+    }
+  }catch(_){ }
   try{
     var opener = (typeof lastTrigger!=='undefined' && lastTrigger) ? lastTrigger.closest('.product-card') : null;
     var priceEl = opener ? opener.querySelector('.price, [data-price]') : null;
@@ -3337,30 +3349,97 @@ function bindShare(){
   };
 })();
 </script>
+
 <script>
+/* ===== NUMINA overlay (safe) =====
+   - Use ONLY catalog price by SKU (no text parsing) to avoid 6,500 -> 6.50
+   - Kill legacy "payment link" flow from cards
+   - Invoke Supabase Edge Function `create-invoice` with { purchase_id }
+*/
 (function(){
   function ready(fn){ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fn); else fn(); }
-  function norm(t){ return (t||'').toString().trim().toLowerCase(); }
-  function inferSku(card){
-    try{
-      if(!card) return null; var ds=card.dataset||{}; if(ds.sku) return ds.sku; if(ds.product) return ds.product;
-      var b=card.querySelector('[data-sku],[data-product]'); if(b) return b.getAttribute('data-sku')||b.getAttribute('data-product');
-      var title=card.querySelector('.product-title,h3,h4'); title=title?norm(title.textContent):'';
-      if(title.includes('oro')) return 'GOLD-100G'; if(title.includes('platino')) return 'PLAT-100G';
-      if(title.includes('rolex')||title.includes('126610')) return 'ROLEX-126610L'; if(title.includes('pulsera')||title.includes('bracelet')) return 'NUMINA-BRACELET';
-    }catch(_){}
+  function $(sel,root){ return (root||document).querySelector(sel); }
+  function getClient(){ try{ return (typeof getSupabase==='function')? getSupabase() : (window.supabaseClient||null); }catch(_){ return null; } }
+  function getCatalogPrice(sku){
+    try{ var p = window.CATALOG && window.CATALOG[sku]; if (p && typeof p.price === 'number') return p.price; }catch(_){}
     return null;
   }
+  // Wrap openSKU to store sku & price on #nmBuy
+  var _open = window.openSKU;
+  window.openSKU = function(sku, trigger){
+    try{
+      if (typeof _open === 'function') _open(sku, trigger);
+      var buy = document.getElementById('nmBuy');
+      var price = getCatalogPrice(sku);
+      if (buy){ buy.dataset.sku = sku || ''; if (price!=null) buy.dataset.price = String(price); }
+    }catch(e){ console.error('openSKU overlay error', e); }
+  };
+
+  // Intercept *any* "Comprar" from cards to open the modal (not auto-comprar)
   ready(function(){
     document.addEventListener('click', function(ev){
-      var btn = ev.target && ev.target.closest && ev.target.closest('button,a'); if(!btn) return; if(btn.id==='nmBuy') return;
-      var text = norm(btn.textContent || btn.innerText);
-      var isBuy = btn.matches('[data-action="buy"],[data-buy],.btn-buy,.buy') || text==='comprar' || text==='buy' || text==='purchase';
-      if(!isBuy) return;
+      var el = ev.target && ev.target.closest && ev.target.closest('button,a');
+      if (!el) return;
+      if (el.id === 'nmBuy') return; // modal buy handled below
+      var txt = (el.textContent || el.innerText || '').trim().toLowerCase();
+      var looksBuy = el.matches('[data-action="buy"],[data-buy],.btn-buy,.buy') || txt === 'comprar' || txt === 'buy' || txt === 'purchase';
+      if (!looksBuy) return;
+
+      // If this button belongs to a product card, hijack and open modal via openSKU
+      var card = el.closest('.product-card') || el.closest('[data-product-card]');
+      var sku = el.getAttribute('data-sku') || el.getAttribute('data-product');
+      if (!sku && card) sku = (card.getAttribute('data-sku') || card.getAttribute('data-product') || '');
+      if (!sku && card){
+        // last try: take visible SKU tag in card
+        var tag = card.querySelector('[data-sku], .sku, .badge, .tag');
+        if (tag) sku = tag.getAttribute('data-sku') || (tag.textContent||'').trim();
+      }
+      if (!sku) return; // let default if not clearly a product buy
+      // stop legacy flow (avoids second tab + "No payment link configured")
       ev.preventDefault(); ev.stopPropagation(); ev.stopImmediatePropagation();
-      var sku = btn.getAttribute('data-sku') || btn.getAttribute('data-product') || inferSku(btn.closest('.product-card'));
-      if(!sku){ alert('No se pudo identificar el producto.'); return; }
-      if(typeof window.openSKU==='function'){ window.openSKU(sku, btn); }
+      try{ window.openSKU && window.openSKU(sku, el); }catch(_){}
+    }, true);
+  });
+
+  // Intercept the *modal* buy button and run the dynamic flow
+  async function startCheckout(ev){
+    try{
+      ev.preventDefault(); ev.stopPropagation(); ev.stopImmediatePropagation();
+      var buy = document.getElementById('nmBuy');
+      var sku = buy && buy.dataset ? buy.dataset.sku : null;
+      if (!sku) { alert('No pude identificar el SKU.'); return; }
+      var amount = getCatalogPrice(sku);
+      if (amount == null || !(amount>0)) { alert('No hay precio en catálogo para ' + sku); return; }
+
+      var sb = getClient();
+      if (!sb || !sb.auth){ alert('No se pudo inicializar la sesión.'); return; }
+      var { data: u } = await sb.auth.getUser();
+      if (!u || !u.user){ alert('Inicia sesión para continuar.'); return; }
+
+      // Insert purchase with exact catalog amount (USDT logical currency)
+      var ins = await sb.from('purchases')
+        .insert({ user_id: u.user.id, product_name: sku, sku: sku, value: amount, currency: 'USDT', status: 'pending' })
+        .select('id')
+        .single();
+      if (ins.error || !ins.data){ console.error(ins.error); alert('No se pudo crear la compra.'); return; }
+      var purchaseId = ins.data.id;
+
+      // Call edge function with {purchase_id}
+      var res = await sb.functions.invoke('create-invoice', { body: { purchase_id: purchaseId } });
+      if (res.error || !res.data){ console.error(res.error||res.data); alert('Error al crear link de pago.'); return; }
+      var url = res.data.payment_url || res.data.invoice_url || (res.data.raw && (res.data.raw.payment_url || res.data.raw.invoice_url));
+      if (!url){ alert('La función no devolvió URL de pago.'); return; }
+      window.location.href = url;
+    }catch(e){
+      alert('Error inesperado en checkout: ' + (e && e.message ? e.message : String(e)));
+    }
+  }
+
+  // Delegate: capture-phase on #nmBuy
+  ready(function(){
+    document.addEventListener('click', function(ev){
+      var t = ev.target && ev.target.closest && ev.target.closest('#nmBuy');
+      if (t) startCheckout(ev);
     }, true);
   });
 })();
