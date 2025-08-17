@@ -3361,6 +3361,7 @@ if (fn.error || !paymentUrl){
   function ready(fn){ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fn); else fn(); }
   function $(sel,root){ return (root||document).querySelector(sel); }
   function getClient(){ try{ return (typeof getSupabase==='function')? getSupabase() : (window.supabaseClient||null); }catch(_){ return null; } }
+  function parseMoney(txt){ try{ if(!txt) return null; var s=(txt+'').replace(/[^0-9.,]/g,''); s=s.replace(/[,.](?=\d{3}(?:\D|$))/g,''); s=s.replace(/,/g,'.'); var n=parseFloat(s); return isFinite(n)?n:null; }catch(_){ return null; } }
   function getCatalogPrice(sku){
     try{ var p = window.CATALOG && window.CATALOG[sku]; if (p && typeof p.price === 'number') return p.price; }catch(_){}
     return null;
@@ -3368,12 +3369,18 @@ if (fn.error || !paymentUrl){
   // Wrap openSKU to store sku & price on #nmBuy
   var _open = window.openSKU;
   window.openSKU = function(sku, trigger){
-    try{
-      if (typeof _open === 'function') _open(sku, trigger);
-      var buy = document.getElementById('nmBuy');
-      var price = getCatalogPrice(sku);
-      if (buy){ buy.dataset.sku = sku || ''; if (price!=null) buy.dataset.price = String(price); }
-    }catch(e){ console.error('openSKU overlay error', e); }
+  try{
+    if (typeof _open === 'function') _open(sku, trigger);
+    window.__lastBuyTrigger = trigger || null;
+    var buy = document.getElementById('nmBuy');
+    var price = null;
+    try{ price = getCatalogPrice(sku); }catch(_){ price = null; }
+    if (price==null){ try{ var el=document.getElementById('nmPrice'); price = parseMoney(el && el.textContent); }catch(_){} }
+    if (price==null && trigger){ try{ var card=trigger.closest('.product-card,[data-product-card]'); var pEl=card?(card.querySelector('[data-price],.price,.product-price,.price-tag')||null):null; var raw=pEl?(pEl.getAttribute('data-price')||pEl.textContent):''; price=parseMoney(raw); }catch(_){}}
+    if (buy){ buy.dataset.sku = sku || ''; buy.dataset.price = (price!=null? String(price) : ''); }
+  }catch(e){ console.error('openSKU overlay error', e); }
+};
+}catch(e){ console.error('openSKU overlay error', e); }
   };
 
   // Intercept *any* "Comprar" from cards to open the modal (not auto-comprar)
@@ -3409,8 +3416,16 @@ if (fn.error || !paymentUrl){
       var buy = document.getElementById('nmBuy');
       var sku = buy && buy.dataset ? buy.dataset.sku : null;
       if (!sku) { alert('No pude identificar el SKU.'); return; }
-      var amount = getCatalogPrice(sku);
-      if (amount == null || !(amount>0)) { alert('No hay precio en catálogo para ' + sku); return; }
+      var amount = null;
+try{ var ds = (buy && buy.dataset && buy.dataset.price) ? parseFloat(buy.dataset.price) : null; if (isFinite(ds) && ds>0) amount=ds; }catch(_){ }
+if (amount==null){ amount = getCatalogPrice(sku); }
+if (amount==null || !(amount>0)){
+  try{ var el=document.getElementById('nmPrice'); var n=parseMoney(el && el.textContent); if (isFinite(n)&&n>0) amount=n; }catch(_){ }
+}
+if (amount==null || !(amount>0)){
+  try{ var trg=window.__lastBuyTrigger||null; var card=trg?trg.closest('.product-card,[data-product-card]'):null; var pEl=card?(card.querySelector('[data-price],.price,.product-price,.price-tag')||null):null; var raw=pEl?(pEl.getAttribute('data-price')||pEl.textContent):''; var n2=parseMoney(raw); if (isFinite(n2)&&n2>0) amount=n2; }catch(_){ }
+}
+if (amount==null || !(amount>0)) { alert('No pude determinar el monto para ' + sku); return; }
 
       var sb = getClient();
       if (!sb || !sb.auth){ alert('No se pudo inicializar la sesión.'); return; }
