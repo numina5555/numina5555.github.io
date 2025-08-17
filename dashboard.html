@@ -1488,7 +1488,8 @@ function openSKU(sku, trigger){
     if(nameEl){ var k=i18nKeysForSKU(sku); if(k){ nameEl.innerHTML='<span data-i18n="'+k.name+'">'+(dI18n.t(k.name)||p.name)+'</span>'; } else { nameEl.textContent=p.name; } }
     if(descEl){ var k=i18nKeysForSKU(sku); if(k){ descEl.innerHTML='<span data-i18n="'+k.desc+'">'+(dI18n.t(k.desc)||p.desc)+'</span>'; } else { descEl.textContent=p.desc; } }
     if (priceEl)priceEl.textContent= money(p.price);
-    if (imgEl)  imgEl.src          = p.img;
+    try{ if (window.document && typeof p.price === 'number') { var __buy=document.getElementById('nmBuy'); if(__buy){ __buy.dataset.price = String(p.price); __buy.dataset.sku = p.sku || ''; } } }catch(_){ }
+if (imgEl)  imgEl.src          = p.img;
     try{ if(window.dI18n) dI18n.apply(); }catch(_){ }
     try{ if(window.dI18n) dI18n.apply(); }catch(_){ }
 
@@ -3222,7 +3223,44 @@ function bindShare(){
   }
   function getSku(){ var el=document.getElementById('nmSku'); return (el && el.textContent || '').trim(); }
   function getName(){ var el=document.getElementById('nmName'); return (el && el.textContent || '').trim(); }
-  function getPrice(){ var el=document.getElementById('nmPrice'); return parseAmountFromText(el && el.textContent); }
+  function getPrice(){
+  try{
+    var buy = document.getElementById('nmBuy');
+    if (buy && buy.dataset && buy.dataset.price){
+      var v = parseFloat(buy.dataset.price);
+      if (isFinite(v) && v>0) return v;
+    }
+  }catch(_){ }
+  try{
+    if (window.CATALOG && window.CATALOG[currentSku] && typeof window.CATALOG[currentSku].price === 'number'){
+      return window.CATALOG[currentSku].price;
+    }
+  }catch(_){ }
+  try{
+    var el = document.getElementById('nmPrice');
+    var txt = el ? el.textContent : '';
+    if (txt){
+      var clean = (txt+'').replace(/[^0-9,\.]/g,'');
+      if (clean.indexOf(',')>-1 && clean.indexOf('.')>-1) clean = clean.replace(/,/g,'');
+      else if (clean.indexOf(',')>-1) clean = clean.replace(',', '.');
+      var f = parseFloat(clean);
+      if (isFinite(f) && f>0) return f;
+    }
+  }catch(_){ }
+  try{
+    var opener = (typeof lastTrigger!=='undefined' && lastTrigger) ? lastTrigger.closest('.product-card') : null;
+    var priceEl = opener ? opener.querySelector('.price, [data-price]') : null;
+    var raw = priceEl ? (priceEl.getAttribute('data-price') || priceEl.textContent) : '';
+    if (raw){
+      var c = (raw+'').replace(/[^0-9,\.]/g,'');
+      if (c.indexOf(',')>-1 && c.indexOf('.')>-1) c = c.replace(/,/g,'');
+      else if (c.indexOf(',')>-1) c = c.replace(',', '.');
+      var v2 = parseFloat(c);
+      if (isFinite(v2) && v2>0) return v2;
+    }
+  }catch(_){ }
+  return null;
+}
 
   async function ensureUser(){
     try{
