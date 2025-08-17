@@ -3294,8 +3294,8 @@ function bindShare(){
       var payload = { purchase_id: orderId };
       var fn = await ctx.supabase.functions.invoke('create-invoice', { body: payload });
       var data = fn && fn.data;
-      var paymentUrl = (data && (data.payment_url || data.invoice_url || (data?.raw && (data.raw.payment_url || data.raw.invoice_url)))) || null;
-      if (fn.error || !paymentUrl){
+      var paymentUrl = (data && (data.payment_url || data.invoice_url || (data.raw && (data.raw.payment_url || data.raw.invoice_url)))) || null;
+if (fn.error || !paymentUrl){
         console.error('edge function error', fn.error || data);
         alert('No se pudo iniciar el cobro en NOWPayments. ' + JSON.stringify(fn.error || data || {}, null, 2));
         return;
