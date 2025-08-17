@@ -3512,5 +3512,154 @@ if (amount==null || !(amount>0)) { alert('No pude determinar el monto para ' + s
 })();
 </script>
 
+
+<!-- NUMINA: inline purge & delete buttons for purchases -->
+<style>
+  .btn-danger{border:1px solid #ff5252;color:#ff5252;background:transparent;padding:.35rem .7rem;border-radius:.55rem;font-weight:700;cursor:pointer}
+  .btn-danger:hover{background:#ff5252;color:#111}
+  .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.15);color:#ddd;padding:.35rem .6rem;border-radius:.55rem}
+  .purge-wrap{display:flex;gap:.5rem;align-items:center;margin-left:.5rem}
+  .purge-wrap select{background:#0f0f0f;border:1px solid rgba(255,255,255,.08);border-radius:.5rem;padding:.35rem .5rem;color:#f0f0f0;outline:none}
+</style>
+<script>
+(function(){
+  function getSB(){
+    try { return (typeof getSupabase === 'function') ? getSupabase() : (window.supabaseClient || window.supabase); }
+    catch(_){ return null; }
+  }
+
+  // Add "Eliminar" buttons next to "Detalles"
+  function injectDeleteButtonsIntoTable(tbodySel){
+    var tbody = document.querySelector(tbodySel);
+    if(!tbody) return;
+    tbody.querySelectorAll('tr').forEach(function(tr){
+      var actionsCell = tr.querySelector('td:last-child');
+      if(!actionsCell) return;
+      var hasBtn = actionsCell.querySelector('[data-action="delete-purchase"]');
+      if(hasBtn) return;
+
+      // Try to locate an existing button (Detalles) as reference
+      var refBtn = actionsCell.querySelector('button, .action-btn, a');
+      var id = tr.getAttribute('data-purchase-id') || (refBtn && refBtn.getAttribute('data-purchase-id')) || '';
+      if(!id){
+        var any = tr.querySelector('[data-purchase-id]');
+        if(any) id = any.getAttribute('data-purchase-id');
+      }
+
+      var del = document.createElement('button');
+      del.className = 'btn-danger';
+      del.textContent = 'Eliminar';
+      del.setAttribute('data-action','delete-purchase');
+      if(id) del.setAttribute('data-purchase-id', id);
+      if(refBtn && refBtn.nextSibling){
+        refBtn.parentNode.insertBefore(del, refBtn.nextSibling);
+      }else{
+        actionsCell.appendChild(del);
+      }
+    });
+  }
+
+  function injectRowButtons(){
+    injectDeleteButtonsIntoTable('#purchases-body');
+    injectDeleteButtonsIntoTable('#miscompras-body');
+  }
+
+  // Purge UI controls on filter bars
+  function injectPurgeControls(barSel){
+    var bar = document.querySelector(barSel);
+    if(!bar || bar.querySelector('.purge-wrap')) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'purge-wrap';
+    wrap.innerHTML = '<select class="purge-age" aria-label="Antigüedad">'+
+      '<option value="30">&gt; 30 días</option>'+
+      '<option value="60">&gt; 60 días</option>'+
+      '<option value="90" selected>&gt; 90 días</option>'+
+      '<option value="180">&gt; 180 días</option>'+
+      '</select>'+
+      '<button type="button" class="btn-danger purge-btn">Eliminar antiguos</button>';
+    bar.appendChild(wrap);
+  }
+
+  // Delete a single purchase by id
+  async function deletePurchaseById(id, row){
+    const sb = getSB();
+    if(!sb) return alert('No se pudo inicializar Supabase.');
+    try{
+      const { error } = await sb.from('purchases').delete().eq('id', id);
+      if(error) throw error;
+      if(row) row.remove();
+      alert('Eliminado.');
+    }catch(err){
+      alert('No se pudo eliminar: ' + (err && err.message ? err.message : err));
+    }
+  }
+
+  // Purge old purchases in batch
+  async function purgeOld(days){
+    const sb = getSB();
+    if(!sb) return alert('No se pudo inicializar Supabase.');
+    const cutoff = new Date(Date.now() - days*24*60*60*1000).toISOString();
+    if(!confirm('¿Eliminar compras FINALIZADAS/CANCELADAS anteriores a '+cutoff+'?')) return;
+    try{
+      const { data, error } = await sb
+        .from('purchases')
+        .delete()
+        .lt('created_at', cutoff)
+        .or('status.eq.completed,status.eq.cancelled');
+      if(error) throw error;
+      const ids = (data||[]).map(x=>x.id);
+      // Remove rows from both tables
+      ['#purchases-body','#miscompras-body'].forEach(function(sel){
+        const tb = document.querySelector(sel);
+        if(!tb) return;
+        ids.forEach(function(id){
+          const btn = tb.querySelector('[data-purchase-id="'+id+'"]');
+          const row = btn ? btn.closest('tr') : tb.querySelector('tr[data-purchase-id="'+id+'"]');
+          if(row) row.remove();
+        });
+      });
+      alert('Eliminados: ' + (data ? data.length : 0));
+    }catch(err){
+      alert('No se pudo limpiar: ' + (err && err.message ? err.message : err));
+    }
+  }
+
+  // Delegated events
+  document.addEventListener('click', function(e){
+    const delBtn = e.target.closest('[data-action="delete-purchase"]');
+    if(delBtn){
+      const row = delBtn.closest('tr');
+      const id = delBtn.getAttribute('data-purchase-id') || (row && row.getAttribute('data-purchase-id'));
+      if(!id){
+        if(!confirm('No encuentro el ID en la fila. ¿Eliminar sólo visualmente?')) return;
+        if(row) row.remove();
+        return;
+      }
+      if(!confirm('¿Eliminar compra '+id+'? Esta acción es permanente.')) return;
+      deletePurchaseById(id, row);
+      return;
+    }
+    const purgeBtn = e.target.closest('.purge-btn');
+    if(purgeBtn){
+      const wrap = purgeBtn.closest('.purge-wrap');
+      const sel = wrap ? wrap.querySelector('.purge-age') : null;
+      const days = sel ? parseInt(sel.value,10) || 90 : 90;
+      purgeOld(days);
+    }
+  });
+
+  // Initial inject & observe future changes
+  function setup(){
+    injectPurgeControls('#purchases-filterbar');
+    injectPurgeControls('#miscompras-filterbar');
+    injectRowButtons();
+    const obs = new MutationObserver(function(){ injectRowButtons(); });
+    obs.observe(document.body, { childList:true, subtree:true });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup);
+  else setup();
+})();
+</script>
+
 </body>
 </html>
