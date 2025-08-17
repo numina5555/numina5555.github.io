@@ -3327,24 +3327,28 @@ if (fn.error || !paymentUrl){
 <script>
 (function(){
   window.__callEdge = async function(fnName, body, accessToken){
-  try{
-    var base = (window.__SB_BASE || '').replace(/\/$/, '');
-    if (!base) { try { var sb = (typeof getSupabase==='function')? getSupabase() : null; base = (sb && sb.storage && sb.storage.url) ? sb.storage.url.split('/storage')[0] : ''; } catch(_){ base=''; } }
-    if (!base) throw new Error('Supabase base URL not found');
-    var url = base + '/functions/v1/' + fnName;
-    var headers = { 'Content-Type': 'application/json' };
-    if (window.__SB_ANON) headers['apikey'] = window.__SB_ANON;
-    if (accessToken) headers['Authorization'] = 'Bearer ' + accessToken;
-    var res = await fetch(url, { method:'POST', headers, body: JSON.stringify(body||{}) });
-    var text = await res.text();
-    var json = null; try{ json = text ? JSON.parse(text) : null; }catch(_){ }
-    return { ok: res.ok, status: res.status, json, text };
-  }catch(e){
-    return { ok:false, status:0, json:null, text: (e && e.message) ? e.message : String(e) };
-  }
-};
-      return { ok:false, status:0, json:null, text:String(e&&e.message?e.message:e) };
+    try{
+      var base = (window.__SB_BASE || '').replace(/\/$/, '');
+      if (!base) {
+        try {
+          var sb = (typeof getSupabase==='function' && getSupabase()) || (window.supabase && window.supabase);
+          base = sb && sb.storage && sb.storage.url ? sb.storage.url.split('/storage')[0] : '';
+        } catch(_) { base=''; }
+      }
+      if (!base) throw new Error('Supabase base URL not found');
+      var url = base + '/functions/v1/' + fnName;
+      var headers = { 'Content-Type': 'application/json' };
+      if (window.__SB_ANON) headers['apikey'] = window.__SB_ANON;
+      if (accessToken) headers['Authorization'] = 'Bearer ' + accessToken;
+      var res = await fetch(url, { method:'POST', headers, body: JSON.stringify(body||{}) });
+      var text = await res.text();
+      var json = null; try{ json = text ? JSON.parse(text) : null; }catch(_){}
+      return { ok: res.ok, status: res.status, json, text };
+    }catch(e){
+      return { ok:false, status:0, json:null, text: (e && e.message) ? e.message : String(e) };
     }
+  };
+})();
 </script>
 
 <script>
