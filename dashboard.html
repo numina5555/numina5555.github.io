@@ -3600,9 +3600,28 @@ if (amount==null || !(amount>0)) { alert('No pude determinar el monto para ' + s
   }
 
   function injectRowButtons(){
-    injectDeleteButtonsIntoTable('#purchases-body');
-    injectDeleteButtonsIntoTable('#miscompras-body');
-  }
+  // 1) intent: tablas conocidas
+  injectDeleteButtonsIntoTable('#purchases-body');
+  injectDeleteButtonsIntoTable('#miscompras-body');
+  // 2) fallback: cualquier botón/enlace que diga 'Detalles' o tenga data-action=details
+  var nodes = Array.from(document.querySelectorAll('button, a'));
+  nodes.forEach(function(btn){
+    var label = (btn.textContent||btn.innerText||'').trim().toLowerCase();
+    var looksDetails = (btn.dataset && btn.dataset.action==='details') || /^detall/.test(label);
+    if(!looksDetails) return;
+    if(btn.nextElementSibling && btn.nextElementSibling.dataset && btn.nextElementSibling.dataset.action==='delete-purchase') return;
+    var del = document.createElement('button');
+    del.className = 'btn-delete-row';
+    del.textContent = 'Eliminar';
+    del.setAttribute('data-action','delete-purchase');
+    // intenta obtener id desde la fila o el propio botón
+    var tr = btn.closest('tr');
+    var id = btn.getAttribute('data-purchase-id') || (tr && tr.getAttribute('data-purchase-id')) || '';
+    if(!id){ var any = tr ? tr.querySelector('[data-purchase-id]') : null; if(any) id = any.getAttribute('data-purchase-id'); }
+    if(id) del.setAttribute('data-purchase-id', id);
+    btn.after(del);
+  });
+}
 
   // Purge UI controls on filter bars
   function injectPurgeControls(barSel){
