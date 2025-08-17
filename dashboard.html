@@ -1593,10 +1593,10 @@ overlay.classList.add("show");
 // p.sku must be one of: 'gold_100g_9999', 'platinum_100g_9995', 'rolex_126610LV', 'bracelet_numina'
 const PAYMENT_LINKS = {
   
-  gold_100g_9999:    'https://nowpayments.io/payment/?iid=4384021327',  // 13,500 USDT
-  platinum_100g_9995:'https://nowpayments.io/payment/?iid=5742431610',  // 6,500 USDT
-  rolex_126610LV:    'https://nowpayments.io/payment/?iid=5388824453',  // 19,600 USDT
-  bracelet_numina:   'https://nowpayments.io/payment/?iid=4476885766'   // 35 USDT
+  gold_100g_9999:    '#',  // 13,500 USDT
+  platinum_100g_9995:'#',  // 6,500 USDT
+  rolex_126610LV:    '#',  // 19,600 USDT
+  bracelet_numina:   '#'   // 35 USDT
 };
 
 const link = PAYMENT_LINKS[p.sku];
@@ -1819,11 +1819,12 @@ if (!link) {
 <script>
 (function () {
   // 1) Enlaces fijos de NOWPayments por SKU
+  /* NOWPayments links removed by ChatGPT: using placeholders */
   var FIXED_PAY_URL = {
-    'NUMINA-BRACELET': 'https://nowpayments.io/payment/?iid=4476885766', // USDT 35
-    'GOLD-100G':       'https://nowpayments.io/payment/?iid=4384021327', // USDT 13500
-    'PLAT-100G':       'https://nowpayments.io/payment/?iid=5742431610', // USDT 6500
-    'ROLEX-126610L':   'https://nowpayments.io/payment/?iid=5388824453'  // USDT 19600
+    'NUMINA-BRACELET': '#', // USDT 35
+    'GOLD-100G':       '#', // USDT 13500
+    'PLAT-100G':       '#', // USDT 6500
+    'ROLEX-126610L':   '#'  // USDT 19600
   };
   window.FIXED_PAY_URL = FIXED_PAY_URL;
 
@@ -3160,7 +3161,7 @@ function bindShare(){
       }
     }
 
-    // Public helper in case your markup calls abrirPago('https://nowpayments.io/payment/?iid=...')
+    // Public helper in case your markup calls abrirPago('#')
     window.abrirPago = async function(baseUrl){
       const email = await getUserEmail();
       if (!email) {
