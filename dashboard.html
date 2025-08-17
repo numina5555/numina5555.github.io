@@ -3515,11 +3515,11 @@ if (amount==null || !(amount>0)) { alert('No pude determinar el monto para ' + s
 
 <!-- NUMINA: inline purge & delete buttons for purchases -->
 <style>
-  .btn-danger{border:1px solid #ff5252;color:#ff5252;background:transparent;padding:.35rem .7rem;border-radius:.55rem;font-weight:700;cursor:pointer}
-  .btn-danger:hover{background:#ff5252;color:#111}
+  .btn-danger-quiet{border:1px solid rgba(255,255,255,.18);color:#ddd;background:transparent;padding:.35rem .7rem;border-radius:.55rem;font-weight:600;cursor:pointer;transition:all .12s ease}
+.btn-danger-quiet:hover{background:#1a1a1a;color:#fff;border-color:rgba(255,255,255,.32)}
   .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.15);color:#ddd;padding:.35rem .6rem;border-radius:.55rem}
   .purge-wrap{display:flex;gap:.5rem;align-items:center;margin-left:.5rem}
-  .purge-wrap select{background:#0f0f0f;border:1px solid rgba(255,255,255,.08);border-radius:.5rem;padding:.35rem .5rem;color:#f0f0f0;outline:none}
+  .purge-wrap select{background:#111;border:1px solid rgba(255,255,255,.12);border-radius:.55rem;padding:.35rem .6rem;color:#e6e6e6;outline:none}
 </style>
 <script>
 (function(){
@@ -3569,14 +3569,14 @@ if (amount==null || !(amount>0)) { alert('No pude determinar el monto para ' + s
     var bar = document.querySelector(barSel);
     if(!bar || bar.querySelector('.purge-wrap')) return;
     var wrap = document.createElement('div');
-    wrap.className = 'purge-wrap';
+    wrap.className = 'purge-wrap'; wrap.style.marginLeft='auto';
     wrap.innerHTML = '<select class="purge-age" aria-label="Antigüedad">'+
       '<option value="30">&gt; 30 días</option>'+
       '<option value="60">&gt; 60 días</option>'+
       '<option value="90" selected>&gt; 90 días</option>'+
       '<option value="180">&gt; 180 días</option>'+
       '</select>'+
-      '<button type="button" class="btn-danger purge-btn">Eliminar antiguos</button>';
+      '<button type="button" class="btn-danger-quiet purge-btn">🗑 Borrar antiguos</button>';
     bar.appendChild(wrap);
   }
 
