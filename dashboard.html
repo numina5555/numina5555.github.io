@@ -3473,12 +3473,43 @@ if (fn.error || !paymentUrl){
     try{ return (typeof getSupabase==='function' && getSupabase()) || window.supabaseClient || window.supabase || null; }
     catch(_){ return null; }
   }
+  
   async function getRefCode(){
-    // DOM (where your code is displayed)
+    // 1) From explicit DOM anchors
     var dom = document.querySelector('[data-ref-code], #refCode, #nmRefCode, .ref-code, .referral-code code, .referral-code .value');
     var code = (dom && (dom.dataset && dom.dataset.refCode || (dom.textContent||'').trim())) || '';
 
-    // Supabase user metadata fallback
+    // 2) Heuristic: look near a "Copiar" button
+    if(!code){
+      try{
+        var copyBtns = Array.from(document.querySelectorAll('button, a')).filter(function(b){
+          return /copiar/i.test((b.textContent||b.innerText||''));
+        });
+        for (var i=0;i<copyBtns.length;i++){
+          var box = copyBtns[i].closest('[class*="ref"], [class*="invite"], .chip, .badge, .row, .toolbar, .group, div');
+          if(!box) continue;
+          var c = box.cloneNode(true);
+          c.querySelectorAll('button,a,svg,i,img').forEach(function(n){ n.remove(); });
+          var t = (c.textContent||'').replace(/\s+/g,' ').trim();
+          var m = t.match(/\b[A-Z0-9]{6,20}\b/);
+          if(m){ code = m[0]; break; }
+        }
+      }catch(e){}
+    }
+
+    // 3) Fallback: any element whose id/class hints "ref"
+    if(!code){
+      try{
+        var cands = Array.from(document.querySelectorAll('[id*="ref" i], [class*="ref" i]'));
+        for (var j=0;j<cands.length;j++){
+          var text = (cands[j].textContent||'').replace(/\s+/g,' ').trim();
+          var m2 = text.match(/\b[A-Z][A-Z0-9]{5,19}\b/);
+          if(m2){ code = m2[0]; break; }
+        }
+      }catch(e){}
+    }
+
+    // 4) From Supabase user_metadata
     if(!code){
       try{
         var sb = getSB();
@@ -3491,6 +3522,7 @@ if (fn.error || !paymentUrl){
     }
     return (code||'').trim();
   }
+
   async function buildInviteUrl(){
     var code = await getRefCode();
     var url = 'https://numina.vip/login.html' + (code ? ('?ref='+encodeURIComponent(code)) : '');
