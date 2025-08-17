@@ -3306,10 +3306,10 @@ function bindShare(){
         cancel_url: location.href
       };
       var fn = await ctx.supabase.functions.invoke('create-invoice', { body: payload });
-      const __url = fn?.data?.invoice_url || fn?.data?.payment_url || (fn?.data?.raw && (fn.data.raw.invoice_url || fn.data.raw.payment_url));
-      if (fn.error || !fn.data || !__url){
+      const __url = (result && (result.invoice_url || result.payment_url || (result.raw && (result.raw.invoice_url || result.raw.payment_url))));
+      if (fnErr || !result || !__url){
         console.error('edge function error', fn.error || fn.data);
-        alert('No se pudo iniciar el cobro en NOWPayments. Detalle: ' + JSON.stringify(fn.error || fn.data || {}, null, 2));
+        alert('No se pudo iniciar el cobro en NOWPayments. [' + (fnErr?.status||'') + '] ' + (fnErr?.message||'') + '\n' + JSON.stringify(fnErr?.data||result||{}, null, 2));
         return;
       }
       // Redirect to NOWPayments
@@ -3334,6 +3334,30 @@ function bindShare(){
   }
 
   ready(wireOverrides);
+})();
+</script>
+
+<script>
+(function(){
+  window.__callEdge = async function(fnName, body, accessToken){
+    try{
+      const url = (typeof URL !== 'undefined' ? URL : (window.__SB_URL || '')) + '/functions/v1/' + fnName;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': (typeof KEY !== 'undefined' ? KEY : ''),
+          ...(accessToken ? { 'Authorization': 'Bearer ' + accessToken } : {}),
+        },
+        body: JSON.stringify(body||{})
+      });
+      const text = await res.text();
+      let json = null; try{ json = text ? JSON.parse(text) : null; }catch(_){}
+      return { ok: res.ok, status: res.status, json, text };
+    }catch(e){
+      return { ok:false, status:0, json:null, text:String(e&&e.message?e.message:e) };
+    }
+  };
 })();
 </script>
 </body>
