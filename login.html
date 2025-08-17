@@ -635,5 +635,28 @@ const redirectTo = RESET_REDIRECT_URL; // -> en producción envía al formulario
     - Tras crear el usuario se intenta: (1) buscar el dueño del código y (2) insertar un registro en "referrals".
       Según tus policies de RLS esto puede requerir ajuste o un RPC con SECURITY DEFINER. Si falla, el alta sigue.
   -->
+
+
+<!-- NUMINA referral parser: picks ?ref= and fills the register code, activating the tab -->
+<script>
+(function(){
+  try{
+    var params = new URLSearchParams(location.search);
+    var ref = (params.get('ref') || localStorage.getItem('ref') || '').trim();
+    if(!ref) return;
+    try{ localStorage.setItem('ref', ref); }catch(_){}
+    var tab = document.getElementById('tab-register') || document.querySelector('[data-tab="signup"], .tab-signup');
+    if(tab && typeof tab.click === 'function') tab.click();
+    var input = document.querySelector('#register-refcode, [name="referral_code"], [name="ref_code"], [name="codigo_referido"], input[placeholder*="Código"][placeholder*="opcional"]');
+    if(input){
+      input.value = ref;
+      input.dispatchEvent(new Event('input', {bubbles:true}));
+      var hint = document.getElementById('ref-hint');
+      if(hint){ hint.textContent = 'Código de referido detectado: ' + ref; }
+    }
+  }catch(e){}
+})();
+</script>
+
 </body>
 </html>
