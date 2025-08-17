@@ -2428,135 +2428,80 @@ if (!link) {
 
 
 <!-- Moved scripts that were incorrectly placed after </html> -->
+
+<!-- === NUMINA: Regenerar link de pago (NOWPayments) — v3 con fallback de ID === -->
 <script>
-// ===== Sorteos: carga desde Supabase (users.tickets_count, purchases: NUMINA-BRACELET, historial) =====
 (function(){
-  const GOAL = 10000;
-  const BRACELET_SKU = 'NUMINA-BRACELET';
-
-  async function cargarSorteos(){
-    try{
-      const supabase = getSupabase();
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) { window.location.href = '/login.html'; return; }
-
-      
-// Tickets activos tomados desde tickets_ledger (saldo = SUM(count))
-      let ticketsActivos = 0;
-      try{
-        const { data: ticketsRows, error: tErr } = await supabase
-          .from('tickets_ledger')
-          .select('count')
-          .eq('user_id', user.id);
-        if (!tErr && ticketsRows) {
-          ticketsActivos = ticketsRows.reduce((acc, r) => acc + (Number(r.count) || 0), 0);
-        }
-      }catch(e){
-        console.warn('tickets_ledger sum error', e);
-      }
-      const $tickets = document.getElementById('srt-tickets-activos');
-      if ($tickets) $tickets.textContent = ticketsActivos.toString();
-
-// Upgrade Numina: sumar unidades de pulseras completadas/pagadas (usa quantity si existe)
-      let totalBracelets = 0;
-      try{
-        const { data: rows } = await supabase
-          .from('purchases')
-          .select('sku, status, qty')
-          .eq('user_id', user.id)
-          .eq('sku', BRACELET_SKU)
-          .in('status', ['completed','paid','success']);
-        totalBracelets = (rows || []).reduce((acc, r)=> acc + (Number(r.qty)||1), 0);
-      }catch(_){/* noop */}
-
-      const current = totalBracelets;
-      const pct = Math.max(0, Math.min(100, (current/GOAL)*100));
-      const fill = document.getElementById('srt-fill');
-      const label = document.getElementById('srt-upgrade-valor');
-      const bar = document.querySelector('.srt-progress');
-      if (fill) fill.style.width = pct + '%';
-      if (bar) bar.setAttribute('aria-valuenow', String(current));
-      if (label) label.textContent = current.toLocaleString() + ' / ' + GOAL.toLocaleString();
-      if (current >= 2500) document.getElementById('srt-25').classList.add('on');
-      if (current >= 5000) document.getElementById('srt-50').classList.add('on');
-      if (current >= 10000) document.getElementById('srt-100').classList.add('on');
-
-      // Historial de participación: probar dos posibles tablas/campos
-      const tbody = document.getElementById('sorteos-tbody');
-      async function loadFrom(table, select){
-        const { data, error } = await supabase
-          .from(table)
-          .select(select)
-          .eq('user_id', user.id)
-          .order('created_at', { ascending:false })
-          .limit(50);
-        if (error) return null;
-        return data || null;
-      }
-      let entries = await loadFrom('tickets_ledger','created_at, sku, count');
-
-      if (!tbody) return;
-      if (!entries || !entries.length){
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;"><span data-i18n="raffles.noParticipations">Sin participaciones</span></td></tr>';
-        try { if (window.dI18n && typeof dI18n.apply === 'function') { dI18n.apply(); } } catch(_) {}
-      } else {
-        tbody.innerHTML = entries.map(e => {
-          const fecha = new Date(e.created_at).toLocaleDateString();
-          const sorteo = e.sku ?? '—';
-          const used = (Number(e.count)||0) < 0 ? Math.abs(Number(e.count)) : 0;
-          return '<tr><td>'+fecha+'</td><td>'+sorteo+'</td><td>'+used+'</td></tr>';
-        }).join('');
-      }
-    }catch(err){ console.error('[Sorteos] error:', err); }
+  function getSB(){
+    try{ return (typeof getSupabase==='function' && getSupabase()) || window.supabaseClient || window.supabase; }
+    catch(_){ return null; }
   }
-
-  // Mostrar sección y cargar datos al hacer click en el menú "Sorteos"
-  document.addEventListener('DOMContentLoaded', () => {
-    const menu = document.querySelector('.menu-item[data-target="sorteos"]');
-    const section = document.getElementById('section-sorteos');
-    const mainDash = document.getElementById('main-dashboard');
-    if (menu){
-      menu.addEventListener('click', async () => {
-        if (mainDash) mainDash.style.display = 'none';
-        if (section) section.style.display = 'block';
-        await cargarSorteos();
-      });
-    }
-  });
-})();
-
-</script>
-
-<!-- === NUMINA: Regenerar link de pago (NOWPayments) sin leer monto del DOM — v2 === -->
-<script>
-(function(){
   async function getAccessToken(){
     try{
-      const sb = (typeof getSupabase==='function' && getSupabase()) || window.supabaseClient || window.supabase;
-      if (!sb || !sb.auth) return null;
+      const sb = getSB(); if(!sb || !sb.auth) return null;
       const { data } = await sb.auth.getSession();
       return (data && data.session && data.session.access_token) || null;
     }catch(_){ return null; }
   }
-  function findPurchaseId(fromEl){
-    let id = fromEl && fromEl.getAttribute ? fromEl.getAttribute('data-purchase-id') : null;
-    if (id) return id;
-    let box = fromEl ? fromEl.closest && fromEl.closest('[data-purchase-id]') : null;
-    if (box) return box.getAttribute('data-purchase-id');
-    let any = document.querySelector('#purchase-detail [data-purchase-id], .purchase-detail [data-purchase-id]');
-    if (any) return any.getAttribute('data-purchase-id');
-    let t = (document.querySelector('#nmOrderId, #nmPurchaseId') || {}).textContent || '';
-    t = (t || '').trim();
-    return t || null;
+  function parseMoney(txt){
+    try{
+      if(!txt) return null;
+      let s = (txt+'').replace(/[^0-9.,]/g,''); s = s.replace(/[,.](?=\d{3}(?:\D|$))/g,''); s = s.replace(/,/g,'.');
+      const n = parseFloat(s); return isFinite(n) ? n : null;
+    }catch(_){ return null; }
   }
+  function text(el){ return (el && (el.textContent||el.innerText)||'').trim(); }
+
+  function findPurchaseId(fromEl){
+    let id = fromEl && fromEl.getAttribute && fromEl.getAttribute('data-purchase-id'); if (id) return id;
+    let box = fromEl && fromEl.closest && fromEl.closest('[data-purchase-id]'); if (box) return box.getAttribute('data-purchase-id');
+    let any = document.querySelector('#purchase-detail [data-purchase-id], .purchase-detail [data-purchase-id]'); if (any) return any.getAttribute('data-purchase-id');
+    let t = text(document.querySelector('#nmOrderId, #nmPurchaseId')); if (t) return t;
+    return null;
+  }
+
+  async function fallbackGuessPurchaseId(){
+    const sb = getSB(); if(!sb) return null;
+    let userId = null;
+    try{ const { data } = await sb.auth.getUser(); userId = data && data.user && data.user.id; }catch(_){}
+    if(!userId) return null;
+
+    const scope = document.querySelector('#purchase-detail, .purchase-detail, .modal, body'); if(!scope) return null;
+    const totalEl = scope.querySelector('[data-total], .total, .info-de-pago .total, .payment-info .total, .resumen .total, .summary .total');
+    const totalText = text(totalEl) || text(scope.querySelector('.info-de-pago, .payment-info, .summary')) || '';
+    const amount = parseMoney(totalText);
+
+    let dateStr = text(scope.querySelector('[data-date], .chip-date, .date, .fecha, .badges .date, .chips .date')) || '';
+    if(!/\d{1,2}\s*\/\s*\d{1,2}\s*\/\s*\d{2,4}/.test(dateStr)){
+      const match = (scope.textContent||'').match(/(\d{1,2}\/\d{1,2}\/\d{2,4})/);
+      if(match) dateStr = match[1];
+    }
+    let startISO=null, endISO=null;
+    if(dateStr){
+      const [d,m,y] = dateStr.split('/').map(x=>parseInt(x,10));
+      if(d && m && y){
+        const dt0 = new Date(Date.UTC(y<100?2000+y:y, (m-1), d, 0,0,0));
+        const dt1 = new Date(Date.UTC(y<100?2000+y:y, (m-1), d, 23,59,59));
+        startISO = dt0.toISOString(); endISO = dt1.toISOString();
+      }
+    }
+
+    let q = sb.from('purchases').select('id, value, created_at, status').eq('user_id', userId).order('created_at', { ascending:false }).limit(50);
+    if (amount != null) q = q.eq('value', amount);
+    if (startISO && endISO) q = q.gte('created_at', startISO).lte('created_at', endISO);
+    try{
+      const { data, error } = await q; if(error || !data) return null;
+      if(data.length === 1) return data[0].id;
+      const pend = data.find(r => (r.status||'').toLowerCase().startsWith('pend')); if(pend) return pend.id;
+      return data[0] ? data[0].id : null;
+    }catch(_){ return null; }
+  }
+
   async function callEdge(fnName, payload, accessToken){
     try{
       let base = (window.__SB_BASE || '').replace(/\/$/, '');
       if (!base) {
-        try {
-          const sb = (typeof getSupabase==='function' && getSupabase()) || window.supabaseClient || window.supabase;
-          base = (sb && sb.storage && sb.storage.url) ? sb.storage.url.split('/storage')[0] : '';
-        } catch(_){}
+        try { const sb = getSB(); base = (sb && sb.storage && sb.storage.url) ? sb.storage.url.split('/storage')[0] : ''; } catch(_){}
       }
       if (!base) throw new Error('No pude obtener la URL base de Supabase.');
       const url = base + '/functions/v1/' + fnName;
@@ -2564,48 +2509,43 @@ if (!link) {
       if (window.__SB_ANON) headers['apikey'] = window.__SB_ANON;
       if (accessToken) headers['Authorization'] = 'Bearer ' + accessToken;
       const res = await fetch(url, { method:'POST', headers, body: JSON.stringify(payload||{}) });
-      const text = await res.text();
-      let json = null; try{ json = text ? JSON.parse(text) : null; }catch(_){}
+      const text = await res.text(); let json = null; try{ json = text ? JSON.parse(text) : null; }catch(_){}
       return { ok: res.ok, status: res.status, json, text };
-    }catch(e){
-      return { ok:false, status:0, json:null, text: (e && e.message) ? e.message : String(e) };
-    }
+    }catch(e){ return { ok:false, status:0, json:null, text: (e && e.message) ? e.message : String(e) }; }
   }
+
   function looksLikeRegenButton(node){
     if (!node) return false;
-    // selectors declarados
     if (node.closest('#nmRegenerate, [data-action="regenerate-payment-link"], .regenerate-link, button[data-regenerate]')) return true;
-    // por texto
-    const clickEl = node.closest('button, a');
-    if (!clickEl) return false;
+    const clickEl = node.closest('button, a'); if (!clickEl) return false;
     const label = (clickEl.textContent || clickEl.innerText || '').trim().toLowerCase().replace(/\s+/g,' ');
     return label.includes('generar nuevo link de pago') || label.includes('generar nuevo enlace de pago') || label.includes('regenerar link');
   }
+
   document.addEventListener('click', async (ev) => {
     if (!looksLikeRegenButton(ev.target)) return;
-    // interceptar el click y detener handlers antiguos
     ev.preventDefault(); ev.stopImmediatePropagation(); ev.stopPropagation();
     const btn = ev.target.closest('button, a') || ev.target;
-    const purchaseId = findPurchaseId(btn);
+
+    let purchaseId = findPurchaseId(btn);
+    if (!purchaseId) purchaseId = await fallbackGuessPurchaseId();
     if (!purchaseId) { alert('No pude determinar el ID de la compra.'); return; }
+
     const original = btn.textContent || 'Generando...';
     btn.disabled = true; btn.textContent = 'Generando...';
     try{
       const token = await getAccessToken();
       const { ok, json, text } = await callEdge('create-invoice', { purchase_id: purchaseId }, token);
       if (!ok) throw new Error(text || (json && JSON.stringify(json)));
-      const url = (json && (json.payment_url || json.invoice_url)) ||
-                  (json && json.data && (json.data.payment_url || json.data.invoice_url)) || null;
+      const url = (json && (json.payment_url || json.invoice_url)) || (json && json.data && (json.data.payment_url || json.data.invoice_url)) || null;
       if (!url) throw new Error('La función respondió sin URL de pago.');
       window.open(url, '_blank');
-    }catch(e){
-      alert('No se pudo iniciar el cobro: ' + (e && e.message ? e.message : e));
-    }finally{
-      btn.disabled = false; btn.textContent = original;
-    }
-  }, true); // 👈 captura para adelantarnos a otros listeners
+    }catch(e){ alert('No se pudo iniciar el cobro: ' + (e && e.message ? e.message : e)); }
+    finally{ btn.disabled = false; btn.textContent = original; }
+  }, true);
 })();
 </script>
+
 
 
 </body></html>`;
