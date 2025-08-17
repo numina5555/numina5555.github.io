@@ -2622,7 +2622,82 @@ ${watermark}
   <p class="muted" style="margin-top:16px">
     ${isPending ? 'Documento proforma (pendiente de pago).' : 'Pago recibido. ¡Gracias!'}
   </p>
-</div></body></html>`;
+</div>
+<!-- === NUMINA: Regenerar link de pago (NOWPayments) sin leer monto del DOM === -->
+<script>
+(function(){
+  async function getAccessToken(){
+    try{
+      const sb = (typeof getSupabase==='function' && getSupabase()) || window.supabaseClient || window.supabase;
+      if (!sb || !sb.auth) return null;
+      const { data } = await sb.auth.getSession();
+      return (data && data.session && data.session.access_token) || null;
+    }catch(_){ return null; }
+  }
+  function findPurchaseId(fromEl){
+    let id = fromEl.getAttribute('data-purchase-id');
+    if (id) return id;
+    let box = fromEl.closest('[data-purchase-id]');
+    if (box) return box.getAttribute('data-purchase-id');
+    let any = document.querySelector('#purchase-detail [data-purchase-id], .purchase-detail [data-purchase-id]');
+    if (any) return any.getAttribute('data-purchase-id');
+    let t = (document.querySelector('#nmOrderId, #nmPurchaseId') || {}).textContent || '';
+    t = (t || '').trim();
+    return t || null;
+  }
+  async function callEdge(fnName, payload, accessToken){
+    try{
+      // intenta deducir base de supabase de forma segura
+      let base = (window.__SB_BASE || '').replace(/\/$/, '');
+      if (!base) {
+        try {
+          const sb = (typeof getSupabase==='function' && getSupabase()) || window.supabaseClient || window.supabase;
+          // si storage.url existe, retrocede hasta el dominio del proyecto
+          base = (sb && sb.storage && sb.storage.url) ? sb.storage.url.split('/storage')[0] : '';
+        } catch(_){}
+      }
+      if (!base) throw new Error('No pude obtener la URL base de Supabase.');
+      const url = base + '/functions/v1/' + fnName;
+      const headers = { 'Content-Type': 'application/json' };
+      if (window.__SB_ANON) headers['apikey'] = window.__SB_ANON;
+      if (accessToken) headers['Authorization'] = 'Bearer ' + accessToken;
+      const res = await fetch(url, { method:'POST', headers, body: JSON.stringify(payload||{}) });
+      const text = await res.text();
+      let json = null; try{ json = text ? JSON.parse(text) : null; }catch(_){}
+      return { ok: res.ok, status: res.status, json, text };
+    }catch(e){
+      return { ok:false, status:0, json:null, text: (e && e.message) ? e.message : String(e) };
+    }
+  }
+  document.addEventListener('click', async (ev)=>{
+    const btn = ev.target.closest(
+      '#nmRegenerate, [data-action="regenerate-payment-link"], .regenerate-link, button[data-regenerate]'
+    );
+    if (!btn) return;
+    ev.preventDefault();
+    const purchaseId = findPurchaseId(btn);
+    if (!purchaseId) { alert('No pude determinar el ID de la compra.'); return; }
+    const original = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Generando...';
+    try{
+      const token = await getAccessToken();
+      const { ok, json, text } = await callEdge('create-invoice', { purchase_id: purchaseId }, token);
+      if (!ok) throw new Error(text || (json && JSON.stringify(json)));
+      const url =
+        (json && (json.payment_url || json.invoice_url)) ||
+        (json && json.data && (json.data.payment_url || json.data.invoice_url)) || null;
+      if (!url) throw new Error('La función respondió sin URL de pago.');
+      window.open(url, '_blank');
+    }catch(e){
+      alert('No se pudo iniciar el cobro: ' + (e && e.message ? e.message : e));
+    }finally{
+      btn.disabled = false; btn.textContent = original;
+    }
+  });
+})();
+</script>
+
+</body></html>`;
   }
 
   // (Opcional) Intentar descargar desde Supabase Storage si USE_STORAGE = true
@@ -3463,5 +3538,80 @@ if (fn.error || !paymentUrl){
   else setup();
 })();
 </script>
+
+<!-- === NUMINA: Regenerar link de pago (NOWPayments) sin leer monto del DOM === -->
+<script>
+(function(){
+  async function getAccessToken(){
+    try{
+      const sb = (typeof getSupabase==='function' && getSupabase()) || window.supabaseClient || window.supabase;
+      if (!sb || !sb.auth) return null;
+      const { data } = await sb.auth.getSession();
+      return (data && data.session && data.session.access_token) || null;
+    }catch(_){ return null; }
+  }
+  function findPurchaseId(fromEl){
+    let id = fromEl.getAttribute('data-purchase-id');
+    if (id) return id;
+    let box = fromEl.closest('[data-purchase-id]');
+    if (box) return box.getAttribute('data-purchase-id');
+    let any = document.querySelector('#purchase-detail [data-purchase-id], .purchase-detail [data-purchase-id]');
+    if (any) return any.getAttribute('data-purchase-id');
+    let t = (document.querySelector('#nmOrderId, #nmPurchaseId') || {}).textContent || '';
+    t = (t || '').trim();
+    return t || null;
+  }
+  async function callEdge(fnName, payload, accessToken){
+    try{
+      // intenta deducir base de supabase de forma segura
+      let base = (window.__SB_BASE || '').replace(/\/$/, '');
+      if (!base) {
+        try {
+          const sb = (typeof getSupabase==='function' && getSupabase()) || window.supabaseClient || window.supabase;
+          // si storage.url existe, retrocede hasta el dominio del proyecto
+          base = (sb && sb.storage && sb.storage.url) ? sb.storage.url.split('/storage')[0] : '';
+        } catch(_){}
+      }
+      if (!base) throw new Error('No pude obtener la URL base de Supabase.');
+      const url = base + '/functions/v1/' + fnName;
+      const headers = { 'Content-Type': 'application/json' };
+      if (window.__SB_ANON) headers['apikey'] = window.__SB_ANON;
+      if (accessToken) headers['Authorization'] = 'Bearer ' + accessToken;
+      const res = await fetch(url, { method:'POST', headers, body: JSON.stringify(payload||{}) });
+      const text = await res.text();
+      let json = null; try{ json = text ? JSON.parse(text) : null; }catch(_){}
+      return { ok: res.ok, status: res.status, json, text };
+    }catch(e){
+      return { ok:false, status:0, json:null, text: (e && e.message) ? e.message : String(e) };
+    }
+  }
+  document.addEventListener('click', async (ev)=>{
+    const btn = ev.target.closest(
+      '#nmRegenerate, [data-action="regenerate-payment-link"], .regenerate-link, button[data-regenerate]'
+    );
+    if (!btn) return;
+    ev.preventDefault();
+    const purchaseId = findPurchaseId(btn);
+    if (!purchaseId) { alert('No pude determinar el ID de la compra.'); return; }
+    const original = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Generando...';
+    try{
+      const token = await getAccessToken();
+      const { ok, json, text } = await callEdge('create-invoice', { purchase_id: purchaseId }, token);
+      if (!ok) throw new Error(text || (json && JSON.stringify(json)));
+      const url =
+        (json && (json.payment_url || json.invoice_url)) ||
+        (json && json.data && (json.data.payment_url || json.data.invoice_url)) || null;
+      if (!url) throw new Error('La función respondió sin URL de pago.');
+      window.open(url, '_blank');
+    }catch(e){
+      alert('No se pudo iniciar el cobro: ' + (e && e.message ? e.message : e));
+    }finally{
+      btn.disabled = false; btn.textContent = original;
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
