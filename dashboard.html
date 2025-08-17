@@ -3202,14 +3202,15 @@ function bindShare(){
 (function(){
   function ready(fn){ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded', fn);} else { fn(); } }
   function parseAmountFromText(txt){
-    try{
-      if(!txt) return null;
-      // keep digits, comma, dot
-      var clean = (txt+'').replace(/[^0-9,\.]/g,'');
-      // normalize: if it has both comma and dot, assume comma thousands -> remove commas
-      if (clean.indexOf(',')>-1 && clean.indexOf('.')>-1){
-        clean = clean.replace(/,/g,'');
-      } else if (clean.indexOf(',')>-1 && clean.indexOf('.')===-1){
+  try{
+    if(!txt) return null;
+    var s = (txt+'').replace(/[^0-9.,]/g,'');
+    s = s.replace(/,(?=\d{3}(?:\D|$))/g, '');
+    if (s.indexOf(',')>-1 && s.indexOf('.')===-1) s = s.replace(',', '.');
+    var n = parseFloat(s);
+    return isFinite(n) ? n : null;
+  }catch(_){ return null; }
+} else if (clean.indexOf(',')>-1 && clean.indexOf('.')===-1){
         // comma as decimal
         clean = clean.replace(',', '.');
       }
@@ -3220,16 +3221,16 @@ function bindShare(){
   function getSku(){ var el=document.getElementById('nmSku'); return (el && el.textContent || '').trim(); }
   function getName(){ var el=document.getElementById('nmName'); return (el && el.textContent || '').trim(); }
   function getPrice(){
-  try{
-    var buy = document.getElementById('nmBuy');
-    if (buy && buy.dataset && buy.dataset.price){
-      var v = parseFloat(buy.dataset.price);
-      if (isFinite(v) && v>0) return v;
-    }
+  try{ var buy=document.getElementById('nmBuy'); if (buy && buy.dataset && buy.dataset.price){ var v=parseFloat(buy.dataset.price); if(isFinite(v)&&v>0) return v; } }catch(_){ }
+  try{ var sku=getSku(); if (sku && window.CATALOG && window.CATALOG[sku] && typeof window.CATALOG[sku].price==='number'){ return window.CATALOG[sku].price; } }catch(_){ }
+  try{ var el=document.getElementById('nmPrice'); var n=parseAmountFromText(el && el.textContent); if (n && n>0) return n; }catch(_){ }
+  try{ var opener=(typeof lastTrigger!=='undefined' && lastTrigger)? lastTrigger.closest('.product-card'):null; var pEl=opener? opener.querySelector('.price,[data-price]'):null; var raw=pEl? (pEl.getAttribute('data-price')||pEl.textContent):''; var m=parseAmountFromText(raw); if(m&&m>0) return m; }catch(_){ }
+  return null;
+}
   }catch(_){ }
   try{
-    if (window.CATALOG && window.CATALOG[currentSku] && typeof window.CATALOG[currentSku].price === 'number'){
-      return window.CATALOG[currentSku].price;
+    if (window.CATALOG && window.CATALOG && window.CATALOG[getSku ? getSku() : ''] && typeof window.CATALOG && window.CATALOG[getSku ? getSku() : ''].price === 'number'){
+      return window.CATALOG && window.CATALOG[getSku ? getSku() : ''].price;
     }
   }catch(_){ }
   try{
@@ -3291,16 +3292,25 @@ function bindShare(){
       var orderId = ins.data.id;
 
       // Call Edge Function to create the NOWPayments invoice in USDT
-      var payload = { purchase_id: orderId };
+      var payload = { pay_currency: 'USDTTRC20', usdt_network: 'TRC20',
+        amount: amount,
+        currency: 'USDT',
+        order_id: orderId,
+        sku: sku || null,
+        product_name: name || null,
+        email: ctx.user.email || null,
+        success_url: (location.origin + '/thanks.html?order=' + encodeURIComponent(orderId)),
+        cancel_url: location.href
+      };
       var fn = await ctx.supabase.functions.invoke('create-invoice', { body: payload });
-      var data = fn && fn.data;
-      var paymentUrl = (data && (data.payment_url || data.invoice_url || (data?.raw && (data.raw.payment_url || data.raw.invoice_url)))) || null;
-      if (fn.error || !paymentUrl){
-        console.error('edge function error', fn.error || data);
-        alert('No se pudo iniciar el cobro en NOWPayments. ' + JSON.stringify(fn.error || data || {}, null, 2));
+      const __url = (result && (result.invoice_url || result.payment_url || (result.raw && (result.raw.invoice_url || result.raw.payment_url))));
+      if (fnErr || !result || !__url){
+        console.error('edge function error', fn.error || fn.data);
+        alert('No se pudo iniciar el cobro en NOWPayments. [' + (fnErr?.status||'') + '] ' + (fnErr?.message||'') + '\n' + JSON.stringify(fnErr?.data||result||{}, null, 2));
         return;
       }
-      window.location.href = paymentUrl;
+      // Redirect to NOWPayments
+      window.location.href = __url || (result && (result.invoice_url || result.payment_url)) || '/';
     }catch(e){
       console.error('checkout error', e);
       alert('Error inesperado: ' + (e && e.message ? e.message : e));
