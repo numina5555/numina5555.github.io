@@ -1334,7 +1334,90 @@
         </tr>`;
       }).join('');
     }
-    function initNav(){
+    
+    async function cargarSorteos(){
+      try{
+        // Elements
+        const tActivosEl = document.getElementById('srt-tickets-activos');
+        const upValEl    = document.getElementById('srt-upgrade-valor');
+        const fillEl     = document.getElementById('srt-fill');
+        const tbody      = document.getElementById('sorteos-tbody');
+
+        if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">'+(window.dI18n ? dI18n.t('labels.loading') : 'Cargando…')+'</td></tr>';
+
+        const supabase = getSupabase();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user){ if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Sesión expirada</td></tr>'; return; }
+
+        // Pull user info to show tickets/progress if available
+        let tickets = 0, progress = 0;
+        try{
+          const { data: udata } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', user.id)
+            .maybeSingle();
+          if (udata){
+            tickets  = (udata.tickets_active ?? udata.tickets ?? udata.raffle_tickets ?? 0) | 0;
+            progress = Number(udata.upgrade_points ?? udata.upgrade_progress ?? udata.upgrade ?? 0) || 0;
+          }
+        }catch(_){}
+
+        if (tActivosEl) tActivosEl.textContent = String(tickets);
+        if (upValEl)    upValEl.textContent    = (progress.toLocaleString ? progress.toLocaleString() : String(progress)) + ' / 10,000';
+        if (fillEl){
+          const pct = Math.max(0, Math.min(100, (progress/10000)*100));
+          fillEl.style.width = pct + '%';
+          try{
+            document.getElementById('srt-25')?.classList.toggle('on', progress >= 2500);
+            document.getElementById('srt-50')?.classList.toggle('on', progress >= 5000);
+            document.getElementById('srt-100')?.classList.toggle('on', progress >= 10000);
+          }catch(_){}
+        }
+
+        // History: try a few likely table names, render first one that works
+        const candidates = [
+          {table:'raffle_participations', fields:'id, raffle_id, raffle_name, tickets_used, created_at'},
+          {table:'raffles_participations', fields:'id, raffle_id, raffle_name, tickets_used, created_at'},
+          {table:'raffle_entries', fields:'id, raffle_id, raffle_name, tickets as tickets_used, created_at'},
+          {table:'raffles_entries', fields:'id, raffle_id, raffle_name, tickets as tickets_used, created_at'},
+          {table:'sorteos', fields:'id, name as raffle_name, tickets_used, created_at', extraFilter:true}
+        ];
+
+        let rows = [];
+        for (const c of candidates){
+          try{
+            let q = supabase.from(c.table).select(c.fields).eq('user_id', user.id).order('created_at', {ascending:false});
+            if (c.extraFilter) q = q.eq('type', 'raffle');
+            const { data, error } = await q;
+            if (!error && Array.isArray(data) && data.length){ rows = data; break; }
+          }catch(_){ /* try next */ }
+        }
+
+        if (!Array.isArray(rows) || rows.length === 0){
+          if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;"><span data-i18n="raffles.noParticipations">'+(window.dI18n ? dI18n.t('raffles.noParticipations') : 'Sin participaciones')+'</span></td></tr>';
+          return;
+        }
+
+        const html = rows.map(r=>{
+          const d   = r.created_at ? new Date(r.created_at).toLocaleDateString() : '';
+          const nm  = r.raffle_name || ('#' + (r.raffle_id || r.id || ''));
+          const tks = (r.tickets_used != null) ? r.tickets_used : (r.tickets || 0);
+          return `<tr><td>${d}</td><td>${nm}</td><td>${tks}</td></tr>`;
+        }).join('');
+
+        if (tbody) tbody.innerHTML = html || '<tr><td colspan="3" style="text-align:center;"><span data-i18n="raffles.noParticipations">'+(window.dI18n ? dI18n.t('raffles.noParticipations') : 'Sin participaciones')+'</span></td></tr>';
+
+        // Re-apply filter if present
+        try{ window.__applySorteosFilter && window.__applySorteosFilter(); }catch(_){}
+      }catch(e){
+        console.error('cargarSorteos error', e);
+        const tbody = document.getElementById('sorteos-tbody');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Error al cargar</td></tr>';
+      }
+    }
+    
+function initNav(){
       const menuItems = document.querySelectorAll('.menu-item[data-target]');
       const sections = document.querySelectorAll('.section-content');
       const mainDashboard = document.getElementById('main-dashboard');
@@ -1348,6 +1431,7 @@
           mainDashboard.style.display = 'none';
           sections.forEach(s=> s.style.display = (s.id === 'section-'+target ? 'block' : 'none'));
           if (target === 'compras') { cargarMisCompras(); }
+          if (target === 'sorteos') { cargarSorteos(); }
         });
       });
     }
