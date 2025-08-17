@@ -3380,8 +3380,7 @@ if (fn.error || !paymentUrl){
     if (buy){ buy.dataset.sku = sku || ''; buy.dataset.price = (price!=null? String(price) : ''); }
   }catch(e){ console.error('openSKU overlay error', e); }
 };
-}catch(e){ console.error('openSKU overlay error', e); }
-  };
+
 
   // Intercept *any* "Comprar" from cards to open the modal (not auto-comprar)
   ready(function(){
