@@ -3213,7 +3213,7 @@ function bindShare(){
     return isFinite(n) ? n : null;
   }catch(_){ return null; }
 }
- else if (clean.indexOf(',')>-1 && clean.indexOf('.')===-1){
+ else if (clean.indexOf(',')>-1 && clean.indexOf('.')===-1)
         // comma as decimal
         clean = clean.replace(',', '.');
       }
