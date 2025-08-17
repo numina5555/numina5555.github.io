@@ -3335,7 +3335,7 @@ if (fn.error || !paymentUrl){
     var nodes = Array.from(document.querySelectorAll('button, a'));
     nodes.forEach(function(btn){
       var label = (btn.textContent||btn.innerText||'').trim().toLowerCase();
-      var looksDetails = (btn.dataset && btn.dataset.action==='details') || /^detall/.test(label);
+      var looksDetails = (btn.dataset && (btn.dataset.action==='details' || btn.dataset.action==='reclamo')) || /^detall/.test(label) || /^reclamo/.test(label);
       if(!looksDetails) return;
       if(btn.nextElementSibling && btn.nextElementSibling.dataset && btn.nextElementSibling.dataset.action==='delete-purchase') return;
 
