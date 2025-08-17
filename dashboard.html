@@ -3291,25 +3291,16 @@ function bindShare(){
       var orderId = ins.data.id;
 
       // Call Edge Function to create the NOWPayments invoice in USDT
-      var payload = { pay_currency: 'USDTTRC20', usdt_network: 'TRC20',
-        amount: amount,
-        currency: 'USDT',
-        order_id: orderId,
-        sku: sku || null,
-        product_name: name || null,
-        email: ctx.user.email || null,
-        success_url: (location.origin + '/thanks.html?order=' + encodeURIComponent(orderId)),
-        cancel_url: location.href
-      };
+      var payload = { purchase_id: orderId };
       var fn = await ctx.supabase.functions.invoke('create-invoice', { body: payload });
-      const __url = (result && (result.invoice_url || result.payment_url || (result.raw && (result.raw.invoice_url || result.raw.payment_url))));
-      if (fnErr || !result || !__url){
-        console.error('edge function error', fn.error || fn.data);
-        alert('No se pudo iniciar el cobro en NOWPayments. [' + (fnErr?.status||'') + '] ' + (fnErr?.message||'') + '\n' + JSON.stringify(fnErr?.data||result||{}, null, 2));
+      var data = fn && fn.data;
+      var paymentUrl = (data && (data.payment_url || data.invoice_url || (data?.raw && (data.raw.payment_url || data.raw.invoice_url)))) || null;
+      if (fn.error || !paymentUrl){
+        console.error('edge function error', fn.error || data);
+        alert('No se pudo iniciar el cobro en NOWPayments. ' + JSON.stringify(fn.error || data || {}, null, 2));
         return;
       }
-      // Redirect to NOWPayments
-      window.location.href = __url || (result && (result.invoice_url || result.payment_url)) || '/';
+      window.location.href = paymentUrl;
     }catch(e){
       console.error('checkout error', e);
       alert('Error inesperado: ' + (e && e.message ? e.message : e));
