@@ -3459,5 +3459,58 @@ if (amount==null || !(amount>0)) { alert('No pude determinar el monto para ' + s
   });
 })();
 </script>
+<script>
+(function () {
+  function getSB() {
+    try { return (typeof getSupabase === 'function') ? getSupabase() : (window.supabaseClient || window.supabase); }
+    catch (_) { return null; }
+  }
+
+  // Inserta el botón "Eliminar" al lado de cada "Detalles"
+  function injectDeleteButtons() {
+    document.querySelectorAll('[data-purchase-id].btn, [data-purchase-id][data-action="details"], button[data-purchase-id]')
+      .forEach((detBtn) => {
+        if (detBtn.nextElementSibling?.dataset?.action === 'delete-purchase') return;
+
+        const del = document.createElement('button');
+        del.className = 'btn btn-sm btn-danger';
+        del.style.marginLeft = '8px';
+        del.textContent = 'Eliminar';
+        del.dataset.action = 'delete-purchase';
+        del.dataset.id = detBtn.getAttribute('data-purchase-id');
+        detBtn.after(del);
+      });
+  }
+
+  // Delegación: borrar una compra por ID
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-action="delete-purchase"]');
+    if (!btn) return;
+
+    const id = btn.dataset.id;
+    if (!id) return alert('No pude identificar el ID del artículo.');
+
+    if (!confirm(`¿Eliminar el artículo/compra ${id}? Esta acción es permanente.`)) return;
+
+    const sb = getSB();
+    if (!sb) return alert('No se pudo inicializar Supabase.');
+
+    // Borra por ID (si quieres restringir: .eq('user_id', user.id))
+    const { error } = await sb.from('purchases').delete().eq('id', id);
+    if (error) return alert('No se pudo eliminar: ' + (error.message || error));
+
+    // Quitar visualmente la fila (busca la tarjeta o fila contenedora)
+    const row = btn.closest('.purchase-row, .product-card, tr, li, .item');
+    if (row) row.remove();
+  });
+
+  // Inyectar al cargar y también si la lista se re-renderiza
+  const ready = (fn) => (document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', fn) : fn());
+  ready(injectDeleteButtons);
+  const mo = new MutationObserver(() => injectDeleteButtons());
+  mo.observe(document.body, { childList: true, subtree: true });
+})();
+</script>
+
 </body>
 </html>
