@@ -3202,15 +3202,14 @@ function bindShare(){
 (function(){
   function ready(fn){ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded', fn);} else { fn(); } }
   function parseAmountFromText(txt){
-  try{
-    if(!txt) return null;
-    var s = (txt+'').replace(/[^0-9.,]/g,'');
-    s = s.replace(/,(?=\d{3}(?:\D|$))/g, '');
-    if (s.indexOf(',')>-1 && s.indexOf('.')===-1) s = s.replace(',', '.');
-    var n = parseFloat(s);
-    return isFinite(n) ? n : null;
-  }catch(_){ return null; }
-} else if (clean.indexOf(',')>-1 && clean.indexOf('.')===-1){
+    try{
+      if(!txt) return null;
+      // keep digits, comma, dot
+      var clean = (txt+'').replace(/[^0-9,\.]/g,'');
+      // normalize: if it has both comma and dot, assume comma thousands -> remove commas
+      if (clean.indexOf(',')>-1 && clean.indexOf('.')>-1){
+        clean = clean.replace(/,/g,'');
+      } else if (clean.indexOf(',')>-1 && clean.indexOf('.')===-1){
         // comma as decimal
         clean = clean.replace(',', '.');
       }
@@ -3221,16 +3220,16 @@ function bindShare(){
   function getSku(){ var el=document.getElementById('nmSku'); return (el && el.textContent || '').trim(); }
   function getName(){ var el=document.getElementById('nmName'); return (el && el.textContent || '').trim(); }
   function getPrice(){
-  try{ var buy=document.getElementById('nmBuy'); if (buy && buy.dataset && buy.dataset.price){ var v=parseFloat(buy.dataset.price); if(isFinite(v)&&v>0) return v; } }catch(_){ }
-  try{ var sku=getSku(); if (sku && window.CATALOG && window.CATALOG[sku] && typeof window.CATALOG[sku].price==='number'){ return window.CATALOG[sku].price; } }catch(_){ }
-  try{ var el=document.getElementById('nmPrice'); var n=parseAmountFromText(el && el.textContent); if (n && n>0) return n; }catch(_){ }
-  try{ var opener=(typeof lastTrigger!=='undefined' && lastTrigger)? lastTrigger.closest('.product-card'):null; var pEl=opener? opener.querySelector('.price,[data-price]'):null; var raw=pEl? (pEl.getAttribute('data-price')||pEl.textContent):''; var m=parseAmountFromText(raw); if(m&&m>0) return m; }catch(_){ }
-  return null;
-}
+  try{
+    var buy = document.getElementById('nmBuy');
+    if (buy && buy.dataset && buy.dataset.price){
+      var v = parseFloat(buy.dataset.price);
+      if (isFinite(v) && v>0) return v;
+    }
   }catch(_){ }
   try{
-    if (window.CATALOG && window.CATALOG && window.CATALOG[getSku ? getSku() : ''] && typeof window.CATALOG && window.CATALOG[getSku ? getSku() : ''].price === 'number'){
-      return window.CATALOG && window.CATALOG[getSku ? getSku() : ''].price;
+    if (window.CATALOG && window.CATALOG[currentSku] && typeof window.CATALOG[currentSku].price === 'number'){
+      return window.CATALOG[currentSku].price;
     }
   }catch(_){ }
   try{
@@ -3292,25 +3291,16 @@ function bindShare(){
       var orderId = ins.data.id;
 
       // Call Edge Function to create the NOWPayments invoice in USDT
-      var payload = { pay_currency: 'USDTTRC20', usdt_network: 'TRC20',
-        amount: amount,
-        currency: 'USDT',
-        order_id: orderId,
-        sku: sku || null,
-        product_name: name || null,
-        email: ctx.user.email || null,
-        success_url: (location.origin + '/thanks.html?order=' + encodeURIComponent(orderId)),
-        cancel_url: location.href
-      };
+      var payload = { purchase_id: orderId };
       var fn = await ctx.supabase.functions.invoke('create-invoice', { body: payload });
-      const __url = (result && (result.invoice_url || result.payment_url || (result.raw && (result.raw.invoice_url || result.raw.payment_url))));
-      if (fnErr || !result || !__url){
-        console.error('edge function error', fn.error || fn.data);
-        alert('No se pudo iniciar el cobro en NOWPayments. [' + (fnErr?.status||'') + '] ' + (fnErr?.message||'') + '\n' + JSON.stringify(fnErr?.data||result||{}, null, 2));
+      var data = fn && fn.data;
+      var paymentUrl = (data && (data.payment_url || data.invoice_url || (data?.raw && (data.raw.payment_url || data.raw.invoice_url)))) || null;
+      if (fn.error || !paymentUrl){
+        console.error('edge function error', fn.error || data);
+        alert('No se pudo iniciar el cobro en NOWPayments. ' + JSON.stringify(fn.error || data || {}, null, 2));
         return;
       }
-      // Redirect to NOWPayments
-      window.location.href = __url || (result && (result.invoice_url || result.payment_url)) || '/';
+      window.location.href = paymentUrl;
     }catch(e){
       console.error('checkout error', e);
       alert('Error inesperado: ' + (e && e.message ? e.message : e));
@@ -3357,50 +3347,6 @@ function bindShare(){
       return { ok:false, status:0, json:null, text:String(e&&e.message?e.message:e) };
     }
   };
-})();
-</script>
-
-<script>
-(function(){
-  // Intercept any "Comprar" click in catalog cards (capture phase)
-  function ready(fn){ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', fn); else fn(); }
-  function norm(t){ return (t||'').toString().trim().toLowerCase(); }
-  function inferSkuFromCard(card){
-    try{
-      if (!card) return null;
-      // Direct data attributes
-      var ds = card.dataset || {};
-      if (ds.sku) return ds.sku;
-      if (ds.product) return ds.product;
-      var btn = card.querySelector('[data-sku],[data-product]');
-      if (btn) return btn.getAttribute('data-sku') || btn.getAttribute('data-product');
-      // Fallback: map by title text
-      var title = card.querySelector('.product-title, h3, h4'); title = title ? norm(title.textContent) : '';
-      if (title.includes('oro')) return 'GOLD-100G';
-      if (title.includes('platino')) return 'PLAT-100G';
-      if (title.includes('rolex') || title.includes('126610')) return 'ROLEX-126610L';
-      if (title.includes('pulsera') || title.includes('bracelet')) return 'NUMINA-BRACELET';
-    }catch(_){}
-    return null;
-  }
-  ready(function(){
-    document.addEventListener('click', function(e){
-      var btn = e.target && e.target.closest && e.target.closest('button, a');
-      if (!btn) return;
-      var label = norm(btn.textContent || btn.innerText);
-      var isBuy = btn.matches('[data-action=\"buy\"], .buy, .btn-buy, [data-buy]') || ['comprar','buy','purchase'].includes(label);
-      if (!isBuy) return;
-      // If it's the modal buy button, let the modal handler run
-      if (btn.id === 'nmBuy') return;
-      // Route all other buy buttons to the dynamic flow
-      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
-      var sku = (btn.getAttribute('data-sku') || btn.getAttribute('data-product')) || inferSkuFromCard(btn.closest('.product-card'));
-      if (!sku){ alert('No se pudo identificar el producto.'); return; }
-      if (typeof window.openSKU === 'function'){ window.openSKU(sku, btn); }
-      // auto-disparar compra después de abrir modal
-      setTimeout(function(){ var b=document.getElementById('nmBuy'); if (b) b.click(); }, 80);
-    }, true); // capture
-  });
 })();
 </script>
 </body>
