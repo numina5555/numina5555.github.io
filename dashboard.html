@@ -3387,114 +3387,16 @@ if (fn.error || !paymentUrl){
 })();
 </script>
 
-<script>
-/* ===== NUMINA overlay (safe) =====
-   - Use ONLY catalog price by SKU (no text parsing) to avoid 6,500 -> 6.50
-   - Kill legacy "payment link" flow from cards
-   - Invoke Supabase Edge Function `create-invoice` with { purchase_id }
-*/
-(function(){
-  function ready(fn){ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fn); else fn(); }
-  function $(sel,root){ return (root||document).querySelector(sel); }
-  function getClient(){ try{ return (typeof getSupabase==='function')? getSupabase() : (window.supabaseClient||null); }catch(_){ return null; } }
-  function parseMoney(txt){ try{ if(!txt) return null; var s=(txt+'').replace(/[^0-9.,]/g,''); s=s.replace(/[,.](?=\d{3}(?:\D|$))/g,''); s=s.replace(/,/g,'.'); var n=parseFloat(s); return isFinite(n)?n:null; }catch(_){ return null; } }
-  function getCatalogPrice(sku){
-    try{ var p = window.CATALOG && window.CATALOG[sku]; if (p && typeof p.price === 'number') return p.price; }catch(_){}
-    return null;
-  }
-  // Wrap openSKU to store sku & price on #nmBuy
-  var _open = window.openSKU;
-  window.openSKU = function(sku, trigger){
-  try{
-    if (typeof _open === 'function') _open(sku, trigger);
-    window.__lastBuyTrigger = trigger || null;
-    var buy = document.getElementById('nmBuy');
-    var price = null;
-    try{ price = getCatalogPrice(sku); }catch(_){ price = null; }
-    if (price==null){ try{ var el=document.getElementById('nmPrice'); price = parseMoney(el && el.textContent); }catch(_){} }
-    if (price==null && trigger){ try{ var card=trigger.closest('.product-card,[data-product-card]'); var pEl=card?(card.querySelector('[data-price],.price,.product-price,.price-tag')||null):null; var raw=pEl?(pEl.getAttribute('data-price')||pEl.textContent):''; price=parseMoney(raw); }catch(_){}}
-    if (buy){ buy.dataset.sku = sku || ''; buy.dataset.price = (price!=null? String(price) : ''); }
-  }catch(e){ console.error('openSKU overlay error', e); }
-};
 
-
-  // Intercept *any* "Comprar" from cards to open the modal (not auto-comprar)
-  ready(function(){
-    document.addEventListener('click', function(ev){
-      var el = ev.target && ev.target.closest && ev.target.closest('button,a');
-      if (!el) return;
-      if (el.id === 'nmBuy') return; // modal buy handled below
-      var txt = (el.textContent || el.innerText || '').trim().toLowerCase();
-      var looksBuy = el.matches('[data-action="buy"],[data-buy],.btn-buy,.buy') || txt === 'comprar' || txt === 'buy' || txt === 'purchase';
-      if (!looksBuy) return;
-
-      // If this button belongs to a product card, hijack and open modal via openSKU
-      var card = el.closest('.product-card') || el.closest('[data-product-card]');
-      var sku = el.getAttribute('data-sku') || el.getAttribute('data-product');
-      if (!sku && card) sku = (card.getAttribute('data-sku') || card.getAttribute('data-product') || '');
-      if (!sku && card){
-        // last try: take visible SKU tag in card
-        var tag = card.querySelector('[data-sku], .sku, .badge, .tag');
-        if (tag) sku = tag.getAttribute('data-sku') || (tag.textContent||'').trim();
-      }
-      if (!sku) return; // let default if not clearly a product buy
-      // stop legacy flow (avoids second tab + "No payment link configured")
-      ev.preventDefault(); ev.stopPropagation(); ev.stopImmediatePropagation();
-      try{ window.openSKU && window.openSKU(sku, el); }catch(_){}
-    }, true);
-  });
-
-  // Intercept the *modal* buy button and run the dynamic flow
-  async function startCheckout(ev){
-    try{
-      ev.preventDefault(); ev.stopPropagation(); ev.stopImmediatePropagation();
-      var buy = document.getElementById('nmBuy');
-      var sku = buy && buy.dataset ? buy.dataset.sku : null;
-      if (!sku) { alert('No pude identificar el SKU.'); return; }
-      var amount = null;
-try{ var ds = (buy && buy.dataset && buy.dataset.price) ? parseFloat(buy.dataset.price) : null; if (isFinite(ds) && ds>0) amount=ds; }catch(_){ }
-if (amount==null){ amount = getCatalogPrice(sku); }
-if (amount==null || !(amount>0)){
-  try{ var el=document.getElementById('nmPrice'); var n=parseMoney(el && el.textContent); if (isFinite(n)&&n>0) amount=n; }catch(_){ }
+<style>
+.btn-delete-row{
+  border:1px solid #f5c400; color:#f5c400; background:transparent;
+  padding:.35rem .7rem; border-radius:.55rem; font-weight:700; cursor:pointer;
+  transition:all .12s ease
 }
-if (amount==null || !(amount>0)){
-  try{ var trg=window.__lastBuyTrigger||null; var card=trg?trg.closest('.product-card,[data-product-card]'):null; var pEl=card?(card.querySelector('[data-price],.price,.product-price,.price-tag')||null):null; var raw=pEl?(pEl.getAttribute('data-price')||pEl.textContent):''; var n2=parseMoney(raw); if (isFinite(n2)&&n2>0) amount=n2; }catch(_){ }
-}
-if (amount==null || !(amount>0)) { alert('No pude determinar el monto para ' + sku); return; }
+.btn-delete-row:hover{ background:#f5c400; color:#111 }
+</style>
 
-      var sb = getClient();
-      if (!sb || !sb.auth){ alert('No se pudo inicializar la sesión.'); return; }
-      var { data: u } = await sb.auth.getUser();
-      if (!u || !u.user){ alert('Inicia sesión para continuar.'); return; }
-
-      // Insert purchase with exact catalog amount (USDT logical currency)
-      var ins = await sb.from('purchases')
-        .insert({ user_id: u.user.id, product_name: sku, sku: sku, value: amount, currency: 'USDT', status: 'pending' })
-        .select('id')
-        .single();
-      if (ins.error || !ins.data){ console.error(ins.error); alert('No se pudo crear la compra.'); return; }
-      var purchaseId = ins.data.id;
-
-      // Call edge function with {purchase_id}
-      var res = await sb.functions.invoke('create-invoice', { body: { purchase_id: purchaseId } });
-      if (res.error || !res.data){ console.error(res.error||res.data); alert('Error al crear link de pago.'); return; }
-      var url = res.data.payment_url || res.data.invoice_url || (res.data.raw && (res.data.raw.payment_url || res.data.raw.invoice_url));
-      if (!url){ alert('La función no devolvió URL de pago.'); return; }
-      window.location.href = url;
-    }catch(e){
-      alert('Error inesperado en checkout: ' + (e && e.message ? e.message : String(e)));
-    }
-  }
-
-  // Delegate: capture-phase on #nmBuy
-  ready(function(){
-    document.addEventListener('click', function(ev){
-      var t = ev.target && ev.target.closest && ev.target.closest('#nmBuy');
-      if (t) startCheckout(ev);
-    }, true);
-  });
-})();
-</script>
 <script>
 (function () {
   function getSB() {
@@ -3502,131 +3404,64 @@ if (amount==null || !(amount>0)) { alert('No pude determinar el monto para ' + s
     catch (_) { return null; }
   }
 
-  // Inserta el botón "Eliminar" al lado de cada "Detalles"
-  function injectDeleteButtons() {
-    document.querySelectorAll('[data-purchase-id].btn, [data-purchase-id][data-action="details"], button[data-purchase-id]')
-      .forEach((detBtn) => {
-        if (detBtn.nextElementSibling?.dataset?.action === 'delete-purchase') return;
-
-        const del = document.createElement('button');
-        del.className = 'btn btn-sm btn-danger';
-        del.style.marginLeft = '8px';
-        del.textContent = 'Eliminar';
-        del.dataset.action = 'delete-purchase';
-        del.dataset.id = detBtn.getAttribute('data-purchase-id');
-        detBtn.after(del);
-      });
-  }
-
-  // Delegación: borrar una compra por ID
-  document.addEventListener('click', async (e) => {
-    const btn = e.target.closest('[data-action="delete-purchase"]');
-    if (!btn) return;
-
-    const id = btn.dataset.id;
-    if (!id) return alert('No pude identificar el ID del artículo.');
-
-    if (!confirm(`¿Eliminar el artículo/compra ${id}? Esta acción es permanente.`)) return;
-
-    const sb = getSB();
-    if (!sb) return alert('No se pudo inicializar Supabase.');
-
-    // Borra por ID (si quieres restringir: .eq('user_id', user.id))
-    const { error } = await sb.from('purchases').delete().eq('id', id);
-    if (error) return alert('No se pudo eliminar: ' + (error.message || error));
-
-    // Quitar visualmente la fila (busca la tarjeta o fila contenedora)
-    const row = btn.closest('.purchase-row, .product-card, tr, li, .item');
-    if (row) row.remove();
-  });
-
-  // Inyectar al cargar y también si la lista se re-renderiza
-  const ready = (fn) => (document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', fn) : fn());
-  ready(injectDeleteButtons);
-  const mo = new MutationObserver(() => injectDeleteButtons());
-  mo.observe(document.body, { childList: true, subtree: true });
-})();
-</script>
-
-
-<!-- NUMINA: inline purge & delete buttons for purchases -->
-<style>
-  .btn-danger-quiet{border:1px solid rgba(255,255,255,.18);color:#ddd;background:transparent;padding:.35rem .7rem;border-radius:.55rem;font-weight:600;cursor:pointer;transition:all .12s ease}
-.btn-danger-quiet:hover{background:#1a1a1a;color:#fff;border-color:rgba(255,255,255,.32)}
-  .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.15);color:#ddd;padding:.35rem .6rem;border-radius:.55rem}
-  
-.btn-delete-row{border:1px solid #f5c400;color:#f5c400;background:transparent;
-  padding:.35rem .7rem;border-radius:.55rem;font-weight:700;cursor:pointer;
-  transition:all .12s ease}
-.btn-delete-row:hover{background:#f5c400;color:#111}
-
-</style>
-<script>
-(function(){
-  function getSB(){
-    try { return (typeof getSupabase === 'function') ? getSupabase() : (window.supabaseClient || window.supabase); }
-    catch(_){ return null; }
-  }
-
-  // Add "Eliminar" buttons next to "Detalles"
-  function injectDeleteButtonsIntoTable(tbodySel){
-    var tbody = document.querySelector(tbodySel);
-    if(!tbody) return;
-    tbody.querySelectorAll('tr').forEach(function(tr){
-      var actionsCell = tr.querySelector('td:last-child');
-      if(!actionsCell) return;
-      var hasBtn = actionsCell.querySelector('[data-action="delete-purchase"]');
-      if(hasBtn) return;
-
-      // Try to locate an existing button (Detalles) as reference
-      var refBtn = actionsCell.querySelector('button, .action-btn, a');
-      var id = tr.getAttribute('data-purchase-id') || (refBtn && refBtn.getAttribute('data-purchase-id')) || '';
-      if(!id){
-        var any = tr.querySelector('[data-purchase-id]');
-        if(any) id = any.getAttribute('data-purchase-id');
-      }
+  // Crea botón "Eliminar" al lado de "Detalles" (por texto o data-action)
+  function injectRowButtons(){
+    var nodes = Array.from(document.querySelectorAll('button, a'));
+    nodes.forEach(function(btn){
+      var label = (btn.textContent||btn.innerText||'').trim().toLowerCase();
+      var looksDetails = (btn.dataset && btn.dataset.action==='details') || /^detall/.test(label);
+      if(!looksDetails) return;
+      if(btn.nextElementSibling && btn.nextElementSibling.dataset && btn.nextElementSibling.dataset.action==='delete-purchase') return;
 
       var del = document.createElement('button');
       del.className = 'btn-delete-row';
       del.textContent = 'Eliminar';
       del.setAttribute('data-action','delete-purchase');
+
+      // Obtener ID desde botón/fila/descendientes
+      var tr = btn.closest('tr');
+      var id = btn.getAttribute('data-purchase-id') || (tr && tr.getAttribute('data-purchase-id')) || '';
+      if(!id){ var any = tr ? tr.querySelector('[data-purchase-id]') : null; if(any) id = any.getAttribute('data-purchase-id'); }
       if(id) del.setAttribute('data-purchase-id', id);
-      if(refBtn && refBtn.nextSibling){
-        refBtn.parentNode.insertBefore(del, refBtn.nextSibling);
-      }else{
-        actionsCell.appendChild(del);
-      }
+
+      btn.after(del);
     });
   }
 
-  function injectRowButtons(){
-  // 1) intent: tablas conocidas
-  injectDeleteButtonsIntoTable('#purchases-body');
-  injectDeleteButtonsIntoTable('#miscompras-body');
-  // 2) fallback: cualquier botón/enlace que diga 'Detalles' o tenga data-action=details
-  var nodes = Array.from(document.querySelectorAll('button, a'));
-  nodes.forEach(function(btn){
-    var label = (btn.textContent||btn.innerText||'').trim().toLowerCase();
-    var looksDetails = (btn.dataset && btn.dataset.action==='details') || /^detall/.test(label);
-    if(!looksDetails) return;
-    if(btn.nextElementSibling && btn.nextElementSibling.dataset && btn.nextElementSibling.dataset.action==='delete-purchase') return;
-    var del = document.createElement('button');
-    del.className = 'btn-delete-row';
-    del.textContent = 'Eliminar';
-    del.setAttribute('data-action','delete-purchase');
-    // intenta obtener id desde la fila o el propio botón
-    var tr = btn.closest('tr');
-    var id = btn.getAttribute('data-purchase-id') || (tr && tr.getAttribute('data-purchase-id')) || '';
-    if(!id){ var any = tr ? tr.querySelector('[data-purchase-id]') : null; if(any) id = any.getAttribute('data-purchase-id'); }
-    if(id) del.setAttribute('data-purchase-id', id);
-    btn.after(del);
+  async function deletePurchaseById(id, row){
+    const sb = getSB();
+    if(!sb) return alert('No se pudo inicializar Supabase.');
+    try{
+      const { error } = await sb.from('purchases').delete().eq('id', id);
+      if(error) throw error;
+      if(row) row.remove();
+    }catch(err){
+      alert('No se pudo eliminar: ' + (err && err.message ? err.message : err));
+    }
+  }
+
+  document.addEventListener('click', function(e){
+    const delBtn = e.target.closest('[data-action="delete-purchase"]');
+    if(!delBtn) return;
+    const row = delBtn.closest('tr');
+    const id = delBtn.getAttribute('data-purchase-id') || (row && row.getAttribute('data-purchase-id'));
+    if(!id){
+      if(!confirm('No encuentro el ID en la fila. ¿Eliminar solo visualmente?')) return;
+      if(row) row.remove();
+      return;
+    }
+    if(!confirm('¿Eliminar compra '+id+'? Esta acción es permanente.')) return;
+    deletePurchaseById(id, row);
   });
-}
 
-  // Purge UI controls on filter bars
-  function injectPurgeControls(barSel){
-    var bar = document.querySelector(barSel);
-    if(!bar || bar.querySelector('</script>
-
+  function setup(){
+    injectRowButtons();
+    const obs = new MutationObserver(function(){ injectRowButtons(); });
+    obs.observe(document.body, { childList:true, subtree:true });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup);
+  else setup();
+})();
+</script>
 </body>
 </html>
