@@ -2526,104 +2526,8 @@ if (!link) {
 })();
 
 </script>
-<script>
-/**
- * Descargar invoice: intenta primero en Supabase Storage (opcional),
- * si no existe, genera una factura HTML al vuelo con estado PAGADO/PENDIENTE.
- */
-(function () {
-  // === CONFIG: poné en true si querés que intente Storage primero ===
-  const USE_STORAGE = false;               // <- poné true si ya tenés bucket y archivos subidos
-  const STORAGE_BUCKET = 'invoices';       // invoices/{userId}/{orderId}-paid.pdf|pending.pdf
 
-  // Helpers DOM
-  const $ = (id) => document.getElementById(id);
-  const txt = (id, fallback='—') => (($(id)?.textContent || '').trim()) || fallback;
-
-  // Lee el estado desde el chip del modal (#pdStatus): pending / paid
-  function getStatusKey(){
-    const el = $('pdStatus');
-    if (!el) return 'pending';
-    const raw = (el.textContent || '').toLowerCase() + ' ' + (el.className || '').toLowerCase();
-    if (/(completed|paid|success|activo|active)/.test(raw)) return 'paid';
-    if (/(pending|pendiente)/.test(raw)) return 'pending';
-    if (/cancel/.test(raw)) return 'cancelled';
-    // por defecto, lo tratamos como pendiente
-    return 'pending';
-  }
-
-  // Lee el # de pedido mostrado (si viene con #, lo limpia)
-  function getOrderId(){
-    const raw = txt('pdOrder', '#—');
-    return raw.replace(/^#/, '').replace(/[^\w\-]+/g, '') || 'ORD';
-  }
-
-  // Dispara una descarga de blob/archivo
-  function downloadBlob(blob, filename){
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click();
-    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
-  }
-
-  // Genera la factura HTML con marca de agua PENDIENTE si corresponde
-  function buildInvoiceHTML({orderId, statusKey, date, product, amount, currency, customerName}){
-    const isPending = (statusKey === 'pending');
-    const statusLabel = isPending ? 'PENDIENTE' : 'PAGADO';
-    const watermark = isPending ? `
-      <div style="position:fixed;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;opacity:.08;font-size:120px;font-weight:900;transform:rotate(-20deg)">
-        PENDIENTE
-      </div>` : '';
-
-    return `<!doctype html><html lang="es"><head><meta charset="utf-8">
-<title>Factura ${orderId}</title><meta name="viewport" content="width=device-width,initial-scale=1">
-<style>
-  body{font-family:Montserrat,Arial,sans-serif;margin:0;color:#111}
-  .wrap{max-width:800px;margin:0 auto;padding:32px}
-  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
-  .brand{font-weight:900;font-size:24px;letter-spacing:.5px}
-  .badge{padding:6px 10px;border-radius:999px;font-weight:800;font-size:12px}
-  .pending{background:#fff3cd;color:#856404;border:1px solid #ffeeba}
-  .paid{background:#e8f5e9;color:#1b5e20;border:1px solid #c8e6c9}
-  h2{margin:0 0 4px}
-  table{width:100%;border-collapse:collapse;margin-top:18px}
-  th,td{padding:10px;border-bottom:1px solid #eee;text-align:left}
-  tfoot td{font-weight:800}
-  .muted{color:#666;font-size:13px}
-
-.btn-delete-row{border:1px solid #f5c400;color:#f5c400;background:transparent;
-  padding:.35rem .7rem;border-radius:.55rem;font-weight:700;cursor:pointer;
-  transition:all .12s ease}
-.btn-delete-row:hover{background:#f5c400;color:#111}
-
-</style></head><body>
-${watermark}
-<div class="wrap">
-  <header>
-    <div class="brand">NUMINA</div>
-    <div class="badge ${isPending?'pending':'paid'}">${statusLabel}</div>
-  </header>
-
-  <section>
-    <h2>Factura / Invoice</h2>
-    <div class="muted">N.º de pedido: #${orderId} • Fecha: ${date}</div>
-    <div class="muted">Cliente: ${customerName || '-'}</div>
-  </section>
-
-  <table>
-    <thead><tr><th>Concepto</th><th>Cant.</th><th>Precio</th><th>Total</th></tr></thead>
-    <tbody>
-      <tr><td>${product}</td><td>1</td><td>${amount} ${currency}</td><td>${amount} ${currency}</td></tr>
-    </tbody>
-    <tfoot><tr><td colspan="3">Total</td><td>${amount} ${currency}</td></tr></tfoot>
-  </table>
-
-  <p class="muted" style="margin-top:16px">
-    ${isPending ? 'Documento proforma (pendiente de pago).' : 'Pago recibido. ¡Gracias!'}
-  </p>
-</div>
-<!-- === NUMINA: Regenerar link de pago (NOWPayments) sin leer monto del DOM === -->
+<!-- === NUMINA: Regenerar link de pago (NOWPayments) sin leer monto del DOM — v2 === -->
 <script>
 (function(){
   async function getAccessToken(){
@@ -2635,9 +2539,9 @@ ${watermark}
     }catch(_){ return null; }
   }
   function findPurchaseId(fromEl){
-    let id = fromEl.getAttribute('data-purchase-id');
+    let id = fromEl && fromEl.getAttribute ? fromEl.getAttribute('data-purchase-id') : null;
     if (id) return id;
-    let box = fromEl.closest('[data-purchase-id]');
+    let box = fromEl ? fromEl.closest && fromEl.closest('[data-purchase-id]') : null;
     if (box) return box.getAttribute('data-purchase-id');
     let any = document.querySelector('#purchase-detail [data-purchase-id], .purchase-detail [data-purchase-id]');
     if (any) return any.getAttribute('data-purchase-id');
@@ -2647,12 +2551,10 @@ ${watermark}
   }
   async function callEdge(fnName, payload, accessToken){
     try{
-      // intenta deducir base de supabase de forma segura
       let base = (window.__SB_BASE || '').replace(/\/$/, '');
       if (!base) {
         try {
           const sb = (typeof getSupabase==='function' && getSupabase()) || window.supabaseClient || window.supabase;
-          // si storage.url existe, retrocede hasta el dominio del proyecto
           base = (sb && sb.storage && sb.storage.url) ? sb.storage.url.split('/storage')[0] : '';
         } catch(_){}
       }
@@ -2669,23 +2571,31 @@ ${watermark}
       return { ok:false, status:0, json:null, text: (e && e.message) ? e.message : String(e) };
     }
   }
-  document.addEventListener('click', async (ev)=>{
-    const btn = ev.target.closest(
-      '#nmRegenerate, [data-action="regenerate-payment-link"], .regenerate-link, button[data-regenerate]'
-    );
-    if (!btn) return;
-    ev.preventDefault();
+  function looksLikeRegenButton(node){
+    if (!node) return false;
+    // selectors declarados
+    if (node.closest('#nmRegenerate, [data-action="regenerate-payment-link"], .regenerate-link, button[data-regenerate]')) return true;
+    // por texto
+    const clickEl = node.closest('button, a');
+    if (!clickEl) return false;
+    const label = (clickEl.textContent || clickEl.innerText || '').trim().toLowerCase().replace(/\s+/g,' ');
+    return label.includes('generar nuevo link de pago') || label.includes('generar nuevo enlace de pago') || label.includes('regenerar link');
+  }
+  document.addEventListener('click', async (ev) => {
+    if (!looksLikeRegenButton(ev.target)) return;
+    // interceptar el click y detener handlers antiguos
+    ev.preventDefault(); ev.stopImmediatePropagation(); ev.stopPropagation();
+    const btn = ev.target.closest('button, a') || ev.target;
     const purchaseId = findPurchaseId(btn);
     if (!purchaseId) { alert('No pude determinar el ID de la compra.'); return; }
-    const original = btn.textContent;
+    const original = btn.textContent || 'Generando...';
     btn.disabled = true; btn.textContent = 'Generando...';
     try{
       const token = await getAccessToken();
       const { ok, json, text } = await callEdge('create-invoice', { purchase_id: purchaseId }, token);
       if (!ok) throw new Error(text || (json && JSON.stringify(json)));
-      const url =
-        (json && (json.payment_url || json.invoice_url)) ||
-        (json && json.data && (json.data.payment_url || json.data.invoice_url)) || null;
+      const url = (json && (json.payment_url || json.invoice_url)) ||
+                  (json && json.data && (json.data.payment_url || json.data.invoice_url)) || null;
       if (!url) throw new Error('La función respondió sin URL de pago.');
       window.open(url, '_blank');
     }catch(e){
@@ -2693,9 +2603,10 @@ ${watermark}
     }finally{
       btn.disabled = false; btn.textContent = original;
     }
-  });
+  }, true); // 👈 captura para adelantarnos a otros listeners
 })();
 </script>
+
 
 </body></html>`;
   }
