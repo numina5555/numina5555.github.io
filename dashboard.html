@@ -3202,14 +3202,17 @@ function bindShare(){
 (function(){
   function ready(fn){ if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded', fn);} else { fn(); } }
   function parseAmountFromText(txt){
-    try{
-      if(!txt) return null;
-      // keep digits, comma, dot
-      var clean = (txt+'').replace(/[^0-9,\.]/g,'');
-      // normalize: if it has both comma and dot, assume comma thousands -> remove commas
-      if (clean.indexOf(',')>-1 && clean.indexOf('.')>-1){
-        clean = clean.replace(/,/g,'');
-      } else if (clean.indexOf(',')>-1 && clean.indexOf('.')===-1){
+  try{
+    if(!txt) return null;
+    var s = (txt+'').replace(/[^0-9.,]/g,'').trim();
+    if(!s) return null;
+    s = s.replace(/[,.](?=\d{3}(?:\D|$))/g, '');
+    s = s.replace(/,/g, '.');
+    var n = parseFloat(s);
+    return (isFinite(n) ? n : null);
+  }catch(_){ return null; }
+}
+else if (clean.indexOf(',')>-1 && clean.indexOf('.')===-1){
         // comma as decimal
         clean = clean.replace(',', '.');
       }
@@ -3234,15 +3237,19 @@ function bindShare(){
   }catch(_){ }
   try{
     var el = document.getElementById('nmPrice');
-    var txt = el ? el.textContent : '';
-    if (txt){
-      var clean = (txt+'').replace(/[^0-9,\.]/g,'');
-      if (clean.indexOf(',')>-1 && clean.indexOf('.')>-1) clean = clean.replace(/,/g,'');
-      else if (clean.indexOf(',')>-1) clean = clean.replace(',', '.');
-      var f = parseFloat(clean);
-      if (isFinite(f) && f>0) return f;
-    }
+    var n = parseAmountFromText(el ? el.textContent : '');
+    if (n && n>0) return n;
   }catch(_){ }
+  try{
+    var opener = (typeof lastTrigger!=='undefined' && lastTrigger) ? lastTrigger.closest('.product-card') : null;
+    var priceEl = opener ? opener.querySelector('.price, [data-price]') : null;
+    var raw = priceEl ? (priceEl.getAttribute('data-price') || priceEl.textContent) : '';
+    var n2 = parseAmountFromText(raw);
+    if (n2 && n2>0) return n2;
+  }catch(_){ }
+  return null;
+}
+
   try{
     var opener = (typeof lastTrigger!=='undefined' && lastTrigger) ? lastTrigger.closest('.product-card') : null;
     var priceEl = opener ? opener.querySelector('.price, [data-price]') : null;
