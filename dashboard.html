@@ -1334,90 +1334,7 @@
         </tr>`;
       }).join('');
     }
-    
-    async function cargarSorteos(){
-      try{
-        // Elements
-        const tActivosEl = document.getElementById('srt-tickets-activos');
-        const upValEl    = document.getElementById('srt-upgrade-valor');
-        const fillEl     = document.getElementById('srt-fill');
-        const tbody      = document.getElementById('sorteos-tbody');
-
-        if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">'+(window.dI18n ? dI18n.t('labels.loading') : 'Cargando…')+'</td></tr>';
-
-        const supabase = getSupabase();
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError || !user){ if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Sesión expirada</td></tr>'; return; }
-
-        // Pull user info to show tickets/progress if available
-        let tickets = 0, progress = 0;
-        try{
-          const { data: udata } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', user.id)
-            .maybeSingle();
-          if (udata){
-            tickets  = (udata.tickets_active ?? udata.tickets ?? udata.raffle_tickets ?? 0) | 0;
-            progress = Number(udata.upgrade_points ?? udata.upgrade_progress ?? udata.upgrade ?? 0) || 0;
-          }
-        }catch(_){}
-
-        if (tActivosEl) tActivosEl.textContent = String(tickets);
-        if (upValEl)    upValEl.textContent    = (progress.toLocaleString ? progress.toLocaleString() : String(progress)) + ' / 10,000';
-        if (fillEl){
-          const pct = Math.max(0, Math.min(100, (progress/10000)*100));
-          fillEl.style.width = pct + '%';
-          try{
-            document.getElementById('srt-25')?.classList.toggle('on', progress >= 2500);
-            document.getElementById('srt-50')?.classList.toggle('on', progress >= 5000);
-            document.getElementById('srt-100')?.classList.toggle('on', progress >= 10000);
-          }catch(_){}
-        }
-
-        // History: try a few likely table names, render first one that works
-        const candidates = [
-          {table:'raffle_participations', fields:'id, raffle_id, raffle_name, tickets_used, created_at'},
-          {table:'raffles_participations', fields:'id, raffle_id, raffle_name, tickets_used, created_at'},
-          {table:'raffle_entries', fields:'id, raffle_id, raffle_name, tickets as tickets_used, created_at'},
-          {table:'raffles_entries', fields:'id, raffle_id, raffle_name, tickets as tickets_used, created_at'},
-          {table:'sorteos', fields:'id, name as raffle_name, tickets_used, created_at', extraFilter:true}
-        ];
-
-        let rows = [];
-        for (const c of candidates){
-          try{
-            let q = supabase.from(c.table).select(c.fields).eq('user_id', user.id).order('created_at', {ascending:false});
-            if (c.extraFilter) q = q.eq('type', 'raffle');
-            const { data, error } = await q;
-            if (!error && Array.isArray(data) && data.length){ rows = data; break; }
-          }catch(_){ /* try next */ }
-        }
-
-        if (!Array.isArray(rows) || rows.length === 0){
-          if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;"><span data-i18n="raffles.noParticipations">'+(window.dI18n ? dI18n.t('raffles.noParticipations') : 'Sin participaciones')+'</span></td></tr>';
-          return;
-        }
-
-        const html = rows.map(r=>{
-          const d   = r.created_at ? new Date(r.created_at).toLocaleDateString() : '';
-          const nm  = r.raffle_name || ('#' + (r.raffle_id || r.id || ''));
-          const tks = (r.tickets_used != null) ? r.tickets_used : (r.tickets || 0);
-          return `<tr><td>${d}</td><td>${nm}</td><td>${tks}</td></tr>`;
-        }).join('');
-
-        if (tbody) tbody.innerHTML = html || '<tr><td colspan="3" style="text-align:center;"><span data-i18n="raffles.noParticipations">'+(window.dI18n ? dI18n.t('raffles.noParticipations') : 'Sin participaciones')+'</span></td></tr>';
-
-        // Re-apply filter if present
-        try{ window.__applySorteosFilter && window.__applySorteosFilter(); }catch(_){}
-      }catch(e){
-        console.error('cargarSorteos error', e);
-        const tbody = document.getElementById('sorteos-tbody');
-        if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Error al cargar</td></tr>';
-      }
-    }
-    
-function initNav(){
+    function initNav(){
       const menuItems = document.querySelectorAll('.menu-item[data-target]');
       const sections = document.querySelectorAll('.section-content');
       const mainDashboard = document.getElementById('main-dashboard');
@@ -3640,6 +3557,82 @@ if (fn.error || !paymentUrl){
   }, {capture:true});
 })();
 </script>
+<script>
+async function cargarSorteos(){
+  try{
+    const tbody = document.getElementById('sorteos-tbody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">'+ (window.dI18n ? dI18n.t('labels.loading') : 'Cargando…') +'</td></tr>';
+
+    const supabase = getSupabase();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user){ window.location.href = '/login.html'; return; }
+
+    // 1) Tickets activos (sumatoria en tickets_ledger)
+    let totalTickets = 0;
+    try{
+      const { data: tksRows, error: tErr } = await supabase
+        .from('tickets_ledger')
+        .select('count')
+        .eq('user_id', user.id);
+      if (!tErr && Array.isArray(tksRows)){
+        totalTickets = tksRows.reduce((acc, r)=> acc + (parseInt(r.count,10)||0), 0);
+      }
+    }catch(_){}
+    const tActivosEl = document.getElementById('srt-tickets-activos');
+    if (tActivosEl) tActivosEl.textContent = String(totalTickets);
+
+    // 2) Historial de uso: negativos (tickets usados)
+    const { data: hist, error } = await supabase
+      .from('tickets_ledger')
+      .select('id, sku, count, created_at')
+      .eq('user_id', user.id)
+      .lt('count', 0)
+      .order('created_at', { ascending: false });
+
+    if (error){
+      console.error('Sorteos error:', error);
+      if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Error</td></tr>';
+      return;
+    }
+
+    const rows = Array.isArray(hist) ? hist : [];
+    if (!rows.length){
+      if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;"><span data-i18n="raffles.noParticipations">'+ (window.dI18n ? dI18n.t('raffles.noParticipations') : 'Sin participaciones') +'</span></td></tr>';
+      return;
+    }
+
+    // Normalizar nombre del sorteo a partir del sku (e.g., "raffle:xyz" => "xyz")
+    function prettyName(sku){
+      if (!sku) return '';
+      var s = String(sku);
+      if (s.includes(':')) s = s.split(':').slice(1).join(':').trim();
+      s = s.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+      if (!s) s = String(sku);
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    const htmlRows = rows.map(r=>{
+      const date = r.created_at ? new Date(r.created_at).toLocaleDateString() : '';
+      const name = prettyName(r.sku);
+      const used = Math.abs(parseInt(r.count,10)||0);
+      return `<tr><td>${date}</td><td>${name}</td><td>${used}</td></tr>`;
+    }).join('');
+
+    if (tbody) tbody.innerHTML = htmlRows;
+
+    // 3) Re-aplicar filtro si el usuario ya escribió algo
+    try{ window.__applySorteosFilter && window.__applySorteosFilter(); }catch(_){}
+
+    // 4) Upgrade: si en el futuro hay una métrica de progreso, actualizar acá
+    // Mantengo 0/10,000 y barra vacía por ahora para evitar datos inconsistentes.
+  }catch(e){
+    console.error('cargarSorteos fatal', e);
+    const tbody = document.getElementById('sorteos-tbody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Error</td></tr>';
+  }
+}
+</script>
+
 
 </body>
 </html>
