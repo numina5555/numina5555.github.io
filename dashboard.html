@@ -3464,5 +3464,66 @@ if (fn.error || !paymentUrl){
 })();
 </script>
 
+
+
+<!-- NUMINA share-invite upgrade: builds https://numina.vip/login.html?ref=YOUR_CODE -->
+<script>
+(function(){
+  function getSB(){
+    try{ return (typeof getSupabase==='function' && getSupabase()) || window.supabaseClient || window.supabase || null; }
+    catch(_){ return null; }
+  }
+  async function getRefCode(){
+    // DOM (where your code is displayed)
+    var dom = document.querySelector('[data-ref-code], #refCode, #nmRefCode, .ref-code, .referral-code code, .referral-code .value');
+    var code = (dom && (dom.dataset && dom.dataset.refCode || (dom.textContent||'').trim())) || '';
+
+    // Supabase user metadata fallback
+    if(!code){
+      try{
+        var sb = getSB();
+        if(sb && sb.auth && sb.auth.getUser){
+          var u = await sb.auth.getUser();
+          var meta = (u && u.data && u.data.user && u.data.user.user_metadata) || {};
+          code = meta.ref || meta.ref_code || meta.invite_code || '';
+        }
+      }catch(e){}
+    }
+    return (code||'').trim();
+  }
+  async function buildInviteUrl(){
+    var code = await getRefCode();
+    var url = 'https://numina.vip/login.html' + (code ? ('?ref='+encodeURIComponent(code)) : '');
+    return {url:url, code:code};
+  }
+  document.addEventListener('click', async function(e){
+    var el = e.target.closest('a,button');
+    if(!el) return;
+    var label = (el.textContent||el.innerText||'').toLowerCase();
+    if(!/compartir.*enlace.*invitaci|share.*invitation/.test(label)) return;
+    e.preventDefault();
+    var out = await buildInviteUrl();
+    if(!out.code){
+      alert('No encontré tu código de referido. Verifícalo en tu perfil.');
+      return;
+    }
+    if(el.tagName==='A'){ el.href = out.url; el.setAttribute('target','_blank'); }
+    try{
+      if(navigator.share){
+        await navigator.share({title:'Únete a NUMINA', text:'Registrate con mi invitación', url: out.url});
+      }else{
+        await navigator.clipboard.writeText(out.url);
+        alert('Enlace copiado:\n' + out.url);
+      }
+    }catch(_){
+      try{
+        await navigator.clipboard.writeText(out.url);
+        alert('Enlace copiado:\n' + out.url);
+      }catch(__){ location.href = out.url; }
+    }
+  }, {capture:true});
+})();
+</script>
+
 </body>
 </html>
