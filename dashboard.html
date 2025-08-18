@@ -173,6 +173,10 @@
 .sidebar a{display:flex;align-items:center}
 
 
+/* --- Ensure sidebar labels are visible next to icons --- */
+.sidebar .nav-label{display:inline-block;margin-left:.75rem;white-space:nowrap}
+.sidebar a{display:flex;align-items:center}
+
 
 /* inline filter bar for purchases */
 .table-filter-inline{display:flex;gap:.6rem;align-items:center;justify-content:flex-end;background:var(--dark-light);padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.05)}
@@ -2545,8 +2549,75 @@ if (!link) {
 
 
 
+</body></html>`;
+  }
 
-</body></html><style>
+  // (Opcional) Intentar descargar desde Supabase Storage si USE_STORAGE = true
+  async function tryDownloadFromStorage(userId, orderId, statusKey){
+    try{
+      if (!USE_STORAGE) return false;
+      if (typeof getSupabase !== 'function') return false;
+      const supabase = getSupabase();
+      const base = `${userId}/${orderId}`;
+      const suffix = (statusKey === 'pending') ? 'pending' : 'paid';
+      const paths = [`${base}-${suffix}.pdf`, `${base}-${suffix}.html`];
+      for (const path of paths){
+        const { data, error } = await supabase.storage.from(STORAGE_BUCKET).download(path);
+        if (data && !error){ 
+          const ext = path.split('.').pop();
+          downloadBlob(data, `invoice-${orderId}-${suffix}.${ext}`);
+          return true;
+        }
+      }
+    }catch(e){ console.warn('Storage download error', e); }
+    return false;
+  }
+
+  async function handleDownload(){
+    try{
+      // Tomo datos desde el modal que ya tenés en pantalla
+      const orderId  = getOrderId();
+      const status   = getStatusKey();  // "pending" | "paid" | "cancelled"
+      const product  = txt('pdName', 'Producto');
+      const date     = txt('pdDate',  '—');
+      const currency = 'USDT';
+      const amount   = (txt('pdTotal','').replace(/[^\d.,]/g,'') || txt('pdPrice','').replace(/[^\d.,]/g,'')) || '0.00';
+
+      // Si tenés Supabase y querés usar Storage, intento primero ahí
+      if (typeof getSupabase === 'function'){
+        const { data: { user } = {} } = await getSupabase().auth.getUser().catch(()=>({}));
+        const userId = user?.id || 'anon';
+        const ok = await tryDownloadFromStorage(userId, orderId, status);
+        if (ok) return;
+      }
+
+      // Fallback: generar HTML al vuelo y descargarlo
+      const html = buildInvoiceHTML({
+        orderId, statusKey: status, date, product, amount, currency,
+        customerName: txt('full-name','')
+      });
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      const suffix = status === 'pending' ? 'pending' : 'paid';
+      downloadBlob(blob, `invoice-${orderId}-${suffix}.html`);
+    }catch(e){
+      console.error(e);
+      alert('No se pudo generar la factura.');
+    }
+  }
+
+  function init(){
+    const btn = document.getElementById('pdInvoice');
+    if (btn && !btn.__wired){
+      btn.addEventListener('click', (ev)=>{ ev.preventDefault(); handleDownload(); });
+      btn.__wired = true;
+    }
+  }
+  (document.readyState === 'loading') ? document.addEventListener('DOMContentLoaded', init) : init();
+})();
+</script>
+
+
+<style>
 /* === Support Claim Modal (sc-*) === */
 .sc-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;z-index:2000;}
 .sc-overlay.show{display:block;}
@@ -2769,7 +2840,7 @@ ${msg}`;
 });
 
 })();
-<\/script>
+</script>
 
 <script>
 (function(){
@@ -2999,7 +3070,7 @@ function bindShare(){
     }
   });
 })();
-<\/script>
+</script>
     
 
 <!-- BEGIN: NOWPayments email param injector -->
@@ -3080,7 +3151,7 @@ function bindShare(){
     }, true);
   });
 })();
-<\/script>
+</script>
 <!-- END: NOWPayments email param injector -->
 
 <script>
@@ -3214,7 +3285,7 @@ if (fn.error || !paymentUrl){
 
   ready(wireOverrides);
 })();
-<\/script>
+</script>
 
 <script>
 (function(){
@@ -3241,7 +3312,7 @@ if (fn.error || !paymentUrl){
     }
   };
 })();
-<\/script>
+</script>
 
 
 <style>
@@ -3318,7 +3389,7 @@ if (fn.error || !paymentUrl){
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup);
   else setup();
 })();
-<\/script>
+</script>
 
 <!-- === NUMINA: Regenerar link de pago (NOWPayments) sin leer monto del DOM === -->
 <script>
@@ -3392,7 +3463,7 @@ if (fn.error || !paymentUrl){
     }
   });
 })();
-<\/script>
+</script>
 
 
 
@@ -3485,7 +3556,7 @@ if (fn.error || !paymentUrl){
     }
   }, {capture:true});
 })();
-<\/script>
+</script>
 <script>
 async function cargarSorteos(){
   try{
@@ -3588,7 +3659,7 @@ async function cargarSorteos(){
     if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Error</td></tr>';
   }
 }
-<\/script>
+</script>
 
 
 </body>
