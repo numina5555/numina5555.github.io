@@ -2589,7 +2589,7 @@ if (!link) {
 </style>
 
 <!-- === SUPPORT CLAIM MODAL === -->
-<div id="scOverlay" class="sc-overlay" aria-hidden="true">
+<div id="scOverlay" class="sc-overlay" aria-hidden="true" hidden>
   <div class="sc-modal" role="dialog" aria-modal="true" aria-labelledby="scTitle" tabindex="-1">
     <button class="sc-close" id="scClose" aria-label="Cerrar">×</button>
     <h3 id="scTitle">Contacto de soporte</h3>
@@ -2636,8 +2636,40 @@ if (!link) {
   function $(id){ return document.getElementById(id); }
   function textOf(el){ return (el?.textContent || '').trim(); }
 
-  function openModal(){ const ov = $('scOverlay'); if(!ov) return; ov.classList.add('show'); ov.removeAttribute('aria-hidden'); $('scMessage').focus(); }
-  function closeModal(){ const ov = $('scOverlay'); if(!ov) return; ov.classList.remove('show'); ov.setAttribute('aria-hidden','true'); }
+  
+  let _scOpener = null;
+  const _scAppRoot = document.querySelector('.dashboard-container') || document.body;
+  if (_scAppRoot === document.body && !document.body.hasAttribute('tabindex')) { document.body.setAttribute('tabindex','-1'); }
+
+
+  function openModal(){
+    const ov = $('scOverlay'); 
+    if (!ov) return;
+    ov.classList.add('show');
+    ov.removeAttribute('hidden');
+    ov.removeAttribute('aria-hidden');
+    if (_scAppRoot) _scAppRoot.setAttribute('inert', '');
+    _scOpener = document.activeElement;
+    const closeBtn = $('scClose');
+    if (closeBtn) closeBtn.focus();
+  }
+
+  
+  function closeModal(){
+    const ov = $('scOverlay'); 
+    if (!ov) return; 
+    // Move focus OUT before hiding, to avoid aria-hidden on a focused subtree
+    if (_scOpener && typeof _scOpener.focus === 'function') {
+      _scOpener.focus();
+    } else {
+      document.body.focus();
+    }
+    ov.classList.remove('show'); 
+    ov.setAttribute('aria-hidden','true'); 
+    ov.setAttribute('hidden',''); 
+    if (_scAppRoot) _scAppRoot.removeAttribute('inert');
+  }
+
 
   function fillFromRow(tr){
     const tds = tr.querySelectorAll('td');
@@ -2664,7 +2696,7 @@ if (!link) {
     const tr = btn.closest('tr');
     if (!tr) return;
     fillFromRow(tr);
-    openModal();
+    _scOpener = btn; openModal();
   });
 
   // Cerrar modal
