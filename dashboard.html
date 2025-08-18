@@ -229,7 +229,7 @@
           "tables.actions": "Actions",
           "tables.referral": "Referral",
           "tables.purchases": "Purchases",
-          "tables.commission": "Commission",
+          "tables.commission": "Ticket Commission",
           "tables.details": "Details",
           "raffles.noParticipations": "No participations",
           "sections.sorteoTitle": "Raffles",
@@ -312,7 +312,7 @@
           "tables.actions": "Acciones",
           "tables.referral": "Referido",
           "tables.purchases": "Compras",
-          "tables.commission": "Comisión",
+          "tables.commission": "Ticket Commission",
           "tables.details": "Detalles",
           "raffles.noParticipations": "Sin participaciones",
           "sections.sorteoTitle": "Sorteos",
@@ -395,7 +395,7 @@
           "tables.actions": "Ações",
           "tables.referral": "Indicação",
           "tables.purchases": "Compras",
-          "tables.commission": "Comissão",
+          "tables.commission": "Ticket Commission",
           "tables.details": "Detalhes",
           "raffles.noParticipations": "Sem participações",
           "sections.sorteoTitle": "Sorteios",
@@ -1281,13 +1281,13 @@
       if (userData.referrals?.length){
         referralsBody.innerHTML = userData.referrals.map(r=>{
           const created = r.created_at ? new Date(r.created_at).toLocaleDateString() : '';
-          const commiss = (typeof r.commission === 'number') ? r.commission.toFixed(2) : '0.00';
+          const tickets = Math.floor((Number(r.purchases_count) || 0) / 3);
           return `<tr>
             <td>${r.referred_email || ''}</td>
             <td>${created}</td>
             <td>${r.purchases_count || '0'}</td>
             <td>${statusBadge(r.is_active ? 'active' : 'inactive')}</td>
-            <td>$${commiss}</td>
+             <td>${tickets}</td>
           </tr>`;
         }).join('');
       } else {
