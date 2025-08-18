@@ -168,6 +168,9 @@
 }
 
 
+/* --- Ensure sidebar labels are visible next to icons --- */
+.sidebar .nav-label{display:inline-block;margin-left:.75rem;white-space:nowrap}
+.sidebar a{display:flex;align-items:center}
 
 
 /* --- Ensure sidebar labels are visible next to icons --- */
@@ -226,7 +229,7 @@
           "tables.actions": "Actions",
           "tables.referral": "Referral",
           "tables.purchases": "Purchases",
-          "tables.commission": "Ticket Commission",
+          "tables.commission": "Commission",
           "tables.details": "Details",
           "raffles.noParticipations": "No participations",
           "sections.sorteoTitle": "Raffles",
@@ -309,7 +312,7 @@
           "tables.actions": "Acciones",
           "tables.referral": "Referido",
           "tables.purchases": "Compras",
-          "tables.commission": "Ticket Commission",
+          "tables.commission": "Comisión",
           "tables.details": "Detalles",
           "raffles.noParticipations": "Sin participaciones",
           "sections.sorteoTitle": "Sorteos",
@@ -392,7 +395,7 @@
           "tables.actions": "Ações",
           "tables.referral": "Indicação",
           "tables.purchases": "Compras",
-          "tables.commission": "Ticket Commission",
+          "tables.commission": "Comissão",
           "tables.details": "Detalhes",
           "raffles.noParticipations": "Sem participações",
           "sections.sorteoTitle": "Sorteios",
@@ -1278,13 +1281,13 @@
       if (userData.referrals?.length){
         referralsBody.innerHTML = userData.referrals.map(r=>{
           const created = r.created_at ? new Date(r.created_at).toLocaleDateString() : '';
-          const tickets = Math.floor((Number(r.purchases_count) || 0) / 3);
+          const commiss = (typeof r.commission === 'number') ? r.commission.toFixed(2) : '0.00';
           return `<tr>
             <td>${r.referred_email || ''}</td>
             <td>${created}</td>
             <td>${r.purchases_count || '0'}</td>
             <td>${statusBadge(r.is_active ? 'active' : 'inactive')}</td>
-             <td>${tickets}</td>
+            <td>$${commiss}</td>
           </tr>`;
         }).join('');
       } else {
@@ -1345,7 +1348,6 @@
           mainDashboard.style.display = 'none';
           sections.forEach(s=> s.style.display = (s.id === 'section-'+target ? 'block' : 'none'));
           if (target === 'compras') { cargarMisCompras(); }
-          if (target === 'sorteos') { cargarSorteos(); }
         });
       });
     }
@@ -2546,8 +2548,71 @@ if (!link) {
 
 
 
-</body></html>
-   
+</body></html>`;
+  }
+
+  // (Opcional) Intentar descargar desde Supabase Storage si USE_STORAGE = true
+  async function tryDownloadFromStorage(userId, orderId, statusKey){
+    try{
+      if (!USE_STORAGE) return false;
+      if (typeof getSupabase !== 'function') return false;
+      const supabase = getSupabase();
+      const base = `${userId}/${orderId}`;
+      const suffix = (statusKey === 'pending') ? 'pending' : 'paid';
+      const paths = [`${base}-${suffix}.pdf`, `${base}-${suffix}.html`];
+      for (const path of paths){
+        const { data, error } = await supabase.storage.from(STORAGE_BUCKET).download(path);
+        if (data && !error){ 
+          const ext = path.split('.').pop();
+          downloadBlob(data, `invoice-${orderId}-${suffix}.${ext}`);
+          return true;
+        }
+      }
+    }catch(e){ console.warn('Storage download error', e); }
+    return false;
+  }
+
+  async function handleDownload(){
+    try{
+      // Tomo datos desde el modal que ya tenés en pantalla
+      const orderId  = getOrderId();
+      const status   = getStatusKey();  // "pending" | "paid" | "cancelled"
+      const product  = txt('pdName', 'Producto');
+      const date     = txt('pdDate',  '—');
+      const currency = 'USDT';
+      const amount   = (txt('pdTotal','').replace(/[^\d.,]/g,'') || txt('pdPrice','').replace(/[^\d.,]/g,'')) || '0.00';
+
+      // Si tenés Supabase y querés usar Storage, intento primero ahí
+      if (typeof getSupabase === 'function'){
+        const { data: { user } = {} } = await getSupabase().auth.getUser().catch(()=>({}));
+        const userId = user?.id || 'anon';
+        const ok = await tryDownloadFromStorage(userId, orderId, status);
+        if (ok) return;
+      }
+
+      // Fallback: generar HTML al vuelo y descargarlo
+      const html = buildInvoiceHTML({
+        orderId, statusKey: status, date, product, amount, currency,
+        customerName: txt('full-name','')
+      });
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      const suffix = status === 'pending' ? 'pending' : 'paid';
+      downloadBlob(blob, `invoice-${orderId}-${suffix}.html`);
+    }catch(e){
+      console.error(e);
+      alert('No se pudo generar la factura.');
+    }
+  }
+
+  function init(){
+    const btn = document.getElementById('pdInvoice');
+    if (btn && !btn.__wired){
+      btn.addEventListener('click', (ev)=>{ ev.preventDefault(); handleDownload(); });
+      btn.__wired = true;
+    }
+  }
+  (document.readyState === 'loading') ? document.addEventListener('DOMContentLoaded', init) : init();
+})();
 </script>
 
 
@@ -3399,341 +3464,5 @@ if (fn.error || !paymentUrl){
 })();
 </script>
 
-
-
-<!-- NUMINA share-invite upgrade: builds https://numina.vip/login.html?ref=YOUR_CODE -->
-<script>
-(function(){
-  function getSB(){
-    try{ return (typeof getSupabase==='function' && getSupabase()) || window.supabaseClient || window.supabase || null; }
-    catch(_){ return null; }
-  }
-  
-  async function getRefCode(){
-    // 1) From explicit DOM anchors
-    var dom = document.querySelector('[data-ref-code], #refCode, #nmRefCode, .ref-code, .referral-code code, .referral-code .value');
-    var code = (dom && (dom.dataset && dom.dataset.refCode || (dom.textContent||'').trim())) || '';
-
-    // 2) Heuristic: look near a "Copiar" button
-    if(!code){
-      try{
-        var copyBtns = Array.from(document.querySelectorAll('button, a')).filter(function(b){
-          return /copiar/i.test((b.textContent||b.innerText||''));
-        });
-        for (var i=0;i<copyBtns.length;i++){
-          var box = copyBtns[i].closest('[class*="ref"], [class*="invite"], .chip, .badge, .row, .toolbar, .group, div');
-          if(!box) continue;
-          var c = box.cloneNode(true);
-          c.querySelectorAll('button,a,svg,i,img').forEach(function(n){ n.remove(); });
-          var t = (c.textContent||'').replace(/\s+/g,' ').trim();
-          var m = t.match(/\b[A-Z0-9]{6,20}\b/);
-          if(m){ code = m[0]; break; }
-        }
-      }catch(e){}
-    }
-
-    // 3) Fallback: any element whose id/class hints "ref"
-    if(!code){
-      try{
-        var cands = Array.from(document.querySelectorAll('[id*="ref" i], [class*="ref" i]'));
-        for (var j=0;j<cands.length;j++){
-          var text = (cands[j].textContent||'').replace(/\s+/g,' ').trim();
-          var m2 = text.match(/\b[A-Z][A-Z0-9]{5,19}\b/);
-          if(m2){ code = m2[0]; break; }
-        }
-      }catch(e){}
-    }
-
-    // 4) From Supabase user_metadata
-    if(!code){
-      try{
-        var sb = getSB();
-        if(sb && sb.auth && sb.auth.getUser){
-          var u = await sb.auth.getUser();
-          var meta = (u && u.data && u.data.user && u.data.user.user_metadata) || {};
-          code = meta.ref || meta.ref_code || meta.invite_code || '';
-        }
-      }catch(e){}
-    }
-    return (code||'').trim();
-  }
-
-  async function buildInviteUrl(){
-    var code = await getRefCode();
-    var url = 'https://numina.vip/login.html' + (code ? ('?ref='+encodeURIComponent(code)) : '');
-    return {url:url, code:code};
-  }
-  document.addEventListener('click', async function(e){
-    var el = e.target.closest('a,button');
-    if(!el) return;
-    var label = (el.textContent||el.innerText||'').toLowerCase();
-    if(!/compartir.*enlace.*invitaci|share.*invitation/.test(label)) return;
-    e.preventDefault();
-    var out = await buildInviteUrl();
-    if(!out.code){
-      alert('No encontré tu código de referido. Verifícalo en tu perfil.');
-      return;
-    }
-    if(el.tagName==='A'){ el.href = out.url; el.setAttribute('target','_blank'); }
-    try{
-      if(navigator.share){
-        await navigator.share({title:'Únete a NUMINA', text:'Registrate con mi invitación', url: out.url});
-      }else{
-        await navigator.clipboard.writeText(out.url);
-        alert('Enlace copiado:\n' + out.url);
-      }
-    }catch(_){
-      try{
-        await navigator.clipboard.writeText(out.url);
-        alert('Enlace copiado:\n' + out.url);
-      }catch(__){ location.href = out.url; }
-    }
-  }, {capture:true});
-})();
-</script>
-<script>
-async function cargarSorteos(){
-  try{
-    const tbody = document.getElementById('sorteos-tbody');
-    if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">'+ (window.dI18n ? dI18n.t('labels.loading') : 'Cargando…') +'</td></tr>';
-
-    const supabase = getSupabase();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user){ window.location.href = '/login.html'; return; }
-
-    // 1) Tickets activos (sumatoria en tickets_ledger)
-    let totalTickets = 0;
-    let tksRows = [];
-    try{
-      ({ data: tksRows, error: tErr } = await supabase
-        .from('tickets_ledger')
-        .select('count')
-        .eq('user_id', user.id)
-      );
-      if (!tErr && Array.isArray(tksRows)){
-        totalTickets = tksRows.reduce((acc, r)=> acc + (parseInt(r.count,10)||0), 0);
-      }
-    }catch(_){}
-    const tActivosEl = document.getElementById('srt-tickets-activos');
-    if (tActivosEl) tActivosEl.textContent = String(totalTickets);
-
-    
-    // === Upgrade Numina (histórico de tickets obtenidos) ===
-    // Calculamos el total histórico SOLO de entradas positivas (tickets otorgados),
-    // independientemente de los tickets gastados posteriormente.
-    let totalHistorico = 0;
-    try {
-      if (Array.isArray(tksRows)) {
-        totalHistorico = tksRows.reduce((acc, r) => acc + ( (parseInt(r.count,10) > 0) ? parseInt(r.count,10) : 0 ), 0);
-      }
-    } catch (_) {}
-    // Actualizar valor visible y barra
-    const MAX_UPGRADE = 10000;
-    const upgValEl = document.getElementById('srt-upgrade-valor');
-    const upgFill  = document.getElementById('srt-fill');
-    const upgProg  = document.querySelector('.srt-progress');
-    function fmt(n){ try{ return new Intl.NumberFormat('en-US').format(n); }catch(_){ return String(n); } }
-    if (upgValEl) upgValEl.textContent = `${fmt(totalHistorico)} / ${fmt(MAX_UPGRADE)}`;
-    const pct = Math.max(0, Math.min(100, (totalHistorico / MAX_UPGRADE) * 100));
-    if (upgFill)  upgFill.style.width = pct + '%';
-    if (upgProg)  upgProg.setAttribute('aria-valuenow', Math.round(totalHistorico));
-    // Encender hitos 25%, 50% y 100%
-    const hit25 = document.getElementById('srt-25');
-    const hit50 = document.getElementById('srt-50');
-    const hit100 = document.getElementById('srt-100');
-    if (hit25) hit25.classList.toggle('on', totalHistorico >= 2500);
-    if (hit50) hit50.classList.toggle('on', totalHistorico >= 5000);
-    if (hit100) hit100.classList.toggle('on', totalHistorico >= 10000);
-// 2) Historial de uso: negativos (tickets usados)
-    const { data: hist, error } = await supabase
-      .from('tickets_ledger')
-      .select('id, sku, count, created_at')
-      .eq('user_id', user.id)
-      .lt('count', 0)
-      .order('created_at', { ascending: false });
-
-    if (error){
-      console.error('Sorteos error:', error);
-      if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Error</td></tr>';
-      return;
-    }
-
-    const rows = Array.isArray(hist) ? hist : [];
-    if (!rows.length){
-      if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;"><span data-i18n="raffles.noParticipations">'+ (window.dI18n ? dI18n.t('raffles.noParticipations') : 'Sin participaciones') +'</span></td></tr>';
-      return;
-    }
-
-    // Normalizar nombre del sorteo a partir del sku (e.g., "raffle:xyz" => "xyz")
-    function prettyName(sku){
-      if (!sku) return '';
-      var s = String(sku);
-      if (s.includes(':')) s = s.split(':').slice(1).join(':').trim();
-      s = s.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
-      if (!s) s = String(sku);
-      return s.charAt(0).toUpperCase() + s.slice(1);
-    }
-
-    const htmlRows = rows.map(r=>{
-      const date = r.created_at ? new Date(r.created_at).toLocaleDateString() : '';
-      const name = prettyName(r.sku);
-      const used = Math.abs(parseInt(r.count,10)||0);
-      return `<tr><td>${date}</td><td>${name}</td><td>${used}</td></tr>`;
-    }).join('');
-
-    if (tbody) tbody.innerHTML = htmlRows;
-
-    // 3) Re-aplicar filtro si el usuario ya escribió algo
-    try{ window.__applySorteosFilter && window.__applySorteosFilter(); }catch(_){}
-
-    // 4) Upgrade: actualizado con progreso real basado en el histórico de tickets positivos.
-  }catch(e){
-    console.error('cargarSorteos fatal', e);
-    const tbody = document.getElementById('sorteos-tbody');
-    if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Error</td></tr>';
-  }
-}
-</script>
-
-
-
-<!-- === NUMINA: Descargar factura — Generación dinámica de PDF (robusto, sin servidor) === -->
-<script>
-(function(){
-  // --- Cargador robusto de jsPDF con 2 CDNs y timeout ---
-  let jspdfReadyPromise = null;
-  function loadJsPDF(){
-    if (jspdfReadyPromise) return jspdfReadyPromise;
-    jspdfReadyPromise = new Promise((resolve, reject)=>{
-      const cdns = [
-        'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
-        'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js'
-      ];
-      let i = 0, done = false;
-      const tryNext = ()=>{
-        if (done || i >= cdns.length){ reject(new Error('No se pudo cargar jsPDF')); return; }
-        const s = document.createElement('script');
-        s.src = cdns[i++]; s.async = true; s.onload = ()=>{
-          if (window.jspdf && window.jspdf.jsPDF){ done = true; resolve(window.jspdf.jsPDF); }
-          else tryNext();
-        };
-        s.onerror = tryNext;
-        document.head.appendChild(s);
-      };
-      const to = setTimeout(()=>{ if(!done){ done = true; reject(new Error('Timeout cargando jsPDF')); } }, 10000);
-      const finish = (v)=>{ clearTimeout(to); resolve(v); };
-      // wrap resolve to clear timeout if successful
-      const _resolve = resolve;
-      resolve = (v)=>{ clearTimeout(to); _resolve(v); };
-      tryNext();
-    });
-    return jspdfReadyPromise;
-  }
-
-  // --- Utilidades ---
-  function parseNum(txt){
-    if(!txt) return null;
-    var s = String(txt).replace(/[^0-9,.-]/g,'').replace(/\\./g,'').replace(',', '.');
-    var n = parseFloat(s);
-    return isNaN(n) ? null : n;
-  }
-  function getStatusKey(){
-    var el = document.getElementById('pdStatus');
-    if (!el) return 'pending';
-    var known = ['pending','active','completed','cancelled','inactive','paid','disputed'];
-    var k = known.find(function(k){ return el.classList.contains(k); });
-    return (k === 'paid') ? 'completed' : (k || 'pending');
-  }
-  function getFields(){
-    var name = document.getElementById('pdName')?.textContent?.trim() || 'Producto';
-    var priceText = document.getElementById('pdPrice')?.textContent || '';
-    var price = parseNum(priceText);
-    var subtotalText = document.getElementById('pdSubtotal')?.textContent || '';
-    var subtotal = parseNum(subtotalText) || price || null;
-    var totalText = document.getElementById('pdTotal')?.textContent || '';
-    var total = parseNum(totalText) || subtotal || price || null;
-    var date = document.getElementById('pdDate')?.textContent?.trim() || '';
-    var order = (document.getElementById('pdOrder')?.textContent || '').replace('#','').trim();
-    var sku = null;
-    try { if (typeof resolveSKUFromModal === 'function') sku = resolveSKUFromModal(); } catch(_){}
-    return { name, price, subtotal, total, date, order, sku, status: getStatusKey() };
-  }
-
-  async function createInvoicePdf(data){
-    const jsPDF = await loadJsPDF();
-    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-    const pad = 40;
-    let y = pad;
-
-    // Encabezado
-    doc.setFont('helvetica','bold'); doc.setFontSize(18);
-    doc.text('FACTURA ' + (data.status === 'completed' ? 'FINAL' : 'PROFORMA'), pad, y);
-    doc.setFont('helvetica','normal'); doc.setFontSize(10);
-    y += 18;
-    doc.text('Fecha: ' + (data.date || new Date().toLocaleDateString()), pad, y);
-    y += 14;
-    doc.text('Pedido: ' + (data.order || '—'), pad, y);
-    y += 24;
-    doc.line(pad, y, 555, y); y += 20;
-
-    // Datos de producto
-    doc.setFont('helvetica','bold'); doc.setFontSize(12);
-    doc.text('Producto', pad, y); doc.setFont('helvetica','normal'); y += 14;
-    doc.text((data.name || '—') + (data.sku ? '  [SKU: ' + data.sku + ']' : ''), pad, y);
-    y += 22;
-
-    // Tabla simple
-    doc.setFont('helvetica','bold');
-    doc.text('Concepto', pad, y);
-    doc.text('Importe (USD)', 430, y, { align: 'right' });
-    y += 12; doc.setLineWidth(0.5); doc.line(pad, y, 555, y); y += 16;
-
-    doc.setFont('helvetica','normal');
-    doc.text('Precio', pad, y); doc.text((data.price != null ? data.price.toFixed(2) : '—'), 430, y, { align: 'right' }); y += 18;
-    doc.text('Subtotal', pad, y); doc.text((data.subtotal != null ? data.subtotal.toFixed(2) : '—'), 430, y, { align: 'right' }); y += 18;
-    doc.setFont('helvetica','bold');
-    doc.text('TOTAL', pad, y); doc.text((data.total != null ? data.total.toFixed(2) : '—'), 430, y, { align: 'right' }); y += 24;
-    doc.line(pad, y, 555, y); y += 24;
-
-    // Notas
-    doc.setFont('helvetica','normal'); doc.setFontSize(9);
-    const note = (data.status === 'completed')
-      ? 'Pago confirmado. Gracias por su compra.'
-      : 'Factura proforma: válida para pago. La entrega se confirma tras la acreditación.';
-    doc.text(note, pad, y);
-    y += 30;
-    doc.setFontSize(8);
-    doc.text('Emitido por NUMINA — Documento generado automáticamente.', pad, y);
-
-    return doc.output('blob');
-  }
-
-  async function handleInvoiceClick(e){
-    e.preventDefault(); e.stopPropagation();
-    try{
-      const data = getFields();
-      const blob = await createInvoicePdf(data);
-      const sku = (data.sku || 'producto').toString().replace(/\\s+/g,'-');
-      const fname = `Factura-${sku}-${data.status}${data.order ? '-' + data.order : ''}.pdf`;
-
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = fname;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(()=> URL.revokeObjectURL(a.href), 1000);
-    }catch(err){
-      console.error('[Factura] Error:', err);
-      alert('No se pudo generar la factura: ' + (err && err.message ? err.message : err));
-    }
-  }
-
-  // --- Delegación de eventos: funciona aunque el botón se re-renderice ---
-  document.addEventListener('click', function(e){
-    const btn = e.target && (e.target.id === 'pdInvoice' ? e.target : e.target.closest && e.target.closest('#pdInvoice'));
-    if (btn) handleInvoiceClick(e);
-  });
-})();
-</script>
-<!-- === FIN NUMINA: Descargar factura === -->
 </body>
 </html>
