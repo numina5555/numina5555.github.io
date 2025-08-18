@@ -3581,7 +3581,34 @@ async function cargarSorteos(){
     const tActivosEl = document.getElementById('srt-tickets-activos');
     if (tActivosEl) tActivosEl.textContent = String(totalTickets);
 
-    // 2) Historial de uso: negativos (tickets usados)
+    
+    // === Upgrade Numina (histórico de tickets obtenidos) ===
+    // Calculamos el total histórico SOLO de entradas positivas (tickets otorgados),
+    // independientemente de los tickets gastados posteriormente.
+    let totalHistorico = 0;
+    try {
+      if (Array.isArray(tksRows)) {
+        totalHistorico = tksRows.reduce((acc, r) => acc + ( (parseInt(r.count,10) > 0) ? parseInt(r.count,10) : 0 ), 0);
+      }
+    } catch (_) {}
+    // Actualizar valor visible y barra
+    const MAX_UPGRADE = 10000;
+    const upgValEl = document.getElementById('srt-upgrade-valor');
+    const upgFill  = document.getElementById('srt-fill');
+    const upgProg  = document.querySelector('.srt-progress');
+    function fmt(n){ try{ return new Intl.NumberFormat('en-US').format(n); }catch(_){ return String(n); } }
+    if (upgValEl) upgValEl.textContent = `${fmt(totalHistorico)} / ${fmt(MAX_UPGRADE)}`;
+    const pct = Math.max(0, Math.min(100, (totalHistorico / MAX_UPGRADE) * 100));
+    if (upgFill)  upgFill.style.width = pct + '%';
+    if (upgProg)  upgProg.setAttribute('aria-valuenow', Math.round(totalHistorico));
+    // Encender hitos 25%, 50% y 100%
+    const hit25 = document.getElementById('srt-25');
+    const hit50 = document.getElementById('srt-50');
+    const hit100 = document.getElementById('srt-100');
+    if (hit25) hit25.classList.toggle('on', totalHistorico >= 2500);
+    if (hit50) hit50.classList.toggle('on', totalHistorico >= 5000);
+    if (hit100) hit100.classList.toggle('on', totalHistorico >= 10000);
+// 2) Historial de uso: negativos (tickets usados)
     const { data: hist, error } = await supabase
       .from('tickets_ledger')
       .select('id, sku, count, created_at')
@@ -3623,8 +3650,7 @@ async function cargarSorteos(){
     // 3) Re-aplicar filtro si el usuario ya escribió algo
     try{ window.__applySorteosFilter && window.__applySorteosFilter(); }catch(_){}
 
-    // 4) Upgrade: si en el futuro hay una métrica de progreso, actualizar acá
-    // Mantengo 0/10,000 y barra vacía por ahora para evitar datos inconsistentes.
+    // 4) Upgrade: actualizado con progreso real basado en el histórico de tickets positivos.
   }catch(e){
     console.error('cargarSorteos fatal', e);
     const tbody = document.getElementById('sorteos-tbody');
