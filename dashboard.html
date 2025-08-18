@@ -2546,52 +2546,6 @@ if (!link) {
 
 
 
-
-    <script>
-    // scOverlay a11y fix
-    (function () {
-      var overlay = document.getElementById('scOverlay');
-      if (!overlay) return;
-      var appRoot = document.querySelector('.dashboard-container') || document.body;
-      if (appRoot === document.body && !appRoot.hasAttribute('tabindex')) {
-        appRoot.setAttribute('tabindex','-1');
-      }
-      var openerEl = null;
-
-      // Public helpers (útiles si ya llamas desde tu código)
-      window.openSupport = function (el) {
-        openerEl = el || document.activeElement;
-        overlay.removeAttribute('hidden');
-        overlay.removeAttribute('aria-hidden');
-        appRoot.setAttribute('inert','');
-        // intenta enfocar el primer elemento interactivo
-        var focusEl = overlay.querySelector('.sc-close, [autofocus], button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-        if (focusEl && focusEl.focus) focusEl.focus();
-      };
-
-      function closeSupport() {
-        // 1) mueve el foco fuera ANTES de ocultar
-        var target = (openerEl && openerEl.focus) ? openerEl : appRoot;
-        try { target.focus(); } catch (e) {}
-        // 2) ahora sí oculta para todos
-        overlay.setAttribute('aria-hidden','true');
-        overlay.setAttribute('hidden','');
-        appRoot.removeAttribute('inert');
-      }
-      window.closeSupport = closeSupport;
-
-      // Clic en todas las X de cierre dentro del modal
-      overlay.querySelectorAll('.sc-close').forEach(function(btn) {
-        btn.addEventListener('click', function (e) { e.preventDefault(); closeSupport(); });
-      });
-
-      // Cerrar con Escape
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && overlay && !overlay.hasAttribute('hidden')) closeSupport();
-      });
-    })();
-    </script>
-    
 </body></html>
    
 </script>
@@ -2635,7 +2589,7 @@ if (!link) {
 </style>
 
 <!-- === SUPPORT CLAIM MODAL === -->
-<div id="scOverlay" class="sc-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+<div id="scOverlay" class="sc-overlay" aria-hidden="true">
   <div class="sc-modal" role="dialog" aria-modal="true" aria-labelledby="scTitle" tabindex="-1">
     <button class="sc-close" id="scClose" aria-label="Cerrar">×</button>
     <h3 id="scTitle">Contacto de soporte</h3>
@@ -3642,51 +3596,5 @@ async function cargarSorteos(){
 </script>
 
 
-
-    <script>
-    // scOverlay a11y fix
-    (function () {
-      var overlay = document.getElementById('scOverlay');
-      if (!overlay) return;
-      var appRoot = document.querySelector('.dashboard-container') || document.body;
-      if (appRoot === document.body && !appRoot.hasAttribute('tabindex')) {
-        appRoot.setAttribute('tabindex','-1');
-      }
-      var openerEl = null;
-
-      // Public helpers (útiles si ya llamas desde tu código)
-      window.openSupport = function (el) {
-        openerEl = el || document.activeElement;
-        overlay.removeAttribute('hidden');
-        overlay.removeAttribute('aria-hidden');
-        appRoot.setAttribute('inert','');
-        // intenta enfocar el primer elemento interactivo
-        var focusEl = overlay.querySelector('.sc-close, [autofocus], button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-        if (focusEl && focusEl.focus) focusEl.focus();
-      };
-
-      function closeSupport() {
-        // 1) mueve el foco fuera ANTES de ocultar
-        var target = (openerEl && openerEl.focus) ? openerEl : appRoot;
-        try { target.focus(); } catch (e) {}
-        // 2) ahora sí oculta para todos
-        overlay.setAttribute('aria-hidden','true');
-        overlay.setAttribute('hidden','');
-        appRoot.removeAttribute('inert');
-      }
-      window.closeSupport = closeSupport;
-
-      // Clic en todas las X de cierre dentro del modal
-      overlay.querySelectorAll('.sc-close').forEach(function(btn) {
-        btn.addEventListener('click', function (e) { e.preventDefault(); closeSupport(); });
-      });
-
-      // Cerrar con Escape
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && overlay && !overlay.hasAttribute('hidden')) closeSupport();
-      });
-    })();
-    </script>
-    
 </body>
 </html>
