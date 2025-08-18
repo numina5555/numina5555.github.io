@@ -797,8 +797,6 @@
     }catch(_){}
   })();
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
 </head>
 <body>
   <header class="dashboard-header">
@@ -3599,21 +3597,46 @@ async function cargarSorteos(){
 
 
 
-<!-- === NUMINA: Descargar factura — Generación dinámica de PDF (sin servidor) === -->
+<!-- === NUMINA: Descargar factura — Generación dinámica de PDF (robusto, sin servidor) === -->
 <script>
 (function(){
-  function ready(fn){
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
-    else fn();
+  // --- Cargador robusto de jsPDF con 2 CDNs y timeout ---
+  let jspdfReadyPromise = null;
+  function loadJsPDF(){
+    if (jspdfReadyPromise) return jspdfReadyPromise;
+    jspdfReadyPromise = new Promise((resolve, reject)=>{
+      const cdns = [
+        'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
+        'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js'
+      ];
+      let i = 0, done = false;
+      const tryNext = ()=>{
+        if (done || i >= cdns.length){ reject(new Error('No se pudo cargar jsPDF')); return; }
+        const s = document.createElement('script');
+        s.src = cdns[i++]; s.async = true; s.onload = ()=>{
+          if (window.jspdf && window.jspdf.jsPDF){ done = true; resolve(window.jspdf.jsPDF); }
+          else tryNext();
+        };
+        s.onerror = tryNext;
+        document.head.appendChild(s);
+      };
+      const to = setTimeout(()=>{ if(!done){ done = true; reject(new Error('Timeout cargando jsPDF')); } }, 10000);
+      const finish = (v)=>{ clearTimeout(to); resolve(v); };
+      // wrap resolve to clear timeout if successful
+      const _resolve = resolve;
+      resolve = (v)=>{ clearTimeout(to); _resolve(v); };
+      tryNext();
+    });
+    return jspdfReadyPromise;
   }
 
+  // --- Utilidades ---
   function parseNum(txt){
     if(!txt) return null;
-    var s = String(txt).replace(/[^0-9,.-]/g,'').replace(/\./g,'').replace(',', '.');
+    var s = String(txt).replace(/[^0-9,.-]/g,'').replace(/\\./g,'').replace(',', '.');
     var n = parseFloat(s);
     return isNaN(n) ? null : n;
   }
-
   function getStatusKey(){
     var el = document.getElementById('pdStatus');
     if (!el) return 'pending';
@@ -3621,7 +3644,6 @@ async function cargarSorteos(){
     var k = known.find(function(k){ return el.classList.contains(k); });
     return (k === 'paid') ? 'completed' : (k || 'pending');
   }
-
   function getFields(){
     var name = document.getElementById('pdName')?.textContent?.trim() || 'Producto';
     var priceText = document.getElementById('pdPrice')?.textContent || '';
@@ -3637,17 +3659,8 @@ async function cargarSorteos(){
     return { name, price, subtotal, total, date, order, sku, status: getStatusKey() };
   }
 
-  async function ensureJsPDF(){
-    // Espera a que cargue la librería (defer)
-    if (window.jspdf && window.jspdf.jsPDF) return window.jspdf.jsPDF;
-    // Si aún no está, espera un poco
-    await new Promise(r => setTimeout(r, 50));
-    if (window.jspdf && window.jspdf.jsPDF) return window.jspdf.jsPDF;
-    throw new Error('jsPDF no cargó');
-  }
-
   async function createInvoicePdf(data){
-    const jsPDF = await ensureJsPDF();
+    const jsPDF = await loadJsPDF();
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
     const pad = 40;
     let y = pad;
@@ -3695,11 +3708,12 @@ async function cargarSorteos(){
     return doc.output('blob');
   }
 
-  async function onInvoiceClick(){
+  async function handleInvoiceClick(e){
+    e.preventDefault(); e.stopPropagation();
     try{
       const data = getFields();
       const blob = await createInvoicePdf(data);
-      const sku = data.sku || 'producto';
+      const sku = (data.sku || 'producto').toString().replace(/\\s+/g,'-');
       const fname = `Factura-${sku}-${data.status}${data.order ? '-' + data.order : ''}.pdf`;
 
       const a = document.createElement('a');
@@ -3707,20 +3721,19 @@ async function cargarSorteos(){
       a.download = fname;
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(()=> URL.revokeObjectURL(a.href), 1000);
-    }catch(e){
-      console.error(e);
-      alert('No se pudo generar la factura: ' + e.message);
+    }catch(err){
+      console.error('[Factura] Error:', err);
+      alert('No se pudo generar la factura: ' + (err && err.message ? err.message : err));
     }
   }
 
-  ready(function(){
-    var btn = document.getElementById('pdInvoice');
-    if (btn && !btn.__wired){
-      btn.addEventListener('click', onInvoiceClick);
-      btn.__wired = true;
-    }
+  // --- Delegación de eventos: funciona aunque el botón se re-renderice ---
+  document.addEventListener('click', function(e){
+    const btn = e.target && (e.target.id === 'pdInvoice' ? e.target : e.target.closest && e.target.closest('#pdInvoice'));
+    if (btn) handleInvoiceClick(e);
   });
 })();
 </script>
+<!-- === FIN NUMINA: Descargar factura === -->
 </body>
 </html>
