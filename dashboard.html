@@ -3596,5 +3596,88 @@ async function cargarSorteos(){
 </script>
 
 
+
+<script>
+(function(){
+  const INVOICE_MAP = {
+    "GOLD-100G": {
+      completed: "/pdf/invoices/gold-100g-final.pdf",
+      pending:   "/pdf/invoices/gold-100g-proforma.pdf"
+    },
+    "PLAT-100G": {
+      completed: "/pdf/invoices/plat-100g-final.pdf",
+      pending:   "/pdf/invoices/plat-100g-proforma.pdf"
+    },
+    "ROLEX-126610L": {
+      completed: "/pdf/invoices/rolex-126610l-final.pdf",
+      pending:   "/pdf/invoices/rolex-126610l-proforma.pdf"
+    },
+    "NUMINA-BRACELET": {
+      completed: "/pdf/invoices/numina-bracelet-final.pdf",
+      pending:   "/pdf/invoices/numina-bracelet-proforma.pdf"
+    }
+  };
+
+  function ready(fn){
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+    else fn();
+  }
+
+  function getStatusKey(){
+    const el = document.getElementById('pdStatus');
+    if (!el) return 'pending';
+    const known = ['pending','active','completed','cancelled','inactive','paid','disputed'];
+    const k = known.find(k => el.classList.contains(k));
+    return (k === 'paid') ? 'completed' : (k || 'pending');
+  }
+
+  function getSKU(){
+    try { if (typeof resolveSKUFromModal === 'function') return resolveSKUFromModal(); } catch(_){}
+    // fallback: try to read any element with [data-sku] inside the modal
+    const skuAttr = document.querySelector('[data-sku]')?.getAttribute('data-sku');
+    return skuAttr || null;
+  }
+
+  async function download(url, filename){
+    const res = await fetch(url, { mode: 'cors' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename || 'factura.pdf';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=> URL.revokeObjectURL(a.href), 1000);
+  }
+
+  async function onInvoiceClick(){
+    const skuRaw = getSKU();
+    const sku = skuRaw ? String(skuRaw).toUpperCase() : null;
+    const status = getStatusKey();
+    const bySku = sku ? INVOICE_MAP[sku] : null;
+    const url = bySku && (bySku[status] || bySku.completed);
+
+    if (!url) {
+      alert('No hay archivo configurado para ' + (sku || 'este producto') + ' (' + status + ').');
+      return;
+    }
+
+    const order = (document.getElementById('pdOrder')?.textContent || '').replace('#','').trim();
+    const fname = `Factura-${sku || 'producto'}-${status}${order ? '-' + order : ''}.pdf`;
+
+    try { await download(url, fname); }
+    catch(e){ alert('No se pudo descargar la factura: ' + e.message); }
+  }
+
+  ready(()=>{
+    const btn = document.getElementById('pdInvoice');
+    if (btn && !btn.__wired){
+      btn.addEventListener('click', onInvoiceClick);
+      btn.__wired = true;
+    }
+  });
+})();
+</script>
 </body>
 </html>
