@@ -1,250 +1,177 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NUMINA | Lujo y Sorteos Exclusivos</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NUMINA | Index</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <style>
-    body {
-      margin: 0;
-      font-family: 'Montserrat', sans-serif;
-      background-color: #111;
-      color: #fff;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      position: relative;
-    }
-    header {
-      background: linear-gradient(to right, #111, #222);
-      text-align: center;
-      padding: 40px 20px;
-      user-select: none;
-      position: relative;
-    }
-    header h1 {
-      font-size: 3em;
-      color: gold;
-      margin-bottom: 10px;
-      letter-spacing: 2px;
-      font-weight: 700;
-    }
-    header p {
-      font-size: 1.2em;
-      color: #ccc;
-      font-weight: 400;
-      letter-spacing: 1px;
-    }
-    .login-link {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background-color: #ffd700;
-      color: #000;
-      padding: 10px 18px;
-      border-radius: 25px;
-      text-decoration: none;
-      font-weight: 700;
-      font-family: 'Montserrat', sans-serif;
-      letter-spacing: 1px;
-      box-shadow: 0 4px 8px rgba(255,215,0,0.3);
-      transition: background-color 0.3s ease, box-shadow 0.3s ease;
-      user-select: none;
-    }
-    .login-link:hover {
-      background-color: #e6c200;
-      box-shadow: 0 6px 15px rgba(230,194,0,0.7);
-    }
-    section {
-      padding: 60px 20px;
-      max-width: 1000px;
-      margin: auto;
-    }
-    h2 {
-      color: gold;
-      margin-bottom: 30px;
-      font-size: 2em;
-      text-align: center;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-    }
-    .product-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 30px;
-      justify-content: center;
-    }
-    .product {
-      background-color: #1a1a1a;
-      border: 1px solid #333;
-      border-radius: 12px;
-      padding: 20px;
-      width: 250px;
-      text-align: center;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.6);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .product:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 8px 20px rgba(255,215,0,0.6);
-    }
-    .product img {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-      border-radius: 10px;
-      background-color: #111;
-      user-select: none;
-    }
-    .product img.ajuste-vertical {
-      object-fit: contain;
-    }
-    .product h3 {
-      margin-top: 15px;
-      color: #f5f5f5;
-      font-weight: 600;
-      font-size: 1.2em;
-      letter-spacing: 0.5px;
-    }
-    .product p {
-      color: #aaa;
-      margin: 8px 0 15px;
-      font-weight: 400;
-      font-size: 1em;
-      letter-spacing: 0.3px;
-    }
-    .button {
-      display: inline-block;
-      background-color: #ffd700;
-      color: #000;
-      padding: 12px 24px;
-      border-radius: 25px;
-      text-decoration: none;
-      font-weight: 700;
-      font-family: 'Montserrat', sans-serif;
-      letter-spacing: 1px;
-      box-shadow: 0 4px 8px rgba(255,215,0,0.3);
-      border: none;
-      cursor: pointer;
-      transition: background-color 0.3s ease, box-shadow 0.3s ease;
-      user-select: none;
-    }
-    .button:hover {
-      background-color: #e6c200;
-      box-shadow: 0 6px 15px rgba(230,194,0,0.7);
-    }
-    form {
-      background-color: #1a1a1a;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-      max-width: 400px;
-      margin: 0 auto 60px;
-    }
-    form input {
-      width: 100%;
-      margin-bottom: 15px;
-      padding: 12px 15px;
-      border: none;
-      border-radius: 8px;
-      background-color: #333;
-      color: #fff;
-      font-size: 1em;
-      font-weight: 400;
-      letter-spacing: 0.3px;
-      transition: background-color 0.3s ease;
-      user-select: text;
-    }
-    form input:focus {
-      outline: none;
-      background-color: #444;
-      box-shadow: 0 0 5px gold;
-    }
-    .footer {
-      background-color: #000;
-      text-align: center;
-      padding: 20px;
-      font-size: 0.9em;
-      color: #777;
-      user-select: none;
-      letter-spacing: 0.5px;
-    }
-    .info-box {
-      background-color: #222;
-      padding: 20px;
-      border-left: 5px solid gold;
-      margin: 20px 0;
-      border-radius: 12px;
-      font-size: 1em;
-      letter-spacing: 0.3px;
-      user-select: none;
-      line-height: 1.4;
-    }
+    :root{--bg:#0f1113;--panel:#16181c;--panel-2:#1d2025;--brand:#ffd700;--text:#fff;--muted:#a7aeb8}
+    *{box-sizing:border-box} html,body{height:100%;margin:0}
+    body{font-family:Montserrat,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+         display:grid;place-items:center;background:var(--bg);color:var(--text)}
+    .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid rgba(255,255,255,.08);
+          border-radius:16px;padding:28px;box-shadow:0 20px 45px rgba(0,0,0,.45);width:min(520px,96%)}
+    .brand{display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:10px}
+    .logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#4b4300,#8a7a00);
+          display:grid;place-items:center;font-weight:900;color:#111}
+    h1{margin:0;font-size:1.9rem;letter-spacing:1.4px;color:var(--brand)}
+    .muted{color:var(--muted);text-align:center;margin:4px 0 12px}
+    .spinner{width:46px;height:46px;border-radius:50%;border:4px solid rgba(255,255,255,.12);
+             border-top-color:var(--brand);margin:16px auto 6px;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .actions{display:flex;gap:10px;justify-content:center;margin-top:12px}
+    .btn{background:var(--brand);color:#111;border:0;border-radius:999px;padding:10px 14px;font-weight:900;cursor:pointer}
+    .btn.outline{background:transparent;border:1px solid var(--brand);color:var(--brand)}
+    small{display:block;color:var(--muted);text-align:center;margin-top:8px}
   </style>
 </head>
 <body>
-
-<header>
-  <h1>NUMINA</h1>
-  <p>venta de reserva de valor</p>
-  <a href="login.html" class="login-link">Ingresar / Registrarse</a>
-</header>
-
-<section>
-  <h2>Productos de lujo</h2>
-  <div class="product-grid">
-    <div class="product">
-      <img src="img.rolex.jpg" alt="Rolex" class="product-img">
-      <h3>Reloj Rolex</h3>
-      <p>USDT 20.000</p>
-      <a href="https://nowpayments.io/payment/?iid=5207441152" class="button" target="_blank" rel="noopener noreferrer">Comprar</a>
+  <div class="card" role="status" aria-live="polite">
+    <div class="brand" aria-hidden="true">
+      <div class="logo">N</div><h1>NUMINA</h1>
     </div>
-
-    <div class="product">
-      <img src="finegold.webp" alt="Oro fino" class="ajuste-vertical">
-      <h3>1 ounce oro puro</h3>
-      <p>USDT 4500</p>
-      <a href="#" class="button">Comprar</a>
+    <div class="spinner" aria-hidden="true"></div>
+    <p class="muted" id="msg">Verificando sesión segura…</p>
+    <div class="actions">
+      <button class="btn" id="goLogin" style="display:none">Ir al login</button>
+      <button class="btn outline" id="goDash" style="display:none">Ir al dashboard</button>
     </div>
-
-    <div class="product">
-      <img src="platiino.webp" alt="Platino" class="product-img">
-      <h3>1 ounce Platino Puro</h3>
-      <p>USDT 3200</p>
-      <a href="#" class="button">Comprar</a>
-    </div>
-
-    <div class="product">
-      <img src="ticket.webp" alt="Ticket de sorteo" class="product-img">
-      <h3>Ticket para sorteo</h3>
-      <p>USDT 30</p>
-      <a href="https://nowpayments.io/payment/?iid=6336506398" class="button" target="_blank" rel="noopener noreferrer">Comprar Ticket</a>
-    </div>
+    <small id="hint"></small>
   </div>
-</section>
 
-<section>
-  <h2>Sorteos activos</h2>
-  <div class="info-box">
-    <p><strong>🎁 750 tickets vendidos:</strong> Sorteamos 100g de oro fino</p>
-    <p><strong>🎁 1500 tickets vendidos:</strong> Oro + 100g de platino</p>
-    <p><strong>🎁 2200 tickets vendidos:</strong> Rolex de lujo</p>
-    <p><strong>🎟️ Máximo: 5000 tickets por sorteo</strong></p>
-  </div>
-LzaSI8ImNMUhZeZUeFj3gzMhs2LF/q+9
-  <div class="info-box">
-    <p><strong>🎫 Al registrarte recibís 1 ticket GRATIS</strong></p>
-    <p>Ese ticket se activa solo si 3 de tus referidos compran un ticket.</p>
-    <p>⚠️ El ticket regalo solo participa en sorteos con Rolex.</p>
-  </div>
-</section>
+  <script>
+    // === CONFIG: rutas de producción ===
+    // NOTA: usa rutas relativas (login.html / dashboard.html) para que funcione igual en / y en subcarpetas.
+    const URL_LOGIN = "login.html";
+    const URL_DASHBOARD = "dashboard.html";
 
-<section>
-  <h2>Registro de usuarios</h2>
-  <form action="https://formsubmit.co/tu-email@mail.com" method="POST">
-    <input type="text" name="nombre" placeholder="Nombre completo" required>
-    <input type="email" name="email" placeholder="Correo electrónico" required>
-    <input type="text" name="direccion" placeholder="Dirección de envío" required>
-    <input type="text" name="referido" placeholder="Código de referido (opcional)">
-    <button type="submit" class="button
+    // === Supabase: mismos valores que tu login.html ===
+    const SUPABASE_URL  = "https://xaeybhscsxpvtnqzpgwj.supabase.co";
+    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
+    // === Helpers robustos ===
+    const $ = (sel)=>document.querySelector(sel);
+    const rawQuery = (location.search || "").replace(/^\?/, "");
+    const rawHash  = (location.hash   || "").replace(/^#/, "");
+
+    /**
+     * Sanitiza un destino y lo resuelve a una ruta navegable SIN usar new URL(to, location.href),
+     * que en algunos entornos puede lanzar "Invalid URL" si `to` es inválido.
+     */
+    function resolveTarget(to){
+      if (typeof to !== 'string') throw new TypeError('Target must be a string');
+      const t = to.trim();
+      if (!t) throw new TypeError('Target is empty');
+      // Si es URL absoluta (http/https o protocolo relativo //)
+      if (/^(https?:)?\/\//i.test(t)) return t;
+      // Si empieza con "/" => absoluto desde el host
+      if (t.startsWith('/')) return location.origin + t;
+      // Relativo al directorio actual
+      const dir = location.pathname.endsWith('/')
+        ? location.pathname
+        : location.pathname.replace(/[^/]+$/, '');
+      return dir + t;
+    }
+
+    /** Construye href final preservando ?query y #hash actuales, sin duplicarlos */
+    function buildHref(baseHref){
+      let href = baseHref;
+      if (rawQuery) href += (href.includes('?') ? '&' : '?') + rawQuery;
+      if (rawHash && !href.includes('#')) href += '#' + rawHash; // si ya tenia hash, lo respetamos
+      return href;
+    }
+
+    function safeRedirect(to){
+      try{
+        const target = resolveTarget(to);
+        const finalHref = buildHref(target);
+        // Usamos location.assign en lugar de replace para permitir "volver" durante debug
+        location.assign(finalHref);
+      }catch(e){
+        console.warn('Redirección segura falló, intento fallback:', e);
+        try{
+          // Fallback muy simple: si todo falla, navegar directo sin query/hash
+          location.href = (typeof to === 'string' && to.trim()) ? to.trim() : URL_LOGIN;
+        }catch(e2){
+          console.error('No pude redirigir ni con fallback', e2);
+          $('#hint').textContent = (e && e.message) || (e2 && e2.message) || '';
+        }
+      }
+    }
+
+    // Botones de fallback visibles si algo demora
+    document.getElementById('goLogin').addEventListener('click', ()=> safeRedirect(URL_LOGIN));
+    document.getElementById('goDash').addEventListener('click',  ()=> safeRedirect(URL_DASHBOARD));
+
+    (async function main(){
+      try{
+        // ?logout borra la sesión y va a login
+        const q = new URLSearchParams(location.search);
+        if (q.has('logout')){
+          try{ await supabaseClient.auth.signOut(); }catch(_){/* ignore */}
+          return safeRedirect(URL_LOGIN);
+        }
+
+        // 1) Sesión actual
+        const { data: sessData, error } = await supabaseClient.auth.getSession();
+        if (error) throw error;
+
+        if (sessData && sessData.session){
+          $('#msg').textContent = 'Sesión encontrada. Entrando al dashboard…';
+          return safeRedirect(URL_DASHBOARD);
+        }
+
+        // 2) Escuchamos eventos mientras mostramos opciones
+        $('#msg').textContent = 'No hay sesión activa. Enviando al login…';
+        $('#goLogin').style.display = 'inline-block';
+        $('#goDash').style.display  = 'inline-block';
+
+        const { data: sub } = supabaseClient.auth.onAuthStateChange((_event, session) => {
+          if (session) safeRedirect(URL_DASHBOARD);
+        });
+
+        // Fallback corto por si el evento no llega
+        setTimeout(()=> safeRedirect(URL_LOGIN), 1200);
+      }catch(e){
+        console.warn(e);
+        $('#msg').textContent = 'No se pudo verificar la sesión. Te llevo al login…';
+        $('#hint').textContent = e?.message || '';
+        setTimeout(()=> safeRedirect(URL_LOGIN), 800);
+      }
+    })();
+
+    // ==================
+    // Auto-tests (debug)
+    // ==================
+    (function selfTests(){
+      const group = 'NUMINA index self-tests';
+      console.groupCollapsed(group);
+      try{
+        const samples = [
+          'login.html',
+          '/login.html',
+          './login.html',
+          'dashboard.html',
+          'https://example.com/path',
+        ];
+        samples.forEach(s=>{
+          try{ const r = resolveTarget(s); console.assert(typeof r === 'string' && r.length>0, 'resolveTarget ok for', s, '=>', r); }catch(e){ console.error('resolveTarget error', s, e); }
+        });
+        // Casos borde
+        try{ let err=false; try{ resolveTarget(''); }catch(_){ err=true; } console.assert(err, 'resolveTarget vacio debe fallar'); }catch(_){ }
+        try{ const h = buildHref('login.html'); console.assert(h.includes('login.html'), 'buildHref base'); }catch(_){ }
+        // Preservación de query/hash
+        const qh = buildHref('/login.html');
+        console.assert(qh.startsWith('/login.html') || qh.includes('login.html'), 'buildHref mantiene base');
+      }finally{
+        console.groupEnd();
+      }
+    })();
+  </script>
+</body>
+</html>
