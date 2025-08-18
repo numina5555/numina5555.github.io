@@ -3574,7 +3574,8 @@ async function cargarSorteos(){
       ({ data: tksRows, error: tErr } = await supabase
         .from('tickets_ledger')
         .select('count')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+      );
       if (!tErr && Array.isArray(tksRows)){
         totalTickets = tksRows.reduce((acc, r)=> acc + (parseInt(r.count,10)||0), 0);
       }
