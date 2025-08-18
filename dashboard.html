@@ -2549,11 +2549,7 @@ if (!link) {
 
 
 
-</body></html>`;
-  }
-
- 
-      return `<!doctype html>
+</body></html>``<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Invoice ${orderId}</title>
@@ -2596,51 +2592,6 @@ if (!link) {
 </body></html>`;
     };
   }
-  // === End helpers ===
-
-
-  async function handleDownload(){
-    try{
-      // Tomo datos desde el modal que ya tenés en pantalla
-      const orderId  = getOrderId();
-      const status   = getStatusKey();  // "pending" | "paid" | "cancelled"
-      const product  = txt('pdName', 'Producto');
-      const date     = txt('pdDate',  '—');
-      const currency = 'USDT';
-      const amount   = (txt('pdTotal','').replace(/[^\d.,]/g,'') || txt('pdPrice','').replace(/[^\d.,]/g,'')) || '0.00';
-
-      // Si tenés Supabase y querés usar Storage, intento primero ahí
-      if (typeof getSupabase === 'function'){
-        const { data: { user } = {} } = await getSupabase().auth.getUser().catch(()=>({}));
-        const userId = user?.id || 'anon';
-        const ok = await tryDownloadFromStorage(userId, orderId, status);
-        if (ok) return;
-      }
-
-      // Fallback: generar HTML al vuelo y descargarlo
-      const html = buildInvoiceHTML({
-        orderId, statusKey: status, date, product, amount, currency,
-        customerName: txt('full-name','')
-      });
-      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-      const suffix = status === 'pending' ? 'pending' : 'paid';
-      downloadBlob(blob, `invoice-${orderId}-${suffix}.html`);
-    }catch(e){
-      console.error(e);
-      alert('No se pudo generar la factura.');
-    }
-  }
-
-  function init(){
-    const btn = document.getElementById('pdInvoice');
-    if (btn && !btn.__wired){
-      btn.addEventListener('click', (ev)=>{ ev.preventDefault(); handleDownload(); });
-      btn.__wired = true;
-    }
-  }
-  (document.readyState === 'loading') ? document.addEventListener('DOMContentLoaded', init) : init();
-})();
-<\/script>
 
 
 <style>
