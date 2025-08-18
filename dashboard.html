@@ -2552,26 +2552,6 @@ if (!link) {
 </body></html><!doctype html>
 </style></head>
 <body>
-  <div class="card">
-    <h1>Invoice</h1>
-    <div class="row">
-      <div class="col">
-        <div><strong>Order ID:</strong> ${orderId}</div>
-        <div><strong>Date:</strong> ${date}</div>
-        <div><strong>Status:</strong> <span class="badge ${status}">${status}</span></div>
-      </div>
-      <div class="col">
-        <div><strong>Customer:</strong> ${customer}</div>
-        <div><strong>Currency:</strong> ${currency}</div>
-      </div>
-    </div>
-    <table>
-      <thead><tr><th>Product</th><th class="right">Amount</th></tr></thead>
-      <tbody><tr><td>${product}</td><td class="right">${amount} ${currency}</td></tr></tbody>
-      <tfoot><tr><th>Total</th><th class="right">${amount} ${currency}</th></tr></tfoot>
-    </table>
-    <p class="muted">Generated from your dashboard.</p>
-  </div>
 </body></html><style>
 /* === Support Claim Modal (sc-*) === */
 .sc-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;z-index:2000;}
