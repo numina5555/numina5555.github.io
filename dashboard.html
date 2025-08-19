@@ -2817,8 +2817,14 @@ try{
   const sb = getSupabase();
   sb.auth.getUser().then(({ data: { user } }) => {
     if (!user) return;
-    sb.rpc('award_referral_tickets', { p_user: user.id })
-      .then(() => { try { if (typeof cargarSorteos === 'function') cargarSorteos(); } catch(_){} });
+    sb.rpc('award_referral_tickets_me')
+  .then(({ data, error }) => {
+    if (error) { console.error('RPC error:', error); return; }
+    console.log('RPC delta otorgado:', data); // 0 si no había nada, >0 si insertó
+    try { if (typeof cargarSorteos === 'function') cargarSorteos(); } catch(_){}
+  })
+  .catch(e => console.warn('award_referral_tickets_me rpc', e));
+
   });
 }catch(_){}
 
