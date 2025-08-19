@@ -1276,17 +1276,25 @@
       }
       const referralsBody = document.getElementById('referrals-body');
       if (userData.referrals?.length){
-        referralsBody.innerHTML = userData.referrals.map(r=>{
-          const created = r.created_at ? new Date(r.created_at).toLocaleDateString() : '';
-          const tickets = Math.floor((Number(r.purchases_count) || 0) / 3);
-          return `<tr>
-            <td>${r.referred_email || ''}</td>
-            <td>${created}</td>
-            <td>${r.purchases_count || '1'}</td>
-            <td>${statusBadge(r.is_active ? 'active' : 'inactive')}</td>
-             <td>${tickets}</td>
-          </tr>`;
-        }).join('');
+       referralsBody.innerHTML = userData.referrals.map(r=>{
+  const created   = r.created_at ? new Date(r.created_at).toLocaleDateString() : '';
+  const purchases = Number(r.purchases_count) || 0;
+  const tickets   = Math.floor(purchases / 3);
+
+  // Regla: si compras < 1 → PENDIENTE; si no, respeta activo/inactivo
+  const effectiveStatus = (purchases >= 1)
+    ? (r.is_active ? 'active' : 'inactive')
+    : 'pending';
+
+  return `<tr>
+    <td>${r.referred_email || ''}</td>
+    <td>${created}</td>
+    <td>${purchases}</td>
+    <td>${statusBadge(effectiveStatus)}</td>
+    <td>${tickets}</td>
+  </tr>`;
+}).join('');
+
       } else {
         referralsBody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><span data-i18n="referrals.none">'+dI18n.t('referrals.none')+'</span></td></tr>';
       }
