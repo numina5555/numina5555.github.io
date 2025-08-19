@@ -3610,34 +3610,122 @@ async function cargarSorteos(){
     if(!btn || btn.__wired) return; btn.__wired = true;
     btn.addEventListener('click', function(){
       try{
-        var PDF = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : null;
-        if(!PDF){ alert('No se pudo cargar jsPDF.'); return; }
-        var orderId  = normalizeOrderId(t('pdOrder'));
-        var name     = t('pdName') || 'Producto';
-        var desc     = t('pdDesc') || '';
-        var date     = t('pdDate') || new Date().toLocaleString('es-AR');
-        var status   = t('pdStatus') || '';
-        var price    = t('pdPrice') || '';
-        var subtotal = t('pdSubtotal') || '';
-        var total    = t('pdTotal') || '';
-        var doc = new PDF({ unit:'pt', format:'a4' });
-        var y = 60;
-        doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.text('NUMINA', 40, y); y += 24;
-        doc.setFontSize(14); doc.text('Factura', 40, y); if(orderId){ doc.text('#' + orderId, 120, y); } y += 30;
-        doc.setFont('helvetica','normal'); doc.setFontSize(11);
-        doc.text('Fecha: ' + date, 40, y); y += 16;
-        if(status){ doc.text('Estado: ' + status, 40, y); y += 16; }
-        y += 10; doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.text('Detalle', 40, y); y += 18;
-        doc.setFont('helvetica','normal'); doc.setFontSize(11);
-        doc.text(name, 40, y); y += 14;
-        if(desc){ var wrap = doc.splitTextToSize(desc, 515); doc.text(wrap, 40, y); y += wrap.length * 14; }
-        if(price){ doc.text('Precio: ' + price, 40, y); y += 14; }
-        if(subtotal){ doc.text('Subtotal: ' + subtotal, 40, y); y += 14; }
-        if(total){ doc.setFont('helvetica','bold'); doc.text('Total: ' + total, 40, y); y += 16; }
-        doc.setFont('helvetica','normal'); doc.setFontSize(9);
-        doc.text('Generado automáticamente desde el panel.', 40, 820-40);
-        doc.save('Factura-' + (orderId || Date.now()) + '.pdf');
-      }catch(e){ alert('No se pudo generar la factura: ' + (e?.message || e)); }
+  var PDF = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : null;
+  if(!PDF){ alert('No se pudo cargar jsPDF.'); return; }
+
+  // 1) Datos desde el DOM (igual que antes)
+  var orderId  = normalizeOrderId(t('pdOrder'));
+  var name     = t('pdName') || 'Producto';
+  var desc     = t('pdDesc') || '';
+  var date     = t('pdDate') || new Date().toLocaleString('es-AR');
+  var status   = (t('pdStatus') || '').toLowerCase();
+  var price    = t('pdPrice') || '';
+  var subtotal = t('pdSubtotal') || '';
+  var total    = t('pdTotal') || price;
+  var qty      = t('pdQty') || '1';
+  var clientId = t('nmUserId') || t('pdUserId') || ''; // opcional
+
+  // 2) Normalizo estado → estilos (como tus plantillas)
+  function norm(s){
+    s = (s||'').toLowerCase();
+    if(/paid|pagad/.test(s)) return 'paid';
+    if(/pend|pending/.test(s)) return 'pending';
+    if(/cancel|cance/.test(s)) return 'cancelled';
+    return 'other';
+  }
+  var st = norm(status);
+  var STYLES = {
+    paid:     {bg:[232,245,233], fg:[27,94,32],  label:'PAGADO'},
+    pending:  {bg:[255,243,205], fg:[133,100,4], label:'PENDIENTE'},
+    cancelled:{bg:[255,235,238], fg:[183,28,28], label:'CANCELADO'},
+    other:    {bg:[238,238,238], fg:[66,66,66],  label:status.toUpperCase()||'ESTADO'}
+  };
+  var S = STYLES[st];
+
+  // 3) PDF y medidas
+  var doc = new PDF({ unit:'pt', format:'a4' });
+  var W = doc.internal.pageSize.getWidth();
+  var H = doc.internal.pageSize.getHeight();
+
+  // ===== Marca de agua si está PENDIENTE =====
+  if (st === 'pending') {
+    doc.setFont('helvetica','bold'); doc.setFontSize(110);
+    doc.setTextColor(0,0,0);
+    // gris suave para simular baja opacidad
+    doc.setTextColor(0,0,0); 
+    doc.setTextColor(150,150,150);
+    doc.text('PENDIENTE', W/2, H/2, {angle:-20, align:'center'});
+  }
+
+  // ===== Header =====
+  doc.setFont('helvetica','bold'); doc.setFontSize(24); doc.setTextColor(17,17,17);
+  doc.text('NUMINA', 40, 60);
+
+  // Badge a la derecha (pill con colores)
+  var label = S.label;
+  doc.setFontSize(12); doc.setFont('helvetica','bold');
+  var tw = doc.getTextWidth(label);
+  var paddingX = 12, paddingY = 8, pillH = 24, pillW = tw + paddingX*2;
+  var px = W - 40 - pillW, py = 44; // y basado en tipografía
+  doc.setFillColor.apply(doc, S.bg);
+  if (doc.roundedRect) doc.roundedRect(px, py - pillH + 6, pillW, pillH, 10, 10, 'F');
+  else doc.rect(px, py - pillH + 6, pillW, pillH, 'F');
+  doc.setTextColor.apply(doc, S.fg);
+  doc.text(label, px + paddingX, py);
+
+  // Título + meta
+  doc.setTextColor(17,17,17);
+  doc.setFont('helvetica','bold'); doc.setFontSize(16);
+  var y = 96; doc.text('Factura / Invoice', 40, y);
+  doc.setFont('helvetica','normal'); doc.setFontSize(12);
+  y += 20;
+  doc.text('N.º de pedido: #' + (orderId || '-') + ' • Fecha: ' + date, 40, y);
+  y += 16;
+  if (clientId) { doc.text('Cliente: ' + clientId, 40, y); y += 2; }
+
+  // ===== Tabla =====
+  y += 18;
+  // encabezado
+  doc.setFillColor(245,245,245);
+  doc.rect(40, y-14, W-80, 24, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(12);
+  doc.text('Concepto', 50, y);
+  doc.text('Cant.',    360, y);
+  doc.text('Precio',   430, y);
+  doc.text('Total',    510, y);
+
+  // fila item
+  y += 24; doc.setFont('helvetica','normal'); doc.setFontSize(11);
+  doc.text(name, 50, y);
+  if (desc) {
+    var wrap = doc.splitTextToSize(desc, 280);
+    doc.text(wrap, 50, y+14);
+  }
+  doc.text(String(qty),   360, y);
+  doc.text(String(price), 430, y);
+  doc.text(String(total), 510, y);
+
+  // línea separadora
+  doc.setDrawColor(238,238,238); doc.setLineWidth(1);
+  doc.line(40, y+16, W-40, y+16);
+
+  // total en tfoot
+  y += 44; 
+  doc.setFont('helvetica','bold'); doc.setFontSize(12);
+  doc.text('Total', 50, y);
+  doc.text(String(total), 510, y);
+
+  // Mensaje final
+  y += 24; doc.setFont('helvetica','normal'); doc.setFontSize(11);
+  var msg = (st === 'paid') ? 'Pago recibido. ¡Gracias!' : 'Documento proforma (pendiente de pago).';
+  doc.setTextColor(102,102,102);
+  doc.text(msg, 40, y);
+
+  // Guardar
+  doc.save('Factura-' + (orderId || Date.now()) + '.pdf');
+}catch(e){
+  alert('No se pudo generar la factura: ' + (e?.message || e));
+}
     });
   }
   (document.readyState === 'loading') ? document.addEventListener('DOMContentLoaded', wire) : wire();
