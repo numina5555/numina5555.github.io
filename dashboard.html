@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, init>ial-scale=1" />
   <title>NUMINA | Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3593,6 +3593,55 @@ async function cargarSorteos(){
     if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Error</td></tr>';
   }
 }
+</script>
+<!-- jsPDF (para generar PDF del lado del cliente) -->
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+<!-- Handler simple para el botón "Descargar factura" -->
+<script>
+(function(){
+  function t(id){ try{ return (document.getElementById(id)?.textContent || '').trim(); }catch(_){ return ''; } }
+  function normalizeOrderId(s){
+    if(!s) return '';
+    return s.replace(/^\s*#?\s*/,'').replace(/^(pedido|order)\s*:?\s*/i,'').trim();
+  }
+  function wire(){
+    var btn = document.getElementById('pdInvoice');
+    if(!btn || btn.__wired) return; btn.__wired = true;
+    btn.addEventListener('click', function(){
+      try{
+        var PDF = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : null;
+        if(!PDF){ alert('No se pudo cargar jsPDF.'); return; }
+        var orderId  = normalizeOrderId(t('pdOrder'));
+        var name     = t('pdName') || 'Producto';
+        var desc     = t('pdDesc') || '';
+        var date     = t('pdDate') || new Date().toLocaleString('es-AR');
+        var status   = t('pdStatus') || '';
+        var price    = t('pdPrice') || '';
+        var subtotal = t('pdSubtotal') || '';
+        var total    = t('pdTotal') || '';
+        var doc = new PDF({ unit:'pt', format:'a4' });
+        var y = 60;
+        doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.text('NUMINA', 40, y); y += 24;
+        doc.setFontSize(14); doc.text('Factura', 40, y); if(orderId){ doc.text('#' + orderId, 120, y); } y += 30;
+        doc.setFont('helvetica','normal'); doc.setFontSize(11);
+        doc.text('Fecha: ' + date, 40, y); y += 16;
+        if(status){ doc.text('Estado: ' + status, 40, y); y += 16; }
+        y += 10; doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.text('Detalle', 40, y); y += 18;
+        doc.setFont('helvetica','normal'); doc.setFontSize(11);
+        doc.text(name, 40, y); y += 14;
+        if(desc){ var wrap = doc.splitTextToSize(desc, 515); doc.text(wrap, 40, y); y += wrap.length * 14; }
+        if(price){ doc.text('Precio: ' + price, 40, y); y += 14; }
+        if(subtotal){ doc.text('Subtotal: ' + subtotal, 40, y); y += 14; }
+        if(total){ doc.setFont('helvetica','bold'); doc.text('Total: ' + total, 40, y); y += 16; }
+        doc.setFont('helvetica','normal'); doc.setFontSize(9);
+        doc.text('Generado automáticamente desde el panel.', 40, 820-40);
+        doc.save('Factura-' + (orderId || Date.now()) + '.pdf');
+      }catch(e){ alert('No se pudo generar la factura: ' + (e?.message || e)); }
+    });
+  }
+  (document.readyState === 'loading') ? document.addEventListener('DOMContentLoaded', wire) : wire();
+})();
 </script>
 
 
