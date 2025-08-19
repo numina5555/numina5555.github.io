@@ -2812,6 +2812,15 @@ ${msg}`;
     setText('refs-count', confirmed + '/' + total);
     setText('refs-tickets', tickets);
     setText('refs-progress-count', progress + '/3');
+// ► Asegura que los tickets por referidos existan en tickets_ledger
+try{
+  const sb = getSupabase();
+  sb.auth.getUser().then(({ data: { user } }) => {
+    if (!user) return;
+    sb.rpc('award_referral_tickets', { p_user: user.id })
+      .then(() => { try { if (typeof cargarSorteos === 'function') cargarSorteos(); } catch(_){} });
+  });
+}catch(_){}
 
     var bg=document.getElementById('refs-bar-general'); if(bg) bg.style.width = pctGeneral + '%';
     var bp=document.getElementById('refs-bar-progress'); if(bp) bp.style.width = pctProg + '%';
