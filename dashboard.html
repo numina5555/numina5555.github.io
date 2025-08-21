@@ -821,6 +821,98 @@
   }
 </style>
 
+
+<!-- ARCHIVO 2: Responsive y tipografías fluidas -->
+<style id="responsive-upgrade-archivo2">
+  /* Tipografía base fluida y legible en dark UI */
+  html { font-size: clamp(14px, 0.9vw + 10px, 16px); }
+  body {
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color-scheme: dark;
+  }
+  h1 { font-size: clamp(1.75rem, 1.2rem + 2vw, 2.5rem); line-height: 1.2; }
+  h2 { font-size: clamp(1.5rem, 1rem + 1.5vw, 2rem); line-height: 1.25; }
+  h3 { font-size: clamp(1.25rem, .9rem + 1vw, 1.5rem); line-height: 1.3; }
+  p, li, label, input, button, a, small { font-size: clamp(0.95rem, 0.85rem + 0.25vw, 1rem); }
+  small, .small { font-size: clamp(0.85rem, 0.8rem + 0.15vw, 0.95rem); }
+
+  /* Contenedor fluido seguro */
+  .container, .content, .main, .page, .wrapper {
+    max-width: min(1200px, 96vw);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: clamp(12px, 2vw, 24px);
+    padding-right: clamp(12px, 2vw, 24px);
+  }
+
+  /* Mejor contraste para textos secundarios */
+  .text-muted, .muted, .subtitle, .secondary, .note {
+    color: #c8c8d2;
+  }
+
+  /* Tarjetas y superficies con padding responsivo */
+  .card, .tile, .surface {
+    border-radius: 16px;
+    padding: clamp(12px, 1.6vw, 20px);
+  }
+
+  /* Imágenes y media respondivas */
+  img, video { max-width: 100%; height: auto; }
+
+  /* Sidebar móvil: off-canvas debajo de 992px */
+  @media (max-width: 992px) {
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: min(80vw, 320px);
+      transform: translateX(-100%);
+      transition: transform .2s ease;
+      z-index: 1000;
+      background: var(--surface, #111318);
+      box-shadow: 0 0 0 9999px rgba(0,0,0,.0); /* scrim se maneja aparte */
+      will-change: transform;
+    }
+    body.sidebar-open .sidebar {
+      transform: translateX(0);
+      box-shadow: none;
+    }
+    /* Botón flotante de menú (si no existe header toggle) */
+    #navToggle {
+      position: fixed;
+      bottom: 18px;
+      left: 18px;
+      z-index: 1100;
+      background: var(--surface, #151824);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      padding: 10px 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    #navToggle:focus-visible {
+      outline: 3px solid #ffd54a;
+      outline-offset: 4px;
+    }
+    .nav-scrim {
+      display: none;
+    }
+    body.sidebar-open .nav-scrim {
+      display: block;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.5);
+      z-index: 1050;
+    }
+    /* Cuando el sidebar esté abierto, bloquear scroll detrás */
+    body.sidebar-open { overflow: hidden; }
+  }
+</style>
+
 </head>
 <body>
   <header class="dashboard-header">
@@ -3811,6 +3903,69 @@ async function cargarSorteos(){
     img[loading="lazy"] { opacity: 1; }
   </style>
 </noscript>
+
+
+<!-- ARCHIVO 2: Toggle de sidebar accesible en mobile -->
+<script id="navtoggle-upgrade-archivo2">
+  (function () {
+    function qs(sel){ return document.querySelector(sel); }
+    function qsa(sel){ return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var sidebar = qs('.sidebar');
+      if (!sidebar) return; // no sidebar presente, no hacemos nada
+
+      // Añadir scrim si no existe
+      if (!qs('.nav-scrim')) {
+        var scrim = document.createElement('div');
+        scrim.className = 'nav-scrim';
+        scrim.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(scrim);
+        scrim.addEventListener('click', function(){
+          document.body.classList.remove('sidebar-open');
+          toggleBtn && toggleBtn.setAttribute('aria-expanded', 'false');
+        });
+      }
+
+      // Botón flotante para mobile si no existe uno ya
+      var toggleBtn = qs('#navToggle');
+      if (!toggleBtn) {
+        toggleBtn = document.createElement('button');
+        toggleBtn.id = 'navToggle';
+        toggleBtn.type = 'button';
+        toggleBtn.setAttribute('aria-label', 'Abrir menú');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+        toggleBtn.innerHTML = '<span aria-hidden="true">☰</span><span style="font-weight:600">Menú</span>';
+        document.body.appendChild(toggleBtn);
+      }
+
+      // Toggle handlers
+      function openSidebar(){
+        document.body.classList.add('sidebar-open');
+        toggleBtn.setAttribute('aria-expanded', 'true');
+      }
+      function closeSidebar(){
+        document.body.classList.remove('sidebar-open');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+      }
+      function toggleSidebar(){
+        if (document.body.classList.contains('sidebar-open')) closeSidebar(); else openSidebar();
+      }
+
+      toggleBtn.addEventListener('click', toggleSidebar);
+
+      // Cerrar con Escape
+      document.addEventListener('keydown', function(ev){
+        if (ev.key === 'Escape') closeSidebar();
+      });
+
+      // Si el sidebar tiene un botón de cerrar interno
+      qsa('[data-close], .sidebar [data-dismiss], .sidebar .close').forEach(function(btn){
+        btn.addEventListener('click', closeSidebar);
+      });
+    });
+  })();
+</script>
 
 </body>
 </html>
