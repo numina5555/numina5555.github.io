@@ -913,9 +913,88 @@
   }
 </style>
 
+
+<!-- ARCHIVO 2B: Overrides fuertes para sidebar + contraste + ancho -->
+<style id="responsive-overrides-archivo2b">
+  /* Evita scroll horizontal del viewport por contenidos amplios */
+  html, body { overflow-x: hidden; }
+
+  /* Textos secundarios con más contraste */
+  .text-muted, .muted, .subtitle, .secondary, .note {
+    color: #e0e2ea !important;
+  }
+
+  /* Imágenes en modales/producto totalmente fluidas */
+  .pd-modal img, .nm-modal img, .sc-modal img { 
+    max-width: 100% !important; height: auto !important; display: block; 
+  }
+
+  @media (max-width: 992px) {
+    /* Sidebar off-canvas con prioridad sobre estilos previos */
+    .sidebar {
+      position: fixed !important;
+      top: 0 !important; left: 0 !important; bottom: 0 !important;
+      width: min(82vw, 340px) !important;
+      height: 100vh !important;
+      transform: translateX(-100%) !important;
+      transition: transform .2s ease !important;
+      z-index: 1000 !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      background: var(--surface, #111318) !important;
+    }
+    body.sidebar-open .sidebar {
+      transform: translateX(0) !important;
+    }
+    /* Scrim */
+    .nav-scrim {
+      display: none;
+    }
+    body.sidebar-open .nav-scrim {
+      display: block;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      z-index: 950;
+    }
+    /* Botón flotante visible en mobile SIEMPRE */
+    #navToggle, #navToggleHeader {
+      position: fixed;
+      bottom: 18px;
+      left: 18px;
+      z-index: 1100;
+      background: var(--surface, #151824);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      padding: 10px 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+  }
+
+  /* Botón de menú en header SIEMPRE visible como fallback (esquinas) */
+  #navToggleHeader {
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 1100;
+    background: var(--surface, #151824);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 12px;
+    padding: 8px 10px;
+  }
+  #navToggleHeader:focus-visible { outline: 3px solid #ffd54a; outline-offset: 3px; }
+</style>
+
 </head>
 <body>
   <header class="dashboard-header">
+<button id="navToggleHeader" type="button" aria-label="Abrir menú" aria-expanded="false">☰</button>
+
     <div style="flex-grow:1; text-align:center;">
       <div class="logo">NUMINA</div>
     </div>
@@ -3962,6 +4041,73 @@ async function cargarSorteos(){
       // Si el sidebar tiene un botón de cerrar interno
       qsa('[data-close], .sidebar [data-dismiss], .sidebar .close').forEach(function(btn){
         btn.addEventListener('click', closeSidebar);
+      });
+    });
+  })();
+</script>
+
+
+<!-- ARCHIVO 2B: JS para toggles y prioridad de cierre -->
+<script id="navtoggle-overrides-archivo2b">
+  (function () {
+    function qs(sel){ return document.querySelector(sel); }
+    function qsa(sel){ return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+
+    function ensureScrim(){
+      var scrim = qs('.nav-scrim');
+      if (!scrim) {
+        scrim = document.createElement('div');
+        scrim.className = 'nav-scrim';
+        scrim.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(scrim);
+      }
+      scrim.addEventListener('click', function(){ closeSidebar(); });
+      return scrim;
+    }
+
+    function openSidebar(){
+      document.body.classList.add('sidebar-open');
+      var t = qs('#navToggle'); if (t) t.setAttribute('aria-expanded','true');
+      var h = qs('#navToggleHeader'); if (h) h.setAttribute('aria-expanded','true');
+      ensureScrim();
+    }
+    function closeSidebar(){
+      document.body.classList.remove('sidebar-open');
+      var t = qs('#navToggle'); if (t) t.setAttribute('aria-expanded','false');
+      var h = qs('#navToggleHeader'); if (h) h.setAttribute('aria-expanded','false');
+    }
+    function toggleSidebar(){
+      if (document.body.classList.contains('sidebar-open')) closeSidebar();
+      else openSidebar();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var sidebar = qs('.sidebar');
+      if (!sidebar) return;
+
+      // Asegura botón flotante mínimo si no existe (para pantallas chicas)
+      var toggleBtn = qs('#navToggle');
+      if (!toggleBtn) {
+        toggleBtn = document.createElement('button');
+        toggleBtn.id = 'navToggle';
+        toggleBtn.type = 'button';
+        toggleBtn.setAttribute('aria-label', 'Abrir menú');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+        toggleBtn.innerHTML = '<span aria-hidden="true">☰</span><span style="font-weight:600">Menú</span>';
+        document.body.appendChild(toggleBtn);
+      }
+
+      // Listeners
+      toggleBtn.addEventListener('click', toggleSidebar);
+      var headerBtn = qs('#navToggleHeader');
+      if (headerBtn) headerBtn.addEventListener('click', toggleSidebar);
+
+      // Cerrar con Escape y cuando cambie el tamaño (si pasa a desktop, cerramos)
+      document.addEventListener('keydown', function(ev){
+        if (ev.key === 'Escape') closeSidebar();
+      });
+      window.addEventListener('resize', function(){
+        if (window.innerWidth > 992) closeSidebar();
       });
     });
   })();
