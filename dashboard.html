@@ -680,14 +680,14 @@
 /* Scale the whole UI to look like browser zoom 75% on large screens only */
 @media (min-width: 1200px) {
   html.__uiScale75 body {
-    transform: scale(0.75);
+    /* removed global transform scale */
     transform-origin: top left;
     width: 133.333333%;
   }
   /* Safari / iOS */
   @supports (-webkit-touch-callout: none) {
     html.__uiScale75 body {
-      -webkit-transform: scale(0.75);
+      -webkit-/* removed global transform scale */
       -webkit-transform-origin: top left;
     }
   }
@@ -797,6 +797,30 @@
     }catch(_){}
   })();
 </script>
+
+<!-- ARCHIVO 1: Accesibilidad y performance (añadido) -->
+<style id="a11y-upgrade-archivo1">
+  :focus-visible {
+    outline: 3px solid #ffd54a;
+    outline-offset: 3px;
+  }
+  .action-btn:focus-visible, .btn:focus-visible, button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
+    box-shadow: 0 0 0 3px rgba(255, 213, 74, .55);
+    border-radius: 12px;
+  }
+  html, body {
+    transform: none !important; /* neutraliza zoom global si existiera */
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: .01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+</style>
+
 </head>
 <body>
   <header class="dashboard-header">
@@ -3748,6 +3772,45 @@ async function cargarSorteos(){
 })();
 </script>
 
+
+
+<!-- ARCHIVO 1: Mejora de performance (añadido) -->
+<script id="perf-upgrade-archivo1">
+  (function () {
+    document.addEventListener('DOMContentLoaded', function () {
+      // Lazy-load & async decode for images
+      document.querySelectorAll('img:not([loading])').forEach(function(img){
+        try {
+          img.setAttribute('loading','lazy');
+          img.setAttribute('decoding','async');
+        } catch(e){}
+      });
+      // Security for external links
+      document.querySelectorAll('a[target="_blank"]').forEach(function(a){
+        try {
+          var rel = (a.getAttribute('rel') || '');
+          if (!/noopener/i.test(rel)) rel += ' noopener';
+          if (!/noreferrer/i.test(rel)) rel += ' noreferrer';
+          a.setAttribute('rel', rel.trim());
+        } catch(e){}
+      });
+      // Remove inline global scale on body, if any
+      try {
+        if (document.body && /scale\(/i.test(document.body.style.transform || '')) {
+          document.body.style.transform = 'none';
+        }
+      } catch(e){}
+    });
+  })();
+</script>
+
+
+<!-- ARCHIVO 1: Noscript hint -->
+<noscript>
+  <style>
+    img[loading="lazy"] { opacity: 1; }
+  </style>
+</noscript>
 
 </body>
 </html>
