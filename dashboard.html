@@ -115,11 +115,12 @@
       .welcome-right .referral-code{ align-self:center; }
       table { table-layout:auto; }
       .action-btn, .status{ min-width:auto; }
-    @media (max-width: 900px){ #section-productos .products-grid{ grid-template-columns: 1fr; }
+    }
+    @media (max-width: 900px){ #section-productos .products-grid{ grid-template-columns: 1fr; } }
   
     /* Tarjetas y layout de Sorteos */
     .srt-stats { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; margin-bottom:1.5rem; align-items:stretch; }
-    @media (max-width:900px){ .srt-stats{ grid-template-columns:1fr; }
+    @media (max-width:900px){ .srt-stats{ grid-template-columns:1fr; } }
     .srt-card{ background:var(--dark-light); border-radius:12px; padding:1.2rem; border:1px solid rgba(255,255,255,.07);
                display:flex; flex-direction:column; min-height:150px; }
     .srt-card h3{ color:var(--text-light); font-size:.9rem; text-transform:uppercase; letter-spacing:.6px; margin-bottom:.5rem; }
@@ -164,6 +165,7 @@
 
   .nm-pitch{margin:10px 0 14px;padding:12px 14px;border:1px solid #2b2e34;background:#16181d;border-radius:12px;line-height:1.55;color:#e7e7e7}
   .nm-pitch strong{color:#ffd700}
+}
 
 
 
@@ -187,7 +189,9 @@
 .btn-delete-row{border:1px solid #f5c400;color:#f5c400;background:transparent;
   padding:.35rem .7rem;border-radius:.55rem;font-weight:700;cursor:pointer;
   transition:all .12s ease}
-.btn-delete-row:hover{background:#f5c400;color:#111}</style>
+.btn-delete-row:hover{background:#f5c400;color:#111}
+
+</style>
 
   <script>
     (function(){
@@ -686,12 +690,22 @@
       -webkit-transform: scale(0.75);
       -webkit-transform-origin: top left;
     }
+  }
+}
 @media (max-width: 1199.98px) {
   html.__uiScale75 body {
     transform: none;
     -webkit-transform: none;
     width: 100%;
-  }</style>
+  }
+}
+
+.btn-delete-row{border:1px solid #f5c400;color:#f5c400;background:transparent;
+  padding:.35rem .7rem;border-radius:.55rem;font-weight:700;cursor:pointer;
+  transition:all .12s ease}
+.btn-delete-row:hover{background:#f5c400;color:#111}
+
+</style>
 
 
 <!-- Sidebar uniform height = tallest section (v4) -->
@@ -711,7 +725,14 @@
     height: var(--sidebar-h) !important;
     min-height: var(--sidebar-h) !important;
     overflow: hidden;
-  }</style>
+  }
+
+.btn-delete-row{border:1px solid #f5c400;color:#f5c400;background:transparent;
+  padding:.35rem .7rem;border-radius:.55rem;font-weight:700;cursor:pointer;
+  transition:all .12s ease}
+.btn-delete-row:hover{background:#f5c400;color:#111}
+
+</style>
 <script id="sidebar-uniform-fix-v4-script">
   (function(){
     function measureEl(el){
@@ -2095,7 +2116,14 @@ if (!link) {
   .pd-timeline{display:grid;gap:.6rem}
   .pd-tl{display:grid;grid-template-columns:18px 1fr;gap:.6rem;align-items:start}
   .pd-dot{width:10px;height:10px;border-radius:50%;background:var(--primary, #ffd700);box-shadow:0 0 0 3px rgba(255,215,0,.15)}
-  @media(max-width:860px){.pd-content{grid-template-columns:1fr}</style>
+  @media(max-width:860px){.pd-content{grid-template-columns:1fr}}
+
+.btn-delete-row{border:1px solid #f5c400;color:#f5c400;background:transparent;
+  padding:.35rem .7rem;border-radius:.55rem;font-weight:700;cursor:pointer;
+  transition:all .12s ease}
+.btn-delete-row:hover{background:#f5c400;color:#111}
+
+</style>
 
 <div id="pdOverlay" class="pd-overlay" hidden>
   <section class="pd-modal" role="dialog" aria-modal="true" aria-labelledby="pdTitle">
@@ -2524,13 +2552,6 @@ if (!link) {
 })();
 </script>
 
-
-
-</html>
-   
-</script>
-
-
 <style>
 /* === Support Claim Modal (sc-*) === */
 .sc-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;z-index:2000;}
@@ -2542,7 +2563,7 @@ if (!link) {
 .sc-modal h3{font-size:28px; font-weight:900; color:var(--primary,#ffd700); margin:24px 24px 10px}
 .sc-body{padding:0 24px 24px}
 .sc-grid{display:grid;grid-template-columns: 1fr 1fr; gap:20px; margin-top:8px}
-@media(max-width:900px){.sc-grid{grid-template-columns:1fr}
+@media(max-width:900px){.sc-grid{grid-template-columns:1fr}}
 .sc-card{background:linear-gradient(180deg,#141414,#101010); border:1px solid rgba(255,255,255,.08);
   border-radius:16px; padding:22px}
 .sc-card h5{font-size:20px; margin:0 0 12px 0}
@@ -2559,7 +2580,14 @@ if (!link) {
 .sc-btn{border-radius:12px;padding:12px 18px;font-weight:900;cursor:pointer;border:1px solid transparent}
 .sc-btn-gold{background:var(--primary,#ffd700); color:#111}
 .sc-btn-ghost{background:transparent; color:#ffd700; border-color:rgba(255,215,0,.45)}
-.sc-err{color:#f87171; font-size:13px; margin-top:6px; display:none}</style>
+.sc-err{color:#f87171; font-size:13px; margin-top:6px; display:none}
+
+.btn-delete-row{border:1px solid #f5c400;color:#f5c400;background:transparent;
+  padding:.35rem .7rem;border-radius:.55rem;font-weight:700;cursor:pointer;
+  transition:all .12s ease}
+.btn-delete-row:hover{background:#f5c400;color:#111}
+
+</style>
 
 <!-- === SUPPORT CLAIM MODAL === -->
 <div id="scOverlay" class="sc-overlay" aria-hidden="true">
@@ -3243,7 +3271,8 @@ if (fn.error || !paymentUrl){
   padding:.35rem .7rem; border-radius:.55rem; font-weight:700; cursor:pointer;
   transition:all .12s ease
 }
-.btn-delete-row:hover{ background:#f5c400; color:#111 }</style>
+.btn-delete-row:hover{ background:#f5c400; color:#111 }
+</style>
 
 <script>
 (function () {
