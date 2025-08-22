@@ -3639,6 +3639,7 @@ async function cargarSorteos(){
     // 1) Tickets activos (sumatoria en tickets_ledger)
     let totalTickets = 0;
     let tksRows = [];
+    let tErr = null;
     try{
       ({ data: tksRows, error: tErr } = await supabase
         .from('tickets_ledger')
