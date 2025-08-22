@@ -1,0 +1,16 @@
+:root {
+  /* Dark theme with golden accents */
+  --color-bg: #111111;
+  --color-panel: #1a1a1a;
+  --color-panel-alt: #222222;
+  --color-primary: #ffd700;
+  --color-primary-dark: #e6c200;
+  --color-secondary: #ffac33;
+  --color-text: #ffffff;
+  --color-text-light: #cccccc;
+  --color-muted: #999999;
+  --color-border: #333333;
+  --color-success: #44d07b;
+  --color-warning: #ffc107;
+  --color-danger: #dc3545;
+}
