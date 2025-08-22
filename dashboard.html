@@ -1023,6 +1023,27 @@
   #section-configuracion h3 i{ color: var(--brand); }
 </style>
 
+
+  <!-- Tipografía Futurista -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..900&family=Space+Grotesk:wght@400..700&display=swap" rel="stylesheet">
+  <style id="theme-futurista-typography">
+    :root{
+      --font-base: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      --font-display: "Space Grotesk", var(--font-base);
+    }
+    html{ -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+    body{ font-family: var(--font-base); font-weight: 500; letter-spacing: .002em; }
+    .brand span{ font-family: var(--font-display); font-weight: 800; letter-spacing:.08em; text-transform: uppercase; }
+    .page-title{ font-family: var(--font-display); font-weight: 700; letter-spacing:-.01em; font-size: clamp(26px, 2.4vw, 36px); }
+    .section-title{ font-family: var(--font-display); font-weight:700; letter-spacing:.01em; }
+    label{ font-weight: 600; letter-spacing:.02em; color:#e9edff; opacity:.9 }
+    input, select{ font-weight: 500; font-variant-numeric: tabular-nums; }
+    input::placeholder{ font-weight: 400; letter-spacing:.01em; opacity:.75 }
+    .btn{ font-family: var(--font-display); font-weight:800; letter-spacing:.02em; }
+  </style>
+
 </head>
 <body>
   <header class="dashboard-header">
