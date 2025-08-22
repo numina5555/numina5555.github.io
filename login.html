@@ -80,9 +80,14 @@
     input:focus{ border-color:#2e3746; box-shadow:0 0 0 3px rgba(255,215,0,.15); }
     .login-button{
       width:100%; background:var(--brand); color:#111; border:0; border-radius:999px;
-      padding:12px 14px; font-weight:900; cursor:pointer; transition:.18s transform;
+      padding:12px 14px; font-weight:900; cursor:pointer; transition:.18s transform, .18s box-shadow;
     }
-    .login-button:hover{ transform:translateY(-1px); }
+    .login-button:hover{ transform:translateY(-1px); box-shadow:0 6px 18px rgba(0,0,0,.3); }
+    /* Generic button transitions */
+    button{ transition:transform .2s ease, box-shadow .2s ease; }
+    button:hover{ transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.35); }
+    .login-container{ transition:transform .2s ease, box-shadow .2s ease; }
+    .login-container:hover{ transform:translateY(-2px); box-shadow:0 24px 48px rgba(0,0,0,.5); }
     .toggle-form{ display:block; margin-top:10px; color:var(--brand); cursor:pointer; text-align:center; }
     .toggle-form:hover{ text-decoration:underline; }
     #error-message, #register-error-message, #reset-error, #reset-success, #newpass-error, #newpass-success{
