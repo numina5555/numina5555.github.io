@@ -797,6 +797,125 @@
     }catch(_){}
   })();
 </script>
+
+<style id="theme-futurista-sidebar">
+/* ====== Tokens de acento (podés cambiarlos) ====== */
+:root{
+  --fx-1:#00e5ff; /* cian eléctrico */
+  --fx-2:#8b5cf6; /* violeta neón */
+  --fx-3:#00ffd5; /* turquesa luz */
+}
+
+/* ====== Panel del sidebar (glass + neón sutil) ====== */
+.sidebar{
+  background:
+    radial-gradient(120% 100% at -10% 0%, rgba(139,92,246,.18), transparent 60%),
+    linear-gradient(180deg, rgba(0,229,255,.06), rgba(139,92,246,.04) 40%, transparent 70%),
+    linear-gradient(180deg, #0f1115 0%, #0b0d11 60%, #0a0c10 100%);
+  border-right: 1px solid rgba(139,92,246,.28) !important;
+  box-shadow:
+    inset -1px 0 0 rgba(255,255,255,.05),
+    0 0 40px rgba(139,92,246,.10);
+  position: relative;
+  backdrop-filter: saturate(1.1) blur(6px);
+}
+
+/* Rejilla/fondo técnico sutil */
+.sidebar::before{
+  content:"";
+  position:absolute; inset:0; pointer-events:none;
+  background:
+    repeating-linear-gradient(transparent 0 28px, rgba(255,255,255,.03) 28px 29px),
+    repeating-linear-gradient(90deg, transparent 0 28px, rgba(255,255,255,.03) 28px 29px);
+  -webkit-mask: linear-gradient(180deg, black, transparent);
+  mask: linear-gradient(180deg, black, transparent);
+  opacity:.5;
+}
+
+/* ====== Items ====== */
+.sidebar .menu-item{
+  position: relative;
+  margin: .30rem .75rem;
+  padding: .75rem 1rem;
+  border-radius: 12px;
+  border-left: none !important;               /* quita la barra antigua */
+  color: #cfd8ff;
+  transition: background .22s ease, color .18s ease, transform .12s ease;
+}
+
+/* Indicador neón (barra animada) */
+.sidebar .menu-item::after{
+  content:"";
+  position:absolute;
+  left:8px; top:10px; bottom:10px;
+  width:3px; border-radius:2px;
+  background: linear-gradient(180deg, var(--fx-1), var(--fx-2));
+  box-shadow:
+    0 0 8px color-mix(in srgb, var(--fx-1) 60%, transparent),
+    0 0 12px color-mix(in srgb, var(--fx-2) 40%, transparent) inset;
+  opacity:0; transform: scaleY(.35);
+  transition: opacity .22s ease, transform .22s ease;
+}
+
+/* Hover/Active “pill” + glow lateral */
+.sidebar .menu-item:hover,
+.sidebar .menu-item.active{
+  background: linear-gradient(90deg,
+              color-mix(in srgb, var(--fx-2) 18%, transparent),
+              color-mix(in srgb, var(--fx-1) 12%, transparent));
+  color:#fff;
+}
+.sidebar .menu-item:hover::after,
+.sidebar .menu-item.active::after{ opacity:1; transform: scaleY(1); }
+
+/* Iconos con halo leve (SVG y <i> de Font Awesome) */
+.sidebar .menu-item i{
+  width:20px; text-align:center;
+  text-shadow: 0 0 6px color-mix(in srgb, var(--fx-1) 45%, transparent);
+}
+.sidebar .menu-item svg{
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--fx-1) 45%, transparent));
+}
+
+/* Accesibilidad: foco visible y tamaño de objetivo intacto */
+.sidebar .menu-item:focus-visible{
+  outline:2px solid var(--fx-1);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--fx-1) 25%, transparent);
+}
+
+/* Estado “Logout” con tono de alerta discreto (opcional) */
+.sidebar .menu-item[data-target="logout"]:hover{
+  background: linear-gradient(90deg,
+    color-mix(in srgb, #ff4d4d 16%, transparent),
+    color-mix(in srgb, var(--fx-2) 10%, transparent));
+}
+
+/* ====== Responsive (sidebar compacto ya existe a 70px) ====== */
+@media (max-width: 992px){
+  .sidebar .menu-item{
+    margin:.25rem; padding:.75rem; justify-content:center;
+  }
+  /* La barra vertical pasa a “subrayado” animado bajo el icono */
+  .sidebar .menu-item::after{
+    left:50%; top:auto; bottom:10px; height:3px; width:24px;
+    transform: translateX(-50%) scaleX(.35);
+  }
+  .sidebar .menu-item:hover::after,
+  .sidebar .menu-item.active::after{
+    transform: translateX(-50%) scaleX(1);
+  }
+}
+
+/* Respeto motion preferences */
+@media (prefers-reduced-motion: reduce){
+  .sidebar, .sidebar *{
+    transition: none !important;
+    animation: none !important;
+  }
+}
+</style>
+
 </head>
 <body>
   <header class="dashboard-header">
