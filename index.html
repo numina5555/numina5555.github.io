@@ -53,9 +53,11 @@
     .copy-btn{ background: var(--primary); color: var(--dark); border:0; padding:.3rem .6rem; border-radius:5px; cursor:pointer; transition:.2s ease; }
     .copy-btn:hover{ background: var(--primary-dark); }
     .stats-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap:1.5rem; margin-bottom:2rem; }
-    .stat-card{ background: var(--dark-light); border-radius:10px; padding:1.5rem; border-left: 4px solid var(--primary); }
+    .stat-card{ background: var(--dark-light); border-radius:10px; padding:1.5rem; border-left: 4px solid var(--primary);  display:flex; align-items:center; gap:1rem; }
     .stat-card h3{ color: var(--text-light); font-size:.9rem; font-weight:500; margin-bottom:.5rem; text-transform:uppercase; letter-spacing:1px; }
     .stat-card .value{ font-size:1.8rem; font-weight:700; color: var(--primary); margin-bottom:.5rem; }
+    .stat-icon{ font-size:2rem; color:var(--primary); }
+    .stat-info{ flex:1; }
     .change{ font-size:.8rem; display:flex; align-items:center; gap:.3rem; }
     .positive{ color: var(--success); }
     .negative{ color: var(--danger); }
@@ -104,6 +106,7 @@
     #section-productos .product-card:hover{ transform: translateY(-2px); border-color: rgba(255,215,0,.25); box-shadow: 0 8px 24px rgba(0,0,0,.35); }
     #section-productos .product-media{ background: var(--dark-lighter); aspect-ratio:16/9; display:block; }
     #section-productos .product-body{ padding:1rem; display:flex; flex-direction:column; gap:.6rem; }
+    #section-productos .product-icon{ font-size:2rem; color: var(--primary); }
     #section-productos .product-title{ font-size:1rem; font-weight:700; color: var(--text); }
     #section-productos .product-desc{ font-size:.9rem; color: var(--text-light); }
     #section-productos .price{ color: var(--primary); font-weight:700; font-size:1.1rem; }
@@ -117,6 +120,11 @@
       .action-btn, .status{ min-width:auto; }
     }
     @media (max-width: 900px){ #section-productos .products-grid{ grid-template-columns: 1fr; } }
+
+    .hero{ background: var(--dark-light); border-radius:10px; padding:2rem; margin-bottom:2rem; display:flex; align-items:center; gap:2rem; }
+    .hero-text h1{ color: var(--primary); font-size:2rem; margin-bottom:.5rem; }
+    .hero-text p{ color: var(--text-light); }
+    .hero-image{ max-width:250px; border-radius:10px; }
   
     /* Tarjetas y layout de Sorteos */
     .srt-stats { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; margin-bottom:1.5rem; align-items:stretch; }
@@ -567,7 +575,7 @@
           }
           if (!key) return name;
           // return a translatable span so language switches re-translate automatically
-          return '<span data-i18n=\"'+key+'\">'+(dI18n.t(key) || name)+'</span>';
+          return '<span data-i18n="'+key+'">'+(dI18n.t(key) || name)+'</span>';
         } catch(_){ return name; }
       };
 
@@ -847,6 +855,13 @@
 
     <main class="main-content">
       <div id="main-dashboard">
+        <section class="hero">
+          <div class="hero-text">
+            <h1 data-i18n="hero.title">Impulsa tus inversiones</h1>
+            <p data-i18n="hero.subtitle">Descubre productos exclusivos para hacer crecer tu patrimonio.</p>
+          </div>
+          <img class="hero-image" src="finegold.webp" alt="Lingote de oro" />
+        </section>
         <section class="welcome-banner" id="welcome-banner">
           <div class="welcome-text">
             <h2 id="welcome-title">Cargando…</h2>
@@ -875,25 +890,37 @@
 
         <div class="stats-grid">
           <div class="stat-card">
-            <h3 data-i18n="stats.balance">Balance</h3>
-            <div class="value" id="balance-value">$---</div>
-            <div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</span></div>
-          </div>
+              <i class="stat-icon fas fa-wallet"></i>
+              <div class="stat-info">
+                <h3 data-i18n="stats.balance">Balance</h3>
+                <div class="value" id="balance-value">$---</div>
+                <div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</span></div>
+              </div>
+            </div>
           <div class="stat-card">
-            <h3 data-i18n="stats.activePurchases">Compras activas</h3>
-            <div class="value" id="purchases-value">--</div>
-            <div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</span></div>
-          </div>
+              <i class="stat-icon fas fa-shopping-cart"></i>
+              <div class="stat-info">
+                <h3 data-i18n="stats.activePurchases">Compras activas</h3>
+                <div class="value" id="purchases-value">--</div>
+                <div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</span></div>
+              </div>
+            </div>
           <div class="stat-card">
-            <h3 data-i18n="stats.referrals">Referidos</h3>
-            <div class="value" id="referrals-value">--</div>
-            <div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</span></div>
-          </div>
+              <i class="stat-icon fas fa-users"></i>
+              <div class="stat-info">
+                <h3 data-i18n="stats.referrals">Referidos</h3>
+                <div class="value" id="referrals-value">--</div>
+                <div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</span></div>
+              </div>
+            </div>
           <div class="stat-card">
-            <h3 data-i18n="stats.tickets">Tickets activos</h3>
-            <div class="value" id="tickets-value">--</div>
-            <div class="change negative"><i class="fas fa-arrow-down"></i><span data-i18n="labels.loading">Cargando…</span></div>
-          </div>
+              <i class="stat-icon fas fa-ticket-alt"></i>
+              <div class="stat-info">
+                <h3 data-i18n="stats.tickets">Tickets activos</h3>
+                <div class="value" id="tickets-value">--</div>
+                <div class="change negative"><i class="fas fa-arrow-down"></i><span data-i18n="labels.loading">Cargando…</span></div>
+              </div>
+            </div>
         </div>
 
         <h2 class="section-title"><i class="fas fa-shopping-bag"></i><span data-i18n="sections.comprasActivas">Compras Activas</span></h2>
@@ -1111,6 +1138,7 @@
                 <svg role="img" aria-label="Lingote de Oro" viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g1" x1="0" x2="1"><stop offset="0%" stop-color="#4b4300"/><stop offset="100%" stop-color="#8a7a00"/></linearGradient></defs><rect width="640" height="360" fill="url(#g1)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="36">Lingote de Oro</text></svg>
               </figure>
               <div class="product-body">
+                <i class="product-icon fas fa-coins"></i>
                 <h3 class="product-title" data-i18n="catalog.goldTitle">Lingote de Oro</h3>
                 <p class="product-desc" data-i18n="catalog.goldDesc">Oro 999.9 certificado. Ideal para inversión y resguardo de valor.</p>
                 <span class="price">US$ 13,500</span>
@@ -1122,6 +1150,7 @@
                 <svg role="img" aria-label="Lingote de Platino" viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g2" x1="0" x2="1"><stop offset="0%" stop-color="#2e3136"/><stop offset="100%" stop-color="#6a6f78"/></linearGradient></defs><rect width="640" height="360" fill="url(#g2)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="36">Lingote de Platino</text></svg>
               </figure>
               <div class="product-body">
+                <i class="product-icon fas fa-gem"></i>
                 <h3 class="product-title" data-i18n="catalog.platinumTitle">Lingote de Platino</h3>
                 <p class="product-desc" data-i18n="catalog.platinumDesc">Platino 999.5 certificado. Inversión de alto valor y rareza.</p>
                 <span class="price">US$ 6,500</span>
@@ -1133,6 +1162,7 @@
                 <svg role="img" aria-label="Rolex 126610L" viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g3" x1="0" x2="1"><stop offset="0%" stop-color="#0d1f14"/><stop offset="100%" stop-color="#1d6c3a"/></linearGradient></defs><rect width="640" height="360" fill="url(#g3)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="34">Rolex 126610L</text></svg>
               </figure>
               <div class="product-body">
+                <i class="product-icon fas fa-clock"></i>
                 <h3 class="product-title">Rolex 126610L</h3>
                 <p class="product-desc" data-i18n="catalog.rolexDesc">Submariner Date con bisel verde y caja Oystersteel. Automático.</p>
                 <span class="price">US$ 19,600</span>
@@ -1144,6 +1174,7 @@
                 <svg role="img" aria-label="Pulsera Numina" viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g4" x1="0" x2="1"><stop offset="0%" stop-color="#2a0d2d"/><stop offset="100%" stop-color="#6f1d75"/></linearGradient></defs><rect width="640" height="360" fill="url(#g4)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="34">Pulsera Numina</text></svg>
               </figure>
               <div class="product-body">
+                <i class="product-icon fas fa-link"></i>
                 <h3 class="product-title" data-i18n="catalog.braceletTitle">Pulsera Numina</h3>
                 <p class="product-desc" data-i18n="catalog.braceletDesc">Diseño exclusivo con materiales de alta calidad. Edición limitada.</p>
                 <span class="price">US$ 35</span>
@@ -1275,7 +1306,7 @@
           </tr>`;
         }).join('');
       } else {
-        purchasesBody.innerHTML = '<tr><td colspan=\"5\" style=\"text-align:center;\"><span data-i18n=\"purchases.none\">Sin compras</span></td></tr>';
+        purchasesBody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><span data-i18n="purchases.none">Sin compras</span></td></tr>';
       }
       const referralsBody = document.getElementById('referrals-body');
       if (userData.referrals?.length){
@@ -1560,7 +1591,7 @@ overlay.classList.add("show");
 
   // Delegación: abrir modal
   document.addEventListener("click", (e) => {
-    const btn = e.target.closest('button[data-action=\"more\"][data-sku], button[data-product]');
+    const btn = e.target.closest('button[data-action="more"][data-sku], button[data-product]');
     if (btn) {
       e.preventDefault();
       const sku = btn.getAttribute('data-sku') || btn.getAttribute('data-product');
