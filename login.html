@@ -620,12 +620,6 @@ const redirectTo = RESET_REDIRECT_URL; // -> en producción envía al formulario
         }
       });
 
-      // Autotests en consola
-      console.groupCollapsed('NUMINA login+reset self-tests');
-      console.assert(document.getElementById('forgot-link'), 'Existe link "olvidaste tu contraseña"');
-      console.assert(document.getElementById('reset-form'), 'Existe formulario de reset');
-      console.assert(document.getElementById('newpass-form'), 'Existe formulario de nueva contraseña');
-      console.groupEnd();
     });
   </script>
 
