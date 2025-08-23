@@ -3563,7 +3563,7 @@ if (fn.error || !paymentUrl){
       if(row) row.remove();
       return;
     }
-    if(!confirm('¿Eliminar compra '+id+'? Esta acción es permanente.')) return;
+    if(!confirm('¿Eliminar esta compra? Esta acción es permanente.')) return;
     deletePurchaseById(id, row);
   });
 
