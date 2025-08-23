@@ -3873,29 +3873,61 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<!-- NUMINA: Blackout solo del contenido principal -->
+<!-- NUMINA: Blackout robusto solo del contenido central -->
 <style>
-  .main-content { position: relative; } /* para el ::before */
-  .main-content.numina-blackout::before{
-    content:"";
-    position:absolute; inset:0;
-    background:#000;
-    opacity:1;
-    pointer-events:auto;
+  .main-content { position: relative; }
+  #numina-main-overlay{
+    position: absolute;
+    inset: 0;
+    background: #000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease;
+    z-index: 99999;
   }
-  #balance-value{ cursor:pointer; }
+  .main-content.numina-on #numina-main-overlay{
+    opacity: 1;
+    pointer-events: auto;
+  }
+  #balance-value{ cursor: pointer; }
 </style>
 <script>
 (function(){
-  const main = document.querySelector('.main-content');
-  const target = document.getElementById('balance-value');
-  if(!main || !target) return;
-  const on = ()=> main.classList.add('numina-blackout');
-  const off = ()=> main.classList.remove('numina-blackout');
-  target.setAttribute('role','button');
-  target.addEventListener('click', on);
-  main.addEventListener('click', off);
-  document.addEventListener('keydown', e=>{ if(e.key==='Escape') off(); });
+  function addOverlay(){
+    const main = document.querySelector('.main-content');
+    if(!main) return null;
+    let ov = document.getElementById('numina-main-overlay');
+    if(!ov){
+      ov = document.createElement('div');
+      ov.id = 'numina-main-overlay';
+      main.appendChild(ov);
+      ov.addEventListener('click', ()=> main.classList.remove('numina-on'));
+      document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') main.classList.remove('numina-on'); });
+    }
+    return { main, ov };
+  }
+  function onClick(){
+    const ctx = addOverlay();
+    if(ctx) ctx.main.classList.add('numina-on');
+  }
+  function bind(){
+    // objetivo primario: #balance-value
+    const target = document.getElementById('balance-value');
+    if(target && !target.__numinaBound){
+      target.__numinaBound = true;
+      target.addEventListener('click', onClick);
+      // también el contenedor de la tarjeta
+      const card = target.closest('.stat-card');
+      if(card && !card.__numinaBound){
+        card.__numinaBound = true;
+        card.addEventListener('click', onClick);
+      }
+    }
+  }
+  bind();
+  // Rebind si más tarde el DOM reemplaza nodos
+  const obs = new MutationObserver(bind);
+  obs.observe(document.body, {childList:true, subtree:true});
 })();
 </script>
 
