@@ -835,6 +835,56 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
   button, .stat-card, .settings-card, .srt-card, .pd-card, .sc-card, .card, .product-card{ transition: none; }
 }
 </style>
+
+<!-- NUMINA: Opción E (Neon suave) para botones Detalles/Eliminar + separación -->
+<style id="numina-buttons-opcion-e">
+  /* Separación entre botones en la columna de Acciones */
+  #purchases-table td:nth-child(5),
+  #miscompras-table td:nth-child(5) {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+
+  /* Detalles (dorado) – estilo Neon suave */
+  .table-container .action-btn[data-action="details"]{
+    background: transparent;
+    color: var(--primary);
+    border: 1.5px solid var(--primary);
+    border-radius: 14px;
+    font-weight: 700;
+    padding: .45rem .9rem;
+    box-shadow: 0 0 0 1px rgba(255,215,0,.45) inset;
+    text-shadow: 0 0 6px rgba(255,215,0,.35);
+    transition: all .18s ease;
+  }
+  .table-container .action-btn[data-action="details"]:hover{
+    background: rgba(255,215,0,.10);
+    color: #111;
+    box-shadow: 0 0 18px rgba(255,215,0,.26), 0 0 0 1px rgba(255,215,0,.55) inset;
+  }
+
+  /* Eliminar (rojo) – estilo Neon suave */
+  .table-container .btn-delete-row,
+  .table-container .action-btn[data-action="delete"]{
+    background: transparent;
+    color: var(--danger);
+    border: 1.5px solid var(--danger);
+    border-radius: 14px;
+    font-weight: 700;
+    padding: .45rem .9rem;
+    box-shadow: 0 0 0 1px rgba(220,53,69,.45) inset;
+    text-shadow: 0 0 6px rgba(220,53,69,.35);
+    transition: all .18s ease;
+  }
+  .table-container .btn-delete-row:hover,
+  .table-container .action-btn[data-action="delete"]:hover{
+    background: rgba(220,53,69,.10);
+    color: #fff;
+    box-shadow: 0 0 18px rgba(220,53,69,.35), 0 0 0 1px rgba(220,53,69,.6) inset;
+  }
+</style>
+
 </head>
 <body>
   <header class="dashboard-header">
