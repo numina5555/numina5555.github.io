@@ -1501,12 +1501,11 @@ try {
         purchasesBody.innerHTML = userData.purchases.map(p=>{
           const created = p.created_at ? new Date(p.created_at).toLocaleDateString() : '';
           const value = (typeof p.value === 'number') ? p.value.toFixed(2) : '0.00';
-          return `<tr>
-            <td>${(window.i18nProductName?window.i18nProductName(p.product_name||''):(p.product_name||''))}</td>
+          return `<tr data-purchase-id="${p.id}"><td>${(window.i18nProductName?window.i18nProductName(p.product_name||''):(p.product_name||''))}</td>
             <td>${created}</td>
             <td>$${value}</td>
             <td>${statusBadge(p.status)}</td>
-            <td><button class="action-btn" data-action="details" data-id="${p.id || ''}"><span data-i18n="tables.details">${dI18n.t('tables.details')}</span></button></td>
+            <td><button class="action-btn" data-action="details" data-purchase-id="${p.id}" data-id="${p.id || ''}"><span data-i18n="tables.details">${dI18n.t('tables.details')}</span></button></td>
           </tr>`;
         }).join('');
       } else {
@@ -1524,8 +1523,7 @@ try {
     ? (r.is_active ? 'active' : 'inactive')
     : 'pending';
 
-  return `<tr>
-    <td>${r.referred_email || ''}</td>
+  return `<tr data-purchase-id="${p.id}"><td>${r.referred_email || ''}</td>
     <td>${created}</td>
     <td>${purchases}</td>
     <td>${statusBadge(effectiveStatus)}</td>
