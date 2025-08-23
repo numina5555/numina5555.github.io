@@ -1268,7 +1268,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
       document.getElementById('balance-value').textContent = '$---';
       document.getElementById('purchases-value').textContent = '--';
       document.getElementById('referrals-value').textContent = '--';
-      document.getElementById('tickets-value').textContent = '--';
+      document.getElementById('tickets-value').textContent = 'MYSTERY BOX'; // NUMINA: replaced numeric tickets with label
       ['full-name','user-email','user-phone','user-address','user-country','user-city','user-postal'].forEach(id=> setText(id, ''));
       document.getElementById('purchases-body').innerHTML = '<tr><td colspan="5" style="text-align:center;">'+dI18n.t('labels.loading')+'</td></tr>';
       document.getElementById('referrals-body').innerHTML = '<tr><td colspan="5" style="text-align:center;">'+dI18n.t('labels.loading')+'</td></tr>';
