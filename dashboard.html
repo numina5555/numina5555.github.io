@@ -211,23 +211,18 @@
 .stat-card::after{
   content: "";
   position: absolute;
-  left: 0;
-  bottom: 0;
-  height: 3px;
-  width: 0;
-  background: var(--primary);
-  transition: width .65s cubic-bezier(.22,.61,.36,1);
-}
-.stat-card::before{
-  content: "";
-  position: absolute;
-  left: 0;
   top: 0;
-  height: 3px;
-  width: 0;
-  background: var(--primary);
-  transition: width .65s cubic-bezier(.22,.61,.36,1);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--primary);       /* mismo amarillo de bordes */
+  border-radius: inherit;
+  z-index: 1;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .6s cubic-bezier(.22,.61,.36,1);
 }
+
 
 .stat-card:hover::after,
 .stat-card:hover::before,
@@ -236,19 +231,23 @@
 
 /* Efecto: se rellena TODO el botón (card) al hover */
 .stat-card{ position: relative; overflow: hidden; isolation: isolate; }
-.stat-card::before{ content: none !important; } /* desactivamos la línea superior previa */
+ /* desactivamos la línea superior previa */
 .stat-card::after{
   content: "";
   position: absolute;
-  inset: 0;                /* ocupa alto completo */
-  width: 0%;               /* arranca vacío desde la izquierda */
-  background: var(--primary);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--primary);       /* mismo amarillo de bordes */
   border-radius: inherit;
-  z-index: 1;              /* por debajo del contenido */
-  transition: width .65s cubic-bezier(.22,.61,.36,1);
+  z-index: 1;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .6s cubic-bezier(.22,.61,.36,1);
 }
 .stat-card:hover::after,
-.stat-card:focus-within::after{ width: 100%; }
+.stat-card:focus-within::after{ transform: scaleX(1); }
 
 /* Texto por encima del relleno y con color legible al cubrirse de amarillo */
 .stat-card h3,
