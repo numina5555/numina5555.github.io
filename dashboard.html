@@ -3977,6 +3977,23 @@ document.addEventListener('DOMContentLoaded', () => {
     pointer-events: auto;
   }
   #balance-value{ cursor: pointer; }
+
+  /* Botón Volver dentro del overlay negro */
+  #numina-back-btn{
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: var(--primary);
+    color: var(--dark);
+    border: 0;
+    border-radius: 999px;
+    padding: .5rem .95rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(0,0,0,.45), inset 0 -2px 0 rgba(0,0,0,.15);
+    user-select: none;
+  }
+  #numina-back-btn:hover{ background: var(--primary-dark); }
 </style>
 <script>
 (function(){
@@ -3988,8 +4005,17 @@ document.addEventListener('DOMContentLoaded', () => {
       ov = document.createElement('div');
       ov.id = 'numina-main-overlay';
       main.appendChild(ov);
-      ov.addEventListener('click', ()=> main.classList.remove('numina-on'));
+      /* Cerrar si se hace click en el negro (no sobre contenidos) */
+      ov.addEventListener('click', (e)=>{ if(e.target === ov) main.classList.remove('numina-on'); });
       document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') main.classList.remove('numina-on'); });
+      /* Botón ← Volver */
+      const back = document.createElement('button');
+      back.id = 'numina-back-btn';
+      back.type = 'button';
+      back.setAttribute('aria-label','Volver');
+      back.textContent = '\u2190 Volver';
+      back.addEventListener('click', ()=> main.classList.remove('numina-on'));
+      ov.appendChild(back);
     }
     return { main, ov };
   }
