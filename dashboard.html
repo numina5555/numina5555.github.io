@@ -3872,5 +3872,45 @@ document.addEventListener('DOMContentLoaded', () => {
   }catch(_){}
 });
 </script>
+
+<!-- NUMINA: Blackout overlay al click de MYSTERY BOX -->
+<style>
+  #numina-blackout{
+    position:fixed; inset:0; background:#000;
+    opacity:0; pointer-events:none; transition:opacity .25s ease;
+    z-index:9999;
+  }
+  #balance-value{ cursor:pointer; }
+</style>
+<script>
+(function(){
+  function ensureOverlay(){
+    let ov = document.getElementById('numina-blackout');
+    if(!ov){
+      ov = document.createElement('div');
+      ov.id = 'numina-blackout';
+      document.body.appendChild(ov);
+      // Permite salir con click o ESC
+      ov.addEventListener('click', ()=>{ ov.style.opacity='0'; ov.style.pointerEvents='none'; });
+      document.addEventListener('keydown', (e)=>{
+        if(e.key==='Escape'){ ov.style.opacity='0'; ov.style.pointerEvents='none'; }
+      });
+    }
+    return ov;
+  }
+  function blackout(){
+    const ov = ensureOverlay();
+    ov.style.opacity = '1';
+    ov.style.pointerEvents = 'auto';
+  }
+  const target = document.getElementById('balance-value');
+  if(target){
+    target.setAttribute('role','button');
+    target.setAttribute('aria-label','Abrir Mystery Box');
+    target.addEventListener('click', blackout);
+  }
+})();
+</script>
+
 </body>
 </html>
