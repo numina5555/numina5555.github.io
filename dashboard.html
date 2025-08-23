@@ -4006,8 +4006,6 @@ document.addEventListener('DOMContentLoaded', () => {
       ov.id = 'numina-main-overlay';
       main.appendChild(ov);
       /* Cerrar si se hace click en el negro (no sobre contenidos) */
-      ov.addEventListener('click', (e)=>{ if(e.target === ov) main.classList.remove('numina-on'); });
-      document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') main.classList.remove('numina-on'); });
       /* Botón ← Volver */
       const back = document.createElement('button');
       back.id = 'numina-back-btn';
@@ -4085,3 +4083,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
