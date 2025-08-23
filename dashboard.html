@@ -3873,42 +3873,29 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<!-- NUMINA: Blackout overlay al click de MYSTERY BOX -->
+<!-- NUMINA: Blackout solo del contenido principal -->
 <style>
-  #numina-blackout{
-    position:fixed; inset:0; background:#000;
-    opacity:0; pointer-events:none; transition:opacity .25s ease;
-    z-index:9999;
+  .main-content { position: relative; } /* para el ::before */
+  .main-content.numina-blackout::before{
+    content:"";
+    position:absolute; inset:0;
+    background:#000;
+    opacity:1;
+    pointer-events:auto;
   }
   #balance-value{ cursor:pointer; }
 </style>
 <script>
 (function(){
-  function ensureOverlay(){
-    let ov = document.getElementById('numina-blackout');
-    if(!ov){
-      ov = document.createElement('div');
-      ov.id = 'numina-blackout';
-      document.body.appendChild(ov);
-      // Permite salir con click o ESC
-      ov.addEventListener('click', ()=>{ ov.style.opacity='0'; ov.style.pointerEvents='none'; });
-      document.addEventListener('keydown', (e)=>{
-        if(e.key==='Escape'){ ov.style.opacity='0'; ov.style.pointerEvents='none'; }
-      });
-    }
-    return ov;
-  }
-  function blackout(){
-    const ov = ensureOverlay();
-    ov.style.opacity = '1';
-    ov.style.pointerEvents = 'auto';
-  }
+  const main = document.querySelector('.main-content');
   const target = document.getElementById('balance-value');
-  if(target){
-    target.setAttribute('role','button');
-    target.setAttribute('aria-label','Abrir Mystery Box');
-    target.addEventListener('click', blackout);
-  }
+  if(!main || !target) return;
+  const on = ()=> main.classList.add('numina-blackout');
+  const off = ()=> main.classList.remove('numina-blackout');
+  target.setAttribute('role','button');
+  target.addEventListener('click', on);
+  main.addEventListener('click', off);
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') off(); });
 })();
 </script>
 
