@@ -888,38 +888,35 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 
 <style id="numina-actions-visible-fix">
 
-/* === NUMINA FIX: acciones visibles (detalles + eliminar) === */
-.table-container { overflow-x: auto; } /* permite scroll si la tabla necesita más ancho */
+/* === NUMINA FIX v2: acciones en una sola línea === */
+.table-container { overflow-x: auto; }
 #purchases-table th:nth-child(5),
 #miscompras-table th:nth-child(5),
 #referrals-table th:nth-child(5){
-  width: 18% !important; /* un poco más de espacio para los botones */
+  width: 22% !important;               /* más espacio para dos botones */
 }
 #purchases-table td:nth-child(5),
 #miscompras-table td:nth-child(5),
 #referrals-table td:nth-child(5){
-  overflow: visible !important;      /* evita que se recorten los botones */
-  white-space: normal !important;    /* permite saltos de línea si hace falta */
-  display: flex !important;          /* distribuye los botones */
-  gap: 12px !important;              /* separación entre botones */
+  overflow: visible !important;
+  white-space: nowrap !important;       /* NO partir en varias líneas */
+  display: flex !important;             /* coloca los botones en fila */
+  gap: 12px !important;
   align-items: center !important;
-  flex-wrap: wrap !important;        /* si no entra, baja a segunda línea */
-  padding-right: 16px;               /* aire a la derecha */
+  justify-content: flex-start !important;
+  flex-wrap: nowrap !important;         /* evitar que bajen a segunda línea */
+  min-width: 240px !important;          /* asegura espacio mínimo */
+  padding-right: 16px;
 }
-/* En pantallas más chicas, dales todavía más espacio */
-@media (max-width: 1280px){
-  :root { --tbl-col-actions: 22% !important; }
-}
-/* Botones compactos para no pasarse de ancho */
+/* Asegurar que los botones no tomen todo el ancho */
 .table-container .action-btn,
 .table-container .btn-delete-row{
+  display: inline-flex !important;
+  width: auto !important;
   min-width: auto !important;
-  padding: .4rem .7rem !important;
+  flex: 0 0 auto !important;
+  padding: .45rem .9rem !important;
   border-radius: 12px !important;
-}
-/* No ocultar contenido dentro de las celdas de Acciones, aun si hay estilos heredados */
-#purchases-table td, #miscompras-table td, #referrals-table td{
-  /* se mantiene overflow para otras columnas, pero la última lo sobreescribe a visible */
 }
 
 </style>
