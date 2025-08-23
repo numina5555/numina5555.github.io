@@ -211,16 +211,18 @@
 .stat-card::after{
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
   background: var(--primary);       /* mismo amarillo de bordes */
   border-radius: inherit;
   z-index: 1;
   transform: scaleX(0);
   transform-origin: left center;
   transition: transform .6s cubic-bezier(.22,.61,.36,1);
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 
@@ -235,16 +237,18 @@
 .stat-card::after{
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
   background: var(--primary);       /* mismo amarillo de bordes */
   border-radius: inherit;
   z-index: 1;
   transform: scaleX(0);
   transform-origin: left center;
   transition: transform .6s cubic-bezier(.22,.61,.36,1);
+  will-change: transform;
+  backface-visibility: hidden;
 }
 .stat-card:hover::after,
 .stat-card:focus-within::after{ transform: scaleX(1); }
@@ -265,6 +269,10 @@
 .stat-card:focus-within .change{
   color: var(--dark);
 }
+
+/* Evitar línea/solapado en el borde izquierdo durante el relleno */
+.stat-card:hover{ border-left-color: transparent; }
+.stat-card:focus-within{ border-left-color: transparent; }
 </style>
 
   <script>
