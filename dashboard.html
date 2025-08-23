@@ -3944,6 +3944,26 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('popstate', off);
 
   bind();
+
+  // === NUMINA: también activar blackout desde todos los stat-cards ===
+  (function(){
+    const ids = ['balance-value','purchases-value','referrals-value','tickets-value'];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.__numinaExtraBound){
+        el.__numinaExtraBound = true;
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', onClick);
+        const card = el.closest('.stat-card');
+        if(card && !card.__numinaExtraBound){
+          card.__numinaExtraBound = true;
+          card.style.cursor = 'pointer';
+          card.addEventListener('click', onClick);
+        }
+      }
+    });
+  })();
+
   // Rebind si más tarde el DOM reemplaza nodos
   const obs = new MutationObserver(bind);
   obs.observe(document.body, {childList:true, subtree:true});
