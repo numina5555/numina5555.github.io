@@ -1523,7 +1523,7 @@ try {
     ? (r.is_active ? 'active' : 'inactive')
     : 'pending';
 
-  return `<tr data-purchase-id="${p.id}"><td>${r.referred_email || ''}</td>
+  return `<tr><td>${r.referred_email || ''}</td>
     <td>${created}</td>
     <td>${purchases}</td>
     <td>${statusBadge(effectiveStatus)}</td>
