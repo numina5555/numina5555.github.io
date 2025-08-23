@@ -205,6 +205,21 @@
   transition:all .12s ease}
 .btn-delete-row:hover{background:#f5c400;color:#111}
 
+
+/* Efecto: la línea amarilla se llena al hover */
+.stat-card{ position: relative; overflow: hidden; }
+.stat-card::after{
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 0;
+  background: var(--primary);
+  transition: width .65s cubic-bezier(.22,.61,.36,1);
+}
+.stat-card:hover::after,
+.stat-card:focus-within::after{ width: 100%; }
 </style>
 
   <script>
@@ -4005,15 +4020,16 @@ document.addEventListener('DOMContentLoaded', () => {
       ov = document.createElement('div');
       ov.id = 'numina-main-overlay';
       main.appendChild(ov);
-      /* Cerrar si se hace click en el negro (no sobre contenidos) */
-      /* Botón ← Volver */
+      // Botón ← Volver
       const back = document.createElement('button');
       back.id = 'numina-back-btn';
       back.type = 'button';
       back.setAttribute('aria-label','Volver');
-      back.textContent = '\u2190 Volver';
+      back.textContent = '← Volver';
       back.addEventListener('click', ()=> main.classList.remove('numina-on'));
       ov.appendChild(back);
+      
+      
     }
     return { main, ov };
   }
@@ -4023,17 +4039,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function bind(){
     // objetivo primario: #balance-value
-    const target = document.getElementById('balance-value');
-    if(target && !target.__numinaBound){
-      target.__numinaBound = true;
-      target.addEventListener('click', onClick);
-      // también el contenedor de la tarjeta
-      const card = target.closest('.stat-card');
-      if(card && !card.__numinaBound){
-        card.__numinaBound = true;
-        card.addEventListener('click', onClick);
+    const ids = ['balance-value','purchases-value','referrals-value','tickets-value'];
+    ids.forEach((id)=>{
+      const target = document.getElementById(id);
+      if(target && !target.__numinaBound){
+        target.__numinaBound = true;
+        target.addEventListener('click', onClick);
+        const card = target.closest('.stat-card');
+        if(card && !card.__numinaBound){
+          card.__numinaBound = true;
+          card.addEventListener('click', onClick);
+        }
       }
-    }
+    });
   }
   
   // === NUMINA: auto-off en navegación y atajos ===
@@ -4083,4 +4101,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-
