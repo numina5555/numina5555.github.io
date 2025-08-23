@@ -3924,6 +3924,25 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   }
+  
+  // === NUMINA: auto-off en navegación y atajos ===
+  function off(){ const main = document.querySelector('.main-content'); if(main) main.classList.remove('numina-on'); }
+  // 1) Cualquier click en la barra lateral apaga el blackout
+  const sidebar = document.querySelector('nav.sidebar') || document.querySelector('.sidebar');
+  if (sidebar && !sidebar.__numinaNavBound){
+    sidebar.__numinaNavBound = true;
+    sidebar.addEventListener('click', off, true); // useCapture para interceptar siempre
+  }
+  // 2) Click en el header/logo
+  const header = document.querySelector('.dashboard-header') || document.querySelector('header');
+  if (header && !header.__numinaNavBound){
+    header.__numinaNavBound = true;
+    header.addEventListener('click', off, true);
+  }
+  // 3) Cambios de ruta SPA/Hash o back/forward
+  window.addEventListener('hashchange', off);
+  window.addEventListener('popstate', off);
+
   bind();
   // Rebind si más tarde el DOM reemplaza nodos
   const obs = new MutationObserver(bind);
