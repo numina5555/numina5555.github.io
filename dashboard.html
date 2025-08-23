@@ -1286,7 +1286,36 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
       document.getElementById('welcome-title').textContent = (dI18n.t('labels.welcome') + ', ' + (window.__lastUserName || '')).trim();
       document.getElementById('referral-code').textContent = (userData.referral_code || '---');
       document.getElementById('balance-value').textContent = 'MYSTERY BOX'; // NUMINA: oculto saldo
-      document.getElementById('purchases-value').textContent = (userData.active_purchases ?? '0');
+      /* NUMINA: compras activas = count(purchases) con status activo */
+(function(){
+  const el = document.getElementById('purchases-value');
+  try {
+    const activeSet = new Set(['paid','pending','pagado','pendiente']);
+    const list = Array.isArray(userData.purchases) ? userData.purchases : [];
+    let count = list.filter(p => activeSet.has(String(p?.status || '').toLowerCase())).length;
+    if (count === 0) {
+      // Fallback: consultar directo a la tabla por si no llegó el embed
+      (async ()=>{
+        try{
+          const { data: prow, error: perr } = await supabase
+            .from('purchases')
+            .select('status')
+            .eq('user_id', user.id)
+            .in('status', ['paid','pending']);
+          if (!perr && Array.isArray(prow)) {
+            el.textContent = String(prow.length);
+            return;
+          }
+        }catch(e){ /* noop */ }
+        el.textContent = String(userData.active_purchases ?? '0');
+      })();
+    }
+    el.textContent = String(count || userData.active_purchases || '0');
+  } catch(e){
+    el.textContent = String(userData.active_purchases || '0');
+  }
+})();
+
       document.getElementById('referrals-value').textContent = (typeof userData.referrals_count !== 'undefined' ? userData.referrals_count : (userData.referrals?.length || '0'));
       /* NUMINA: tickets activos = suma del ledger (positivos + negativos) */
 try {
