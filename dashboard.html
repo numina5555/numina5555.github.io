@@ -836,31 +836,26 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 }
 </style>
 
+<!-- NUMINA: Opción E (Neon suave) para botones Detalles/Eliminar + separación -->
 <style id="numina-buttons-opcion-e">
-  /* === NUMINA · Opción E (Neón) para Detalles/Eliminar === */
-
-  /* Columna de Acciones: mantener en una línea y espaciar hijos */
+  /* Separación entre botones en la columna de Acciones */
   #purchases-table td:nth-child(5),
-  #miscompras-table td:nth-child(5){
-    white-space: nowrap;
-    vertical-align: middle;
-  }
-  #purchases-table td:nth-child(5) > * + *,
-  #miscompras-table td:nth-child(5) > * + *{
-    margin-left: 14px; /* separación entre botones */
+  #miscompras-table td:nth-child(5) {
+    display: flex;
+    gap: 14px;
+    align-items: center;
   }
 
-  /* Botón Detalles (dorado) */
+  /* Detalles (dorado) – estilo Neon suave */
   .table-container .action-btn[data-action="details"]{
-    display: inline-flex; align-items: center;
     background: transparent;
     color: var(--primary);
     border: 1.5px solid var(--primary);
     border-radius: 14px;
     font-weight: 700;
     padding: .45rem .9rem;
-    text-shadow: 0 0 6px rgba(255,215,0,.35);
     box-shadow: 0 0 0 1px rgba(255,215,0,.45) inset;
+    text-shadow: 0 0 6px rgba(255,215,0,.35);
     transition: all .18s ease;
   }
   .table-container .action-btn[data-action="details"]:hover{
@@ -869,28 +864,65 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
     box-shadow: 0 0 18px rgba(255,215,0,.26), 0 0 0 1px rgba(255,215,0,.55) inset;
   }
 
-  /* Botón Eliminar (rojo) */
+  /* Eliminar (rojo) – estilo Neon suave */
   .table-container .btn-delete-row,
   .table-container .action-btn[data-action="delete"]{
-    display: inline-flex; align-items: center;
     background: transparent;
     color: var(--danger);
     border: 1.5px solid var(--danger);
     border-radius: 14px;
     font-weight: 700;
     padding: .45rem .9rem;
-    text-shadow: 0 0 6px rgba(220,53,69,.35);
     box-shadow: 0 0 0 1px rgba(220,53,69,.45) inset;
+    text-shadow: 0 0 6px rgba(220,53,69,.35);
     transition: all .18s ease;
   }
   .table-container .btn-delete-row:hover,
   .table-container .action-btn[data-action="delete"]:hover{
     background: rgba(220,53,69,.10);
     color: #fff;
-    box-shadow: 0 0 18px rgba(220,53,69,.35), 0 0 0 1px rgba(220,53,69,.60) inset;
+    box-shadow: 0 0 18px rgba(220,53,69,.35), 0 0 0 1px rgba(220,53,69,.6) inset;
   }
 </style>
 
+
+<style id="numina-actions-visible-fix">
+
+/* === NUMINA FIX: acciones visibles (detalles + eliminar) === */
+.table-container { overflow-x: auto; } /* permite scroll si la tabla necesita más ancho */
+#purchases-table th:nth-child(5),
+#miscompras-table th:nth-child(5),
+#referrals-table th:nth-child(5){
+  width: 18% !important; /* un poco más de espacio para los botones */
+}
+#purchases-table td:nth-child(5),
+#miscompras-table td:nth-child(5),
+#referrals-table td:nth-child(5){
+  overflow: visible !important;      /* evita que se recorten los botones */
+  white-space: normal !important;    /* permite saltos de línea si hace falta */
+  display: flex !important;          /* distribuye los botones */
+  gap: 12px !important;              /* separación entre botones */
+  align-items: center !important;
+  flex-wrap: wrap !important;        /* si no entra, baja a segunda línea */
+  padding-right: 16px;               /* aire a la derecha */
+}
+/* En pantallas más chicas, dales todavía más espacio */
+@media (max-width: 1280px){
+  :root { --tbl-col-actions: 22% !important; }
+}
+/* Botones compactos para no pasarse de ancho */
+.table-container .action-btn,
+.table-container .btn-delete-row{
+  min-width: auto !important;
+  padding: .4rem .7rem !important;
+  border-radius: 12px !important;
+}
+/* No ocultar contenido dentro de las celdas de Acciones, aun si hay estilos heredados */
+#purchases-table td, #miscompras-table td, #referrals-table td{
+  /* se mantiene overflow para otras columnas, pero la última lo sobreescribe a visible */
+}
+
+</style>
 </head>
 <body>
   <header class="dashboard-header">
