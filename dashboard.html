@@ -1,13 +1,26 @@
-#purchases-table td:nth-child(5),
-  #miscompras-table td:nth-child(5) {
-    white-space: nowrap;   /* evita saltos que corten los botones */
-    overflow: visible;     /* permite que se vean completos */
-    vertical-align: middle;
-  }
-  #purchases-table td:nth-child(5) > * + *,
-  #miscompras-table td:nth-child(5) > * + * {
-    margin-left: 14px;     /* separación entre botones */
-  }
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NUMINA | Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    :root {
+      --primary: #ffd700;
+      --primary-dark: #e6c200;
+      --dark: #111;
+      --dark-light: #1a1a1a;
+      --dark-lighter: #222;
+      --text: #fff;
+      --text-light: #ccc;
+      --success: #28a745;
+      --warning: #ffc107;
+      --danger: #dc3545;
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { overflow-y: scroll; }
     body { font-family: 'Montserrat', sans-serif; background: var(--dark); color: var(--text); min-height: 100vh; display:flex; flex-direction:column; }
@@ -823,26 +836,31 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 }
 </style>
 
-<!-- NUMINA: Opción E (Neon suave) para botones Detalles/Eliminar + separación -->
 <style id="numina-buttons-opcion-e">
-  /* Separación entre botones en la columna de Acciones */
+  /* === NUMINA · Opción E (Neón) para Detalles/Eliminar === */
+
+  /* Columna de Acciones: mantener en una línea y espaciar hijos */
   #purchases-table td:nth-child(5),
-  #miscompras-table td:nth-child(5) {
-    display: flex;
-    gap: 14px;
-    align-items: center;
+  #miscompras-table td:nth-child(5){
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  #purchases-table td:nth-child(5) > * + *,
+  #miscompras-table td:nth-child(5) > * + *{
+    margin-left: 14px; /* separación entre botones */
   }
 
-  /* Detalles (dorado) – estilo Neon suave */
-  .table-container .action-btn[data-action="details"]{ display:inline-flex; align-items:center;
+  /* Botón Detalles (dorado) */
+  .table-container .action-btn[data-action="details"]{
+    display: inline-flex; align-items: center;
     background: transparent;
     color: var(--primary);
     border: 1.5px solid var(--primary);
     border-radius: 14px;
     font-weight: 700;
     padding: .45rem .9rem;
-    box-shadow: 0 0 0 1px rgba(255,215,0,.45) inset;
     text-shadow: 0 0 6px rgba(255,215,0,.35);
+    box-shadow: 0 0 0 1px rgba(255,215,0,.45) inset;
     transition: all .18s ease;
   }
   .table-container .action-btn[data-action="details"]:hover{
@@ -851,24 +869,25 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
     box-shadow: 0 0 18px rgba(255,215,0,.26), 0 0 0 1px rgba(255,215,0,.55) inset;
   }
 
-  /* Eliminar (rojo) – estilo Neon suave */
+  /* Botón Eliminar (rojo) */
   .table-container .btn-delete-row,
-  .table-container .action-btn[data-action="delete"]{ display:inline-flex; align-items:center;
+  .table-container .action-btn[data-action="delete"]{
+    display: inline-flex; align-items: center;
     background: transparent;
     color: var(--danger);
     border: 1.5px solid var(--danger);
     border-radius: 14px;
     font-weight: 700;
     padding: .45rem .9rem;
-    box-shadow: 0 0 0 1px rgba(220,53,69,.45) inset;
     text-shadow: 0 0 6px rgba(220,53,69,.35);
+    box-shadow: 0 0 0 1px rgba(220,53,69,.45) inset;
     transition: all .18s ease;
   }
   .table-container .btn-delete-row:hover,
   .table-container .action-btn[data-action="delete"]:hover{
     background: rgba(220,53,69,.10);
     color: #fff;
-    box-shadow: 0 0 18px rgba(220,53,69,.35), 0 0 0 1px rgba(220,53,69,.6) inset;
+    box-shadow: 0 0 18px rgba(220,53,69,.35), 0 0 0 1px rgba(220,53,69,.60) inset;
   }
 </style>
 
