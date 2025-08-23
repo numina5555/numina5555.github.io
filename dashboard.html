@@ -1265,10 +1265,10 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
     async function cargarDashboard(){
       document.getElementById('welcome-title').textContent = dI18n.t('labels.loading');
       document.getElementById('referral-code').textContent = '---';
-      document.getElementById('balance-value').textContent = 'MYSTERY BOX'; // NUMINA
+      document.getElementById('balance-value').textContent = 'MYSTERY BOX'; // NUMINA: oculto saldo
       document.getElementById('purchases-value').textContent = '--';
       document.getElementById('referrals-value').textContent = '--';
-      document.getElementById('tickets-value').textContent = 'MYSTERY BOX'; // NUMINA
+      document.getElementById('tickets-value').textContent = '--';
       ['full-name','user-email','user-phone','user-address','user-country','user-city','user-postal'].forEach(id=> setText(id, ''));
       document.getElementById('purchases-body').innerHTML = '<tr><td colspan="5" style="text-align:center;">'+dI18n.t('labels.loading')+'</td></tr>';
       document.getElementById('referrals-body').innerHTML = '<tr><td colspan="5" style="text-align:center;">'+dI18n.t('labels.loading')+'</td></tr>';
@@ -1277,7 +1277,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
       if (authError || !user) { window.location.href = '/login.html'; return; }
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('id, email, full_name, referral_code, active_purchases, referrals_count, tickets_count, purchases(*), referrals:referrals!referrer_id(*)')
+        .select('*, purchases(*), referrals:referrals!referrer_id(*)')
         .eq('id', user.id)
         .maybeSingle();
       if (userError || !userData) { console.error(userError); return; }
@@ -1285,10 +1285,10 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
       window.__lastUserName = (userData.full_name || userData.email || '').trim();
       document.getElementById('welcome-title').textContent = (dI18n.t('labels.welcome') + ', ' + (window.__lastUserName || '')).trim();
       document.getElementById('referral-code').textContent = (userData.referral_code || '---');
-      document.getElementById('balance-value').textContent = 'MYSTERY BOX'; // NUMINA
+      document.getElementById('balance-value').textContent = 'MYSTERY BOX'; // NUMINA: oculto saldo
       document.getElementById('purchases-value').textContent = (userData.active_purchases ?? '0');
       document.getElementById('referrals-value').textContent = (typeof userData.referrals_count !== 'undefined' ? userData.referrals_count : (userData.referrals?.length || '0'));
-      document.getElementById('tickets-value').textContent = 'MYSTERY BOX'; // NUMINA
+      document.getElementById('tickets-value').textContent = (userData.tickets_count || '0');
       setText('full-name', userData.full_name);
       setText('user-email', userData.email);
       setText('user-phone', userData.phone);
