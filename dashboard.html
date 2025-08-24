@@ -4293,8 +4293,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = typeof opts.container === 'string' ? document.getElementById(opts.container) : opts.container;
     if(!container){ console.error('[MysteryBox] container no encontrado'); return; }
     container.innerHTML = '';
-    const t = document.getElementById('mb-template');
-    const frag = t.content.cloneNode(true);
+    let t = document.getElementById('mb-template');
+    if(!t){
+      console.warn('[MysteryBox] <template id="mb-template"> no encontrado. Creando fallback mínimo…');
+      t = document.createElement('template');
+      t.id = 'mb-template';
+      t.innerHTML = `<div class="mb-root">
+        <div class="mb-wrap">
+          <div class="mb-topbar">
+            <button class="mb-back" data-mb-action="back">← Volver</button>
+            <div class="mb-title">Mystery Box — <span style="color:var(--primary,#FFD100)">Sorteos</span></div>
+          </div>
+          <div class="mb-stats">
+            <div class="mb-stat"><h4>TUS TICKETS</h4><div class="value" data-mb="tickets">—</div></div>
+            <div class="mb-stat"><h4>SORTEOS ABIERTOS</h4><div class="value" data-mb="open">—</div></div>
+            <div class="mb-stat"><h4>TU PARTICIPACIÓN</h4><div class="value" data-mb="entries">—</div></div>
+          </div>
+          <div class="mb-toolbar">
+            <div class="mb-chip active" data-filter="open">Abiertos</div>
+            <div class="mb-chip" data-filter="soon">Próximamente</div>
+            <div class="mb-chip" data-filter="closed">Finalizados</div>
+            <div class="mb-search"><input data-mb="q" type="text" placeholder="Buscar sorteos…"/></div>
+          </div>
+          <div class="mb-grid" data-mb="grid"></div>
+          <div class="mb-empty" data-mb="empty" hidden>No encontramos sorteos para este filtro.</div>
+        </div></div>
+        <div class="mb-modal" data-mb="modal"></div>
+        <div class="mb-toast" data-mb="toast"></div>`;
+      document.body.appendChild(t);
+    }
+    const frag = t.content ? t.content.cloneNode(true) : (function(){const f=document.createDocumentFragment(); return f;})();
     container.appendChild(frag);
     container.style.display = '';
     const root = container;
@@ -4389,7 +4417,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const div = document.createElement('div');
       div.id = containerId;
       section.appendChild(div);
-      const main = document.querySelector('main') || document.body;
+      const main = document.querySelector('.dashboard-container') || document.querySelector('main') || document.body;
       main.appendChild(section);
     }else if(!document.getElementById(containerId)){
       const div = document.createElement('div');
