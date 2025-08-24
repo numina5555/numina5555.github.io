@@ -4431,3 +4431,28 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
+<script>
+// Auto-bind: encuentra el cartel/tile que diga "MYSTERY BOX" y lo engancha sin tocar el HTML
+(function(){
+  function findMysteryByText(){
+    const nodes = Array.from(document.querySelectorAll('a,button,[role="button"], .card, .tile, .panel, .stat, div, span'));
+    return nodes.find(el => /\bmystery\s*box\b/i.test((el.textContent||'').trim()));
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    var target = document.querySelector('[data-open="mystery-box"]');
+    if(!target){ target = findMysteryByText(); }
+    if(target){
+      target.setAttribute('data-open','mystery-box');
+      if(!target.getAttribute('role')) target.setAttribute('role','button');
+      target.style.cursor = target.style.cursor || 'pointer';
+      if(window.MysteryBoxNav && typeof MysteryBoxNav.hook==='function'){
+        MysteryBoxNav.hook({ selector:'[data-open="mystery-box"]', sbClient: (window.getSupabase? getSupabase() : (window.__SB||window.supabaseClient||null)) });
+        console.log('[MysteryBoxNav][auto] Enganchado sobre:', target);
+      }
+    } else {
+      console.warn('[MysteryBoxNav][auto] No encontré el cartel “Mystery Box”. Agregá data-open="mystery-box" manualmente.');
+    }
+  });
+})();
+</script>
