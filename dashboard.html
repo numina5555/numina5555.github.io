@@ -4067,7 +4067,19 @@ document.addEventListener('DOMContentLoaded', () => {
     return { main, ov };
   }
   function onClick(){ /* blackout removed */ return; }
-  function bind(){ /* blackout removed: no bindings */ }
+  function bind(){
+    // objetivo primario: #balance-value
+    const ids = ['balance-value','purchases-value','referrals-value','tickets-value'];
+    ids.forEach((id)=>{
+      const target = document.getElementById(id);
+      if(target && !target.__numinaBound){
+        target.__numinaBound = true;
+        target.addEventListener('click', onClick);
+        const card = target.closest('.stat-card');
+        if(card && !card.__numinaBound){
+          card.__numinaBound = true;
+          card.addEventListener('click', onClick);
+        }
       }
     });
   }
@@ -4119,33 +4131,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 <script>
-(function(){
-  // Hard-kill any leftover overlay/class if some other script added it
-  function killBlackout(){
-    const main = document.querySelector('.main-content');
-    if (main) main.classList.remove('numina-on');
-    const ov = document.getElementById('numina-main-overlay');
-    if (ov) { ov.remove(); }
-  }
-  // Try once on load
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', killBlackout);
-  else killBlackout();
-
-  // If el tile Mystery Box existe (#balance-value), engancharlo para mostrar la sección integrada si la tenés
-  function hookMB(){
-    const t = document.getElementById('balance-value');
-    if(!t || t.__mbxHooked) return;
-    t.__mbxHooked = true;
-    const handler = function(ev){
-      ev.preventDefault(); ev.stopImmediatePropagation();
-      if (window.__mbxShow){ window.__mbxShow(); } // tu sección integrada de Mystery Box
-    };
-    t.addEventListener('click', handler, true);
-    const card = t.closest('.stat-card');
-    if(card && !card.__mbxHooked){ card.__mbxHooked = true; card.addEventListener('click', handler, true); }
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', hookMB);
-  else hookMB();
+(function killBlackout(){
+  // Remove overlay element if present
+  var ov = document.getElementById('numina-main-overlay');
+  if (ov) { try{ ov.remove(); }catch(_){} }
+  // Remove blackout class if some leftover code added it
+  var main = document.querySelector('.main-content');
+  if (main) main.classList.remove('numina-on');
+  // Also disable pointer events if a style lingered
+  if (ov) { ov.style.pointerEvents = 'none'; ov.style.opacity = 0; }
 })();
 </script>
 
