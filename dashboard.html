@@ -1364,66 +1364,6 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 </div>
 </div>
 </div>
-
-<section id="section-mysterybox" class="section-content" style="display:none;">
-  <div class="mbx">
-    <style>
-      .mbx { --panel:#141414; --muted:#aaa; --primary:#FFD100; --shadow:0 10px 30px rgba(0,0,0,.45); color:#eaeaea; }
-      .mbx .wrap{ max-width:1200px; margin:0 auto; padding:20px 24px 80px; }
-      .mbx .topbar{ display:flex; align-items:center; gap:16px; margin-bottom:18px; }
-      .mbx .back{ background:#222; border:1px solid #2a2a2a; padding:8px 14px; border-radius:999px; font-weight:600; cursor:pointer; color:#fff; }
-      .mbx .title{ font-size:28px; font-weight:800; letter-spacing:.5px; }
-      .mbx .stats{ display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:16px; margin:18px 0 8px; }
-      .mbx .stat{ background:var(--panel); border:1px solid #222; border-radius:16px; padding:16px; box-shadow:var(--shadow); }
-      .mbx .stat h4{ margin:0 0 6px; font-size:13px; color:var(--muted); font-weight:600; letter-spacing:.5px; }
-      .mbx .stat .value{ font-size:22px; font-weight:800; }
-      .mbx .toolbar{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:16px 0 10px; }
-      .mbx .chip{ background:#1f1f1f; border:1px solid #2a2a2a; padding:8px 12px; border-radius:999px; font-weight:600; cursor:pointer; color:#eaeaea; }
-      .mbx .chip.active{ background:var(--primary); border-color:#786300; color:#241f00; }
-      .mbx .search{ flex:1; min-width:220px; }
-      .mbx .search input{ width:100%; padding:10px 12px; background:#121212; border:1px solid #2a2a2a; border-radius:12px; color:#eaeaea; }
-      .mbx .grid{ display:grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap:18px; }
-      @media (max-width:1060px){ .mbx .grid{ grid-template-columns: repeat(2,minmax(0,1fr)); } }
-      @media (max-width:700px){ .mbx .grid{ grid-template-columns: 1fr; } }
-      .mbx .card{ background:linear-gradient(180deg,#141414,#101010); border:1px solid #242424; border-radius:16px; overflow:hidden; box-shadow:var(--shadow); display:flex; flex-direction:column; }
-      .mbx .thumb{ position:relative; height:180px; background:#0f0f0f; overflow:hidden; }
-      .mbx .badge{ position:absolute; top:12px; left:12px; background:rgba(0,0,0,.75); border:1px solid #2a2a2a; color:#fff; font-size:12px; padding:6px 10px; border-radius:999px; font-weight:700; letter-spacing:.25px; }
-      .mbx .badge.open{ background:rgba(255,209,0,.9); color:#1b1500; border-color:#786300; }
-      .mbx .badge.soon{ background:#1c1c1c; color:#e1e1e1; }
-      .mbx .badge.closed{ background:#2a1515; color:#ffbfbf; border-color:#3a1e1e; }
-      .mbx .card-body{ padding:16px; display:flex; flex-direction:column; gap:10px; }
-      .mbx .subtitle{ color:#aaa; font-size:13px; }
-      .mbx .pill{ background:#181818; border:1px solid #262626; padding:6px 10px; border-radius:999px; font-weight:700; color:#d9d9d9; }
-      .mbx .btn{ flex:1; text-align:center; padding:10px 12px; border-radius:12px; font-weight:800; cursor:pointer; border:1px solid #2a2a2a; background:#171717; color:#eee; }
-      .mbx .btn.primary{ background:var(--primary); color:#181200; border-color:#6f5c00; }
-      .mbx .empty{ text-align:center; padding:60px 16px; color:#bdbdbd; border:1px dashed #2b2b2b; border-radius:16px; }
-    </style>
-
-    <div class="wrap">
-      <div class="topbar">
-        <button class="back" onclick="window.__mbxHide && window.__mbxHide()">← Volver</button>
-        <div class="title">Mystery Box — <span style="color:var(--primary)">Sorteos</span></div>
-      </div>
-
-      <div class="stats">
-        <div class="stat"><h4>TUS TICKETS</h4><div class="value" id="mbx-ticketsValue">—</div></div>
-        <div class="stat"><h4>SORTEOS ABIERTOS</h4><div class="value" id="mbx-openValue">—</div></div>
-        <div class="stat"><h4>TU PARTICIPACIÓN</h4><div class="value" id="mbx-entriesValue">—</div></div>
-      </div>
-
-      <div class="toolbar">
-        <div class="chip active" data-filter="open">Abiertos</div>
-        <div class="chip" data-filter="soon">Próximamente</div>
-        <div class="chip" data-filter="closed">Finalizados</div>
-        <div class="search"><input id="mbx-q" type="text" placeholder="Buscar sorteos…" /></div>
-      </div>
-
-      <div id="mbx-grid" class="grid"></div>
-      <div id="mbx-empty" class="empty" style="display:none;">No encontramos sorteos para este filtro.</div>
-    </div>
-  </div>
-</section>
-
 </main>
   </div>
 
@@ -4123,44 +4063,11 @@ document.addEventListener('DOMContentLoaded', () => {
 </style>
 <script>
 (function(){
-  function addOverlay(){
-    const main = document.querySelector('.main-content');
-    if(!main) return null;
-    let ov = document.getElementById('numina-main-overlay');
-    if(!ov){
-      ov = document.createElement('div');
-      ov.id = 'numina-main-overlay';
-      main.appendChild(ov);
-      // Botón ← Volver
-      const back = document.createElement('button');
-      back.id = 'numina-back-btn';
-      back.type = 'button';
-      back.setAttribute('aria-label','Volver');
-      back.textContent = '← Volver';
-      back.addEventListener('click', ()=> main.classList.remove('numina-on'));
-      ov.appendChild(back);
-      
-      
-    }
+  function addOverlay(){ /* blackout removed */ return; }
     return { main, ov };
   }
-  function onClick(){
-    const ctx = addOverlay();
-    if(ctx) ctx.main.classList.add('numina-on');
-  }
-  function bind(){
-    // objetivo primario: #balance-value
-    const ids = ['balance-value','purchases-value','referrals-value','tickets-value'];
-    ids.forEach((id)=>{
-      const target = document.getElementById(id);
-      if(target && !target.__numinaBound){
-        target.__numinaBound = true;
-        target.addEventListener('click', onClick);
-        const card = target.closest('.stat-card');
-        if(card && !card.__numinaBound){
-          card.__numinaBound = true;
-          card.addEventListener('click', onClick);
-        }
+  function onClick(){ /* blackout removed */ return; }
+  function bind(){ /* blackout removed: no bindings */ }
       }
     });
   }
@@ -4213,83 +4120,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <script>
 (function(){
-  // Render demo cards (simple) – keep it short to avoid conflicts
-  function mbxDemoData(){
-    const now = Date.now();
-    return [
-      {id:'a1', title:'Sorteo Semanal', subtitle:'Pozo acumulado', ticket_cost:2},
-      {id:'b2', title:'Mistery Gamer Pack', subtitle:'Próximamente', ticket_cost:1},
-      {id:'c3', title:'Sorteo Mensual', subtitle:'Finalizado', ticket_cost:5},
-    ];
-  }
-  function mbxRender(){
-    const grid = document.getElementById('mbx-grid');
-    const empty = document.getElementById('mbx-empty');
-    const items = mbxDemoData();
-    if(!grid || !empty) return;
-    if(!items.length){ grid.innerHTML=''; empty.style.display='block'; return; }
-    empty.style.display='none';
-    grid.innerHTML = items.map(r => `
-      <div class="card">
-        <div class="thumb"><div class="badge open">Abierto</div></div>
-        <div class="card-body">
-          <h3>${r.title}</h3>
-          <div class="subtitle">${r.subtitle||''}</div>
-          <div class="actions">
-            <button class="btn outline" disabled>Detalles</button>
-            <button class="btn primary">Participar</button>
-          </div>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  // Strong kill of blackout
+  // Hard-kill any leftover overlay/class if some other script added it
   function killBlackout(){
     const main = document.querySelector('.main-content');
     if (main) main.classList.remove('numina-on');
     const ov = document.getElementById('numina-main-overlay');
-    if (ov){ ov.style.opacity = 0; ov.style.pointerEvents = 'none'; }
+    if (ov) { ov.remove(); }
   }
+  // Try once on load
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', killBlackout);
+  else killBlackout();
 
-  // API
-  window.__mbxShow = function(){
-    // Always disable blackout first
-    killBlackout();
-    // Show mysterybox section, hide main dashboard
-    document.querySelectorAll('.section-content').forEach(s=> s.style.display = (s.id==='section-mysterybox' ? 'block' : 'none'));
-    const md = document.getElementById('main-dashboard'); if(md) md.style.display = 'none';
-    mbxRender();
-  };
-  window.__mbxHide = function(){
-    const sec = document.getElementById('section-mysterybox'); if(sec) sec.style.display = 'none';
-    const md = document.getElementById('main-dashboard'); if(md) md.style.display = 'block';
-    killBlackout();
-  };
-
-  function hookTile(){
+  // If el tile Mystery Box existe (#balance-value), engancharlo para mostrar la sección integrada si la tenés
+  function hookMB(){
     const t = document.getElementById('balance-value');
     if(!t || t.__mbxHooked) return;
     t.__mbxHooked = true;
     const handler = function(ev){
-      // Capture & bubble – prevent the blackout listener from running
       ev.preventDefault(); ev.stopImmediatePropagation();
-      window.__mbxShow && window.__mbxShow();
+      if (window.__mbxShow){ window.__mbxShow(); } // tu sección integrada de Mystery Box
     };
-    // capture first
     t.addEventListener('click', handler, true);
-    // bubble too (belt and suspenders)
-    t.addEventListener('click', handler, false);
     const card = t.closest('.stat-card');
-    if(card && !card.__mbxHooked){
-      card.__mbxHooked = true;
-      card.addEventListener('click', handler, true);
-      card.addEventListener('click', handler, false);
-    }
+    if(card && !card.__mbxHooked){ card.__mbxHooked = true; card.addEventListener('click', handler, true); }
   }
-
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', hookTile);
-  else hookTile();
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', hookMB);
+  else hookMB();
 })();
 </script>
 
