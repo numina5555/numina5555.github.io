@@ -4151,127 +4151,78 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-<!-- ==== NUMINA: Mystery Box overlay content (no navegación a secciones) ==== -->
-<style>
-  /* Layout del contenido dentro del overlay */
-  #mb-overlay-content{position:absolute; inset:0; padding:20px; padding-top:64px; overflow:auto;}
-  .mbox-wrap{max-width:1100px; margin:0 auto;}
-  .mbox-tabs{display:flex; gap:10px; align-items:center; margin-bottom:14px;}
-  .mbox-tab{background:#1a1a1a;border:1px solid #2a2a2a;color:#f0f0f0;padding:10px 14px;border-radius:999px;font-weight:800;cursor:pointer}
-  .mbox-tab.active{background:var(--primary);color:#111;border-color:var(--primary);}
-  .mbox-search{flex:1;display:flex}
-  .mbox-search input{width:100%;background:#141414;border:1px solid #2a2a2a;color:#eaeaea;padding:10px 14px;border-radius:999px;outline:none}
-  /* Tarjeta destacada */
-  .mbox-card{background:#0f0f0f;border:1px solid #1f1f1f;border-radius:16px; box-shadow:0 12px 30px rgba(0,0,0,.35); overflow:hidden}
-  .mbox-card-head{position:relative; height:240px; background:linear-gradient(180deg,#151515,#0f0f0f);}
-  .mbox-chip{position:absolute; top:14px; left:14px; background:var(--primary); color:#111; border-radius:999px; padding:6px 12px; font-weight:800; font-size:.85rem}
-  .mbox-card-body{padding:18px}
-  .mbox-title{font-size:1.25rem;font-weight:900;margin:2px 0 6px}
-  .mbox-subtle{color:#cfcfcf;font-size:.9rem;margin-bottom:10px}
-  .mbox-badges{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px}
-  .mbox-badge{background:#141414;border:1px solid #2a2a2a;color:#e7e7e7;padding:8px 12px;border-radius:999px;font-weight:700;font-size:.85rem}
-  .mbox-cta{display:flex; gap:12px; margin-top:10px}
-  .mbox-btn{background:#161616;border:1px solid #2a2a2a;color:#f5f5f5;padding:12px 16px;border-radius:12px;font-weight:800;cursor:pointer}
-  .mbox-btn:hover{transform:translateY(-2px)}
-  .mbox-primary{background:var(--primary);border-color:var(--primary);color:#111}
-</style>
+<!-- ==== NUMINA FIX v2: Cierre robusto del overlay de Mystery Box ==== -->
 <script>
 (function(){
-  // Renderiza el contenido Mystery Box dentro del overlay negro existente
-  function ensureOverlay(){
-    const main = document.querySelector('.main-content');
-    if(!main) return null;
-    let ov = document.getElementById('numina-main-overlay');
-    if(!ov){
-      ov = document.createElement('div');
-      ov.id='numina-main-overlay';
-      main.appendChild(ov);
-      const back = document.createElement('button');
-      back.id='numina-back-btn';
-      back.type='button';
-      back.setAttribute('aria-label','Volver');
-      back.textContent='← Volver';
-      back.addEventListener('click', ()=> main.classList.remove('numina-on'));
-      ov.appendChild(back);
-    }
-    return {main, ov};
+  function hardCloseOverlay(){
+    try{
+      // Quitar flags de estado comunes
+      var main = document.querySelector('.main-content');
+      if (main) main.classList.remove('numina-on','overlay-on','mystery-open');
+      document.body.classList.remove('numina-on','overlay-on','mystery-open');
+      // Limpiar contenido de MB
+      document.querySelectorAll('#mb-overlay-content').forEach(function(n){ n.remove(); });
+      // Ocultar overlay conocido
+      var ov = document.getElementById('numina-main-overlay');
+      if (ov){ ov.style.display = 'none'; ov.innerHTML = ''; }
+      // Apagar cualquier pantalla negra "full" residual
+      document.querySelectorAll('body *').forEach(function(el){
+        try{
+          var s = getComputedStyle(el);
+          if (s.position === 'fixed' && (parseInt(s.zIndex, 10) || 0) >= 999 &&
+              (s.backgroundColor === 'rgb(0, 0, 0)' || s.backgroundColor.includes('rgba(0, 0, 0'))){
+            // No ocultes tooltips/menus evidentes si tienen children visibles, pero si es full overlay lo ocultamos
+            if (el.id !== 'numina-main-overlay' && el !== document.documentElement){
+              el.style.display = 'none';
+            }
+          }
+        }catch(_){}
+      });
+    }catch(_){}
   }
 
-  function renderMysteryBox(){
-    const ctx = ensureOverlay();
-    if(!ctx) return;
-    // Limpio contenido previo (pero preservo el botón Volver)
-    const old = document.getElementById('mb-overlay-content');
-    if(old) old.remove();
-
-    const wrap = document.createElement('div');
-    wrap.id = 'mb-overlay-content';
-    wrap.innerHTML = `
-      <div class="mbox-wrap">
-        <div class="mbox-tabs">
-          <button class="mbox-tab active">Abiertos</button>
-          <button class="mbox-tab">Próximamente</button>
-          <button class="mbox-tab">Finalizados</button>
-          <div class="mbox-search"><input placeholder="Buscar sorteos…" /></div>
-        </div>
-
-        <div class="mbox-card">
-          <div class="mbox-card-head">
-            <span class="mbox-chip">Abierto</span>
-          </div>
-          <div class="mbox-card-body">
-            <div class="mbox-title">Sorteo Semanal</div>
-            <div class="mbox-subtle">Pozo acumulado</div>
-            <div class="mbox-badges">
-              <span class="mbox-badge">2 ticket(s)</span>
-              <span class="mbox-badge">3h</span>
-              <span class="mbox-badge">Pozo: 0 tickets</span>
-              <span class="mbox-badge">Casa: 10%</span>
-            </div>
-            <div class="mbox-badges">
-              <span class="mbox-badge">Neto: 0 tickets</span>
-            </div>
-            <div class="mbox-cta">
-              <button class="mbox-btn">Detalles</button>
-              <button class="mbox-btn mbox-primary">Participar</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-    ctx.ov.appendChild(wrap);
-    ctx.main.classList.add('numina-on');
-  }
-
-  // Interceptar el click del "MYSTERY BOX" solamente
-  function bindMystery(){
-    const el = document.getElementById('balance-value');
-    if(!el || el.__mbBound) return;
-    el.__mbBound = true;
-    el.style.cursor = 'pointer';
-    el.addEventListener('click', function(ev){
-      ev.preventDefault();
-      ev.stopImmediatePropagation();
-      renderMysteryBox();
-    }, true); // captura para bloquear otros handlers que abren overlay vacío
-    const card = el.closest('.stat-card');
-    if(card && !card.__mbBound){
-      card.__mbBound = true;
-      card.style.cursor = 'pointer';
-      card.addEventListener('click', function(ev){
-        ev.preventDefault(); ev.stopImmediatePropagation();
-        renderMysteryBox();
+  // Conecta el botón "Volver" sea el nuestro o el existente
+  function wireBackButtons(){
+    // Nuestro botón
+    var myBack = document.getElementById('numina-back-btn');
+    if (myBack && !myBack.__wired){
+      myBack.__wired = true;
+      myBack.addEventListener('click', function(ev){
+        ev.preventDefault(); ev.stopPropagation();
+        hardCloseOverlay();
       }, true);
     }
+    // Cualquier botón visible que diga "Volver" dentro del overlay
+    try{
+      var overlay = document.getElementById('numina-main-overlay') || document.body;
+      overlay.querySelectorAll('button, a').forEach(function(btn){
+        if (btn.__wired) return;
+        var t = (btn.textContent || '').trim().toLowerCase();
+        if (t === 'volver' || t === '← volver' || t.endsWith('volver')){
+          btn.__wired = true;
+          btn.addEventListener('click', function(ev){
+            ev.preventDefault(); ev.stopPropagation();
+            hardCloseOverlay();
+          }, true);
+        }
+      });
+    }catch(_){}
   }
 
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', bindMystery);
-  } else { bindMystery(); }
+  // Reutiliza la función renderMysteryBox de la inyección previa si existe
+  // y, tras renderizar, vuelve a cablear el botón volver.
+  var oldRender = window.renderMysteryBox;
+  window.renderMysteryBox = function(){
+    try{ if (typeof oldRender === 'function') oldRender(); }catch(_){}
+    wireBackButtons();
+  };
 
-  // Rebind si el DOM cambia
+  // Cablear ya, por si el overlay está presente
+  wireBackButtons();
+
+  // Re-cablear ante cambios del DOM
   try{
-    const mo = new MutationObserver(bindMystery);
+    var mo = new MutationObserver(wireBackButtons);
     mo.observe(document.body, {childList:true, subtree:true});
   }catch(_){}
 })();
