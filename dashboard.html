@@ -4077,17 +4077,23 @@ document.addEventListener('DOMContentLoaded', () => {
       back.type = 'button';
       back.setAttribute('aria-label','Volver');
       back.textContent = '← Volver';
-      back.addEventListener('click', (e)=>{
+      back.addEventListener('click', ()=>{
+        // Cerrar overlay
+        main.classList.remove('numina-on');
+        // Ir a Dashboard
         try{
-          e.preventDefault();
-          e.stopPropagation();
-        }catch(err){}
-        // Cierra el blackout
-        const mainEl = document.querySelector('.main-content');
-        if (mainEl) mainEl.classList.remove('numina-on');
-        // Quita el overlay del DOM para evitar estados residuales
-        const ovEl = document.getElementById('numina-main-overlay');
-        if (ovEl && ovEl.parentNode) ovEl.parentNode.removeChild(ovEl);
+          const menuItems = document.querySelectorAll('.menu-item[data-target]');
+          const sections = document.querySelectorAll('.section-content');
+          const mainDashboard = document.getElementById('main-dashboard');
+          // activar el item Dashboard en la sidebar
+          menuItems.forEach(i=>{
+            const isDash = i.getAttribute('data-target') === 'dashboard';
+            i.classList.toggle('active', isDash);
+          });
+          if (mainDashboard) mainDashboard.style.display = 'block';
+          sections.forEach(s=> s.style.display = 'none');
+          if (typeof cargarDashboard === 'function') cargarDashboard();
+        }catch(_){}
       });
       ov.appendChild(back);
       
