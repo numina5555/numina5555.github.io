@@ -1364,40 +1364,6 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 </div>
 </div>
 </div>
-
-<!-- === Mystery Box (DEMO) integrated === -->
-<section id="mystery-box-view" hidden>
-  <div style="padding:20px 24px;max-width:1200px;margin:0 auto;">
-    <button id="mbBack" class="btn" style="background:#FFD100;color:#181200;border:0;border-radius:999px;padding:8px 14px;font-weight:800;cursor:pointer;">← Volver</button>
-    <h2 style="margin:16px 0 8px;font-weight:800;font-size:28px;">Mystery Box — <span style="color:#FFD100">Sorteos</span></h2>
-
-    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:12px;">
-      <div style="background:#141414;border:1px solid #222;border-radius:16px;padding:16px">
-        <div style="font-size:13px;color:#aaa;font-weight:600;margin-bottom:6px">TUS TICKETS</div>
-        <div id="mbTickets" style="font-size:22px;font-weight:800">—</div>
-      </div>
-      <div style="background:#141414;border:1px solid #222;border-radius:16px;padding:16px">
-        <div style="font-size:13px;color:#aaa;font-weight:600;margin-bottom:6px">SORTEOS ABIERTOS</div>
-        <div id="mbOpen" style="font-size:22px;font-weight:800">—</div>
-      </div>
-      <div style="background:#141414;border:1px solid #222;border-radius:16px;padding:16px">
-        <div style="font-size:13px;color:#aaa;font-weight:600;margin-bottom:6px">TU PARTICIPACIÓN</div>
-        <div id="mbEntries" style="font-size:22px;font-weight:800">—</div>
-      </div>
-    </div>
-
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 12px;">
-      <button class="chip" data-mb-filter="open" style="background:#FFD100;color:#241f00;border:1px solid #786300;border-radius:999px;padding:8px 12px;font-weight:700">Abiertos</button>
-      <button class="chip" data-mb-filter="soon" style="background:#1f1f1f;color:#eaeaea;border:1px solid #2a2a2a;border-radius:999px;padding:8px 12px;font-weight:700">Próximamente</button>
-      <button class="chip" data-mb-filter="closed" style="background:#1f1f1f;color:#eaeaea;border:1px solid #2a2a2a;border-radius:999px;padding:8px 12px;font-weight:700">Finalizados</button>
-      <input id="mbSearch" placeholder="Buscar sorteos…" style="flex:1;min-width:220px;padding:10px 12px;background:#121212;border:1px solid #2a2a2a;border-radius:12px;color:#eaeaea">
-    </div>
-
-    <div id="mbGrid" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;"></div>
-    <div id="mbEmpty" style="display:none;text-align:center;padding:40px;border:1px dashed #2b2b2b;border-radius:12px;color:#aaa">No encontramos sorteos para este filtro.</div>
-  </div>
-</section>
-
 </main>
   </div>
 
@@ -3899,41 +3865,6 @@ async function cargarSorteos(){
   var PDF = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : null;
   if(!PDF){ alert('No se pudo cargar jsPDF.'); return; }
 
-
-    // Targeted hook: bind ONLY to the Mystery Box tile (no global capture)
-    
-    function hookTile(){
-      const tile = document.getElementById('balance-value');
-      if(!tile || tile.__mbHooked) return;
-      tile.__mbHooked = true;
-      const handler = function(ev){
-        // sólo si se hace click exactamente en el tile
-        ev.preventDefault();
-        ev.stopImmediatePropagation();
-        showMB(tile);
-      };
-      tile.addEventListener('click', handler, true); // captura, para anular overlay negro
-    }
-    ) || null;
-      }
-      if(!tile) return;
-      const card = tile.closest('.stat-card') || tile;
-      const handler = function(ev){
-        if(!card.contains(ev.target)) return;
-        ev.preventDefault();
-        ev.stopImmediatePropagation();
-        showMB(card);
-      };
-      if(!tile.__mbHooked){
-        tile.__mbHooked = true;
-        tile.addEventListener('click', handler, true);
-      }
-      if(card!==tile && !card.__mbHooked){
-        card.__mbHooked = true;
-        card.addEventListener('click', handler, true);
-      }
-    }
-
   // 1) Datos desde el DOM (igual que antes)
   var orderId  = normalizeOrderId(t('pdOrder'));
   var name     = t('pdName') || 'Producto';
@@ -3953,7 +3884,6 @@ async function cargarSorteos(){
     if(/pend|pending/.test(s)) return 'pending';
     if(/cancel|cance/.test(s)) return 'cancelled';
     return 'other';
-    hookTile();
   }
   var st = norm(status);
   var STYLES = {
@@ -4158,6 +4088,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctx = addOverlay();
     if(ctx) ctx.main.classList.add('numina-on');
   }
+  
+  // === Numina: navegación directa a 'sorteos' desde el tile Mystery Box ===
+  function __numinaGoToSorteos(){
+    try{
+      const mainDashboard = document.getElementById('main-dashboard');
+      const sections = document.querySelectorAll('.section-content');
+      const menuItem = document.querySelector('.menu-item[data-target="sorteos"]');
+      if (menuItem) { menuItem.click(); return; }
+      if (mainDashboard) mainDashboard.style.display = 'none';
+      sections.forEach(s=> s.style.display = (s.id === 'section-sorteos' ? 'block' : 'none'));
+      if (typeof cargarSorteos === 'function') cargarSorteos();
+    }catch(e){ console.error(e); }
+  }
+  function __numinaHandleMystery(ev){
+    ev.preventDefault();
+    ev.stopImmediatePropagation();
+    const main = document.querySelector('.main-content');
+    if (main) main.classList.remove('numina-on'); // por si otro listener lo encendió
+    __numinaGoToSorteos();
+  }
+
   function bind(){
     // objetivo primario: #balance-value
     const ids = ['balance-value','purchases-value','referrals-value','tickets-value'];
@@ -4165,11 +4116,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const target = document.getElementById(id);
       if(target && !target.__numinaBound){
         target.__numinaBound = true;
-        target.addEventListener('click', onClick);
+        if (id === 'balance-value'){
+          target.addEventListener('click', __numinaHandleMystery, true);
+        } else {
+          target.addEventListener('click', onClick);
+        }
         const card = target.closest('.stat-card');
         if(card && !card.__numinaBound){
           card.__numinaBound = true;
-          card.addEventListener('click', onClick);
+          if (id === 'balance-value'){
+            card.addEventListener('click', __numinaHandleMystery, true);
+          } else {
+            card.addEventListener('click', onClick);
+          }
         }
       }
     });
@@ -4217,154 +4176,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Rebind si más tarde el DOM reemplaza nodos
   const obs = new MutationObserver(bind);
   obs.observe(document.body, {childList:true, subtree:true});
-})();
-</script>
-
-
-<script>
-/* === Mystery Box DEMO (no Supabase) === */
-(function(){
-  const $ = (sel,root=document)=> root.querySelector(sel);
-  const $$ = (sel,root=document)=> Array.from(root.querySelectorAll(sel));
-
-  function getMainRoot(){
-    return document.querySelector('main') ||
-           document.querySelector('.main-content') ||
-           document.querySelector('#content') ||
-           document.querySelector('#main') ||
-           document.body;
-  }
-
-  function ensureMounted(){
-    if(!document.getElementById('mystery-box-view')){
-      const sec = document.createElement('section');
-      sec.id = 'mystery-box-view';
-      sec.hidden = true;
-      getMainRoot().appendChild(sec);
-    }else{
-      const sec = document.getElementById('mystery-box-view');
-      const root = getMainRoot();
-      if(sec.parentElement !== root){
-        root.appendChild(sec);
-      }
-    }
-  }
-
-  const demo = [
-    { id:'a1', title:'Sorteo Semanal', subtitle:'Pozo acumulado', ticket_cost:2, prize_name:'Premio sorpresa', active:true, start_at:Date.now()-3600e3, end_at:Date.now()+4*3600e3 },
-    { id:'b2', title:'Gamer Pack', subtitle:'Próximamente', ticket_cost:1, prize_name:'Set gaming', active:true, start_at:Date.now()+24*3600e3, end_at:Date.now()+72*3600e3 },
-    { id:'c3', title:'Sorteo Mensual', subtitle:'Finalizado', ticket_cost:5, prize_name:'Caja Premium', active:false, start_at:Date.now()-40*3600e3, end_at:Date.now()-4*3600e3 },
-  ];
-
-  let state = { filter:'open', q:'', raffles: demo };
-
-  function getStatus(r){
-    const now = Date.now();
-    if(r.active === false) return 'closed';
-    if(r.start_at && now < r.start_at) return 'soon';
-    if(r.end_at && now > r.end_at) return 'closed';
-    return 'open';
-  }
-
-  function render(){
-    const grid = $('#mystery-box-view #mbGrid');
-    const empty = $('#mystery-box-view #mbEmpty');
-    const items = state.raffles.filter(r=>{
-      const st = getStatus(r);
-      if(state.filter==='open' && st!=='open') return false;
-      if(state.filter==='soon' && st!=='soon') return false;
-      if(state.filter==='closed' && st!=='closed') return false;
-      if(state.q){
-        const blob = (r.title + ' ' + (r.subtitle||'')).toLowerCase();
-        if(!blob.includes(state.q)) return false;
-      }
-      return true;
-    });
-
-    $('#mystery-box-view #mbOpen').textContent = state.raffles.filter(r=>getStatus(r)==='open').length;
-
-    if(items.length===0){ grid.innerHTML=''; empty.style.display='block'; return; }
-    empty.style.display='none';
-    grid.innerHTML = items.map(r=>`
-      <div style="background:linear-gradient(180deg,#141414,#101010);border:1px solid #242424;border-radius:16px;overflow:hidden">
-        <div style="position:relative;height:160px;background:#0f0f0f">
-          <span style="position:absolute;top:12px;left:12px;background:${getStatus(r)==='open'?'rgba(255,209,0,.9)':'#1c1c1c'};color:${getStatus(r)==='open'?'#1b1500':'#e1e1e1'};border:1px solid #2a2a2a;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:800">
-            ${getStatus(r)==='open'?'Abierto': getStatus(r)==='soon'?'Próximamente':'Finalizado'}
-          </span>
-        </div>
-        <div style="padding:16px">
-          <h3 style="margin:0 0 6px;font-weight:800">${r.title}</h3>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;color:#bdbdbd;font-size:13px">
-            <span style="background:#181818;border:1px solid #262626;border-radius:999px;padding:6px 10px;font-weight:700">${r.ticket_cost} ticket(s)</span>
-            ${r.prize_name? `<span style="background:#181818;border:1px solid #262626;border-radius:999px;padding:6px 10px;font-weight:700">Premio: ${r.prize_name}</span>`:''}
-          </div>
-          <div style="display:flex;gap:10px;margin-top:10px">
-            <button class="btn" disabled style="flex:1;background:transparent;border:1px solid #2a2a2a;border-radius:12px;color:#eee;padding:10px 12px;font-weight:800">Detalles</button>
-            <button class="btn" ${getStatus(r)!=='open'?'disabled':''} style="flex:1;background:#FFD100;color:#181200;border:1px solid #6f5c00;border-radius:12px;padding:10px 12px;font-weight:800">Participar</button>
-          </div>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  function showMB(fromEl){
-    ensureMounted();
-    const root = getMainRoot();
-    Array.from(root.children).forEach(el=>{
-      if(el.id !== 'mystery-box-view'){
-        el.__prevDisplay = el.style.display;
-        el.style.display = 'none';
-      }
-    });
-    $('#mystery-box-view').hidden = false;
-    $('#mystery-box-view #mbTickets').textContent = '—';
-    $('#mystery-box-view #mbEntries').textContent = '—';
-    render();
-  }
-
-  function hideMB(){
-    const root = getMainRoot();
-    Array.from(root.children).forEach(el=>{
-      if(el.id !== 'mystery-box-view'){
-        el.style.display = (el.__prevDisplay || '');
-      }
-    });
-    const sec = $('#mystery-box-view');
-    if(sec) sec.hidden = true;
-  }
-
-  function wire(){
-    const back = $('#mystery-box-view #mbBack');
-    if(back && !back.__wired){
-      back.__wired = true;
-      back.addEventListener('click', (e)=>{ e.preventDefault(); hideMB(); });
-    hookTile();
-  }
-
-    $$('#mystery-box-view [data-mb-filter]').forEach(ch=>{
-      ch.addEventListener('click', ()=>{
-        $$('#mystery-box-view [data-mb-filter]').forEach(c=>{
-          c.style.background = '#1f1f1f'; c.style.color='#eaeaea'; c.style.borderColor='#2a2a2a';
-        });
-        ch.style.background = '#FFD100'; ch.style.color='#241f00'; ch.style.borderColor='#786300';
-        state.filter = ch.getAttribute('data-mb-filter');
-        render();
-      });
-    });
-
-    const q = $('#mystery-box-view #mbSearch');
-    if(q && !q.__wired){
-      q.__wired = true;
-      q.addEventListener('input', ()=>{ state.q = q.value.trim().toLowerCase(); render(); });
-    }
-
-    }
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', wire);
-  }else{
-    wire();
-  }
 })();
 </script>
 
