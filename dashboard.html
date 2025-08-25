@@ -3899,6 +3899,37 @@ async function cargarSorteos(){
   var PDF = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : null;
   if(!PDF){ alert('No se pudo cargar jsPDF.'); return; }
 
+
+    // Targeted hook: bind ONLY to the Mystery Box tile (no global capture)
+    function hookTile(){
+      // Prefer an explicit id if exists
+      let tile = document.getElementById('balance-value');
+      // Fallback: search visible tiles/cards containing the text
+      if(!tile){
+        const cands = Array.from(document.querySelectorAll('.stat-card, .dashboard-card, .tile, [data-tile], #balance-value'));
+        tile = cands.find(el => {
+          const t = (el.textContent||'').toUpperCase();
+          return t.includes('MYSTERY') && t.includes('BOX');
+        }) || null;
+      }
+      if(!tile) return;
+      const card = tile.closest('.stat-card') || tile;
+      const handler = function(ev){
+        if(!card.contains(ev.target)) return;
+        ev.preventDefault();
+        ev.stopImmediatePropagation();
+        showMB(card);
+      };
+      if(!tile.__mbHooked){
+        tile.__mbHooked = true;
+        tile.addEventListener('click', handler, true);
+      }
+      if(card!==tile && !card.__mbHooked){
+        card.__mbHooked = true;
+        card.addEventListener('click', handler, true);
+      }
+    }
+
   // 1) Datos desde el DOM (igual que antes)
   var orderId  = normalizeOrderId(t('pdOrder'));
   var name     = t('pdName') || 'Producto';
@@ -3918,6 +3949,7 @@ async function cargarSorteos(){
     if(/pend|pending/.test(s)) return 'pending';
     if(/cancel|cance/.test(s)) return 'cancelled';
     return 'other';
+    hookTile();
   }
   var st = norm(status);
   var STYLES = {
@@ -4302,7 +4334,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if(back && !back.__wired){
       back.__wired = true;
       back.addEventListener('click', (e)=>{ e.preventDefault(); hideMB(); });
-    }
+    hookTile();
+  }
 
     $$('#mystery-box-view [data-mb-filter]').forEach(ch=>{
       ch.addEventListener('click', ()=>{
@@ -4321,17 +4354,7 @@ document.addEventListener('DOMContentLoaded', () => {
       q.addEventListener('input', ()=>{ state.q = q.value.trim().toLowerCase(); render(); });
     }
 
-    document.addEventListener('click', function(ev){
-      const target = ev.target.closest('.stat-card, .dashboard-card, .card, .tile, [data-tile], [data-open], #balance-value, .stat, .dashboard-container');
-      if(!target) return;
-      const txt = (target.textContent||'').toUpperCase();
-      if(txt.includes('MYSTERY') && txt.includes('BOX')){
-        ev.preventDefault();
-        ev.stopImmediatePropagation();
-        showMB(target);
-      }
-    }, true);
-  }
+    }
 
   if(document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', wire);
