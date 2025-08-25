@@ -4268,5 +4268,50 @@ document.addEventListener('DOMContentLoaded', () => {
   }catch(_){}
 })();
 </script>
+
+<!-- ==== NUMINA SCOPE GUARD: Mystery Box solo desde #balance-value o [data-open="mystery"] ==== -->
+<script>
+(function(){
+  // Flag que habilita MB solo si el click vino del target correcto
+  window.__mbAllow = false;
+
+  // Capturamos todos los clicks antes que nada y marcamos si son "válidos"
+  document.addEventListener('click', function(ev){
+    try{
+      const path = ev.composedPath ? ev.composedPath() : (function(p){var a=[]; while(p){a.push(p); p=p.parentNode;} return a;})(ev.target);
+      const ok = path.some(function(n){
+        if (!n || n === document || n === window) return false;
+        if (n.id === 'balance-value') return true;
+        if (n.getAttribute && n.getAttribute('data-open') === 'mystery') return true;
+        // Permite un contenedor específico si el HTML tiene un id de card para Mystery
+        if (n.id === 'card-mysterybox') return true;
+        return false;
+      });
+      window.__mbAllow = ok;
+    }catch(_){
+      window.__mbAllow = false;
+    }
+  }, true); // captura
+
+  // Si existen funciones previas para renderizar MB, las guardamos y envolvemos con el guard
+  var _r1 = window.renderMBContent;
+  var _r2 = window.renderMysteryBox;
+  window.renderMBContent = function(){
+    if (!window.__mbAllow) return;
+    if (typeof _r1 === 'function') return _r1.apply(this, arguments);
+  };
+  window.renderMysteryBox = function(){
+    if (!window.__mbAllow) return;
+    if (typeof _r2 === 'function') return _r2.apply(this, arguments);
+  };
+
+  // Además, si algún listener viejo llama a renderMBContent inmediatamente, lo anulamos con un microtask
+  // hasta que haya un click válido marcando __mbAllow=true.
+  setInterval(function(){
+    // resetea el flag si no hubo clicks válidos recientemente
+    window.__mbAllow = false;
+  }, 350);
+})();
+</script>
 </body>
 </html>
