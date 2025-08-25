@@ -1364,6 +1364,40 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 </div>
 </div>
 </div>
+
+<!-- === Mystery Box (DEMO) integrated === -->
+<section id="mystery-box-view" hidden>
+  <div style="padding:20px 24px;max-width:1200px;margin:0 auto;">
+    <button id="mbBack" class="btn" style="background:#FFD100;color:#181200;border:0;border-radius:999px;padding:8px 14px;font-weight:800;cursor:pointer;">← Volver</button>
+    <h2 style="margin:16px 0 8px;font-weight:800;font-size:28px;">Mystery Box — <span style="color:#FFD100">Sorteos</span></h2>
+
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:12px;">
+      <div style="background:#141414;border:1px solid #222;border-radius:16px;padding:16px">
+        <div style="font-size:13px;color:#aaa;font-weight:600;margin-bottom:6px">TUS TICKETS</div>
+        <div id="mbTickets" style="font-size:22px;font-weight:800">—</div>
+      </div>
+      <div style="background:#141414;border:1px solid #222;border-radius:16px;padding:16px">
+        <div style="font-size:13px;color:#aaa;font-weight:600;margin-bottom:6px">SORTEOS ABIERTOS</div>
+        <div id="mbOpen" style="font-size:22px;font-weight:800">—</div>
+      </div>
+      <div style="background:#141414;border:1px solid #222;border-radius:16px;padding:16px">
+        <div style="font-size:13px;color:#aaa;font-weight:600;margin-bottom:6px">TU PARTICIPACIÓN</div>
+        <div id="mbEntries" style="font-size:22px;font-weight:800">—</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 12px;">
+      <button class="chip" data-mb-filter="open" style="background:#FFD100;color:#241f00;border:1px solid #786300;border-radius:999px;padding:8px 12px;font-weight:700">Abiertos</button>
+      <button class="chip" data-mb-filter="soon" style="background:#1f1f1f;color:#eaeaea;border:1px solid #2a2a2a;border-radius:999px;padding:8px 12px;font-weight:700">Próximamente</button>
+      <button class="chip" data-mb-filter="closed" style="background:#1f1f1f;color:#eaeaea;border:1px solid #2a2a2a;border-radius:999px;padding:8px 12px;font-weight:700">Finalizados</button>
+      <input id="mbSearch" placeholder="Buscar sorteos…" style="flex:1;min-width:220px;padding:10px 12px;background:#121212;border:1px solid #2a2a2a;border-radius:12px;color:#eaeaea">
+    </div>
+
+    <div id="mbGrid" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;"></div>
+    <div id="mbEmpty" style="display:none;text-align:center;padding:40px;border:1px dashed #2b2b2b;border-radius:12px;color:#aaa">No encontramos sorteos para este filtro.</div>
+  </div>
+</section>
+
 </main>
   </div>
 
@@ -4151,318 +4185,161 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-<!-- ==== NUMINA · Mystery Box (Sorteos) – Componente embebido ==== -->
-<style>
-  .mb-root{ --mb-bg:#0c0c0c; --mb-panel:#141414; --mb-text:#eaeaea; --mb-muted:#aaaaaa; --mb-radius:16px; --mb-shadow:0 10px 30px rgba(0,0,0,.45); color:var(--text, var(--mb-text)); }
-  .mb-wrap{ max-width:1200px; margin:0 auto; padding:20px 24px 80px; }
-  .mb-topbar{ display:flex; align-items:center; gap:16px; margin-bottom:18px; }
-  .mb-back{ background:#222; border:1px solid #2a2a2a; padding:8px 14px; border-radius:999px; font-weight:600; cursor:pointer; color:inherit; }
-  .mb-title{ font-size:28px; font-weight:800; letter-spacing:.5px; }
-  .mb-stats{ display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:16px; margin:18px 0 8px; }
-  .mb-stat{ background:var(--panel, #141414); border:1px solid #222; border-radius:var(--radius, 16px); padding:16px; box-shadow:var(--shadow, 0 10px 30px rgba(0,0,0,.45)); }
-  .mb-stat h4{ margin:0 0 6px; font-size:13px; color:var(--muted, #aaaaaa); font-weight:600; letter-spacing:.5px; }
-  .mb-stat .value{ font-size:22px; font-weight:800; }
-  .mb-toolbar{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:16px 0 10px; }
-  .mb-chip{ background:#1f1f1f; border:1px solid #2a2a2a; padding:8px 12px; border-radius:999px; font-weight:600; cursor:pointer; color:inherit; }
-  .mb-chip.active{ background:var(--primary, #FFD100); border-color:#786300; color:#241f00; }
-  .mb-search{ flex:1; min_width:220px; }
-  .mb-search input{ width:100%; padding:10px 12px; background:#121212; border:1px solid #2a2a2a; border-radius:12px; color:inherit; }
-  .mb-grid{ display:grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap:18px; }
-  @media (max-width:1060px){ .mb-grid{ grid-template-columns: repeat(2,minmax(0,1fr)); } }
-  @media (max-width:700px){ .mb-grid{ grid-template-columns: 1fr; } }
-  .mb-card{ background:linear-gradient(180deg,#141414,#101010); border:1px solid #242424; border-radius:var(--radius,16px); overflow:hidden; box-shadow:var(--shadow, 0 10px 30px rgba(0,0,0,.45)); display:flex; flex-direction:column; }
-  .mb-thumb{ position:relative; height:180px; background:#0f0f0f; overflow:hidden; }
-  .mb-thumb img{ width:100%; height:100%; object-fit:cover; display:block; filter:saturate(1.05); transform:scale(1.02); }
-  .mb-badge{ position:absolute; top:12px; left:12px; background:rgba(0,0,0,.75); border:1px solid #2a2a2a; color:#fff; font-size:12px; padding:6px 10px; border-radius:999px; font-weight:700; letter-spacing:.25px; }
-  .mb-badge.open{ background:rgba(255,209,0,.9); color:#1b1500; border-color:#786300; }
-  .mb-badge.soon{ background:#1c1c1c; color:#e1e1e1; }
-  .mb-badge.closed{ background:#2a1515; color:#ffbfbf; border-color:#3a1e1e; }
-  .mb-card-body{ padding:16px; display:flex; flex-direction:column; gap:10px; }
-  .mb-card h3{ margin:0; font-size:18px; font-weight:800; letter-spacing:.3px; }
-  .mb-subtitle{ color:var(--muted, #aaaaaa); font-size:13px; }
-  .mb-meta{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; font-size:13px; color:var(--muted, #aaaaaa); }
-  .mb-pill{ background:#181818; border:1px solid #262626; padding:6px 10px; border-radius:999px; font-weight:700; color:#d9d9d9; }
-  .mb-actions{ display:flex; gap:10px; margin-top:auto; }
-  .mb-btn{ flex:1; text-align:center; padding:10px 12px; border-radius:12px; font-weight:800; cursor:pointer; border:1px solid #2a2a2a; background:#171717; color:#eee; }
-  .mb-btn.primary{ background:var(--primary, #FFD100); color:#181200; border-color:#6f5c00; }
-  .mb-btn.primary:hover{ filter:brightness(.95); }
-  .mb-btn.outline{ background:transparent; }
-  .mb-empty{ text-align:center; padding:60px 16px; color:#bdbdbd; border:1px dashed #2b2b2b; border-radius:16px; }
-  .mb-modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.6); padding:20px; z-index:1000; }
-  .mb-modal.open{ display:flex; }
-  .mb-sheet{ width:100%; max-width:560px; background:linear-gradient(180deg,#151515,#0f0f0f); border:1px solid #242424; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,.45); overflow:hidden; }
-  .mb-sheet .head{ display:flex; align-items:center; justify-content:space-between; padding:16px; border-bottom:1px solid #242424; }
-  .mb-sheet .head h3{ margin:0; font-size:18px; font-weight:800; }
-  .mb-sheet .body{ padding:16px; display:grid; gap:14px; }
-  .mb-row{ display:flex; gap:10px; align-items:center; justify-content:space-between; }
-  .mb-qty{ display:flex; align-items:center; border:1px solid #2a2a2a; border-radius:12px; overflow:hidden; }
-  .mb-qty button{ background:#1a1a1a; color:#fff; border:0; padding:10px 14px; font-weight:800; cursor:pointer; }
-  .mb-qty input{ width:70px; text-align:center; border:0; background:#111; color:#fff; padding:10px; font-weight:800; }
-  .mb-foot{ display:flex; gap:10px; padding:16px; border-top:1px solid #242424; }
-  .mb-close-x{ background:transparent; border:0; color:#aaa; font-size:24px; cursor:pointer; }
-  .mb-toast{ position:fixed; right:20px; bottom:20px; background:#151515; border:1px solid #2a2a2a; color:#eee; padding:12px 14px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.45); display:none; z-index:1001; }
-  .mb-toast.show{ display:block; }
-</style>
+<script>
+/* === Mystery Box DEMO (no Supabase) === */
+(function(){
+  const $ = (sel,root=document)=> root.querySelector(sel);
+  const $$ = (sel,root=document)=> Array.from(root.querySelectorAll(sel));
 
-<template id="mb-template">
-  <div class="mb-root">
-    <div class="mb-wrap">
-      <div class="mb-topbar">
-        <button class="mb-back" data-mb-action="back">← Volver</button>
-        <div class="mb-title">Mystery Box — <span style="color:var(--primary, #FFD100)">Sorteos</span></div>
-      </div>
-      <div class="mb-stats">
-        <div class="mb-stat"><h4>TUS TICKETS</h4><div class="value" data-mb="tickets">—</div></div>
-        <div class="mb-stat"><h4>SORTEOS ABIERTOS</h4><div class="value" data-mb="open">—</div></div>
-        <div class="mb-stat"><h4>TU PARTICIPACIÓN</h4><div class="value" data-mb="entries">—</div></div>
-      </div>
-      <div class="mb-toolbar">
-        <div class="mb-chip active" data-filter="open">Abiertos</div>
-        <div class="mb-chip" data-filter="soon">Próximamente</div>
-        <div class="mb-chip" data-filter="closed">Finalizados</div>
-        <div class="mb-search"><input data-mb="q" type="text" placeholder="Buscar sorteos…" /></div>
-      </div>
-      <div class="mb-grid" data-mb="grid"></div>
-      <div class="mb-empty" data-mb="empty" hidden>No encontramos sorteos para este filtro.</div>
-    </div>
-  </div>
-  <div class="mb-modal" data-mb="modal" role="dialog" aria-modal="true">
-    <div class="mb-sheet">
-      <div class="head">
-        <h3 data-mb="mTitle">Participar</h3>
-        <button class="mb-close-x" aria-label="Cerrar" data-mb-action="close-modal">×</button>
-      </div>
-      <div class="body">
-        <div class="mb-row"><div>Estado:</div><div class="mb-pill" data-mb="mStatus">—</div></div>
-        <div class="mb-row"><div>Te cuesta por entrada:</div><div><b data-mb="mCost">—</b> ticket(s)</div></div>
-        <div class="mb-row">
-          <div>Cantidad</div>
-          <div class="mb-qty">
-            <button data-mb-action="dec">−</button>
-            <input data-mb="mQty" type="number" min="1" value="1" />
-            <button data-mb-action="inc">+</button>
+  function getMainRoot(){
+    return document.querySelector('main') ||
+           document.querySelector('.main-content') ||
+           document.querySelector('#content') ||
+           document.querySelector('#main') ||
+           document.body;
+  }
+
+  function ensureMounted(){
+    if(!document.getElementById('mystery-box-view')){
+      const sec = document.createElement('section');
+      sec.id = 'mystery-box-view';
+      sec.hidden = true;
+      getMainRoot().appendChild(sec);
+    }else{
+      const sec = document.getElementById('mystery-box-view');
+      const root = getMainRoot();
+      if(sec.parentElement !== root){
+        root.appendChild(sec);
+      }
+    }
+  }
+
+  const demo = [
+    { id:'a1', title:'Sorteo Semanal', subtitle:'Pozo acumulado', ticket_cost:2, prize_name:'Premio sorpresa', active:true, start_at:Date.now()-3600e3, end_at:Date.now()+4*3600e3 },
+    { id:'b2', title:'Gamer Pack', subtitle:'Próximamente', ticket_cost:1, prize_name:'Set gaming', active:true, start_at:Date.now()+24*3600e3, end_at:Date.now()+72*3600e3 },
+    { id:'c3', title:'Sorteo Mensual', subtitle:'Finalizado', ticket_cost:5, prize_name:'Caja Premium', active:false, start_at:Date.now()-40*3600e3, end_at:Date.now()-4*3600e3 },
+  ];
+
+  let state = { filter:'open', q:'', raffles: demo };
+
+  function getStatus(r){
+    const now = Date.now();
+    if(r.active === false) return 'closed';
+    if(r.start_at && now < r.start_at) return 'soon';
+    if(r.end_at && now > r.end_at) return 'closed';
+    return 'open';
+  }
+
+  function render(){
+    const grid = $('#mystery-box-view #mbGrid');
+    const empty = $('#mystery-box-view #mbEmpty');
+    const items = state.raffles.filter(r=>{
+      const st = getStatus(r);
+      if(state.filter==='open' && st!=='open') return false;
+      if(state.filter==='soon' && st!=='soon') return false;
+      if(state.filter==='closed' && st!=='closed') return false;
+      if(state.q){
+        const blob = (r.title + ' ' + (r.subtitle||'')).toLowerCase();
+        if(!blob.includes(state.q)) return false;
+      }
+      return true;
+    });
+
+    $('#mystery-box-view #mbOpen').textContent = state.raffles.filter(r=>getStatus(r)==='open').length;
+
+    if(items.length===0){ grid.innerHTML=''; empty.style.display='block'; return; }
+    empty.style.display='none';
+    grid.innerHTML = items.map(r=>`
+      <div style="background:linear-gradient(180deg,#141414,#101010);border:1px solid #242424;border-radius:16px;overflow:hidden">
+        <div style="position:relative;height:160px;background:#0f0f0f">
+          <span style="position:absolute;top:12px;left:12px;background:${getStatus(r)==='open'?'rgba(255,209,0,.9)':'#1c1c1c'};color:${getStatus(r)==='open'?'#1b1500':'#e1e1e1'};border:1px solid #2a2a2a;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:800">
+            ${getStatus(r)==='open'?'Abierto': getStatus(r)==='soon'?'Próximamente':'Finalizado'}
+          </span>
+        </div>
+        <div style="padding:16px">
+          <h3 style="margin:0 0 6px;font-weight:800">${r.title}</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;color:#bdbdbd;font-size:13px">
+            <span style="background:#181818;border:1px solid #262626;border-radius:999px;padding:6px 10px;font-weight:700">${r.ticket_cost} ticket(s)</span>
+            ${r.prize_name? `<span style="background:#181818;border:1px solid #262626;border-radius:999px;padding:6px 10px;font-weight:700">Premio: ${r.prize_name}</span>`:''}
+          </div>
+          <div style="display:flex;gap:10px;margin-top:10px">
+            <button class="btn" disabled style="flex:1;background:transparent;border:1px solid #2a2a2a;border-radius:12px;color:#eee;padding:10px 12px;font-weight:800">Detalles</button>
+            <button class="btn" ${getStatus(r)!=='open'?'disabled':''} style="flex:1;background:#FFD100;color:#181200;border:1px solid #6f5c00;border-radius:12px;padding:10px 12px;font-weight:800">Participar</button>
           </div>
         </div>
-        <div class="mb-row"><div>Total a gastar:</div><div><b data-mb="mTotal">—</b> tickets</div></div>
-        <div class="mb-row"><div>Tus tickets:</div><div data-mb="mHave">—</div></div>
       </div>
-      <div class="mb-foot">
-        <button class="mb-btn outline" data-mb-action="close-modal">Cancelar</button>
-        <button class="mb-btn primary" data-mb-action="confirm">Gastar tickets y participar</button>
-      </div>
-    </div>
-  </div>
-  <div class="mb-toast" data-mb="toast"></div>
-</template>
-
-<script>
-(function(){
-  const SUPABASE_URL = window.SUPABASE_URL || "YOUR_SUPABASE_URL";
-  const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "YOUR_SUPABASE_ANON_KEY";
-  const hasKeys = !/YOUR_SUPABASE_URL|YOUR_SUPABASE_ANON_KEY/.test(SUPABASE_URL + SUPABASE_ANON_KEY);
-  function qs(root, sel){ return root.querySelector(sel); }
-  function qsa(root, sel){ return Array.from(root.querySelectorAll(sel)); }
-  const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  function toast(root, msg){ const el = qs(root,'[data-mb="toast"]'); el.textContent = msg; el.classList.add('show'); setTimeout(()=> el.classList.remove('show'), 2600); }
-  function getStatus(r){ const now = new Date(); if(r.active === false) return 'closed'; if(r.start_at && now < new Date(r.start_at)) return 'soon'; if(r.end_at && now > new Date(r.end_at)) return 'closed'; return 'open'; }
-  function toBadge(st){ return st==='open'? 'Abierto' : st==='soon'? 'Próximamente' : 'Finalizado'; }
-  function timeRemaining(end){ if(!end) return ''; const now = new Date(); const ms = new Date(end) - now; if(ms<=0) return 'Finaliza pronto'; const d = Math.floor(ms/86400000); const h = Math.floor((ms%86400000)/3600000); return d>0 ? `${d}d ${h}h` : `${h}h`; }
-  function toCard(r){
-    const st = getStatus(r); const timeLeft = r.end_at ? timeRemaining(r.end_at) : '';
-    return `<div class="mb-card">
-      <div class="mb-thumb">
-        ${r.image_url? `<img src="${r.image_url}" alt="${esc(r.title)}">` : ''}
-        <div class="mb-badge ${st}">${toBadge(st)}</div>
-      </div>
-      <div class="mb-card-body">
-        <h3>${esc(r.title)}</h3>
-        ${r.subtitle? `<div class="mb-subtitle">${esc(r.subtitle)}</div>`:''}
-        <div class="mb-meta">
-          <div class="mb-pill">${r.ticket_cost} ticket(s)</div>
-          ${r.prize_name? `<div class="mb-pill">Premio: ${esc(r.prize_name)}</div>`:''}
-          ${timeLeft? `<div class="mb-pill">${timeLeft}</div>`:''}
-        </div>
-        <div class="mb-actions">
-          <button class="mb-btn outline" data-mb-action="details" data-id="${r.id}">Detalles</button>
-          <button class="mb-btn primary" data-mb-action="join" data-id="${r.id}" ${st!=='open'?'disabled':''}>Participar</button>
-        </div>
-      </div>
-    </div>`;
+    `).join('');
   }
-  function mount(opts){
-    const container = typeof opts.container === 'string' ? document.getElementById(opts.container) : opts.container;
-    if(!container){ console.error('[MysteryBox] container no encontrado'); return; }
-    container.innerHTML = '';
-    let t = document.getElementById('mb-template');
-    if(!t){
-      console.warn('[MysteryBox] <template id="mb-template"> no encontrado. Creando fallback mínimo…');
-      t = document.createElement('template');
-      t.id = 'mb-template';
-      t.innerHTML = `<div class="mb-root"><div class="mb-wrap">
-        <div class="mb-topbar"><button class="mb-back" data-mb-action="back">← Volver</button>
-        <div class="mb-title">Mystery Box — <span style=\"color:var(--primary,#FFD100)\">Sorteos</span></div></div>
-        <div class="mb-stats">
-          <div class="mb-stat"><h4>TUS TICKETS</h4><div class="value" data-mb="tickets">—</div></div>
-          <div class="mb-stat"><h4>SORTEOS ABIERTOS</h4><div class="value" data-mb="open">—</div></div>
-          <div class="mb-stat"><h4>TU PARTICIPACIÓN</h4><div class="value" data-mb="entries">—</div></div>
-        </div>
-        <div class="mb-toolbar">
-          <div class="mb-chip active" data-filter="open">Abiertos</div>
-          <div class="mb-chip" data-filter="soon">Próximamente</div>
-          <div class="mb-chip" data-filter="closed">Finalizados</div>
-          <div class="mb-search"><input data-mb=\"q\" type=\"text\" placeholder=\"Buscar sorteos…\"/></div>
-        </div>
-        <div class="mb-grid" data-mb=\"grid\"></div>
-        <div class="mb-empty" data-mb=\"empty\" hidden>No encontramos sorteos para este filtro.</div>
-      </div></div>
-      <div class=\"mb-modal\" data-mb=\"modal\"></div><div class=\"mb-toast\" data-mb=\"toast\"></div>`;
-      document.body.appendChild(t);
-    }
-    const frag = t.content ? t.content.cloneNode(true) : document.createDocumentFragment();
-    container.appendChild(frag);
-    container.style.display = '';
-    const root = container;
-    const state = { sb: opts.sbClient || window.__SB || window.supabaseClient || (hasKeys? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null),
-      user: null, raffles: [], tickets: 0, entries: 0, filter: 'open', current: null };
-    qsa(root,'.mb-chip').forEach(ch=> ch.addEventListener('click', ()=>{
-      qsa(root,'.mb-chip').forEach(c=>c.classList.remove('active'));
-      ch.classList.add('active'); state.filter = ch.dataset.filter; render();
-    }));
-    qs(root,'[data-mb="q"]').addEventListener('input', render);
-    root.addEventListener('click', async (e)=>{
-      const btn = e.target.closest('[data-mb-action]'); if(!btn) return;
-      const act = btn.getAttribute('data-mb-action');
-      if(act==='back'){ const s=document.getElementById('section-mystery-box'); if(s) s.style.display='none'; }
-      if(act==='close-modal'){ closeModal(); }
-      if(act==='inc'){ setQty(getQty()+1); }
-      if(act==='dec'){ setQty(Math.max(1, getQty()-1)); }
-      if(act==='confirm'){ await confirmJoin(); }
-      if(act==='details' || act==='join'){ openJoin(btn.dataset.id); }
+
+  function showMB(fromEl){
+    ensureMounted();
+    const root = getMainRoot();
+    Array.from(root.children).forEach(el=>{
+      if(el.id !== 'mystery-box-view'){
+        el.__prevDisplay = el.style.display;
+        el.style.display = 'none';
+      }
     });
-    function setText(sel, val){ const el = qs(root, sel); if(el) el.textContent = val; }
-    function show(sel){ const el = qs(root, sel); if(el) el.classList.add('open'); }
-    function hide(sel){ const el = qs(root, sel); if(el) el.classList.remove('open'); }
-    function getQty(){ return Number(qs(root,'[data-mb="mQty"]').value||1); }
-    function setQty(v){ qs(root,'[data-mb="mQty"]').value = v; calcTotal(); }
-    function render(){
-      const grid = qs(root,'[data-mb="grid"]'); const empty = qs(root,'[data-mb="empty"]'); const q = (qs(root,'[data-mb="q"]').value || '').toLowerCase();
-      const items = (state.raffles||[]).filter(r=>{
-        const st = getStatus(r);
-        if(state.filter==='open' && st!=='open') return false;
-        if(state.filter==='soon' && st!=='soon') return false;
-        if(state.filter==='closed' && st!=='closed') return false;
-        if(q){ const blob = `${r.title} ${r.subtitle||''} ${r.description||''}`.toLowerCase(); if(!blob.includes(q)) return false; }
-        return true;
-      });
-      if(items.length===0){ grid.innerHTML=''; empty.hidden = false; return; }
-      empty.hidden = true; grid.innerHTML = items.map(toCard).join('');
-    }
-    async function loadTickets(){ try{
-      if(!state.sb) throw new Error('no-sb');
-      const { data, error } = await state.sb.rpc('get_user_tickets'); if(error) throw error;
-      state.tickets = Number(data||0); setText('[data-mb="tickets"]', state.tickets);
-    }catch(_){ setText('[data-mb="tickets"]', '—'); } }
-    async function loadRaffles(){ try{
-      if(!state.sb) throw new Error('no-sb');
-      const { data, error } = await state.sb.from('raffles').select('id,title,subtitle,description,image_url,ticket_cost,start_at,end_at,total_prizes,prize_name,active').order('end_at', { ascending: true });
-      if(error) throw error; state.raffles = (data||[]);
-      const open = state.raffles.filter(r=>getStatus(r)==='open').length; setText('[data-mb="open"]', open);
-    }catch(_){ setText('[data-mb="open"]','—'); } }
-    async function loadEntries(){ try{
-      if(!state.sb) throw new Error('no-sb');
-      const { data: { user } } = await state.sb.auth.getUser(); if(!user) throw new Error('no-user');
-      const { data, error } = await state.sb.from('raffle_entries').select('entries').eq('user_id', user.id);
-      if(error) throw error; const total = (data||[]).reduce((a,b)=> a + (b.entries||0), 0);
-      state.entries = total; setText('[data-mb="entries"]', total);
-    }catch(_){ setText('[data-mb="entries"]','—'); } }
-    function openJoin(id){ const r = (state.raffles||[]).find(x=>String(x.id)===String(id)); if(!r) return;
-      state.current = r; setText('[data-mb="mTitle"]', r.title); setText('[data-mb="mCost"]', r.ticket_cost);
-      qs(root,'[data-mb="mQty"]').value = 1; setText('[data-mb="mHave"]', state.tickets); setText('[data-mb="mTotal"]', r.ticket_cost);
-      setText('[data-mb="mStatus"]', (r.active===false?'Finalizado':toBadge(getStatus(r))));
-      qs(root,'[data-mb-action="confirm"]').disabled = (getStatus(r)!=='open'); show('[data-mb="modal"]'); }
-    function closeModal(){ hide('[data-mb="modal"]'); }
-    function calcTotal(){ const q = getQty(); setText('[data-mb="mTotal"]', q * (state.current? state.current.ticket_cost : 0)); }
-    async function confirmJoin(){ if(!state.current) return;
-      const qty = Math.max(1, getQty()); const total = qty * state.current.ticket_cost;
-      if(total > state.tickets){ toast(root,'No tenés suficientes tickets.'); return; }
-      try{ if(!state.sb) throw new Error('no-sb');
-        const { error } = await state.sb.rpc('raffle_join', { p_raffle: state.current.id, p_qty: qty });
-        if(error) throw error; toast(root,'¡Listo! Estás participando.');
-        state.tickets -= total; setText('[data-mb="tickets"]', state.tickets); setText('[data-mb="mHave"]', state.tickets);
-        await loadEntries(); closeModal();
-      }catch(err){ console.error(err); toast(root, err.message || 'Error al participar'); } }
-    (async ()=>{ if(!state.sb){ render(); return; }
-      const { data: { user } } = await state.sb.auth.getUser(); state.user = user || null;
-      await Promise.all([loadTickets(), loadRaffles(), loadEntries()]); render(); })();
-    return { render };
+    $('#mystery-box-view').hidden = false;
+    $('#mystery-box-view #mbTickets').textContent = '—';
+    $('#mystery-box-view #mbEntries').textContent = '—';
+    render();
   }
-  window.MysteryBox = Object.assign(window.MysteryBox || {}, { mount });
+
+  function hideMB(){
+    const root = getMainRoot();
+    Array.from(root.children).forEach(el=>{
+      if(el.id !== 'mystery-box-view'){
+        el.style.display = (el.__prevDisplay || '');
+      }
+    });
+    const sec = $('#mystery-box-view');
+    if(sec) sec.hidden = true;
+  }
+
+  function wire(){
+    const back = $('#mystery-box-view #mbBack');
+    if(back && !back.__wired){
+      back.__wired = true;
+      back.addEventListener('click', (e)=>{ e.preventDefault(); hideMB(); });
+    }
+
+    $$('#mystery-box-view [data-mb-filter]').forEach(ch=>{
+      ch.addEventListener('click', ()=>{
+        $$('#mystery-box-view [data-mb-filter]').forEach(c=>{
+          c.style.background = '#1f1f1f'; c.style.color='#eaeaea'; c.style.borderColor='#2a2a2a';
+        });
+        ch.style.background = '#FFD100'; ch.style.color='#241f00'; ch.style.borderColor='#786300';
+        state.filter = ch.getAttribute('data-mb-filter');
+        render();
+      });
+    });
+
+    const q = $('#mystery-box-view #mbSearch');
+    if(q && !q.__wired){
+      q.__wired = true;
+      q.addEventListener('input', ()=>{ state.q = q.value.trim().toLowerCase(); render(); });
+    }
+
+    document.addEventListener('click', function(ev){
+      const target = ev.target.closest('.stat-card, .dashboard-card, .card, .tile, [data-tile], [data-open], #balance-value, .stat, .dashboard-container');
+      if(!target) return;
+      const txt = (target.textContent||'').toUpperCase();
+      if(txt.includes('MYSTERY') && txt.includes('BOX')){
+        ev.preventDefault();
+        ev.stopImmediatePropagation();
+        showMB(target);
+      }
+    }, true);
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', wire);
+  }else{
+    wire();
+  }
 })();
 </script>
 
-<script>
-// Helper de navegación: crea sección y engancha por texto "Mystery Box" o por atributo data-open="mystery-box"
-(function(){
-  function ensureSection(sectionId, containerId){
-    let section = document.getElementById(sectionId);
-    if(!section){
-      section = document.createElement('section');
-      section.id = sectionId;
-      section.className = 'section-content';
-      section.style.display = 'none';
-      const div = document.createElement('div');
-      div.id = containerId;
-      section.appendChild(div);
-      const main = document.querySelector('main') || document.body;
-      main.appendChild(section);
-    }else if(!document.getElementById(containerId)){
-      const div = document.createElement('div');
-      div.id = containerId; section.appendChild(div);
-    }
-  }
-  function showSection(id){ const el = document.getElementById(id); if(el){ el.style.display=''; el.scrollIntoView({behavior:'smooth', block:'start'}); } }
-  function autoHookByText(){
-    const candidates = Array.from(document.querySelectorAll('a,button,[role="button"], .btn, .cta, .card, .tile, .banner'));
-    const target = candidates.find(el => /mystery\s*box/i.test((el.textContent||'').trim()));
-    return target || null;
-  }
-  window.MysteryBoxNav = {
-    hook({ selector='[data-open="mystery-box"]', sectionId='section-mystery-box', containerId='panel-mystery', sbClient }={}){
-      ensureSection(sectionId, containerId);
-      let target = document.querySelector(selector);
-      if(!target){ target = autoHookByText(); }
-      if(!target){ console.warn('[MysteryBoxNav] No encontré el cartel/botón Mystery Box. Agregá data-open="mystery-box" al elemento.'); return; }
-      target.addEventListener('click', (e)=>{
-        e.preventDefault();
-        const client = sbClient || (window.getSupabase? getSupabase() : (window.__SB||window.supabaseClient||null));
-        if(!client){ console.warn('[MysteryBoxNav] Supabase client no disponible'); }
-        MysteryBox.mount({ container: containerId, sbClient: client });
-        showSection(sectionId);
-      });
-      console.log('[MysteryBoxNav] Hook listo en', target);
-    }
-  };
-  document.addEventListener('DOMContentLoaded', ()=>{
-    if(window.MysteryBox && window.MysteryBox.mount){
-      window.MysteryBoxNav && window.MysteryBoxNav.hook({});
-    }
-    console.log('[TEST] MysteryBox available:', !!(window.MysteryBox && window.MysteryBox.mount));
-  });
-})();
-</script>
-
-<script>
-// Hook explícito y seguro: sólo si existe [data-open="mystery-box"]
-document.addEventListener('DOMContentLoaded', function(){
-  var el = document.querySelector('[data-open="mystery-box"]');
-  if(!el){ console.warn('[MysteryBoxNav] Agregá data-open="mystery-box" al tile/botón que abre Mystery Box.'); return; }
-  if(window.MysteryBoxNav && typeof MysteryBoxNav.hook==='function'){
-    var sb = (window.getSupabase ? getSupabase() : (window.__SB||window.supabaseClient||null));
-    window.MysteryBoxNav.hook({ selector:'[data-open="mystery-box"]', sbClient: sb });
-  }
-});
-</script>
 </body>
 </html>
-
-
