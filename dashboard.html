@@ -3901,16 +3901,20 @@ async function cargarSorteos(){
 
 
     // Targeted hook: bind ONLY to the Mystery Box tile (no global capture)
+    
     function hookTile(){
-      // Prefer an explicit id if exists
-      let tile = document.getElementById('balance-value');
-      // Fallback: search visible tiles/cards containing the text
-      if(!tile){
-        const cands = Array.from(document.querySelectorAll('.stat-card, .dashboard-card, .tile, [data-tile], #balance-value'));
-        tile = cands.find(el => {
-          const t = (el.textContent||'').toUpperCase();
-          return t.includes('MYSTERY') && t.includes('BOX');
-        }) || null;
+      const tile = document.getElementById('balance-value');
+      if(!tile || tile.__mbHooked) return;
+      tile.__mbHooked = true;
+      const handler = function(ev){
+        // sólo si se hace click exactamente en el tile
+        ev.preventDefault();
+        ev.stopImmediatePropagation();
+        showMB(tile);
+      };
+      tile.addEventListener('click', handler, true); // captura, para anular overlay negro
+    }
+    ) || null;
       }
       if(!tile) return;
       const card = tile.closest('.stat-card') || tile;
