@@ -1402,8 +1402,6 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
       .mbx .btn.primary{ background:var(--primary); color:#181200; border-color:#6f5c00; }
       .mbx .btn.outline{ background:transparent; }
       .mbx .empty{ text-align:center; padding:60px 16px; color:#bdbdbd; border:1px dashed #2b2b2b; border-radius:16px; }
-
-      /* Modal dentro de MBX, ids exclusivos */
       .mbx .modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.6); padding:20px; }
       .mbx .modal.open{ display:flex; }
       .mbx .sheet{ width:100%; max-width:560px; background:linear-gradient(180deg,#151515,#0f0f0f); border:1px solid #242424; border-radius:20px; box-shadow:var(--shadow); overflow:hidden; }
@@ -1421,7 +1419,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 
     <div class="wrap">
       <div class="topbar">
-        <button class="back" onclick="__numinaHideMystery()">← Volver</button>
+        <button class="back" onclick="window.__mbxHide && window.__mbxHide()">← Volver</button>
         <div class="title">Mystery Box — <span style="color:var(--primary)">Sorteos</span></div>
       </div>
 
@@ -1442,7 +1440,6 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
       <div id="mbx-empty" class="empty" style="display:none;">No encontramos sorteos para este filtro.</div>
     </div>
 
-    <!-- Modal Participar (scoped en MBX) -->
     <div id="mbx-modal" class="modal" role="dialog" aria-modal="true">
       <div class="sheet">
         <div class="head">
@@ -1476,7 +1473,6 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
     <div id="mbx-toast" class="toast"></div>
 
     <script>
-    // ===== Mystery Box DEMO (scoped) =====
     (function(){
       let raffles = [];
       let filter = 'open';
@@ -1556,17 +1552,13 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
       }
 
       function bindUI(){
-        // chips
         document.querySelectorAll('#section-mysterybox [data-filter]').forEach(el=>{
           el.addEventListener('click', ()=>{
             document.querySelectorAll('#section-mysterybox .chip').forEach(c=>c.classList.remove('active'));
             el.classList.add('active'); filter = el.getAttribute('data-filter'); render();
           });
         });
-        // search
-        const q = document.getElementById('mbx-q');
-        q.addEventListener('input', ()=>render());
-        // actions (delegation)
+        const q = document.getElementById('mbx-q'); q.addEventListener('input', ()=>render());
         document.getElementById('mbx-grid').addEventListener('click', (e)=>{
           const d = e.target.closest('[data-open-details]'); const j = e.target.closest('[data-open-join]');
           if(d){ const id = d.getAttribute('data-open-details'); openJoin(id); }
@@ -1611,24 +1603,16 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
         render();
       }
 
-      // expose minimal API to outer script
-      window.__mbxInit = init;
       window.__mbxShow = function(){
-        const root = document.querySelector('.main-content') || document.body;
-        // hide all section-content and dashboard
         document.querySelectorAll('.section-content').forEach(s=> s.style.display = (s.id==='section-mysterybox' ? 'block' : 'none'));
         const md = document.getElementById('main-dashboard'); if(md) md.style.display = 'none';
         init();
       };
       window.__mbxHide = function(){
-        // hide mystery and show dashboard
         const sec = document.getElementById('section-mysterybox'); if(sec) sec.style.display = 'none';
         const md = document.getElementById('main-dashboard'); if(md) md.style.display = 'block';
       };
     })();
-
-    // Back helpers called from buttons
-    function __numinaHideMystery(){ window.__mbxHide && window.__mbxHide(); }
     </script>
   </div>
 </section>
@@ -4364,19 +4348,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const target = document.getElementById(id);
       if(target && !target.__numinaBound){
         target.__numinaBound = true;
-        const card = target.closest('.stat-card');
-        if (id === 'balance-value'){
-          const h = function(ev){ ev.preventDefault(); ev.stopImmediatePropagation(); window.__mbxShow && window.__mbxShow(); };
-          target.addEventListener('click', h, true);
-          if(card && !card.__mbxHooked){ card.__mbxHooked = true; card.addEventListener('click', h, true); }
-        } else {
-          target.addEventListener('click', onClick);
-          if(card && !card.__numinaBound){ card.__numinaBound = true; card.addEventListener('click', onClick); }
-        }
-      }
-    });
-    if(target && !target.__numinaBound){
-        target.__numinaBound = true;
         target.addEventListener('click', onClick);
         const card = target.closest('.stat-card');
         if(card && !card.__numinaBound){
@@ -4384,7 +4355,7 @@ document.addEventListener('DOMContentLoaded', () => {
           card.addEventListener('click', onClick);
         }
       }
-    };
+    });
   }
   
   // === NUMINA: auto-off en navegación y atajos ===
@@ -4429,6 +4400,24 @@ document.addEventListener('DOMContentLoaded', () => {
   // Rebind si más tarde el DOM reemplaza nodos
   const obs = new MutationObserver(bind);
   obs.observe(document.body, {childList:true, subtree:true});
+})();
+</script>
+
+
+<script>
+(function(){
+  function hookMB(){
+    var t = document.getElementById('balance-value');
+    if(!t || t.__mbxHooked) return;
+    t.__mbxHooked = true;
+    var h = function(ev){
+      ev.preventDefault(); ev.stopImmediatePropagation();
+      if(window.__mbxShow) window.__mbxShow();
+    };
+    t.addEventListener('click', h, true);
+    var card = t.closest('.stat-card'); if(card && !card.__mbxHooked){ card.__mbxHooked = true; card.addEventListener('click', h, true); }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', hookMB); else hookMB();
 })();
 </script>
 
