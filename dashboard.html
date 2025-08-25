@@ -4077,24 +4077,7 @@ document.addEventListener('DOMContentLoaded', () => {
       back.type = 'button';
       back.setAttribute('aria-label','Volver');
       back.textContent = '← Volver';
-      back.addEventListener('click', ()=>{
-  // 1) Apagar overlay
-  const mainEl = document.querySelector('.main-content');
-  if (mainEl) mainEl.classList.remove('numina-on');
-  // 2) Usar la navegación existente (click real al item Dashboard)
-  const dashItem = document.querySelector('.menu-item[data-target="dashboard"]');
-  if (dashItem) {
-    try { dashItem.click(); return; } catch(e){ /* fallback abajo */ }
-  }
-  // 3) Fallback manual (por si no existe el item o la nav aún no está inicializada)
-  const menuItems = document.querySelectorAll('.menu-item[data-target]');
-  const sections = document.querySelectorAll('.section-content');
-  const mainDashboard = document.getElementById('main-dashboard');
-  menuItems.forEach(i=> i.classList.toggle('active', i.getAttribute('data-target') === 'dashboard'));
-  if (mainDashboard) mainDashboard.style.display = 'block';
-  sections.forEach(s=> s.style.display = 'none');
-  if (typeof cargarDashboard === 'function'){ try{ cargarDashboard(); }catch(e){} }
-});
+      back.addEventListener('click', ()=> main.classList.remove('numina-on'));
       ov.appendChild(back);
       
       
@@ -4330,5 +4313,32 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 350);
 })();
 </script>
+
+<script>
+// Fijar navegación al Dashboard cuando se presiona "← Volver" del overlay, pase lo que pase.
+(function(){
+  function goToDashboard(){
+    const mainEl = document.querySelector('.main-content');
+    if (mainEl) mainEl.classList.remove('numina-on');
+    // intenta usar la navegación existente
+    const dashItem = document.querySelector('.menu-item[data-target="dashboard"]');
+    if (dashItem){
+      try { dashItem.click(); } catch(e){}
+    }
+    // refuerzo manual
+    const mainDashboard = document.getElementById('main-dashboard');
+    const sections = document.querySelectorAll('.section-content');
+    if (mainDashboard) mainDashboard.style.display = 'block';
+    sections.forEach(s => s.style.display = 'none');
+    if (typeof cargarDashboard === 'function'){ try{ cargarDashboard(); }catch(e){} }
+    window.scrollTo({top:0, behavior:'instant' in window ? 'instant' : 'auto'});
+  }
+  document.addEventListener('click', function(e){
+    const btn = e.target && (e.target.id === 'numina-back-btn' ? e.target : e.target.closest && e.target.closest('#numina-back-btn'));
+    if (btn) { goToDashboard(); }
+  }, true);
+})();
+</script>
+
 </body>
 </html>
