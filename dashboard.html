@@ -1387,34 +1387,16 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
       @media (max-width:700px){ .mbx .grid{ grid-template-columns: 1fr; } }
       .mbx .card{ background:linear-gradient(180deg,#141414,#101010); border:1px solid #242424; border-radius:16px; overflow:hidden; box-shadow:var(--shadow); display:flex; flex-direction:column; }
       .mbx .thumb{ position:relative; height:180px; background:#0f0f0f; overflow:hidden; }
-      .mbx .thumb img{ width:100%; height:100%; object-fit:cover; display:block; filter:saturate(1.05); transform:scale(1.02); }
       .mbx .badge{ position:absolute; top:12px; left:12px; background:rgba(0,0,0,.75); border:1px solid #2a2a2a; color:#fff; font-size:12px; padding:6px 10px; border-radius:999px; font-weight:700; letter-spacing:.25px; }
       .mbx .badge.open{ background:rgba(255,209,0,.9); color:#1b1500; border-color:#786300; }
       .mbx .badge.soon{ background:#1c1c1c; color:#e1e1e1; }
       .mbx .badge.closed{ background:#2a1515; color:#ffbfbf; border-color:#3a1e1e; }
       .mbx .card-body{ padding:16px; display:flex; flex-direction:column; gap:10px; }
-      .mbx .card h3{ margin:0; font-size:18px; font-weight:800; letter-spacing:.3px; }
-      .mbx .subtitle{ color:var(--muted); font-size:13px; }
-      .mbx .meta{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; font-size:13px; color:#bdbdbd; }
+      .mbx .subtitle{ color:#aaa; font-size:13px; }
       .mbx .pill{ background:#181818; border:1px solid #262626; padding:6px 10px; border-radius:999px; font-weight:700; color:#d9d9d9; }
-      .mbx .actions{ display:flex; gap:10px; margin-top:auto; }
       .mbx .btn{ flex:1; text-align:center; padding:10px 12px; border-radius:12px; font-weight:800; cursor:pointer; border:1px solid #2a2a2a; background:#171717; color:#eee; }
       .mbx .btn.primary{ background:var(--primary); color:#181200; border-color:#6f5c00; }
-      .mbx .btn.outline{ background:transparent; }
       .mbx .empty{ text-align:center; padding:60px 16px; color:#bdbdbd; border:1px dashed #2b2b2b; border-radius:16px; }
-      .mbx .modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.6); padding:20px; }
-      .mbx .modal.open{ display:flex; }
-      .mbx .sheet{ width:100%; max-width:560px; background:linear-gradient(180deg,#151515,#0f0f0f); border:1px solid #242424; border-radius:20px; box-shadow:var(--shadow); overflow:hidden; }
-      .mbx .sheet .head{ display:flex; align-items:center; justify-content:space-between; padding:16px; border-bottom:1px solid #242424; }
-      .mbx .sheet .body{ padding:16px; display:grid; gap:14px; }
-      .mbx .row{ display:flex; gap:10px; align-items:center; justify-content:space-between; }
-      .mbx .qty{ display:flex; align-items:center; border:1px solid #2a2a2a; border-radius:12px; overflow:hidden; }
-      .mbx .qty button{ background:#1a1a1a; color:#fff; border:0; padding:10px 14px; font-weight:800; cursor:pointer; }
-      .mbx .qty input{ width:70px; text-align:center; border:0; background:#111; color:#fff; padding:10px; font-weight:800; }
-      .mbx .foot{ display:flex; gap:10px; padding:16px; border-top:1px solid #242424; }
-      .mbx .close-x{ background:transparent; border:0; color:#aaa; font-size:24px; cursor:pointer; }
-      .mbx .toast{ position:fixed; right:20px; bottom:20px; background:#151515; border:1px solid #2a2a2a; color:#eee; padding:12px 14px; border-radius:12px; box-shadow:var(--shadow); display:none; }
-      .mbx .toast.show{ display:block; }
     </style>
 
     <div class="wrap">
@@ -1439,181 +1421,6 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
       <div id="mbx-grid" class="grid"></div>
       <div id="mbx-empty" class="empty" style="display:none;">No encontramos sorteos para este filtro.</div>
     </div>
-
-    <div id="mbx-modal" class="modal" role="dialog" aria-modal="true">
-      <div class="sheet">
-        <div class="head">
-          <h3 id="mbx-mTitle">Participar</h3>
-          <button class="close-x" aria-label="Cerrar" onclick="document.getElementById('mbx-modal').classList.remove('open')">×</button>
-        </div>
-        <div class="body">
-          <div class="row"><div>Estado:</div><div id="mbx-mStatus" class="pill">—</div></div>
-          <div class="row"><div>Te cuesta por entrada:</div><div><b id="mbx-mCost">—</b> ticket(s)</div></div>
-          <div class="row">
-            <div>Cantidad</div>
-            <div class="qty">
-              <button onclick="__mbxDecQty()">−</button>
-              <input id="mbx-mQty" type="number" min="1" value="1"/>
-              <button onclick="__mbxIncQty()">+</button>
-            </div>
-          </div>
-          <div class="row"><div>Total a gastar:</div><div><b id="mbx-mTotal">—</b> tickets</div></div>
-          <div class="row"><div>Tus tickets:</div><div id="mbx-mHave">—</div></div>
-          <div class="row"><div>Pozo actual:</div><div id="mbx-mPot">—</div></div>
-          <div class="row"><div>Si ganás, recibís (neto):</div><div id="mbx-mNet">—</div></div>
-          <div class="row"><div>Comisión de la casa:</div><div id="mbx-mHouse">—</div></div>
-        </div>
-        <div class="foot">
-          <button class="btn outline" onclick="document.getElementById('mbx-modal').classList.remove('open')">Cancelar</button>
-          <button id="mbx-mBtn" class="btn primary" onclick="__mbxConfirmJoin()">Gastar tickets y participar</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="mbx-toast" class="toast"></div>
-
-    <script>
-    (function(){
-      let raffles = [];
-      let filter = 'open';
-      let tickets = 0;
-      let pots = {};
-      let currentRaffle = null;
-      let inited = false;
-
-      function getStatus(r){
-        const now = Date.now();
-        if(r.active === false) return 'closed';
-        if(r.start_at && now < r.start_at) return 'soon';
-        if(r.end_at && now > r.end_at) return 'closed';
-        return 'open';
-      }
-      function timeRemaining(end){
-        const ms = end - Date.now();
-        if(ms<=0) return 'Finaliza pronto';
-        const d = Math.floor(ms/86400000); const h = Math.floor((ms%86400000)/3600000);
-        return d>0? d+'d '+h+'h' : h+'h';
-      }
-      function getTimeToDraw(r){ return r.next_draw_at || r.end_at; }
-      function getPotTickets(r){ const id = typeof r==='string'? r : r.id; return pots[id]||0; }
-      function getNetPot(r, pot){ const pct = (r.house_fee_pct??0); return Math.max(0, Math.floor(pot*(100-pct)/100)); }
-      function fmtTickets(n){ return (n||0) + ' tickets'; }
-      function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-      function render(){
-        const grid = document.getElementById('mbx-grid');
-        const empty = document.getElementById('mbx-empty');
-        const q = (document.getElementById('mbx-q').value||'').toLowerCase();
-        const items = raffles.filter(r=>{
-          const st = getStatus(r);
-          if(filter==='open' && st!=='open') return false;
-          if(filter==='soon' && st!=='soon') return false;
-          if(filter==='closed' && st!=='closed') return false;
-          if(q){
-            const blob = (r.title+' '+(r.subtitle||'')+' '+(r.description||'')).toLowerCase();
-            if(!blob.includes(q)) return false;
-          }
-          return true;
-        });
-        document.getElementById('mbx-openValue').textContent = raffles.filter(r=>getStatus(r)==='open').length;
-        if(items.length===0){ grid.innerHTML=''; empty.style.display='block'; return; }
-        empty.style.display='none';
-        grid.innerHTML = items.map(r=>{
-          const st = getStatus(r);
-          const badge = st==='open'?'open':st==='soon'?'soon':'closed';
-          const label = st==='open'?'Abierto':st==='soon'?'Próximamente':'Finalizado';
-          const timeLeft = getTimeToDraw(r)? timeRemaining(getTimeToDraw(r)) : '';
-          const pot = getPotTickets(r);
-          const net = getNetPot(r, pot);
-          return `
-            <div class="card">
-              <div class="thumb">
-                ${r.image_url? `<img src="${r.image_url}" alt="${escapeHtml(r.title)}">` : ''}
-                <div class="badge ${badge}">${label}</div>
-              </div>
-              <div class="card-body">
-                <h3>${escapeHtml(r.title)}</h3>
-                ${r.subtitle? `<div class="subtitle">${escapeHtml(r.subtitle)}</div>`:''}
-                <div class="meta">
-                  <div class="pill">${r.ticket_cost} ticket(s)</div>
-                  ${r.prize_name? `<div class="pill">Premio: ${escapeHtml(r.prize_name)}</div>`:''}
-                  ${timeLeft? `<div class="pill">${timeLeft}</div>`:''}
-                  <div class="pill">Pozo: ${fmtTickets(pot)}</div>
-                  ${(r.house_fee_pct!=null)? `<div class="pill">Casa: ${r.house_fee_pct}%</div>`:''}
-                  <div class="pill">Neto: ${fmtTickets(net)}</div>
-                </div>
-                <div class="actions">
-                  <button class="btn outline" data-open-details="${r.id}">Detalles</button>
-                  <button class="btn primary" ${st!=='open'?'disabled':''} data-open-join="${r.id}">Participar</button>
-                </div>
-              </div>
-            </div>`;
-        }).join('');
-      }
-
-      function bindUI(){
-        document.querySelectorAll('#section-mysterybox [data-filter]').forEach(el=>{
-          el.addEventListener('click', ()=>{
-            document.querySelectorAll('#section-mysterybox .chip').forEach(c=>c.classList.remove('active'));
-            el.classList.add('active'); filter = el.getAttribute('data-filter'); render();
-          });
-        });
-        const q = document.getElementById('mbx-q'); q.addEventListener('input', ()=>render());
-        document.getElementById('mbx-grid').addEventListener('click', (e)=>{
-          const d = e.target.closest('[data-open-details]'); const j = e.target.closest('[data-open-join]');
-          if(d){ const id = d.getAttribute('data-open-details'); openJoin(id); }
-          if(j){ const id = j.getAttribute('data-open-join'); openJoin(id); }
-        });
-      }
-
-      function openJoin(id){
-        const r = raffles.find(x=>x.id===id); if(!r) return;
-        currentRaffle = r;
-        document.getElementById('mbx-mTitle').textContent = r.title;
-        document.getElementById('mbx-mCost').textContent = r.ticket_cost;
-        document.getElementById('mbx-mQty').value = 1;
-        document.getElementById('mbx-mHave').textContent = tickets;
-        document.getElementById('mbx-mTotal').textContent = r.ticket_cost;
-        const pot = getPotTickets(r); const net = getNetPot(r, pot);
-        document.getElementById('mbx-mPot').textContent = fmtTickets(pot);
-        document.getElementById('mbx-mNet').textContent = fmtTickets(net);
-        document.getElementById('mbx-mHouse').textContent = ((r.house_fee_pct??0)) + '%';
-        const st = getStatus(r); const lab = st==='open' ? 'Abierto' : st==='soon' ? 'Próximamente' : 'Finalizado';
-        document.getElementById('mbx-mStatus').textContent = lab;
-        document.getElementById('mbx-mBtn').disabled = (st!=='open');
-        document.getElementById('mbx-modal').classList.add('open');
-      }
-
-      function demoRaffles(){
-        const now = Date.now();
-        return [
-          { id:'a1', title:'Sorteo Semanal', subtitle:'Pozo acumulado', description:'Cada viernes 21:00', image_url:'', ticket_cost:2, house_fee_pct:10, next_draw_at: new Date(now+3*3600*1000).toISOString(), start_at: new Date(now-3600*1000).toISOString(), end_at: new Date(now+4*3600*1000).toISOString(), active:true },
-          { id:'b2', title:'Mistery Gamer Pack', subtitle:'Próximamente', description:'Set gaming', image_url:'', ticket_cost:1, house_fee_pct:15, next_draw_at: new Date(now+48*3600*1000).toISOString(), start_at: new Date(now+24*3600*1000).toISOString(), end_at: new Date(now+72*3600*1000).toISOString(), active:true },
-          { id:'c3', title:'Sorteo Mensual', subtitle:'Finalizado', description:'Cerrado', image_url:'', ticket_cost:5, house_fee_pct:10, start_at: new Date(now-40*3600*1000).toISOString(), end_at: new Date(now-4*3600*1000).toISOString(), active:false }
-        ];
-      }
-
-      function init(){
-        if(inited) return;
-        inited = true;
-        raffles = demoRaffles();
-        document.getElementById('mbx-ticketsValue').textContent = '—';
-        document.getElementById('mbx-entriesValue').textContent = '—';
-        bindUI();
-        render();
-      }
-
-      window.__mbxShow = function(){
-        document.querySelectorAll('.section-content').forEach(s=> s.style.display = (s.id==='section-mysterybox' ? 'block' : 'none'));
-        const md = document.getElementById('main-dashboard'); if(md) md.style.display = 'none';
-        init();
-      };
-      window.__mbxHide = function(){
-        const sec = document.getElementById('section-mysterybox'); if(sec) sec.style.display = 'none';
-        const md = document.getElementById('main-dashboard'); if(md) md.style.display = 'block';
-      };
-    })();
-    </script>
   </div>
 </section>
 
@@ -4406,18 +4213,83 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <script>
 (function(){
-  function hookMB(){
-    var t = document.getElementById('balance-value');
+  // Render demo cards (simple) – keep it short to avoid conflicts
+  function mbxDemoData(){
+    const now = Date.now();
+    return [
+      {id:'a1', title:'Sorteo Semanal', subtitle:'Pozo acumulado', ticket_cost:2},
+      {id:'b2', title:'Mistery Gamer Pack', subtitle:'Próximamente', ticket_cost:1},
+      {id:'c3', title:'Sorteo Mensual', subtitle:'Finalizado', ticket_cost:5},
+    ];
+  }
+  function mbxRender(){
+    const grid = document.getElementById('mbx-grid');
+    const empty = document.getElementById('mbx-empty');
+    const items = mbxDemoData();
+    if(!grid || !empty) return;
+    if(!items.length){ grid.innerHTML=''; empty.style.display='block'; return; }
+    empty.style.display='none';
+    grid.innerHTML = items.map(r => `
+      <div class="card">
+        <div class="thumb"><div class="badge open">Abierto</div></div>
+        <div class="card-body">
+          <h3>${r.title}</h3>
+          <div class="subtitle">${r.subtitle||''}</div>
+          <div class="actions">
+            <button class="btn outline" disabled>Detalles</button>
+            <button class="btn primary">Participar</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Strong kill of blackout
+  function killBlackout(){
+    const main = document.querySelector('.main-content');
+    if (main) main.classList.remove('numina-on');
+    const ov = document.getElementById('numina-main-overlay');
+    if (ov){ ov.style.opacity = 0; ov.style.pointerEvents = 'none'; }
+  }
+
+  // API
+  window.__mbxShow = function(){
+    // Always disable blackout first
+    killBlackout();
+    // Show mysterybox section, hide main dashboard
+    document.querySelectorAll('.section-content').forEach(s=> s.style.display = (s.id==='section-mysterybox' ? 'block' : 'none'));
+    const md = document.getElementById('main-dashboard'); if(md) md.style.display = 'none';
+    mbxRender();
+  };
+  window.__mbxHide = function(){
+    const sec = document.getElementById('section-mysterybox'); if(sec) sec.style.display = 'none';
+    const md = document.getElementById('main-dashboard'); if(md) md.style.display = 'block';
+    killBlackout();
+  };
+
+  function hookTile(){
+    const t = document.getElementById('balance-value');
     if(!t || t.__mbxHooked) return;
     t.__mbxHooked = true;
-    var h = function(ev){
+    const handler = function(ev){
+      // Capture & bubble – prevent the blackout listener from running
       ev.preventDefault(); ev.stopImmediatePropagation();
-      if(window.__mbxShow) window.__mbxShow();
+      window.__mbxShow && window.__mbxShow();
     };
-    t.addEventListener('click', h, true);
-    var card = t.closest('.stat-card'); if(card && !card.__mbxHooked){ card.__mbxHooked = true; card.addEventListener('click', h, true); }
+    // capture first
+    t.addEventListener('click', handler, true);
+    // bubble too (belt and suspenders)
+    t.addEventListener('click', handler, false);
+    const card = t.closest('.stat-card');
+    if(card && !card.__mbxHooked){
+      card.__mbxHooked = true;
+      card.addEventListener('click', handler, true);
+      card.addEventListener('click', handler, false);
+    }
   }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', hookMB); else hookMB();
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', hookTile);
+  else hookTile();
 })();
 </script>
 
