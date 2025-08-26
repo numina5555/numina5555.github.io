@@ -4027,67 +4027,12 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <!-- NUMINA: Blackout robusto solo del contenido central -->
-<style>
-  .main-content { position: relative; }
-  #numina-main-overlay{
-    position: absolute;
-    inset: 0;
-    background: #000;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .25s ease;
-    z-index: 99999;
-  }
-  .main-content.numina-on #numina-main-overlay{
-    opacity: 1;
-    pointer-events: auto;
-  }
-  #balance-value{ cursor: pointer; }
 
-  /* Botón Volver dentro del overlay negro */
-  #numina-back-btn{
-    position: absolute;
-    top: 16px;
-    left: 16px;
-    background: var(--primary);
-    color: var(--dark);
-    border: 0;
-    border-radius: 999px;
-    padding: .5rem .95rem;
-    font-weight: 800;
-    cursor: pointer;
-    box-shadow: 0 6px 20px rgba(0,0,0,.45), inset 0 -2px 0 rgba(0,0,0,.15);
-    user-select: none;
-  }
-  #numina-back-btn:hover{ background: var(--primary-dark); }
-</style>
 <script>
 (function(){
-  function addOverlay(){
-    const main = document.querySelector('.main-content');
-    if(!main) return null;
-    let ov = document.getElementById('numina-main-overlay');
-    if(!ov){
-      ov = document.createElement('div');
-      ov.id = 'numina-main-overlay';
-      main.appendChild(ov);
-      // Botón ← Volver
-      const back = document.createElement('button');
-      back.id = 'numina-back-btn';
-      back.type = 'button';
-      back.setAttribute('aria-label','Volver');
-      back.textContent = '← Volver';
-      back.addEventListener('click', ()=> main.classList.remove('numina-on'));
-      ov.appendChild(back);
-      
-      
-    }
-    return { main, ov };
-  }
+  function addOverlay(){ return null; }
   function onClick(){
-    const ctx = addOverlay();
-    if(ctx) ctx.main.classList.add('numina-on');
-  }
+    }
   function bind(){}
   
   // === NUMINA: auto-off en navegación y atajos ===
@@ -4305,7 +4250,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-<!-- NMN: Yellow card opens NEW tab (not sidebar) with Mystery Box template -->
+<!-- NMN: Yellow card opens NEW tab (not sidebar) with Mystery template -->
 <script>
 (function(){
   var valueEl = document.getElementById('balance-value');
@@ -4427,7 +4372,7 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
-<!-- NMN: Back button, yellow styling, fades, reset searches -->
+<!-- NMN: Back button, yellow styling (no arrow), kill pseudo-element arrows, fade, reset filters -->
 <script>
 (function(){
   function fadeIn(el, dur){
@@ -4460,6 +4405,7 @@ document.addEventListener('DOMContentLoaded', () => {
       '<style>' +
       '.nmn-toolbar{position:sticky;top:0;z-index:2;display:flex;justify-content:flex-start;}' +
       '.nmn-back{margin:14px 0 12px 0;background:var(--primary);border:1px solid var(--primary);color:#111;padding:8px 12px;border-radius:12px;font-weight:800;cursor:pointer}' +
+      '.nmn-back::before{content:none !important}' + /* neutraliza flechas inyectadas por CSS global */ 
       '.nmn-back:hover{filter:brightness(0.95)}' +
       '.nmn-back:active{transform:translateY(1px)}' +
       '</style>' +
@@ -4481,15 +4427,20 @@ document.addEventListener('DOMContentLoaded', () => {
     var back = tab.querySelector('#nmn-back-btn');
     if(back && !back.__bound){
       back.__bound = true;
+      back.textContent = 'Volver'; // fuerza sin flecha
       back.addEventListener('click', function(ev){
         ev.preventDefault();
         resetSearches(tab);
         fadeOut(tab, 200, function(){
+          // Hide tab fully
+          tab.classList.add('section-content');
+          // Show dashboard
           if(dash){
             dash.classList.remove('section-content');
             dash.style.removeProperty('display');
+            dash.style.removeProperty('opacity');
             fadeIn(dash, 200);
-            try{ dash.scrollIntoView({behavior:'smooth', block:'start'}); }catch(_){}
+            try{ window.scrollTo({top:0, behavior:'smooth'}); }catch(_){}
           }
         });
       });
