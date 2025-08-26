@@ -4797,10 +4797,9 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-<!-- === NUMINA: Tickets Activos (inline tab) === -->
+<!-- === NUMINA: Tickets Activos (inline tab) + KPI cards === -->
 <script>
 (function(){
-  // Create the "Tickets Activos" tab on demand
   function ensureTicketsTab(){
     var dash = document.getElementById('main-dashboard');
     var tab = document.getElementById('tab-tickets');
@@ -4810,7 +4809,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tab.className = 'section-content';
       tab.style.display = 'none';
 
-      // Styles scoped to the tab
+      // Scoped styles
       var style = document.createElement('style');
       style.textContent =
         '#tab-tickets{background:#0f0f0f;color:#e6e6e6;padding-bottom:24px}'+
@@ -4821,6 +4820,13 @@ document.addEventListener('DOMContentLoaded', () => {
         '.ta-wrap{max-width:1100px;margin:0 auto;padding:0 12px}'+
         '.ta-title{font-weight:900;font-size:2rem;letter-spacing:.2px;margin:8px 0 16px}'+
         '.ta-title em{font-style:normal;color:var(--primary)}'+
+        /* KPI cards */
+        '.kpi-row{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:16px;margin:8px 0 18px}'+
+        '.kpi-card{background:#141414;border:1px solid #232323;border-radius:16px;padding:18px 20px;box-shadow:0 8px 20px rgba(0,0,0,.25)}'+
+        '.kpi-title{font-size:.85rem;letter-spacing:.6px;text-transform:uppercase;color:#bdbdbd;margin-bottom:6px}'+
+        '.kpi-value{font-weight:900;font-size:2rem;line-height:1;color:#e6e6e6}'+
+        '@media (max-width:720px){.kpi-row{grid-template-columns:1fr}}'+
+        /* Controls + table */ 
         '.ta-controls{display:flex;gap:10px;align-items:center;margin:6px 0 14px}'+
         '.ta-search{flex:1;display:flex;align-items:center;background:#111;border:1px solid #2a2a2a;border-radius:12px;padding:10px 14px}'+
         '.ta-search input{flex:1;background:transparent;border:0;outline:none;color:#e6e6e6}'+
@@ -4846,7 +4852,6 @@ document.addEventListener('DOMContentLoaded', () => {
         '.ref-empty{opacity:.6}';
       tab.appendChild(style);
 
-      // Bar + volver
       var bar = document.createElement('div');
       bar.className = 'nmn-toolbar';
       var btn = document.createElement('button');
@@ -4856,11 +4861,14 @@ document.addEventListener('DOMContentLoaded', () => {
       bar.appendChild(btn);
       tab.appendChild(bar);
 
-      // Title + search + table
       var wrap = document.createElement('div');
       wrap.className = 'ta-wrap';
       wrap.innerHTML =
         '<div class="ta-title">Tickets <em>Activos</em></div>'+
+        '<div class="kpi-row">'+
+        '  <div class="kpi-card"><div class="kpi-title">Tickets Activos</div><div class="kpi-value" id="kpi-active">--</div></div>'+
+        '  <div class="kpi-card"><div class="kpi-title">Tickets Usados</div><div class="kpi-value" id="kpi-used">--</div></div>'+
+        '</div>'+
         '<div class="ta-controls">'+
         '  <label class="ta-search"><input type="text" placeholder="Buscar…"></label>'+
         '  <button class="ta-clear">Limpiar</button>'+
@@ -4880,19 +4888,17 @@ document.addEventListener('DOMContentLoaded', () => {
         '</div>';
       tab.appendChild(wrap);
 
-      // Insert after main dashboard
       if(dash && dash.parentNode){ dash.parentNode.insertBefore(tab, dash.nextSibling); }
       else { document.body.appendChild(tab); }
     }
     return tab;
   }
 
-  // Small fade helpers
+  // Helpers fade
   function fadeIn(el, dur){ dur = dur||180; if(!el) return; el.style.removeProperty('display'); if(!el.style.display) el.style.display='block'; el.style.opacity=0; el.style.transition='opacity '+dur+'ms ease'; requestAnimationFrame(function(){ el.style.opacity=1; }); }
   function fadeOut(el, dur, done){ dur = dur||180; if(!el){ if(done) done(); return; } el.style.opacity=1; el.style.transition='opacity '+dur+'ms ease'; requestAnimationFrame(function(){ el.style.opacity=0; setTimeout(function(){ el.style.display='none'; if(done) done(); }, dur+20); }); }
 
   function normalizeName(s){ return (s||'').toString().toLowerCase(); }
-  // Map user events to table rows following your rules
   function mapEventToRow(e){
     var product = '', tickets = 1, referido = [];
     switch(e.type){
@@ -4983,9 +4989,30 @@ document.addEventListener('DOMContentLoaded', () => {
         return t.indexOf(q) !== -1;
       });
       renderRows(tab, filtered);
+      paintKpis(); // recompute active after filter clear/apply
     }
     if(input && !input.__bound){ input.__bound = true; input.addEventListener('input', filter); }
     if(clearBtn && !clearBtn.__bound){ clearBtn.__bound = true; clearBtn.addEventListener('click', function(){ if(input){ input.value = ''; } filter(); }); }
+
+    // === KPIs ===
+    function computeActiveFromTable(){
+      var cells = tab.querySelectorAll('#tickets-activos-table tbody td[data-col="tickets"]');
+      var total = 0; cells.forEach(function(td){ var n = parseInt((td.textContent||'').trim(),10); if(!isNaN(n)) total += n; });
+      return total;
+    }
+    function computeUsed(){
+      var used = 0;
+      if(Array.isArray(window.nmnUsedTickets)){ window.nmnUsedTickets.forEach(function(e){ used += (e.tickets||1); }); }
+      else if(window.nmnTicketsSummary && typeof window.nmnTicketsSummary.used === 'number'){ used = window.nmnTicketsSummary.used; }
+      return used;
+    }
+    function paintKpis(){
+      var active = computeActiveFromTable();
+      var used = computeUsed();
+      var a = tab.querySelector('#kpi-active'); if(a) a.textContent = String(active);
+      var u = tab.querySelector('#kpi-used'); if(u) u.textContent = String(used);
+    }
+    paintKpis();
   }
 
   function openTickets(e){
@@ -4999,7 +5026,6 @@ document.addEventListener('DOMContentLoaded', () => {
     try{ tab.style.removeProperty('opacity'); tab.style.removeProperty('transition'); }catch(_){}
   }
 
-  // Bind the yellow card "Tickets activos"
   (function bindTicketsCard(){
     var el = document.getElementById('tickets-value');
     var card = el ? el.closest('.stat-card') : null;
@@ -5011,7 +5037,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   })();
 
-  // Close tab if navigating via sidebar
   document.addEventListener('click', function(e){
     var item = e.target && e.target.closest ? e.target.closest('.sidebar .menu-item') : null;
     if(item){
@@ -5023,8 +5048,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   }, true);
-
-  // Also hide on back/forward/hash changes
   window.addEventListener('popstate', function(){ var tab=document.getElementById('tab-tickets'); if(tab){ tab.classList.add('section-content'); tab.style.display='none'; } });
   window.addEventListener('hashchange', function(){ var tab=document.getElementById('tab-tickets'); if(tab){ tab.classList.add('section-content'); tab.style.display='none'; } });
 })();
