@@ -1445,7 +1445,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 (function(){
   const el = document.getElementById('purchases-value');
   try {
-    const activeSet = new Set(['paid','pending','pagado','pendiente']);
+    const activeSet = new Set['paid','pending','pagado','pendiente'];
     const list = Array.isArray(userData.purchases) ? userData.purchases : [];
     let count = list.filter(p => activeSet.has(String(p?.status || '').toLowerCase())).length;
     if (count === 0) {
@@ -3191,9 +3191,7 @@ function loadReferidos(){
     if (input){
       input.addEventListener('input', function(){ filterReferrals(input.value); });
     }
-    if (clearBtn){
-      clearBtn.addEventListener('click', function(){
-        if (input){ input.value=''; }
+
         filterReferrals('');
         input && input.focus();
       });
@@ -4984,13 +4982,11 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadRowsFromSupabase(){
       try{
         // Prefer existing client instance
-        var sb = (window.getSupabase && typeof window.getSupabase === 'function')
-                 ? window.getSupabase()
-                 : ((window.supabase && typeof window.supabase.from === 'function')
-                    ? window.supabase
-                    : ((window.supabase && window.supabase.createClient && (window.NMN_SUPABASE_URL || window.SUPABASE_URL) && (window.NMN_SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY))
-                       ? window.supabase.createClient(window.NMN_SUPABASE_URL || window.SUPABASE_URL, window.NMN_SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY)
-                       : null));
+        var sb = (window.supabase && typeof window.supabase.from === 'function')
+                 ? window.supabase
+                 : (window.supabase && window.supabase.createClient && (window.NMN_SUPABASE_URL || window.SUPABASE_URL) && (window.NMN_SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY)
+                    ? window.supabase.createClient(window.NMN_SUPABASE_URL || window.SUPABASE_URL, window.NMN_SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY)
+                    : null);
         if(!sb){ renderRows(tab, []); return; }
 
         var { data: userRes } = await sb.auth.getUser();
@@ -5085,7 +5081,7 @@ document.addEventListener('DOMContentLoaded', () => {
           .select('*', { count: 'exact', head: true })
           .eq('user_id', userId)
           .eq('status', 'active');
-        if(q1.error && q1.error.code !(['PGRST116']){ console.warn('Supabase tickets count error:', q1.error); }
+        if(q1.error && q1.error.code ['PGRST116']{ console.warn('Supabase tickets count error:', q1.error); }
         var activeCount = q1.count || 0;
 
         // Strategy 2 (fallback): 'ticket_events' ledger (delta or product-based)
