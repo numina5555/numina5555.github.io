@@ -4409,5 +4409,100 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
+
+<!-- NMN: Back button for Mystery tab + fade transitions + reset filters on return -->
+<script>
+(function(){
+  // Utilities
+  function fadeIn(el, dur){
+    dur = dur || 200;
+    if(!el) return;
+    el.style.removeProperty('display');
+    if(!el.style.display) el.style.display = 'block';
+    el.style.opacity = 0;
+    el.style.transition = 'opacity '+dur+'ms ease';
+    requestAnimationFrame(function(){ el.style.opacity = 1; });
+  }
+  function fadeOut(el, dur, done){
+    dur = dur || 200;
+    if(!el) { if(done) done(); return; }
+    el.style.opacity = 1;
+    el.style.transition = 'opacity '+dur+'ms ease';
+    requestAnimationFrame(function(){
+      el.style.opacity = 0;
+      setTimeout(function(){
+        el.style.display = 'none';
+        if(done) done();
+      }, dur + 20);
+    });
+  }
+
+  // Enhance the existing Mystery tab initialization if present
+  function ensureToolbar(tab){
+    if(!tab) return;
+    if(tab.querySelector('#nmn-back-btn')) return; // already present
+    // Inject toolbar + styles before the main template
+    var content = tab.innerHTML;
+    tab.innerHTML =
+      '<style>' +
+      '.nmn-toolbar{position:sticky;top:0;z-index:2;display:flex;justify-content:flex-start;}' +
+      '.nmn-back{margin:14px 0 12px 0;background:#161616;border:1px solid #2a2a2a;padding:8px 12px;border-radius:12px;font-weight:800;cursor:pointer}' +
+      '.nmn-back:hover{opacity:.9}' +
+      '</style>' +
+      '<div class="nmn-toolbar"><button id="nmn-back-btn" class="nmn-back">Volver</button></div>' +
+      content;
+  }
+
+  function resetSearches(root){
+    try{
+      var inputs = root.querySelectorAll('input[placeholder*=\"Buscar\"], .mbox-search input');
+      inputs.forEach(function(inp){
+        inp.value = '';
+        inp.dispatchEvent(new Event('input', {bubbles:true}));
+      });
+      // Also unhide any cards that were filtered
+      root.querySelectorAll('.mbox-card').forEach(function(c){ c.style.display = ''; });
+    }catch(_){}
+  }
+
+  function openHandlers(){
+    // We reuse the handlers installed by the previous snippet.
+    var dash = document.getElementById('main-dashboard');
+    var tab = document.getElementById('tab-mystery');
+    if(!tab) return;
+
+    ensureToolbar(tab);
+
+    var back = tab.querySelector('#nmn-back-btn');
+    if(back && !back.__bound){
+      back.__bound = true;
+      back.addEventListener('click', function(ev){
+        ev.preventDefault();
+        resetSearches(tab);
+        fadeOut(tab, 200, function(){
+          if(dash){
+            dash.classList.remove('section-content');
+            dash.style.removeProperty('display');
+            fadeIn(dash, 200);
+            try{ dash.scrollIntoView({behavior:'smooth', block:'start'}); }catch(_){}
+          }
+        });
+      });
+    }
+  }
+
+  // Hook now and on DOM changes in case the tab is created later
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', openHandlers);
+  } else {
+    openHandlers();
+  }
+  try{
+    var mo = new MutationObserver(openHandlers);
+    mo.observe(document.body, {childList:true, subtree:true});
+  }catch(_){}
+})();
+</script>
+
 </body>
 </html>
