@@ -4110,7 +4110,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   bind();
 
-  ;
+  // === NUMINA: también activar blackout desde todos los stat-cards ===
+  (function(){
+    const ids = ['balance-value','purchases-value','referrals-value','tickets-value'];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.__numinaExtraBound){
+        el.__numinaExtraBound = true;
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', onClick);
+        const card = el.closest('.stat-card');
+        if(card && !card.__numinaExtraBound){
+          card.__numinaExtraBound = true;
+          card.style.cursor = 'pointer';
+          card.addEventListener('click', onClick);
+        }
+      }
+    });
+  })();
 
   // Rebind si más tarde el DOM reemplaza nodos
   const obs = new MutationObserver(bind);
@@ -4211,6 +4228,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function bindMBOnly(){}
 
+  
+
   })();
 </script>
 
@@ -4286,13 +4305,13 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-<!-- NMN: Yellow card opens a NEW tab (not sidebar) using the Mystery Box template -->
+<!-- NMN: Yellow card opens NEW tab (not sidebar) with Mystery Box template -->
 <script>
 (function(){
   var valueEl = document.getElementById('balance-value');
   var card = valueEl ? valueEl.closest('.stat-card') : null;
 
-  function ensureMysteryTab(){
+  function ensureMysteryTab(){ 
     var dash = document.getElementById('main-dashboard');
     var tab = document.getElementById('tab-mystery');
     if(!tab){
@@ -4309,11 +4328,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function wireInteractions(root){
     try{
       var tabs = root.querySelectorAll('.mbox-tab');
-      tabs.forEach(function(btn, idx){
+      tabs.forEach(function(btn){
         btn.addEventListener('click', function(){
           tabs.forEach(function(b){ b.classList.remove('active'); });
           btn.classList.add('active');
-          // (en esta demo no cambiamos el contenido; sólo el estado visual)
         });
       });
       var search = root.querySelector('.mbox-search input');
@@ -4402,18 +4420,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   var target = card || valueEl;
-  if(target){
+  if(target){ 
     target.style.cursor = 'pointer';
     target.addEventListener('click', openMystery);
   }
 })();
 </script>
 
-
-<!-- NMN: Back button for Mystery tab + fade transitions + reset filters on return -->
+<!-- NMN: Back button, yellow styling, fades, reset searches -->
 <script>
 (function(){
-  // Utilities
   function fadeIn(el, dur){
     dur = dur || 200;
     if(!el) return;
@@ -4425,7 +4441,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function fadeOut(el, dur, done){
     dur = dur || 200;
-    if(!el) { if(done) done(); return; }
+    if(!el){ if(done) done(); return; }
     el.style.opacity = 1;
     el.style.transition = 'opacity '+dur+'ms ease';
     requestAnimationFrame(function(){
@@ -4436,45 +4452,32 @@ document.addEventListener('DOMContentLoaded', () => {
       }, dur + 20);
     });
   }
-
-  // Enhance the existing Mystery tab initialization if present
   function ensureToolbar(tab){
     if(!tab) return;
-    if(tab.querySelector('#nmn-back-btn')) return; // already present
-    // Inject toolbar + styles before the main template
+    if(tab.querySelector('#nmn-back-btn')) return;
     var content = tab.innerHTML;
     tab.innerHTML =
       '<style>' +
       '.nmn-toolbar{position:sticky;top:0;z-index:2;display:flex;justify-content:flex-start;}' +
-      '.nmn-back{margin:14px 0 12px 0;background:var(--primary);border:1px solid var(--primary);color:#111;padding:8px 12px;border-radius:12px;font-weight:800;cursor:pointer}
-.nmn-back:hover{filter:brightness(0.95)}
-.nmn-back:active{transform:translateY(1px)}
- +
+      '.nmn-back{margin:14px 0 12px 0;background:var(--primary);border:1px solid var(--primary);color:#111;padding:8px 12px;border-radius:12px;font-weight:800;cursor:pointer}' +
+      '.nmn-back:hover{filter:brightness(0.95)}' +
+      '.nmn-back:active{transform:translateY(1px)}' +
       '</style>' +
       '<div class="nmn-toolbar"><button id="nmn-back-btn" class="nmn-back">Volver</button></div>' +
       content;
   }
-
   function resetSearches(root){
     try{
-      var inputs = root.querySelectorAll('input[placeholder*=\"Buscar\"], .mbox-search input');
-      inputs.forEach(function(inp){
-        inp.value = '';
-        inp.dispatchEvent(new Event('input', {bubbles:true}));
-      });
-      // Also unhide any cards that were filtered
+      var inputs = root.querySelectorAll('input[placeholder*="Buscar"], .mbox-search input');
+      inputs.forEach(function(inp){ inp.value = ''; inp.dispatchEvent(new Event('input', {bubbles:true})); });
       root.querySelectorAll('.mbox-card').forEach(function(c){ c.style.display = ''; });
     }catch(_){}
   }
-
-  function openHandlers(){
-    // We reuse the handlers installed by the previous snippet.
+  function wireBack(){
     var dash = document.getElementById('main-dashboard');
     var tab = document.getElementById('tab-mystery');
     if(!tab) return;
-
     ensureToolbar(tab);
-
     var back = tab.querySelector('#nmn-back-btn');
     if(back && !back.__bound){
       back.__bound = true;
@@ -4492,17 +4495,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   }
-
-  // Hook now and on DOM changes in case the tab is created later
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', openHandlers);
-  } else {
-    openHandlers();
-  }
-  try{
-    var mo = new MutationObserver(openHandlers);
-    mo.observe(document.body, {childList:true, subtree:true});
-  }catch(_){}
+  if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', wireBack); } else { wireBack(); }
+  try{ var mo = new MutationObserver(wireBack); mo.observe(document.body, {childList:true, subtree:true}); }catch(_){}
 })();
 </script>
 
