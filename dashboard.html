@@ -4429,5 +4429,31 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
+
+<!-- NMN: Auto-hide the custom Mystery tab when navigating via sidebar -->
+<script>
+(function(){
+  function hideMysteryTab(){
+    var tab = document.getElementById('tab-mystery');
+    if(!tab) return;
+    // Only if visible
+    var isHiddenByDisplay = (tab.style.display === 'none');
+    var isHiddenByClass = tab.classList.contains('section-content');
+    if(isHiddenByDisplay && isHiddenByClass) return;
+    tab.classList.add('section-content');
+    tab.style.display = 'none';
+    try{ tab.style.removeProperty('opacity'); tab.style.removeProperty('transition'); }catch(_){}
+  }
+  // Clicks on any sidebar item should hide the tab
+  document.addEventListener('click', function(e){
+    var item = e.target && e.target.closest ? e.target.closest('.sidebar .menu-item') : null;
+    if(item){ hideMysteryTab(); }
+  }, true);
+  // Also hide on history/hash navigation triggers (defensive)
+  window.addEventListener('popstate', hideMysteryTab);
+  window.addEventListener('hashchange', hideMysteryTab);
+})();
+</script>
+
 </body>
 </html>
