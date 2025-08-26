@@ -4088,22 +4088,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctx = addOverlay();
     if(ctx) ctx.main.classList.add('numina-on');
   }
-  function bind(){
-    // objetivo primario: #balance-value
-    const ids = ['balance-value','purchases-value','referrals-value','tickets-value'];
-    ids.forEach((id)=>{
-      const target = document.getElementById(id);
-      if(target && !target.__numinaBound){
-        target.__numinaBound = true;
-        target.addEventListener('click', onClick);
-        const card = target.closest('.stat-card');
-        if(card && !card.__numinaBound){
-          card.__numinaBound = true;
-          card.addEventListener('click', onClick);
-        }
-      }
-    });
-  }
+  function bind(){}
   
   // === NUMINA: auto-off en navegación y atajos ===
   function off(){ const main = document.querySelector('.main-content'); if(main) main.classList.remove('numina-on'); }
@@ -4125,24 +4110,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   bind();
 
-  // === NUMINA: también activar blackout desde todos los stat-cards ===
-  (function(){
-    const ids = ['balance-value','purchases-value','referrals-value','tickets-value'];
-    ids.forEach(id => {
-      const el = document.getElementById(id);
-      if (el && !el.__numinaExtraBound){
-        el.__numinaExtraBound = true;
-        el.style.cursor = 'pointer';
-        el.addEventListener('click', onClick);
-        const card = el.closest('.stat-card');
-        if(card && !card.__numinaExtraBound){
-          card.__numinaExtraBound = true;
-          card.style.cursor = 'pointer';
-          card.addEventListener('click', onClick);
-        }
-      }
-    });
-  })();
+  ;
 
   // Rebind si más tarde el DOM reemplaza nodos
   const obs = new MutationObserver(bind);
@@ -4241,32 +4209,9 @@ document.addEventListener('DOMContentLoaded', () => {
     })();
   }
 
-  function bindMBOnly(){
-    const el = document.getElementById('balance-value');
-    if (!el || el.__mbFinal) return;
-    el.__mbFinal = true;
-    el.addEventListener('click', function(){
-      // Deja que tu handler abra el overlay y luego inyecta el contenido
-      setTimeout(renderMBContent, 0);
-    }); // fase burbujeo, así corre después del listener original
-    const card = el.closest('.stat-card');
-    if (card && !card.__mbFinal){
-      card.__mbFinal = true;
-      card.addEventListener('click', function(){
-        setTimeout(renderMBContent, 0);
-      });
-    }
-  }
+  function bindMBOnly(){}
 
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', bindMBOnly);
-  } else { bindMBOnly(); }
-
-  try{
-    const mo = new MutationObserver(bindMBOnly);
-    mo.observe(document.body, {childList:true, subtree:true});
-  }catch(_){}
-})();
+  })();
 </script>
 
 <!-- ==== NUMINA SCOPE GUARD: Mystery Box solo desde #balance-value o [data-open="mystery"] ==== -->
