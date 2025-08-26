@@ -549,7 +549,7 @@
 
           "referrals.shareLink": "Share invitation link",
           "referrals.confirmed": "Confirmed referrals",
-          "referrals.progress": "Progress to next ticket",
+          "referrals.progress": "Progress to next ticket","mb.kpi.yourTickets": "Your tickets",            "mb.kpi.openRaffles": "Open raffles",            "mb.kpi.yourParticipation": "Your participation",
 
           },
           es: {
@@ -564,7 +564,7 @@
 
           "referrals.shareLink": "Compartir enlace de invitación",
           "referrals.confirmed": "Referidos confirmados",
-          "referrals.progress": "Progreso hacia próximo ticket",
+          "referrals.progress": "Progreso hacia próximo ticket","mb.kpi.yourTickets": "Tus tickets",            "mb.kpi.openRaffles": "Sorteos abiertos",            "mb.kpi.yourParticipation": "Tu participación",
 
           },
           pt: {
@@ -4317,11 +4317,11 @@ document.addEventListener('DOMContentLoaded', () => {
             @media (max-width: 900px){ .mb-kpis{grid-template-columns:1fr} }\
           </style>\
           <div class=\"mb-head\">\
-            <div class=\"mb-title\">Mystery Box — <em>Sorteos</em></div>\
+            <div class=\"mb-title\">Mystery Box — <em><span data-i18n=\"sections.sorteoTitle\">Sorteos</span></em></div>\
             <div class=\"mb-kpis\">\
-              <div class=\"mb-kpi\"><div class=\"label\">TUS TICKETS</div><div class=\"value\" id=\"mb-kpi-tickets\">—</div></div>\
-              <div class=\"mb-kpi\"><div class=\"label\">SORTEOS ABIERTOS</div><div class=\"value\" id=\"mb-kpi-abiertos\">—</div></div>\
-              <div class=\"mb-kpi\"><div class=\"label\">TU PARTICIPACIÓN</div><div class=\"value\" id=\"mb-kpi-part\">—</div></div>\
+              <div class=\"mb-kpi\"><div class=\"label\"><span data-i18n=\"mb.kpi.yourTickets\">TUS TICKETS</span></div><div class=\"value\" id=\"mb-kpi-tickets\">—</div></div>\
+              <div class=\"mb-kpi\"><div class=\"label\"><span data-i18n=\"mb.kpi.openRaffles\">SORTEOS ABIERTOS</span></div><div class=\"value\" id=\"mb-kpi-abiertos\">—</div></div>\
+              <div class=\"mb-kpi\"><div class=\"label\"><span data-i18n=\"mb.kpi.yourParticipation\">TU PARTICIPACIÓN</span></div><div class=\"value\" id=\"mb-kpi-part\">—</div></div>\
             </div>\
           </div>';
         var header = headerWrap.firstElementChild; // <style> is first, then .mb-head
@@ -4330,6 +4330,7 @@ document.addEventListener('DOMContentLoaded', () => {
         var wrap = tab.querySelector('.mbox-wrap');
         if(wrap){ tab.insertBefore(styleEl, wrap); tab.insertBefore(headEl, wrap); }
         else { tab.prepend(headEl); tab.prepend(styleEl); }
+        try { if (window.dI18n && typeof dI18n.apply === "function") dI18n.apply(); } catch(_) {}
       }
 
       // Populate KPI numbers (best-effort)
