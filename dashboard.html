@@ -4030,10 +4030,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <script>
 (function(){
-  function addOverlay(){ return null; }
-  function onClick(){
-    }
+  
+  
   function bind(){}
+      }
+    });
+  }
   
   // === NUMINA: auto-off en navegación y atajos ===
   function off(){ const main = document.querySelector('.main-content'); if(main) main.classList.remove('numina-on'); }
@@ -4171,11 +4173,25 @@ document.addEventListener('DOMContentLoaded', () => {
     })();
   }
 
-  function bindMBOnly(){}
+  function bindMBOnly(){}); // fase burbujeo, así corre después del listener original
+    const card = el.closest('.stat-card');
+    if (card && !card.__mbFinal){
+      card.__mbFinal = true;
+      card.addEventListener('click', function(){
+        setTimeout(renderMBContent, 0);
+      });
+    }
+  }
 
-  
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', bindMBOnly);
+  } else { bindMBOnly(); }
 
-  })();
+  try{
+    const mo = new MutationObserver(bindMBOnly);
+    mo.observe(document.body, {childList:true, subtree:true});
+  }catch(_){}
+})();
 </script>
 
 <!-- ==== NUMINA SCOPE GUARD: Mystery Box solo desde #balance-value o [data-open="mystery"] ==== -->
@@ -4223,34 +4239,10 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
-<script>
-// Fijar navegación al Dashboard cuando se presiona "← Volver" del overlay, pase lo que pase.
-(function(){
-  function goToDashboard(){
-    const mainEl = document.querySelector('.main-content');
-    if (mainEl) mainEl.classList.remove('numina-on');
-    // intenta usar la navegación existente
-    const dashItem = document.querySelector('.menu-item[data-target="dashboard"]');
-    if (dashItem){
-      try { dashItem.click(); } catch(e){}
-    }
-    // refuerzo manual
-    const mainDashboard = document.getElementById('main-dashboard');
-    const sections = document.querySelectorAll('.section-content');
-    if (mainDashboard) mainDashboard.style.display = 'block';
-    sections.forEach(s => s.style.display = 'none');
-    if (typeof cargarDashboard === 'function'){ try{ cargarDashboard(); }catch(e){} }
-    window.scrollTo({top:0, behavior:'instant' in window ? 'instant' : 'auto'});
-  }
-  document.addEventListener('click', function(e){
-    const btn = e.target && (e.target.id === 'numina-back-btn' ? e.target : e.target.closest && e.target.closest('#numina-back-btn'));
-    if (btn) { goToDashboard(); }
-  }, true);
-})();
-</script>
 
 
-<!-- NMN: Yellow card opens NEW tab (not sidebar) with Mystery template -->
+
+<!-- NMN: Yellow card opens NEW tab (no overlay, no sidebar) -->
 <script>
 (function(){
   var valueEl = document.getElementById('balance-value');
@@ -4297,7 +4289,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(e) e.preventDefault();
     var dash = document.getElementById('main-dashboard');
     var tab = ensureMysteryTab();
-
+    try{ tab.style.removeProperty('opacity'); tab.style.removeProperty('transition'); }catch(_){}
     if(!tab.dataset.filled){
       tab.innerHTML = `
             <style>
@@ -4356,98 +4348,34 @@ document.addEventListener('DOMContentLoaded', () => {
       tab.dataset.filled = '1';
       wireInteractions(tab);
     }
-
     if(dash){ dash.classList.add('section-content'); dash.style.display = 'none'; }
     tab.classList.remove('section-content');
     tab.style.removeProperty('display');
     if(!tab.style.display) tab.style.display = 'block';
-    try{ tab.scrollIntoView({behavior:'smooth', block:'start'}); }catch(_){}
   }
 
   var target = card || valueEl;
-  if(target){ 
+  if(target){
     target.style.cursor = 'pointer';
     target.addEventListener('click', openMystery);
   }
 })();
 </script>
 
-<!-- NMN: Back button, yellow styling (no arrow), kill pseudo-element arrows, fade, reset filters -->
+<!-- NMN: Back button (yellow), fade, reset filters -->
 <script>
 (function(){
-  function fadeIn(el, dur){
-    dur = dur || 200;
-    if(!el) return;
-    el.style.removeProperty('display');
-    if(!el.style.display) el.style.display = 'block';
-    el.style.opacity = 0;
-    el.style.transition = 'opacity '+dur+'ms ease';
-    requestAnimationFrame(function(){ el.style.opacity = 1; });
-  }
-  function fadeOut(el, dur, done){
-    dur = dur || 200;
-    if(!el){ if(done) done(); return; }
-    el.style.opacity = 1;
-    el.style.transition = 'opacity '+dur+'ms ease';
-    requestAnimationFrame(function(){
-      el.style.opacity = 0;
-      setTimeout(function(){
-        el.style.display = 'none';
-        if(done) done();
-      }, dur + 20);
-    });
-  }
+  function fadeIn(el, dur){ dur = dur||200; if(!el) return; el.style.removeProperty('display'); if(!el.style.display) el.style.display='block'; el.style.opacity=0; el.style.transition='opacity '+dur+'ms ease'; requestAnimationFrame(function(){ el.style.opacity=1; }); }
+  function fadeOut(el, dur, done){ dur = dur||200; if(!el){ if(done) done(); return; } el.style.opacity=1; el.style.transition='opacity '+dur+'ms ease'; requestAnimationFrame(function(){ el.style.opacity=0; setTimeout(function(){ el.style.display='none'; if(done) done(); }, dur+20); }); }
   function ensureToolbar(tab){
     if(!tab) return;
     if(tab.querySelector('#nmn-back-btn')) return;
     var content = tab.innerHTML;
-    tab.innerHTML =
-      '<style>' +
-      '.nmn-toolbar{position:sticky;top:0;z-index:2;display:flex;justify-content:flex-start;}' +
-      '.nmn-back{margin:14px 0 12px 0;background:var(--primary);border:1px solid var(--primary);color:#111;padding:8px 12px;border-radius:12px;font-weight:800;cursor:pointer}' +
-      '.nmn-back::before{content:none !important}' + /* neutraliza flechas inyectadas por CSS global */ 
-      '.nmn-back:hover{filter:brightness(0.95)}' +
-      '.nmn-back:active{transform:translateY(1px)}' +
-      '</style>' +
-      '<div class="nmn-toolbar"><button id="nmn-back-btn" class="nmn-back">Volver</button></div>' +
-      content;
+    tab.innerHTML = '<style>.nmn-toolbar{position:sticky;top:0;z-index:2;display:flex;justify-content:flex-start;}.nmn-back{margin:14px 0 12px 0;background:var(--primary);border:1px solid var(--primary);color:#111;padding:8px 12px;border-radius:12px;font-weight:800;cursor:pointer}.nmn-back:hover{filter:brightness(0.95)}.nmn-back:active{transform:translateY(1px)}</style>' + '<div class="nmn-toolbar"><button id="nmn-back-btn" class="nmn-back">Volver</button></div>' + content;
   }
-  function resetSearches(root){
-    try{
-      var inputs = root.querySelectorAll('input[placeholder*="Buscar"], .mbox-search input');
-      inputs.forEach(function(inp){ inp.value = ''; inp.dispatchEvent(new Event('input', {bubbles:true})); });
-      root.querySelectorAll('.mbox-card').forEach(function(c){ c.style.display = ''; });
-    }catch(_){}
-  }
-  function wireBack(){
-    var dash = document.getElementById('main-dashboard');
-    var tab = document.getElementById('tab-mystery');
-    if(!tab) return;
-    ensureToolbar(tab);
-    var back = tab.querySelector('#nmn-back-btn');
-    if(back && !back.__bound){
-      back.__bound = true;
-      back.textContent = 'Volver'; // fuerza sin flecha
-      back.addEventListener('click', function(ev){
-        ev.preventDefault();
-        resetSearches(tab);
-        fadeOut(tab, 200, function(){
-          // Hide tab fully
-          tab.classList.add('section-content');
-          // Show dashboard
-          if(dash){
-            dash.classList.remove('section-content');
-            dash.style.removeProperty('display');
-            dash.style.removeProperty('opacity');
-            fadeIn(dash, 200);
-            try{ window.scrollTo({top:0, behavior:'smooth'}); }catch(_){}
-          }
-        });
-      });
-    }
-  }
-  if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', wireBack); } else { wireBack(); }
-  try{ var mo = new MutationObserver(wireBack); mo.observe(document.body, {childList:true, subtree:true}); }catch(_){}
+  function resetSearches(root){ try{ var inputs = root.querySelectorAll('input[placeholder*="Buscar"], .mbox-search input'); inputs.forEach(function(inp){ inp.value=''; inp.dispatchEvent(new Event('input', {bubbles:true})); }); root.querySelectorAll('.mbox-card').forEach(function(c){ c.style.display=''; }); }catch(_){}} 
+  function wireBack(){ var dash=document.getElementById('main-dashboard'); var tab=document.getElementById('tab-mystery'); if(!tab) return; ensureToolbar(tab); var back=tab.querySelector('#nmn-back-btn'); if(back && !back.__bound){ back.__bound=true; back.addEventListener('click', function(ev){ ev.preventDefault(); resetSearches(tab); fadeOut(tab,200,function(){ if(dash){ dash.classList.remove('section-content'); dash.style.removeProperty('display'); fadeIn(dash,200); try{ window.scrollTo({top:0, behavior:'smooth'}); }catch(_){ } } }); }); } }
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', wireBack);} else { wireBack(); } try{ var mo=new MutationObserver(wireBack); mo.observe(document.body,{childList:true,subtree:true}); }catch(_){}
 })();
 </script>
 
