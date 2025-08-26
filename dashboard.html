@@ -9,6 +9,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
+/* i18n two-tone title pieces */
+.mix-white{ color: #fff; }
+.mix-yellow{ color: var(--primary); }
+
     :root {
       --primary: #ffd700;
       --primary-dark: #e6c200;
@@ -1202,6 +1206,11 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
       </section>
 
 <section class="section-content" id="section-sorteos" style="display:none;">
+<h2 class="section-title"><i class="fas fa-ticket-alt"></i>
+  <span id="tickets-active-title"></span>
+  <span id="tickets-active-title-src" data-i18n="raffles.activeTickets" hidden>Tickets activos</span>
+</h2>
+
 <h2 class="section-title"><i class="fas fa-ticket-alt"></i><span data-i18n="sections.sorteoTitle"></span></h2>
 <div class="srt-stats">
 <!-- Tickets activos -->
@@ -5102,6 +5111,43 @@ document.addEventListener('DOMContentLoaded', () => {
   }, true);
   window.addEventListener('popstate', function(){ var tab=document.getElementById('tab-tickets'); if(tab){ tab.classList.add('section-content'); tab.style.display='none'; } });
   window.addEventListener('hashchange', function(){ var tab=document.getElementById('tab-tickets'); if(tab){ tab.classList.add('section-content'); tab.style.display='none'; } });
+})();
+</script>
+
+
+<script>
+(function(){
+  function refreshTicketsTitle(){
+    var src = document.getElementById('tickets-active-title-src');
+    var el  = document.getElementById('tickets-active-title');
+    if(!src || !el) return;
+    var txt = (src.textContent || '').trim();
+    if(!txt){ el.textContent = ''; return; }
+    var parts = txt.split(/\s+/);
+    var last  = parts.pop();
+    var first = parts.join(' ');
+    el.innerHTML = '<span class="mix-white">' + (first ? first + ' ' : '') + '</span>' +
+                   '<span class="mix-yellow">' + last + '</span>';
+  }
+  // initial render
+  refreshTicketsTitle();
+  // re-render on language changes (observe inner text changes)
+  try{
+    var src = document.getElementById('tickets-active-title-src');
+    if (window.MutationObserver && src){
+      new MutationObserver(refreshTicketsTitle).observe(src, {childList:true, subtree:true, characterData:true});
+    }
+  }catch(_){}
+  // also hook into our dI18n.apply if available
+  try{
+    var _apply = window.dI18n && window.dI18n.apply;
+    if (typeof _apply === 'function'){
+      var wrapped = function(){ _apply.call(window.dI18n); refreshTicketsTitle(); };
+      window.dI18n.apply = wrapped;
+    }
+  }catch(_){}
+  // expose for manual refresh if needed
+  window.__refreshTicketsActiveTitle = refreshTicketsTitle;
 })();
 </script>
 
