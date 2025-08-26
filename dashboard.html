@@ -181,23 +181,30 @@
   .nm-pitch strong{color:#ffd700}
 }
 
+
+
+
 /* --- Ensure sidebar labels are visible next to icons --- */
 .sidebar .nav-label{display:inline-block;margin-left:.75rem;white-space:nowrap}
 .sidebar a{display:flex;align-items:center}
+
 
 /* inline filter bar for purchases */
 .table-filter-inline{display:flex;gap:.6rem;align-items:center;justify-content:flex-end;background:var(--dark-light);padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.05)}
 .table-filter-inline input{background:#0f0f0f;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.45rem .7rem;color:#f0f0f0;outline:none;min-width:260px}
 .table-filter-inline input::placeholder{color:#8a8a8a}
 
+
 /* === GPT patch: Sorteos alignment fix === */
 .srt-marks{ padding-right: 8px; }
 .srt-marks .srt-mark:last-child{ transform: translateX(-100%); text-align: right; }
+
 
 .btn-delete-row{border:1px solid #f5c400;color:#f5c400;background:transparent;
   padding:.35rem .7rem;border-radius:.55rem;font-weight:700;cursor:pointer;
   transition:all .12s ease}
 .btn-delete-row:hover{background:#f5c400;color:#111}
+
 
 /* Efecto: la línea amarilla se llena al hover */
 .stat-card{ position: relative; overflow: hidden; }
@@ -217,6 +224,7 @@
   will-change: transform;
   backface-visibility: hidden;
 }
+
 
 .stat-card:hover::after,
 .stat-card:hover::before,
@@ -532,6 +540,7 @@
             "filters.search.raffles": "Search raffles…",
             "filters.clear": "Clear",
 
+
           "referrals.shareLink": "Share invitation link",
           "referrals.confirmed": "Confirmed referrals",
           "referrals.progress": "Progress to next ticket",
@@ -546,6 +555,7 @@
             "filters.search.raffles": "Buscar sorteos…",
             "filters.clear": "Limpiar",
 
+
           "referrals.shareLink": "Compartir enlace de invitación",
           "referrals.confirmed": "Referidos confirmados",
           "referrals.progress": "Progreso hacia próximo ticket",
@@ -559,6 +569,7 @@
             "filters.search.miscompras": "Buscar minhas compras…",
             "filters.search.raffles": "Buscar sorteios…",
             "filters.clear": "Limpar",
+
 
           "referrals.shareLink": "Compartilhar link de convite",
           "referrals.confirmed": "Indicações confirmadas",
@@ -778,6 +789,7 @@
 
 </style>
 
+
 <!-- Sidebar uniform height = tallest section (v4) -->
 <style id="sidebar-uniform-fix-v4">
   :root { --header-h: 0px; --sidebar-h: auto; }
@@ -942,6 +954,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
     box-shadow: 0 0 18px rgba(220,53,69,.35), 0 0 0 1px rgba(220,53,69,.6) inset;
   }
 </style>
+
 
 <style id="numina-actions-visible-fix">
 
@@ -1432,7 +1445,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 (function(){
   const el = document.getElementById('purchases-value');
   try {
-    const activeSet = new Set['paid','pending','pagado','pendiente'];
+    const activeSet = new Set(['paid','pending','pagado','pendiente']);
     const list = Array.isArray(userData.purchases) ? userData.purchases : [];
     let count = list.filter(p => activeSet.has(String(p?.status || '').toLowerCase())).length;
     if (count === 0) {
@@ -1961,6 +1974,7 @@ if (!link) {
 })();
 </script>
 
+
 <script>
 // === Ensure sidebar labels are present and translated ===
 (function(){
@@ -2008,6 +2022,7 @@ if (!link) {
 })();
 </script>
 
+
 <script>
 // === Ensure sidebar labels are present and translated ===
 (function(){
@@ -2042,6 +2057,7 @@ if (!link) {
 })();
 </script>
 
+
 <script id="auto-scale-75-js">
 (function(){
   function apply(mq){
@@ -2068,6 +2084,7 @@ if (!link) {
     'ROLEX-126610L':   '#'  // USDT 19600
   };
   window.FIXED_PAY_URL = FIXED_PAY_URL;
+
 
   // 2) Garantiza que el SKU del botón "Más información" quede en el modal
   function wireMoreInfoButtons() {
@@ -2110,6 +2127,7 @@ if (!link) {
 })();
 </script>
 
+
 <script>
 (function(){
   function attachPurchasesFilter(){
@@ -2144,6 +2162,7 @@ if (!link) {
   }
 })();
 </script>
+
 
 <script>
 (function(){
@@ -2180,6 +2199,7 @@ if (!link) {
 })();
 </script>
 
+
 <script>
 (function(){
   function attachMisComprasFilter(){
@@ -2215,6 +2235,7 @@ if (!link) {
 })();
 </script>
 
+
 <script>
 (function(){
   function attachSorteosFilter(){
@@ -2248,6 +2269,9 @@ if (!link) {
   }
 })();
 </script>
+
+
+
 
 <script>
 // --- Hardening patch: force-translate the modal even if other i18n mutates texts ---
@@ -2291,6 +2315,7 @@ if (!link) {
   if (overlay) obs.observe(overlay, {childList:true, subtree:true, characterData:true});
 })();
 </script>
+
 
 <!-- ===== PURCHASE DETAILS MODAL (Numina style · static · no-keys i18n) ===== -->
 <style id="pd-modal-styles">
@@ -2562,6 +2587,7 @@ if (!link) {
       if (sNodes[1]) sNodes[1].textContent = (statusK !== 'pending') ? (orderDateText || '—') : '—'; // Payment link generated
     })();
 
+
     EL.status.classList.remove('pending','active','cancelled','completed');
     EL.status.classList.add(statusK);
     EL.status.setAttribute('data-i18n-key','status.'+statusK);
@@ -2583,6 +2609,7 @@ if (!link) {
 })();
 </script>
 <!-- END PD MODAL -->
+
 
 <script>
 (function(){
@@ -2639,6 +2666,8 @@ if (!link) {
   }
 })();
 </script>
+
+
 
 <!-- Moved scripts that were incorrectly placed after </html> -->
 
@@ -3162,10 +3191,12 @@ function loadReferidos(){
     if (input){
       input.addEventListener('input', function(){ filterReferrals(input.value); });
     }
-
+    if (clearBtn){
+      clearBtn.addEventListener('click', function(){
+        if (input){ input.value=''; }
         filterReferrals('');
         input && input.focus();
-      ;
+      });
     }
   }
 function bindShare(){
@@ -3469,6 +3500,7 @@ if (fn.error || !paymentUrl){
 })();
 </script>
 
+
 <style>
 .btn-delete-row{
   border:1px solid #f5c400; color:#f5c400; background:transparent;
@@ -3618,6 +3650,8 @@ if (fn.error || !paymentUrl){
   });
 })();
 </script>
+
+
 
 <!-- NUMINA share-invite upgrade: builds https://numina.vip/login.html?ref=YOUR_CODE -->
 <script>
@@ -3950,6 +3984,8 @@ async function cargarSorteos(){
 })();
 </script>
 
+
+
 <!-- Fix: IntersectionObserver para animaciones en scroll y contenido dinámico -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -4080,14 +4116,19 @@ document.addEventListener('DOMContentLoaded', () => {
     })();
   }
 
-  function bindMBOnly(){}); // fase burbujeo, así corre después del listener original
-    const card = el.closest('.stat-card');
-    if (card && !card.__mbFinal){
-      card.__mbFinal = true;
-      card.addEventListener('click', function(){
+  function bindMBOnly(){
+    // Escucha cliqueos y, si el card es MYSTERY BOX, inyecta el contenido del overlay
+    document.addEventListener('click', function(ev){
+      var el = ev.target;
+      if(!el || !el.closest) return;
+      var card = el.closest('.stat-card');
+      if (!card) return;
+      var label = (card.textContent || '').toLowerCase();
+      if (label.indexOf('mystery box') !== -1 || label.indexOf('tickets.vip') !== -1){
+        // difiere para no interferir con el handler original
         setTimeout(renderMBContent, 0);
-      });
-    }
+      }
+    }, true); // captura para correr antes que otros listeners
   }
 
   if (document.readyState === 'loading'){
@@ -4145,6 +4186,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 350);
 })();
 </script>
+
+
+
 
 <!-- NMN: Yellow card opens NEW tab (no overlay, no sidebar) -->
 <script>
@@ -4333,6 +4377,7 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
+
 <!-- NMN: Auto-hide the custom Mystery tab when navigating via sidebar -->
 <script>
 (function(){
@@ -4357,6 +4402,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('hashchange', hideMysteryTab);
 })();
 </script>
+
 
 <!-- NMN: 'Compras Activas' card opens its own tab (not sidebar) -->
 <script>
@@ -4530,6 +4576,7 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
+
 <!-- NMN: 'Referidos' card opens its own tab (not sidebar) -->
 <script>
 (function(){
@@ -4696,6 +4743,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('hashchange', function(){ var tab=document.getElementById('tab-referidos'); if(tab){ restoreReferidosToDashboard(); tab.classList.add('section-content'); tab.style.display='none'; } });
 })();
 </script>
+
 
 <!-- === NUMINA: Tickets Activos (inline tab) + KPI cards === -->
 <script>
@@ -4983,7 +5031,7 @@ document.addEventListener('DOMContentLoaded', () => {
           .select('*', { count: 'exact', head: true })
           .eq('user_id', userId)
           .eq('status', 'active');
-        if(q1.error && q1.error.code ['PGRST116']{ console.warn('Supabase tickets count error:', q1.error); }
+        if(q1.error && !['PGRST116'].includes(q1.error.code)){ console.warn('Supabase tickets count error:', q1.error); }
         var activeCount = q1.count || 0;
 
         // Strategy 2 (fallback): 'ticket_events' ledger (delta or product-based)
