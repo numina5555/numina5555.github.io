@@ -4347,7 +4347,57 @@ document.addEventListener('DOMContentLoaded', () => {
           `;
       tab.dataset.filled = '1';
       wireInteractions(tab);
-    }
+    
+      // Inject header + KPI cards (once)
+      if(!tab.querySelector('.mb-head')){
+        var headerWrap = document.createElement('div');
+        headerWrap.innerHTML = '\
+          <style>\
+            .mb-head{max-width:1100px;margin:0 auto 18px auto;padding:0 2px}\
+            .mb-title{font-weight:900;font-size:1.8rem;letter-spacing:.2px}\
+            .mb-title em{font-style:normal;color:var(--primary)}\
+            .mb-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:14px}\
+            .mb-kpi{background:#141414;border:1px solid #232323;border-radius:16px;padding:14px 16px;box-shadow:0 8px 20px rgba(0,0,0,.35)}\
+            .mb-kpi .label{font-size:.85rem;letter-spacing:.4px;color:#bdbdbd;margin-bottom:6px}\
+            .mb-kpi .value{font-weight:900;font-size:1.6rem}\
+            @media (max-width: 900px){ .mb-kpis{grid-template-columns:1fr} }\
+          </style>\
+          <div class=\"mb-head\">\
+            <div class=\"mb-title\">Mystery Box — <em>Sorteos</em></div>\
+            <div class=\"mb-kpis\">\
+              <div class=\"mb-kpi\"><div class=\"label\">TUS TICKETS</div><div class=\"value\" id=\"mb-kpi-tickets\">—</div></div>\
+              <div class=\"mb-kpi\"><div class=\"label\">SORTEOS ABIERTOS</div><div class=\"value\" id=\"mb-kpi-abiertos\">—</div></div>\
+              <div class=\"mb-kpi\"><div class=\"label\">TU PARTICIPACIÓN</div><div class=\"value\" id=\"mb-kpi-part\">—</div></div>\
+            </div>\
+          </div>';
+        var header = headerWrap.firstElementChild; // <style> is first, then .mb-head
+        var styleEl = header; var headEl = header.nextElementSibling;
+        // Insert style + header before the mbox-wrap
+        var wrap = tab.querySelector('.mbox-wrap');
+        if(wrap){ tab.insertBefore(styleEl, wrap); tab.insertBefore(headEl, wrap); }
+        else { tab.prepend(headEl); tab.prepend(styleEl); }
+      }
+
+      // Populate KPI numbers (best-effort)
+      (function populateKpis(root){
+        try{
+          // Tus tickets: prefer dashboard #tickets-value, else #balance-value, else em dash
+          var tSrc = document.getElementById('tickets-value') || document.getElementById('balance-value') || null;
+          var tickets = tSrc ? (tSrc.textContent||'').trim() : '—';
+          if(!tickets || tickets==='—' || /^-+$/.test(tickets)) tickets = '—';
+          var e1 = root.querySelector('#mb-kpi-tickets'); if(e1) e1.textContent = tickets;
+
+          // Sorteos abiertos: count visible .mbox-card under current filter
+          var cards = root.querySelectorAll('.mbox-card');
+          var abiertos = 0;
+          cards.forEach(function(c){ if(c.style.display!== 'none') abiertos += 1; });
+          var e2 = root.querySelector('#mb-kpi-abiertos'); if(e2) e2.textContent = String(abiertos);
+
+          // Tu participación: placeholder (can be refined later)
+          var e3 = root.querySelector('#mb-kpi-part'); if(e3) e3.textContent = '—';
+        }catch(_){}
+      })(tab);
+}
     if(dash){ dash.classList.add('section-content'); dash.style.display = 'none'; }
     tab.classList.remove('section-content');
     tab.style.removeProperty('display');
