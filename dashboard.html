@@ -5083,7 +5083,7 @@ document.addEventListener('DOMContentLoaded', () => {
           .select('*', { count: 'exact', head: true })
           .eq('user_id', userId)
           .eq('status', 'active');
-        if(q1.error && q1.error.code not in ['PGRST116']){ console.warn('Supabase tickets count error:', q1.error); }
+        if(q1.error && q1.error.code !(['PGRST116']){ console.warn('Supabase tickets count error:', q1.error); }
         var activeCount = q1.count || 0;
 
         // Strategy 2 (fallback): 'ticket_events' ledger (delta or product-based)
