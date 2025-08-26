@@ -359,9 +359,7 @@
           "actions.copy": "Copy",
           "actions.copied": "Copied!",
           "product.shippingNote": "Insured shipping with tracking. Certificate included.",
-          "product.buy": "Buy",
-          "buttons.back": "Back"
-      
+          "product.buy": "Buy"
         },
         es: {
           "catalog.goldPitch": "🪙 Oro: Protegé tu dinero, asegurá tu futuro",
@@ -444,9 +442,7 @@
           "actions.copy": "Copiar",
           "actions.copied": "¡Copiado!",
           "product.shippingNote": "Envíos asegurados con seguimiento. Certificado incluido.",
-          "product.buy": "Comprar",
-          "buttons.back": "Volver"
-      
+          "product.buy": "Comprar"
         },
         pt: {
           "catalog.goldPitch": "🪙 Ouro: Proteja seu dinheiro, garanta seu futuro",
@@ -529,9 +525,7 @@
           "actions.copy": "Copiar",
           "actions.copied": "Copiado!",
           "product.shippingNote": "Envio assegurado com rastreamento. Certificado incluído.",
-          "product.buy": "Comprar",
-          "buttons.back": "Voltar"
-      
+          "product.buy": "Comprar"
         }
       };
       // === Merge extra translation keys without touching the base dictionary ===
@@ -4317,7 +4311,7 @@ document.addEventListener('DOMContentLoaded', () => {
             @media (max-width: 900px){ .mb-kpis{grid-template-columns:1fr} }\
           </style>\
           <div class=\"mb-head\">\
-            <div class=\"mb-title\">Mystery Box — <em>Sorteos</em></div>\
+            <div class=\"mb-title\">Mystery Box — <em><span data-i18n=\"sections.sorteoTitle\">'+(window.dI18n?dI18n.t('sections.sorteoTitle'):'Sorteos')+'</span></em></div>\
             <div class=\"mb-kpis\">\
               <div class=\"mb-kpi\"><div class=\"label\">TUS TICKETS</div><div class=\"value\" id=\"mb-kpi-tickets\">—</div></div>\
               <div class=\"mb-kpi\"><div class=\"label\">SORTEOS ABIERTOS</div><div class=\"value\" id=\"mb-kpi-abiertos\">—</div></div>\
@@ -4375,7 +4369,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!tab) return;
     if(tab.querySelector('#nmn-back-btn')) return;
     var content = tab.innerHTML;
-    tab.innerHTML = '<style>.nmn-toolbar{position:sticky;top:0;z-index:2;display:flex;justify-content:flex-start;}.nmn-back{margin:14px 0 12px 0;background:var(--primary);border:1px solid var(--primary);color:#111;padding:8px 12px;border-radius:12px;font-weight:800;cursor:pointer}.nmn-back:hover{filter:brightness(0.95)}.nmn-back:active{transform:translateY(1px)}</style>' + '<div class="nmn-toolbar"><button id="nmn-back-btn" class="nmn-back"><span data-i18n="buttons.back">'+(window.dI18n?dI18n.t('buttons.back'):'Volver')+'</span></button></div>' + content;
+    tab.innerHTML = '<style>.nmn-toolbar{position:sticky;top:0;z-index:2;display:flex;justify-content:flex-start;}.nmn-back{margin:14px 0 12px 0;background:var(--primary);border:1px solid var(--primary);color:#111;padding:8px 12px;border-radius:12px;font-weight:800;cursor:pointer}.nmn-back:hover{filter:brightness(0.95)}.nmn-back:active{transform:translateY(1px)}</style>' + '<div class="nmn-toolbar"><button id="nmn-back-btn" class="nmn-back">Volver</button></div>' + content;
   }
   function resetSearches(root){ try{ var inputs = root.querySelectorAll('input[placeholder*="Buscar"], .mbox-search input'); inputs.forEach(function(inp){ inp.value=''; inp.dispatchEvent(new Event('input', {bubbles:true})); }); root.querySelectorAll('.mbox-card').forEach(function(c){ c.style.display=''; }); }catch(_){}} 
   function wireBack(){ var dash=document.getElementById('main-dashboard'); var tab=document.getElementById('tab-mystery'); if(!tab) return; ensureToolbar(tab); var back=tab.querySelector('#nmn-back-btn'); if(back && !back.__bound){ back.__bound=true; back.addEventListener('click', function(ev){ ev.preventDefault(); resetSearches(tab); fadeOut(tab,200,function(){ if(dash){ dash.classList.remove('section-content'); dash.style.removeProperty('display'); fadeIn(dash,200); try{ window.scrollTo({top:0, behavior:'smooth'}); }catch(_){ } } }); }); } }
@@ -4432,7 +4426,7 @@ document.addEventListener('DOMContentLoaded', () => {
       var btn = document.createElement('button');
       btn.id = 'nmn-back-btn-compras';
       btn.className = 'nmn-back';
-      btn.textContent = (window.dI18n?dI18n.t('buttons.back'):'Volver'); btn.setAttribute('data-i18n','buttons.back');
+      btn.textContent = 'Volver';
       bar.appendChild(btn);
       tab.appendChild(style);
       tab.appendChild(bar);
@@ -4605,7 +4599,7 @@ document.addEventListener('DOMContentLoaded', () => {
       var btn = document.createElement('button');
       btn.id = 'nmn-back-btn-referidos';
       btn.className = 'nmn-back';
-      btn.textContent = (window.dI18n?dI18n.t('buttons.back'):'Volver'); btn.setAttribute('data-i18n','buttons.back');
+      btn.textContent = 'Volver';
       bar.appendChild(btn);
       tab.appendChild(style);
       tab.appendChild(bar);
@@ -4811,7 +4805,7 @@ document.addEventListener('DOMContentLoaded', () => {
       var btn = document.createElement('button');
       btn.id = 'nmn-back-btn-tickets';
       btn.className = 'nmn-back';
-      btn.textContent = (window.dI18n?dI18n.t('buttons.back'):'Volver'); btn.setAttribute('data-i18n','buttons.back');
+      btn.textContent = 'Volver';
       bar.appendChild(btn);
       tab.appendChild(bar);
 
