@@ -4026,6 +4026,63 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<!-- NUMINA: Blackout robusto solo del contenido central -->
+
+<script>
+(function(){
+  
+  
+  function bind(){}
+      }
+    });
+  }
+  
+  // === NUMINA: auto-off en navegación y atajos ===
+  function off(){ const main = document.querySelector('.main-content'); if(main) main.classList.remove('numina-on'); }
+  // 1) Cualquier click en la barra lateral apaga el blackout
+  const sidebar = document.querySelector('nav.sidebar') || document.querySelector('.sidebar');
+  if (sidebar && !sidebar.__numinaNavBound){
+    sidebar.__numinaNavBound = true;
+    sidebar.addEventListener('click', off, true); // useCapture para interceptar siempre
+  }
+  // 2) Click en el header/logo
+  const header = document.querySelector('.dashboard-header') || document.querySelector('header');
+  if (header && !header.__numinaNavBound){
+    header.__numinaNavBound = true;
+    header.addEventListener('click', off, true);
+  }
+  // 3) Cambios de ruta SPA/Hash o back/forward
+  window.addEventListener('hashchange', off);
+  window.addEventListener('popstate', off);
+
+  bind();
+
+  // === NUMINA: también activar blackout desde todos los stat-cards ===
+  (function(){
+    const ids = ['balance-value','purchases-value','referrals-value','tickets-value'];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.__numinaExtraBound){
+        el.__numinaExtraBound = true;
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', onClick);
+        const card = el.closest('.stat-card');
+        if(card && !card.__numinaExtraBound){
+          card.__numinaExtraBound = true;
+          card.style.cursor = 'pointer';
+          card.addEventListener('click', onClick);
+        }
+      }
+    });
+  })();
+
+  // Rebind si más tarde el DOM reemplaza nodos
+  const obs = new MutationObserver(bind);
+  obs.observe(document.body, {childList:true, subtree:true});
+})();
+</script>
+
+
 <!-- ==== NUMINA FINAL PATCH: Mystery Box dentro del overlay existente (sin borrar nada) ==== -->
 <script>
 (function(){
@@ -4116,19 +4173,14 @@ document.addEventListener('DOMContentLoaded', () => {
     })();
   }
 
-  function bindMBOnly(){
-    // Escucha cliqueos y, si el card es MYSTERY BOX, inyecta el contenido del overlay
-    document.addEventListener('click', function(ev){
-      var el = ev.target;
-      if(!el || !el.closest) return;
-      var card = el.closest('.stat-card');
-      if (!card) return;
-      var label = (card.textContent || '').toLowerCase();
-      if (label.indexOf('mystery box') !== -1 || label.indexOf('tickets.vip') !== -1){
-        // difiere para no interferir con el handler original
+  function bindMBOnly(){}); // fase burbujeo, así corre después del listener original
+    const card = el.closest('.stat-card');
+    if (card && !card.__mbFinal){
+      card.__mbFinal = true;
+      card.addEventListener('click', function(){
         setTimeout(renderMBContent, 0);
-      }
-    }, true); // captura para correr antes que otros listeners
+      });
+    }
   }
 
   if (document.readyState === 'loading'){
@@ -4932,11 +4984,13 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadRowsFromSupabase(){
       try{
         // Prefer existing client instance
-        var sb = (window.supabase && typeof window.supabase.from === 'function')
-                 ? window.supabase
-                 : (window.supabase && window.supabase.createClient && (window.NMN_SUPABASE_URL || window.SUPABASE_URL) && (window.NMN_SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY)
-                    ? window.supabase.createClient(window.NMN_SUPABASE_URL || window.SUPABASE_URL, window.NMN_SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY)
-                    : null);
+        var sb = (window.getSupabase && typeof window.getSupabase === 'function')
+                 ? window.getSupabase()
+                 : ((window.supabase && typeof window.supabase.from === 'function')
+                    ? window.supabase
+                    : ((window.supabase && window.supabase.createClient && (window.NMN_SUPABASE_URL || window.SUPABASE_URL) && (window.NMN_SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY))
+                       ? window.supabase.createClient(window.NMN_SUPABASE_URL || window.SUPABASE_URL, window.NMN_SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY)
+                       : null));
         if(!sb){ renderRows(tab, []); return; }
 
         var { data: userRes } = await sb.auth.getUser();
@@ -5031,7 +5085,7 @@ document.addEventListener('DOMContentLoaded', () => {
           .select('*', { count: 'exact', head: true })
           .eq('user_id', userId)
           .eq('status', 'active');
-        if(q1.error && !['PGRST116'].includes(q1.error.code)){ console.warn('Supabase tickets count error:', q1.error); }
+        if(q1.error && q1.error.code !(['PGRST116']){ console.warn('Supabase tickets count error:', q1.error); }
         var activeCount = q1.count || 0;
 
         // Strategy 2 (fallback): 'ticket_events' ledger (delta or product-based)
