@@ -4286,35 +4286,60 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-<!-- NMN: Only the yellow Mystery Box card opens Sorteos (no sidebar change) -->
+<!-- NMN: Yellow card opens a NEW tab (not sidebar). Dashboard hides, #tab-mystery shows. -->
 <script>
 (function(){
   var valueEl = document.getElementById('balance-value');
   var card = valueEl ? valueEl.closest('.stat-card') : null;
 
-  function showSorteos(e){
-    if(e) e.preventDefault();
-    // Hide dashboard
+  function ensureMysteryTab(){
     var dash = document.getElementById('main-dashboard');
-    if(dash){
-      dash.classList.add('section-content');
-      try{ dash.style.display = 'none'; }catch(_){}
+    var tab = document.getElementById('tab-mystery');
+    if(!tab){
+      tab = document.createElement('section');
+      tab.id = 'tab-mystery';
+      tab.className = 'section-content';
+      tab.style.display = 'none';
+      // insert right after dashboard
+      if(dash && dash.parentNode){
+        dash.parentNode.insertBefore(tab, dash.nextSibling);
+      } else {
+        document.body.appendChild(tab);
+      }
     }
-    // Show sorteos (remove any inline display:none and the hiding class)
-    var sorteos = document.getElementById('section-sorteos');
-    if(sorteos){
-      sorteos.classList.remove('section-content');
-      try{ sorteos.style.removeProperty('display'); }catch(_){ sorteos.style.display=''; }
-      // Fallback in case of CSS specificity
-      sorteos.style.display = sorteos.style.display || 'block';
+    return tab;
+  }
+
+  function openMystery(e){
+    if(e) e.preventDefault();
+    var dash = document.getElementById('main-dashboard');
+    var tab = ensureMysteryTab();
+
+    // Populate once by MOVING the content from #section-sorteos (no cloning to avoid duplicate IDs)
+    if(!tab.dataset.filled){
+      var src = document.getElementById('section-sorteos');
+      if(src){
+        while(src.firstChild){ tab.appendChild(src.firstChild); }
+      } else {
+        // Fallback placeholder if source doesn't exist
+        tab.innerHTML = '<div style=\"padding:24px\"><h2 style=\"margin:0 0 12px\">Mystery Box</h2><p>Contenido de la pestaña nueva.</p></div>';
+      }
+      tab.dataset.filled = '1';
     }
-    // Do NOT change sidebar state per user request.
+
+    // Hide dashboard, show mystery tab (do NOT touch sidebar state)
+    if(dash){ dash.classList.add('section-content'); dash.style.display = 'none'; }
+    tab.classList.remove('section-content');
+    tab.style.removeProperty('display'); // unhide
+    if(!tab.style.display) tab.style.display = 'block';
+
+    try{ tab.scrollIntoView({behavior:'smooth', block:'start'}); }catch(_){}
   }
 
   var target = card || valueEl;
   if(target){
     target.style.cursor = 'pointer';
-    target.addEventListener('click', showSorteos);
+    target.addEventListener('click', openMystery);
   }
 })();
 </script>
