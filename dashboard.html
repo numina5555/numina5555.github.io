@@ -4285,5 +4285,55 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
+
+<!-- NMN: make ONLY the yellow Mystery Box card a button to open Sorteos -->
+<script>
+(function(){
+  // Target the Mystery Box KPI (usually #balance-value) and its card
+  var valueEl = document.getElementById('balance-value');
+  var card = valueEl ? valueEl.closest('.stat-card') : null;
+
+  function showSorteos(e){
+    if(e) e.preventDefault();
+    // Hide dashboard, show sorteos
+    var map = {
+      dashboard: '#main-dashboard',
+      compras: '#section-compras',
+      sorteos: '#section-sorteos',
+      referidos: '#section-referidos',
+      productos: '#section-productos',
+      configuracion: '#section-configuracion'
+    };
+    var sections = Object.keys(map).map(function(k){ return document.querySelector(map[k]); }).filter(Boolean);
+    sections.forEach(function(sec){
+      sec.classList.add('section-content'); // hide all
+    });
+    var sorteos = document.querySelector(map.sorteos);
+    if(sorteos){ sorteos.classList.remove('section-content'); }
+
+    // Update sidebar active state
+    try{
+      document.querySelectorAll('.sidebar .menu-item').forEach(function(i){ i.classList.remove('active'); });
+      var item = document.querySelector('.sidebar .menu-item[data-target="sorteos"]');
+      if(item) item.classList.add('active');
+    }catch(_){}
+
+    // Scroll to content
+    try{
+      (sorteos || document.querySelector('.main-content') || document.body).scrollIntoView({behavior:'smooth', block:'start'});
+    }catch(_){}
+  }
+
+  // Bind only this card
+  if(card){
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', showSorteos);
+  } else if(valueEl){
+    valueEl.style.cursor = 'pointer';
+    valueEl.addEventListener('click', showSorteos);
+  }
+})();
+</script>
+
 </body>
 </html>
