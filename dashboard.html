@@ -4286,51 +4286,35 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-<!-- NMN: make ONLY the yellow Mystery Box card a button to open Sorteos -->
+<!-- NMN: Only the yellow Mystery Box card opens Sorteos (no sidebar change) -->
 <script>
 (function(){
-  // Target the Mystery Box KPI (usually #balance-value) and its card
   var valueEl = document.getElementById('balance-value');
   var card = valueEl ? valueEl.closest('.stat-card') : null;
 
   function showSorteos(e){
     if(e) e.preventDefault();
-    // Hide dashboard, show sorteos
-    var map = {
-      dashboard: '#main-dashboard',
-      compras: '#section-compras',
-      sorteos: '#section-sorteos',
-      referidos: '#section-referidos',
-      productos: '#section-productos',
-      configuracion: '#section-configuracion'
-    };
-    var sections = Object.keys(map).map(function(k){ return document.querySelector(map[k]); }).filter(Boolean);
-    sections.forEach(function(sec){
-      sec.classList.add('section-content'); // hide all
-    });
-    var sorteos = document.querySelector(map.sorteos);
-    if(sorteos){ sorteos.classList.remove('section-content'); }
-
-    // Update sidebar active state
-    try{
-      document.querySelectorAll('.sidebar .menu-item').forEach(function(i){ i.classList.remove('active'); });
-      var item = document.querySelector('.sidebar .menu-item[data-target="sorteos"]');
-      if(item) item.classList.add('active');
-    }catch(_){}
-
-    // Scroll to content
-    try{
-      (sorteos || document.querySelector('.main-content') || document.body).scrollIntoView({behavior:'smooth', block:'start'});
-    }catch(_){}
+    // Hide dashboard
+    var dash = document.getElementById('main-dashboard');
+    if(dash){
+      dash.classList.add('section-content');
+      try{ dash.style.display = 'none'; }catch(_){}
+    }
+    // Show sorteos (remove any inline display:none and the hiding class)
+    var sorteos = document.getElementById('section-sorteos');
+    if(sorteos){
+      sorteos.classList.remove('section-content');
+      try{ sorteos.style.removeProperty('display'); }catch(_){ sorteos.style.display=''; }
+      // Fallback in case of CSS specificity
+      sorteos.style.display = sorteos.style.display || 'block';
+    }
+    // Do NOT change sidebar state per user request.
   }
 
-  // Bind only this card
-  if(card){
-    card.style.cursor = 'pointer';
-    card.addEventListener('click', showSorteos);
-  } else if(valueEl){
-    valueEl.style.cursor = 'pointer';
-    valueEl.addEventListener('click', showSorteos);
+  var target = card || valueEl;
+  if(target){
+    target.style.cursor = 'pointer';
+    target.addEventListener('click', showSorteos);
   }
 })();
 </script>
