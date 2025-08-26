@@ -4026,23 +4026,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<!-- NUMINA: Blackout robusto solo del contenido central (simplificado) -->
-<script>
-(function(){
-  function off(){
-    var main = document.querySelector('.main-content');
-    if (main) main.classList.remove('numina-on');
-  }
-  var sidebar = document.querySelector('nav.sidebar') || document.querySelector('.sidebar');
-  if (sidebar && !sidebar.__numinaNavBound){
-    sidebar.__numinaNavBound = true;
-    sidebar.addEventListener('click', function(){ setTimeout(off,0); }, true);
-  }
-})();
-</script>
-
-
-
 <!-- ==== NUMINA FINAL PATCH: Mystery Box dentro del overlay existente (sin borrar nada) ==== -->
 <script>
 (function(){
