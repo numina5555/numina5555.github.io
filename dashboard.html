@@ -4446,8 +4446,10 @@ document.addEventListener('DOMContentLoaded', () => {
     tab.innerHTML =
       '<style>' +
       '.nmn-toolbar{position:sticky;top:0;z-index:2;display:flex;justify-content:flex-start;}' +
-      '.nmn-back{margin:14px 0 12px 0;background:#161616;border:1px solid #2a2a2a;padding:8px 12px;border-radius:12px;font-weight:800;cursor:pointer}' +
-      '.nmn-back:hover{opacity:.9}' +
+      '.nmn-back{margin:14px 0 12px 0;background:var(--primary);border:1px solid var(--primary);color:#111;padding:8px 12px;border-radius:12px;font-weight:800;cursor:pointer}
+.nmn-back:hover{filter:brightness(0.95)}
+.nmn-back:active{transform:translateY(1px)}
+ +
       '</style>' +
       '<div class="nmn-toolbar"><button id="nmn-back-btn" class="nmn-back">Volver</button></div>' +
       content;
