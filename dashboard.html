@@ -4796,5 +4796,239 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
+
+<!-- === NUMINA: Tickets Activos (inline tab) === -->
+<script>
+(function(){
+  // Create the "Tickets Activos" tab on demand
+  function ensureTicketsTab(){
+    var dash = document.getElementById('main-dashboard');
+    var tab = document.getElementById('tab-tickets');
+    if(!tab){
+      tab = document.createElement('section');
+      tab.id = 'tab-tickets';
+      tab.className = 'section-content';
+      tab.style.display = 'none';
+
+      // Styles scoped to the tab
+      var style = document.createElement('style');
+      style.textContent =
+        '#tab-tickets{background:#0f0f0f;color:#e6e6e6;padding-bottom:24px}'+
+        '.nmn-toolbar{position:sticky;top:0;z-index:2;display:flex;justify-content:flex-start;background:transparent}'+
+        '.nmn-back{margin:14px 0 12px 0;background:var(--primary);border:1px solid var(--primary);color:#111;padding:8px 12px;border-radius:12px;font-weight:800;cursor:pointer}'+
+        '.nmn-back:hover{filter:brightness(0.95)}'+
+        '.nmn-back:active{transform:translateY(1px)}'+
+        '.ta-wrap{max-width:1100px;margin:0 auto;padding:0 12px}'+
+        '.ta-title{font-weight:900;font-size:2rem;letter-spacing:.2px;margin:8px 0 16px}'+
+        '.ta-title em{font-style:normal;color:var(--primary)}'+
+        '.ta-controls{display:flex;gap:10px;align-items:center;margin:6px 0 14px}'+
+        '.ta-search{flex:1;display:flex;align-items:center;background:#111;border:1px solid #2a2a2a;border-radius:12px;padding:10px 14px}'+
+        '.ta-search input{flex:1;background:transparent;border:0;outline:none;color:#e6e6e6}'+
+        '.ta-clear{background:transparent;border:1px solid var(--primary);color:var(--primary);padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer}'+
+        '.ta-clear:hover{filter:brightness(1.06)}'+
+        '.table-container{background:#141414;border:1px solid #232323;border-radius:16px;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,.35)}'+
+        'table{width:100%;border-collapse:collapse;table-layout:fixed}'+
+        'thead th{font-size:.8rem;letter-spacing:.6px;text-transform:uppercase;color:var(--primary);background:#1c1c1c;padding:14px 16px;text-align:left;border-bottom:1px solid #2a2a2a}'+
+        '.table-container thead th.col-tickets,.table-container thead th.col-referrals{text-align:center}'+
+        '.table-container thead th.col-date,.table-container thead th.col-product{text-align:left}'+
+        'tbody td{padding:16px;color:#e6e6e6;border-top:1px solid #1f1f1f;vertical-align:middle}'+
+        'td[data-col="date"],td[data-col="product"]{text-align:left}'+
+        'td[data-col="tickets"],td[data-col="referrals"]{text-align:center}'+
+        '.col-date,td[data-col="date"]{width:20%}'+
+        '.col-product,td[data-col="product"]{width:38%}'+
+        '.col-tickets,td[data-col="tickets"]{width:22%;text-align:center}'+
+        '.col-referrals,td[data-col="referrals"]{width:20%;text-align:center}'+
+        'tbody tr:first-child td{border-top:none}'+
+        'tbody tr:hover{background:rgba(255,255,255,.03)}'+
+        '@media (max-width:640px){thead{display:none}table,tbody,tr,td{display:block;width:100%}tbody tr{padding:10px 12px}tbody td{border:0;padding:6px 0}tbody td::before{content:attr(data-label);display:block;font-size:.75rem;color:#9a9a9a;margin-bottom:2px}}'+
+        '.ref-list{display:flex;flex-direction:column;align-items:center;gap:4px}'+
+        '.ref-chip{background:#0f0f0f;border:1px solid #2a2a2a;color:#e6e6e6;border-radius:10px;padding:2px 8px;font-size:.85rem;line-height:1.2}'+
+        '.ref-empty{opacity:.6}';
+      tab.appendChild(style);
+
+      // Bar + volver
+      var bar = document.createElement('div');
+      bar.className = 'nmn-toolbar';
+      var btn = document.createElement('button');
+      btn.id = 'nmn-back-btn-tickets';
+      btn.className = 'nmn-back';
+      btn.textContent = 'Volver';
+      bar.appendChild(btn);
+      tab.appendChild(bar);
+
+      // Title + search + table
+      var wrap = document.createElement('div');
+      wrap.className = 'ta-wrap';
+      wrap.innerHTML =
+        '<div class="ta-title">Tickets <em>Activos</em></div>'+
+        '<div class="ta-controls">'+
+        '  <label class="ta-search"><input type="text" placeholder="Buscar…"></label>'+
+        '  <button class="ta-clear">Limpiar</button>'+
+        '</div>'+
+        '<div class="table-container">'+
+        '  <table id="tickets-activos-table">'+
+        '    <thead>'+
+        '      <tr>'+
+        '        <th class="col-date">FECHA</th>'+
+        '        <th class="col-product">PRODUCTO</th>'+
+        '        <th class="col-tickets">TICKETS</th>'+
+        '        <th class="col-referrals">REFERIDO</th>'+
+        '      </tr>'+
+        '    </thead>'+
+        '    <tbody id="tickets-activos-body"></tbody>'+
+        '  </table>'+
+        '</div>';
+      tab.appendChild(wrap);
+
+      // Insert after main dashboard
+      if(dash && dash.parentNode){ dash.parentNode.insertBefore(tab, dash.nextSibling); }
+      else { document.body.appendChild(tab); }
+    }
+    return tab;
+  }
+
+  // Small fade helpers
+  function fadeIn(el, dur){ dur = dur||180; if(!el) return; el.style.removeProperty('display'); if(!el.style.display) el.style.display='block'; el.style.opacity=0; el.style.transition='opacity '+dur+'ms ease'; requestAnimationFrame(function(){ el.style.opacity=1; }); }
+  function fadeOut(el, dur, done){ dur = dur||180; if(!el){ if(done) done(); return; } el.style.opacity=1; el.style.transition='opacity '+dur+'ms ease'; requestAnimationFrame(function(){ el.style.opacity=0; setTimeout(function(){ el.style.display='none'; if(done) done(); }, dur+20); }); }
+
+  function normalizeName(s){ return (s||'').toString().toLowerCase(); }
+  // Map user events to table rows following your rules
+  function mapEventToRow(e){
+    var product = '', tickets = 1, referido = [];
+    switch(e.type){
+      case 'catalog': {
+        product = e.productName || '';
+        var n = 1; var name = normalizeName(e.productName);
+        if(name.includes('rolex')) n = 5;
+        else if(name.includes('pulsera')) n = 1;
+        else if(name.includes('lingote') && (name.includes('oro') || name.includes('platino'))) n = 2;
+        tickets = n;
+        break;
+      }
+      case 'third_purchase': {
+        product = 'Tercera compra';
+        tickets = 1;
+        if(e.email) referido = [e.email];
+        break;
+      }
+      case 'third_referral_first_purchase': {
+        product = 'Tercer referido';
+        tickets = 1;
+        if(Array.isArray(e.emails)) referido = e.emails.slice(0,3);
+        break;
+      }
+      default: {
+        product = e.productName || e.title || '—';
+        tickets = e.tickets || 1;
+        referido = e.referido ? [].concat(e.referido) : [];
+      }
+    }
+    return { date: e.date, product: product, tickets: tickets, referido: referido };
+  }
+  function fmtDate(d){
+    if(!d) return '—';
+    try{
+      var dt = (typeof d === 'string' && /\d{4}-\d{2}-\d{2}/.test(d)) ? new Date(d+'T00:00:00') : new Date(d);
+      var dd = dt.getDate(); var mm = dt.getMonth()+1; var yy = dt.getFullYear();
+      return dd+'/'+mm+'/'+yy;
+    }catch(_){ return d; }
+  }
+  function renderRows(root, rows){
+    var tbody = root.querySelector('#tickets-activos-body');
+    if(!tbody) return;
+    tbody.innerHTML = rows.map(function(r){
+      var refHtml = (r.referido && r.referido.length) ?
+        ('<div class="ref-list">' + r.referido.map(function(x){ return '<span class="ref-chip">'+x+'</span>'; }).join('') + '</div>') : '—';
+      return '<tr>' +
+        '<td data-col="date" data-label="FECHA">'+ fmtDate(r.date) +'</td>' +
+        '<td data-col="product" data-label="PRODUCTO">'+ r.product +'</td>' +
+        '<td data-col="tickets" data-label="TICKETS">'+ r.tickets +'</td>' +
+        '<td data-col="referrals" data-label="REFERIDO">'+ refHtml +'</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  function wireAndPopulate(tab){
+    if(tab.dataset.bound !== '1'){
+      var back = tab.querySelector('#nmn-back-btn-tickets');
+      back.addEventListener('click', function(ev){
+        ev.preventDefault();
+        fadeOut(tab, 180, function(){
+          tab.classList.add('section-content');
+          var dash = document.getElementById('main-dashboard');
+          if(dash){ dash.classList.remove('section-content'); dash.style.removeProperty('display'); fadeIn(dash, 180); }
+          var input = tab.querySelector('.ta-search input'); if(input){ input.value=''; }
+        });
+      });
+      tab.dataset.bound = '1';
+    }
+
+    var input = tab.querySelector('.ta-search input');
+    var clearBtn = tab.querySelector('.ta-clear');
+    var data = Array.isArray(window.nmnTicketsEvents) ? window.nmnTicketsEvents : [
+      { type:'catalog', date:'2025-08-25', productName:'Pulsera Numina' },
+      { type:'catalog', date:'2025-08-20', productName:'Lingote de Oro' },
+      { type:'third_purchase', date:'2025-08-19', email:'referido3@mail.com' },
+      { type:'third_referral_first_purchase', date:'2025-08-18', emails:['a@mail.com','b@mail.com','c@mail.com'] },
+      { type:'catalog', date:'2025-08-10', productName:'Rolex Submariner' }
+    ];
+    var rows = data.map(mapEventToRow).sort(function(a,b){ return new Date(b.date) - new Date(a.date); });
+    renderRows(tab, rows);
+
+    function filter(){
+      var q = (input && input.value || '').toLowerCase();
+      var filtered = !q ? rows : rows.filter(function(r){
+        var ref = (r.referido||[]).join(' ');
+        var t = [fmtDate(r.date), r.product, String(r.tickets), ref].join(' ').toLowerCase();
+        return t.indexOf(q) !== -1;
+      });
+      renderRows(tab, filtered);
+    }
+    if(input && !input.__bound){ input.__bound = true; input.addEventListener('input', filter); }
+    if(clearBtn && !clearBtn.__bound){ clearBtn.__bound = true; clearBtn.addEventListener('click', function(){ if(input){ input.value = ''; } filter(); }); }
+  }
+
+  function openTickets(e){
+    if(e) e.preventDefault();
+    var dash = document.getElementById('main-dashboard');
+    var tab = ensureTicketsTab();
+    wireAndPopulate(tab);
+    if(dash){ dash.classList.add('section-content'); dash.style.display = 'none'; }
+    tab.classList.remove('section-content');
+    tab.style.removeProperty('display');
+    try{ tab.style.removeProperty('opacity'); tab.style.removeProperty('transition'); }catch(_){}
+  }
+
+  // Bind the yellow card "Tickets activos"
+  (function bindTicketsCard(){
+    var el = document.getElementById('tickets-value');
+    var card = el ? el.closest('.stat-card') : null;
+    var target = card || el;
+    if(target && !target.__nmnTicketsBound){
+      target.__nmnTicketsBound = true;
+      target.style.cursor = 'pointer';
+      target.addEventListener('click', openTickets);
+    }
+  })();
+
+  // Close tab if navigating via sidebar
+  document.addEventListener('click', function(e){
+    var item = e.target && e.target.closest ? e.target.closest('.sidebar .menu-item') : null;
+    if(item){
+      var tab = document.getElementById('tab-tickets');
+      if(tab && tab.style.display !== 'none'){
+        tab.classList.add('section-content');
+        tab.style.display = 'none';
+        try{ tab.style.removeProperty('opacity'); tab.style.removeProperty('transition'); }catch(_){}
+      }
+    }
+  }, true);
+
+  // Also hide on back/forward/hash changes
+  window.addEventListener('popstate', function(){ var tab=document.getElementById('tab-tickets'); if(tab){ tab.classList.add('section-content'); tab.style.display='none'; } });
+  window.addEventListener('hashchange', function(){ var tab=document.getElementById('tab-tickets'); if(tab){ tab.classList.add('section-content'); tab.style.display='none'; } });
+})();
+</script>
+
 </body>
 </html>
