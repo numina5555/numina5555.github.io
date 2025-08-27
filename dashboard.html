@@ -5337,5 +5337,148 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
+
+<!-- NUMINA PATCH 3: Fill Tickets Activos table from tickets_ledger (fecha, producto, tickets, referido) -->
+<script>
+(function(){
+  function _prettyName(sku){
+    try{
+      if(!sku) return '—';
+      var s = String(sku);
+      if (s.includes(':')) s = s.split(':').slice(1).join(':').trim();
+      s = s.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+      if (!s) s = String(sku);
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }catch(_){ return String(sku||'—'); }
+  }
+  function _fmtDate(d){
+    try{
+      var dt = (typeof d === 'string' && /\d{4}-\d{2}-\d{2}/.test(d)) ? new Date(d+'T00:00:00') : new Date(d);
+      var dd = dt.getDate(); var mm = dt.getMonth()+1; var yy = dt.getFullYear();
+      return dd+'/'+mm+'/'+yy;
+    }catch(_){ return d || '—'; }
+  }
+  async function _getClient(){
+    try {
+      if (typeof getSupabase === 'function') return getSupabase();
+      if (window.supabase && (window.NMN_SUPABASE_URL || window.SUPABASE_URL) && (window.NMN_SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY)){
+        return window.supabase.createClient(window.NMN_SUPABASE_URL || window.SUPABASE_URL, window.NMN_SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY);
+      }
+    } catch(_) {}
+    return null;
+  }
+  function _renderRows(rows){
+    var tab = document.getElementById('tab-tickets');
+    if(!tab) return;
+    var tbody = tab.querySelector('#tickets-activos-body');
+    if(!tbody) return;
+    if(!rows || !rows.length){
+      tbody.innerHTML = '<tr>'+
+        '<td data-col="date">—</td>'+
+        '<td data-col="product">'+ (window.dI18n? dI18n.t('table.noData') : 'Sin datos') +'</td>'+
+        '<td data-col="tickets">—</td>'+
+        '<td data-col="referrals">—</td>'+
+      '</tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(function(r){
+      var refHtml = (r.referido && r.referido.length)
+        ? ('<div class="ref-list">' + r.referido.map(function(x){ return '<span class="ref-chip">'+x+'</span>'; }).join('') + '</div>')
+        : '—';
+      return '<tr>' +
+        '<td data-col="date">'+ _fmtDate(r.date) +'</td>' +
+        '<td data-col="product">'+ (r.product||'—') +'</td>' +
+        '<td data-col="tickets">'+ String(r.tickets||0) +'</td>' +
+        '<td data-col="referrals">'+ refHtml +'</td>' +
+      '</tr>';
+    }).join('');
+  }
+  async function fillTicketsRowsFromLedger(){
+    try{
+      var tab = document.getElementById('tab-tickets');
+      if(!tab || tab.style.display === 'none') return;
+      var sb = await _getClient(); if(!sb) return;
+      var auth = await sb.auth.getUser();
+      var user = auth && auth.data && auth.data.user; if(!user) return;
+
+      // 1) Fetch ledger rows (all fields so we can detect referrers if they exist)
+      var q = await sb.from('tickets_ledger')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if(q.error){ console.warn('ledger error', q.error); return; }
+      var ledger = Array.isArray(q.data) ? q.data : [];
+
+      // Keep only entries where tickets were GANADOS (count > 0)
+      var earned = ledger.filter(function(ev){
+        var n = parseInt(ev && ev.count, 10); return !isNaN(n) && n > 0;
+      });
+
+      // 2) Preload purchases and (optionally) referrer users
+      var pidSet = new Set();
+      var refSet = new Set();
+      earned.forEach(function(ev){
+        if (ev.purchase_id) pidSet.add(ev.purchase_id);
+        if (ev.referrer_id) refSet.add(ev.referrer_id);
+      });
+
+      var purchasesById = {};
+      if(pidSet.size){
+        var pr = await sb.from('purchases').select('id, product_name').in('id', Array.from(pidSet));
+        if(!pr.error && Array.isArray(pr.data)){ pr.data.forEach(function(p){ purchasesById[p.id] = p; }); }
+      }
+
+      var usersById = {};
+      if(refSet.size){
+        try{
+          var ur = await sb.from('users').select('id, email, full_name').in('id', Array.from(refSet));
+          if(!ur.error && Array.isArray(ur.data)){ ur.data.forEach(function(u){ usersById[u.id] = u; }); }
+        }catch(_){} // users table podría no permitir lectura por RLS
+      }
+
+      // 3) Map rows to table format
+      var rows = earned.map(function(ev){
+        var product = (ev.purchase_id && purchasesById[ev.purchase_id] && purchasesById[ev.purchase_id].product_name)
+          ? purchasesById[ev.purchase_id].product_name
+          : (_prettyName(ev.sku) || '—');
+        var referido = [];
+        if (ev.referrer_id && usersById[ev.referrer_id]){
+          var u = usersById[ev.referrer_id];
+          referido = [ (u.full_name || u.email || (u.id||'')).toString() ];
+        } else if (typeof ev.source === 'string' && /referr?/i.test(ev.source)) {
+          referido = [ 'Sí' ];
+        } else if (typeof ev.sku === 'string' && /referr?/i.test(ev.sku)) {
+          referido = [ 'Sí' ];
+        }
+        return { date: ev.created_at, product: product, tickets: parseInt(ev.count,10)||0, referido: referido };
+      });
+
+      _renderRows(rows);
+    }catch(err){
+      console.warn('fillTicketsRowsFromLedger failed', err);
+    }
+  }
+
+  // Run when the tab shows and after small delays to win last-write
+  function scheduleFill(){
+    try{ fillTicketsRowsFromLedger(); }catch(_){}
+    setTimeout(fillTicketsRowsFromLedger, 150);
+    setTimeout(fillTicketsRowsFromLedger, 600);
+  }
+
+  var obs = new MutationObserver(function(){
+    var tab = document.getElementById('tab-tickets');
+    if (tab && tab.style.display !== 'none') scheduleFill();
+  });
+  try{ obs.observe(document.body, { childList:true, subtree:true }); }catch(_){}
+  window.addEventListener('hashchange', scheduleFill);
+  window.addEventListener('popstate', scheduleFill);
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', scheduleFill);
+  } else { scheduleFill(); }
+  window.nmnFillTicketsRowsFromLedger = fillTicketsRowsFromLedger;
+})();
+</script>
+
 </body>
 </html>
