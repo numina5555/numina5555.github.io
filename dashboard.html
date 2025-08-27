@@ -99,6 +99,18 @@
     .btn{ background:var(--primary); color:var(--dark); border:0; padding:.6rem 1rem; border-radius:8px; font-weight:600; cursor:pointer; }
     .btn:hover{ background: var(--primary-dark); }
 
+  /* Smooth hover transitions for buttons and cards */
+    button, .stat-card, .settings-card, .srt-card, .pd-card, .sc-card, .card, .product-card{
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:hover, .sc-card:hover, .card:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,.35);
+    }
+    /* Entry animations */
+    .section-title, .product-card{ opacity:0; transform:translateY(20px); }
+    .section-title.animate-in, .product-card.animate-in{ animation:fadeInUp .6s ease forwards; }
+    @keyframes fadeInUp{ to{ opacity:1; transform:translateY(0); } }
 
     #section-productos .products-wrap{ max-width:1100px; margin:0 auto; padding: .5rem 1rem 0; }
     #section-productos .products-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:1.5rem; justify-items:center; }
@@ -267,6 +279,15 @@
     (function(){
       const DICT = {
         en: {
+            "mbox.tabs.open": "Open",
+            "mbox.tabs.upcoming": "Upcoming",
+            "mbox.tabs.closed": "Closed",
+            "mbox.status.open": "Open",
+            "mbox.actions.details": "Details",
+            "mbox.actions.participate": "Participate",
+            "actions.delete": "Delete",
+            "confirm.noRowId": "Can't find the ID in the row. Remove visually?",
+            "confirm.deletePurchase": "Delete this purchase? This action is permanent.",
             "table.date": "Date",
             "table.product": "Product",
             "table.tickets": "Tickets",
@@ -357,6 +378,15 @@
       
         },
         es: {
+            "mbox.tabs.open": "Abiertos",
+            "mbox.tabs.upcoming": "Próximamente",
+            "mbox.tabs.closed": "Finalizados",
+            "mbox.status.open": "Abierto",
+            "mbox.actions.details": "Detalles",
+            "mbox.actions.participate": "Participar",
+            "actions.delete": "Eliminar",
+            "confirm.noRowId": "No encuentro el ID en la fila. ¿Eliminar solo visualmente?",
+            "confirm.deletePurchase": "¿Eliminar esta compra? Esta acción es permanente.",
             "table.date": "Fecha",
             "table.product": "Producto",
             "table.tickets": "Tickets",
@@ -447,6 +477,15 @@
       
         },
         pt: {
+            "mbox.tabs.open": "Abertos",
+            "mbox.tabs.upcoming": "Em breve",
+            "mbox.tabs.closed": "Finalizados",
+            "mbox.status.open": "Aberto",
+            "mbox.actions.details": "Detalhes",
+            "mbox.actions.participate": "Participar",
+            "actions.delete": "Excluir",
+            "confirm.noRowId": "Não encontro o ID na linha. Remover visualmente?",
+            "confirm.deletePurchase": "Excluir esta compra? Esta ação é permanente.",
             "table.date": "Data",
             "table.product": "Produto",
             "table.tickets": "Tickets",
@@ -3537,7 +3576,7 @@ if (fn.error || !paymentUrl){
 
       var del = document.createElement('button');
       del.className = 'btn-delete-row';
-      del.textContent = 'Eliminar';
+      del.setAttribute('data-i18n','actions.delete'); del.textContent = (window.dI18n? dI18n.t('actions.delete') : 'Eliminar'); try{ if(window.dI18n&&dI18n.apply) dI18n.apply(); }catch(_){}
       del.setAttribute('data-action','delete-purchase');
 
       // Obtener ID desde botón/fila/descendientes
@@ -3568,11 +3607,11 @@ if (fn.error || !paymentUrl){
     const row = delBtn.closest('tr');
     const id = delBtn.getAttribute('data-purchase-id') || (row && row.getAttribute('data-purchase-id'));
     if(!id){
-      if(!confirm('No encuentro el ID en la fila. ¿Eliminar solo visualmente?')) return;
+      if(!confirm(window.dI18n? dI18n.t('confirm.noRowId') : 'No encuentro el ID en la fila. ¿Eliminar solo visualmente?')) return;
       if(row) row.remove();
       return;
     }
-    if(!confirm('¿Eliminar esta compra? Esta acción es permanente.')) return;
+    if(!confirm(window.dI18n? dI18n.t('confirm.deletePurchase') : '¿Eliminar esta compra? Esta acción es permanente.')) return;
     deletePurchaseById(id, row);
   });
 
@@ -4078,15 +4117,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <div class="mbox-wrap">
               <div class="mbox-tabs">
-                <button class="mbox-tab active">Abiertos</button>
-                <button class="mbox-tab">Próximamente</button>
-                <button class="mbox-tab">Finalizados</button>
+                <button class="mbox-tab active"><span data-i18n="mbox.tabs.open">' + (window.dI18n? dI18n.t('mbox.tabs.open') : 'Abiertos') + '</span></button>'
+                <button class="mbox-tab"><span data-i18n="mbox.tabs.upcoming">' + (window.dI18n? dI18n.t('mbox.tabs.upcoming') : 'Próximamente') + '</span></button>'
+                <button class="mbox-tab"><span data-i18n="mbox.tabs.closed">' + (window.dI18n? dI18n.t('mbox.tabs.closed') : 'Finalizados') + '</span></button>'
                 <div class="mbox-search"><input placeholder="Buscar sorteos…" /></div>
               </div>
 
               <div class="mbox-card">
                 <div class="mbox-card-head">
-                  <span class="mbox-chip">Abierto</span>
+                  <span class="mbox-chip" data-i18n="mbox.status.open">' + (window.dI18n? dI18n.t('mbox.status.open') : 'Abierto') + '</span>'
                 </div>
                 <div class="mbox-card-body">
                   <div class="mbox-title">Sorteo Semanal</div>
@@ -4101,14 +4140,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="mbox-badge">Neto: 0 tickets</span>
                   </div>
                   <div class="mbox-cta">
-                    <button class="mbox-btn" id="mb-detalles-btn">Detalles</button>
-                    <button class="mbox-btn mbox-primary" id="mb-participar-btn">Participar</button>
+                    <button class="mbox-btn" id="mb-detalles-btn"><span data-i18n="mbox.actions.details">' + (window.dI18n? dI18n.t('mbox.actions.details') : 'Detalles') + '</span></button>'
+                    <button class="mbox-btn mbox-primary" id="mb-participar-btn"><span data-i18n="mbox.actions.participate">' + (window.dI18n? dI18n.t('mbox.actions.participate') : 'Participar') + '</span></button>'
                   </div>
                 </div>
               </div>
             </div>
           `;
           overlay.appendChild(wrap);
+          try{ if(window.dI18n && dI18n.apply) dI18n.apply(); }catch(_){}
           // Eventos de ejemplo (no tocan tu lógica)
           const participar = wrap.querySelector('#mb-participar-btn');
           if (participar){
@@ -4272,15 +4312,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <div class="mbox-wrap">
               <div class="mbox-tabs">
-                <button class="mbox-tab active">Abiertos</button>
-                <button class="mbox-tab">Próximamente</button>
-                <button class="mbox-tab">Finalizados</button>
+                <button class="mbox-tab active"><span data-i18n="mbox.tabs.open">' + (window.dI18n? dI18n.t('mbox.tabs.open') : 'Abiertos') + '</span></button>'
+                <button class="mbox-tab"><span data-i18n="mbox.tabs.upcoming">' + (window.dI18n? dI18n.t('mbox.tabs.upcoming') : 'Próximamente') + '</span></button>'
+                <button class="mbox-tab"><span data-i18n="mbox.tabs.closed">' + (window.dI18n? dI18n.t('mbox.tabs.closed') : 'Finalizados') + '</span></button>'
                 <div class="mbox-search"><input placeholder="Buscar sorteos…" /></div>
               </div>
 
               <div class="mbox-card">
                 <div class="mbox-card-head">
-                  <span class="mbox-chip">Abierto</span>
+                  <span class="mbox-chip" data-i18n="mbox.status.open">' + (window.dI18n? dI18n.t('mbox.status.open') : 'Abierto') + '</span>'
                 </div>
                 <div class="mbox-card-body">
                   <div class="mbox-title">Sorteo Semanal</div>
@@ -4295,8 +4335,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="mbox-badge">Neto: 0 tickets</span>
                   </div>
                   <div class="mbox-cta">
-                    <button class="mbox-btn" id="mb-detalles-btn">Detalles</button>
-                    <button class="mbox-btn mbox-primary" id="mb-participar-btn">Participar</button>
+                    <button class="mbox-btn" id="mb-detalles-btn"><span data-i18n="mbox.actions.details">' + (window.dI18n? dI18n.t('mbox.actions.details') : 'Detalles') + '</span></button>'
+                    <button class="mbox-btn mbox-primary" id="mb-participar-btn"><span data-i18n="mbox.actions.participate">' + (window.dI18n? dI18n.t('mbox.actions.participate') : 'Participar') + '</span></button>'
                   </div>
                 </div>
               </div>
