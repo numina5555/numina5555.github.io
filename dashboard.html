@@ -5415,7 +5415,7 @@ const fillTicketsRowsFromLedger = async () => {
 
       // 1) Fetch ledger rows
       var q = await sb.from('tickets_ledger')
-        .select('*')
+        .select('*, meta, referrer_id, source')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       if(q.error){ console.warn('ledger error', q.error); return; }
@@ -5493,9 +5493,18 @@ const fillTicketsRowsFromLedger = async () => {
         }
 
         
+        
         // identificar patron 3Ref.C1 vs 1Ref.C3
         var isReferral = /referr?/i.test((ev.sku||ev.source||'').toString());
-        if(isReferral){
+        // Preferir meta.kind si está presente
+        var kind = ev && ev.meta && (ev.meta.kind || ev.meta.KIND || ev.meta.reason || ev.meta.type);
+        if(kind){
+          var k = String(kind).toLowerCase();
+          if(k.includes('1ref') || k.includes('c3') || k.includes('third_purchase')){ product = '1Ref.C3'; }
+          else if(k.includes('3ref') || k.includes('c1') || k.includes('third_referral_first_purchase')){ product = '3Ref.C1'; }
+          isReferral = true;
+        }
+        if(isReferral && !kind){
           var ne = nearestEvent(ev.created_at);
           if(ne && typeof ne.type === 'string'){
             var t = ne.type;
