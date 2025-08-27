@@ -5405,7 +5405,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }).join('');
   }
   
-async function fillTicketsRowsFromLedger(){
+const fillTicketsRowsFromLedger = async () => {
     try{
       var tab = document.getElementById('tab-tickets');
       if(!tab || tab.style.display === 'none') return;
@@ -5512,7 +5512,7 @@ async function fillTicketsRowsFromLedger(){
     }catch(err){
       console.warn('fillTicketsRowsFromLedger failed', err);
     }
-  }
+  };
 }
 
   // Run when the tab shows and after small delays to win last-write
