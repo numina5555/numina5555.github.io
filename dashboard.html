@@ -5458,6 +5458,8 @@ const fillTicketsRowsFromLedger = async () => {
           .select('type, emails, email, tickets, created_at')
           .eq('user_id', user.id);
         if(!er.error && Array.isArray(er.data)){ events = er.data.slice(); }
+      var poolC1 = events.filter(function(e){ return e && e.type === 'third_referral_first_purchase'; });
+      var poolC3 = events.filter(function(e){ return e && e.type === 'third_purchase'; });
       }catch(_){}
 
       function nearestEvent(ts){
@@ -5469,7 +5471,7 @@ const fillTicketsRowsFromLedger = async () => {
           var et = (new Date(e.created_at)).getTime();
           var diff = Math.abs(et - target);
           // accept within 36h; pick nearest
-          if (diff < bestAbs && diff <= 36*60*60*1000){ best=e; bestAbs=diff; bestIdx=i; }
+          if (diff < bestAbs && diff <= 7*24*60*60*1000){ best=e; bestAbs=diff; bestIdx=i; }
         }
         if(best){ events.splice(bestIdx,1); }
         return best;
@@ -5490,6 +5492,7 @@ const fillTicketsRowsFromLedger = async () => {
           referido = [ 'Sí' ];
         }
 
+        
         // identificar patron 3Ref.C1 vs 1Ref.C3
         var isReferral = /referr?/i.test((ev.sku||ev.source||'').toString());
         if(isReferral){
@@ -5499,13 +5502,17 @@ const fillTicketsRowsFromLedger = async () => {
             if(t === 'third_referral_first_purchase'){ product = '3Ref.C1'; if(Array.isArray(ne.emails)) referido = ne.emails.slice(0,3); }
             else if(t === 'third_purchase'){ product = '1Ref.C3'; if(ne.email) referido = [ne.email]; }
           } else {
-            // heuristic fallback
-            if((ev.sku||'').toString().toLowerCase().includes('c3')) product = '1Ref.C3';
-            else product = '3Ref.C1';
+            // Fallback por pools (si hay eventos restantes sin usar)
+            if(poolC3 && poolC3.length){ var e3 = poolC3.shift(); product = '1Ref.C3'; if(e3 && e3.email) referido = [e3.email]; }
+            else if(poolC1 && poolC1.length){ var e1 = poolC1.shift(); product = '3Ref.C1'; if(e1 && Array.isArray(e1.emails)) referido = e1.emails.slice(0,3); }
+            else {
+              // Último recurso: heurística por SKU
+              if((ev.sku||'').toString().toLowerCase().includes('c3')) product = '1Ref.C3';
+              else product = '3Ref.C1';
+            }
           }
         }
-
-        return { date: ev.created_at, product: product, tickets: parseInt(ev.count,10)||0, referido: referido };
+return { date: ev.created_at, product: product, tickets: parseInt(ev.count,10)||0, referido: referido };
       });
 
       _renderRows(rows);
