@@ -1071,26 +1071,24 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 </style>
 
 
-<!-- NUMINA: Hero ubicado en el recuadro (ticket brillante) -->
+
+<!-- NUMINA: Hero en recuadro (tuneado para mayor visibilidad) -->
 <style id="raffle-hero-css">
   :root{
-    /* Cambiá la ruta al subir tu asset */
-    --raffle-img: url("assets/nmn_sorteo_ticket_wide_1600x600.webp");
-    /* Ajustes rápidos del rectángulo (donde estaba el verde) */
-    --thumb-left: 22px;
+    --raffle-img: url("assets/nmn_sorteo_ticket_thumb_600.webp");
+    --thumb-left: 22px;  /* posición */
     --thumb-top: 18px;
-    --thumb-w: clamp(220px, 22vw, 300px);
+    --thumb-w: clamp(240px, 24vw, 320px);  /* tamaño */
     --thumb-h: clamp(220px, 26vh, 260px);
-    --thumb-radius: 14px;
+    --thumb-radius: 16px;
+    --thumb-pos-x: 15%; /* foco dentro del recuadro */
   }
-
-  /* Mantener el degradé base del header */
   .mbox-card-head{
     position: relative;
-    background: linear-gradient(180deg, #161616 0%, #0f0f0f 60%, #0b0b0b 100%);
+    background: linear-gradient(180deg, #161616 0%, #101010 60%, #0b0b0b 100%);
     overflow: hidden;
   }
-  /* Pegar la imagen SOLO en la zona del rectángulo (antes verde) */
+  /* Imagen dentro del rectángulo */
   .mbox-card-head::before{
     content: "";
     position: absolute;
@@ -1100,24 +1098,40 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
     height: var(--thumb-h);
     background-image: var(--raffle-img);
     background-size: cover;
-    background-position: left center;
+    background-position: var(--thumb-pos-x) center;
     border-radius: var(--thumb-radius);
-    box-shadow: 0 10px 28px rgba(0,0,0,.35);
-    z-index: 1; /* por debajo del chip */
+    /* Borde sutil + glow para que se note */
+    box-shadow:
+      0 0 0 1px rgba(255, 224, 0, .22),
+      0 18px 32px rgba(0,0,0,.40);
+    /* Más punch */
+    filter: brightness(1.18) contrast(1.18) saturate(1.05);
+    z-index: 1;
   }
-  /* overlay suave para integrar con el fondo */
+  /* Overlay suave (menos oscuro que antes) */
   .mbox-card-head::after{
     content:""; position:absolute; inset:0;
     background: linear-gradient(180deg, rgba(0,0,0,0) 0%,
-                                        rgba(0,0,0,.18) 50%,
-                                        rgba(0,0,0,.45) 100%);
+                                        rgba(0,0,0,.10) 50%,
+                                        rgba(0,0,0,.25) 100%);
     pointer-events:none;
     z-index: 2;
   }
-  /* El chip "Abierto" debe ir por encima de todo */
+  /* Chip "Abierto" arriba */
   .mbox-chip{ position: relative; z-index: 3; }
 
-  /* Fix Safari */
+  /* Responsive: en pantallas angostas, acercar y hacer un poco más chica */
+  @media (max-width: 840px){
+    :root{
+      --thumb-left: 16px;
+      --thumb-top: 14px;
+      --thumb-w: clamp(200px, 48vw, 260px);
+      --thumb-h: clamp(180px, 36vh, 220px);
+      --thumb-pos-x: 20%;
+    }
+  }
+
+  /* Safari fix */
   .lang-item{ -webkit-user-select: none; user-select: none; }
 </style>
 
@@ -5589,3 +5603,4 @@ const fillTicketsRowsFromLedger = async () => {
 
 </body>
 </html>
+
