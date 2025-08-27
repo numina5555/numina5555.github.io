@@ -5602,20 +5602,23 @@ const fillTicketsRowsFromLedger = async () => {
 </script>
 
 
-<style id="raffle-hero-rect">
+<style id="raffle-hero-rect-vertical">
+  /* Solo alargar hacia ABAJO: no tocamos --thumb-w */
   :root{
-    --thumb-w: clamp(560px, 62vw, 960px);
-    --thumb-h: clamp(300px, 42vh, 480px);
+    --thumb-h: clamp(320px, 46vh, 520px);
   }
+
+  /* El header crece con el nuevo alto para empujar el contenido */
   .mbox-card-head{
     height: auto !important;
     min-height: calc(var(--thumb-top) + var(--thumb-h) + 24px) !important;
     padding-bottom: 18px;
   }
+
+  /* Ajuste responsive */
   @media (max-width: 840px){
     :root{
-      --thumb-w: clamp(300px, 92vw, 640px);
-      --thumb-h: clamp(220px, 36vh, 360px);
+      --thumb-h: clamp(240px, 38vh, 360px);
     }
   }
 </style>
