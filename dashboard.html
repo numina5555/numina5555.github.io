@@ -4433,11 +4433,10 @@ document.addEventListener('DOMContentLoaded', () => {
       var btn = document.createElement('button');
       btn.id = 'nmn-back-btn-compras';
       btn.className = 'nmn-back';
-      btn.textContent = (window.dI18n?dI18n.t('buttons.back'):'Volver');
-      bar.appendChild(btn);
+      btn.innerHTML = '<span data-i18n="buttons.back">' + (window.dI18n ? dI18n.t('buttons.back') : 'Volver') + '</span>';bar.appendChild(btn);
       tab.appendChild(style);
       tab.appendChild(bar);
-      if(dash && dash.parentNode){ dash.parentNode.insertBefore(tab, dash.nextSibling); }
+      try{if(window.dI18n&&dI18n.apply)dI18n.apply();}catch(e){}if(dash && dash.parentNode){ dash.parentNode.insertBefore(tab, dash.nextSibling); }
       else { document.body.appendChild(tab); }
     }
     return tab;
@@ -4606,11 +4605,10 @@ document.addEventListener('DOMContentLoaded', () => {
       var btn = document.createElement('button');
       btn.id = 'nmn-back-btn-referidos';
       btn.className = 'nmn-back';
-      btn.textContent = (window.dI18n?dI18n.t('buttons.back'):'Volver');
-      bar.appendChild(btn);
+      btn.innerHTML = '<span data-i18n="buttons.back">' + (window.dI18n ? dI18n.t('buttons.back') : 'Volver') + '</span>';bar.appendChild(btn);
       tab.appendChild(style);
       tab.appendChild(bar);
-      if(dash && dash.parentNode){ dash.parentNode.insertBefore(tab, dash.nextSibling); }
+      try{if(window.dI18n&&dI18n.apply)dI18n.apply();}catch(e){}if(dash && dash.parentNode){ dash.parentNode.insertBefore(tab, dash.nextSibling); }
       else { document.body.appendChild(tab); }
     }
     return tab;
@@ -4812,11 +4810,10 @@ document.addEventListener('DOMContentLoaded', () => {
       var btn = document.createElement('button');
       btn.id = 'nmn-back-btn-tickets';
       btn.className = 'nmn-back';
-      btn.textContent = (window.dI18n?dI18n.t('buttons.back'):'Volver');
-      bar.appendChild(btn);
+      btn.innerHTML = '<span data-i18n="buttons.back">' + (window.dI18n ? dI18n.t('buttons.back') : 'Volver') + '</span>';bar.appendChild(btn);
       tab.appendChild(bar);
 
-      var wrap = document.createElement('div');
+      try{if(window.dI18n&&dI18n.apply)dI18n.apply();}catch(e){}var wrap = document.createElement('div');
       wrap.className = 'ta-wrap';
       wrap.innerHTML =
         '<div class="ta-title" id="ta-title-i18n" data-i18n="raffles.activeTickets">' + (window.dI18n? dI18n.t('raffles.activeTickets') : 'Tickets activos') + '</div>'+
