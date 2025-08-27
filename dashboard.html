@@ -279,6 +279,11 @@
     (function(){
       const DICT = {
         en: {
+            "table.date": "Date",
+            "table.product": "Product",
+            "table.tickets": "Tickets",
+            "table.referral": "Referral",
+            "table.noData": "No data",
           "catalog.goldPitch": "🪙 Gold: Protect your money, secure your future",
           "catalog.platinumPitch": "🪙 Platinum: Solid value to diversify your wealth",
           "catalog.rolexPitch": "⏱️ Rolex: An icon of precision and prestige",
@@ -364,6 +369,11 @@
       
         },
         es: {
+            "table.date": "Fecha",
+            "table.product": "Producto",
+            "table.tickets": "Tickets",
+            "table.referral": "Referido",
+            "table.noData": "Sin datos",
           "catalog.goldPitch": "🪙 Oro: Protegé tu dinero, asegurá tu futuro",
           "catalog.platinumPitch": "🪙 Platino: Valor sólido para diversificar tu patrimonio",
           "catalog.rolexPitch": "⏱️ Rolex: Icono de precisión y prestigio",
@@ -449,6 +459,11 @@
       
         },
         pt: {
+            "table.date": "Data",
+            "table.product": "Produto",
+            "table.tickets": "Tickets",
+            "table.referral": "Indicação",
+            "table.noData": "Sem dados",
           "catalog.goldPitch": "🪙 Ouro: Proteja seu dinheiro, garanta seu futuro",
           "catalog.platinumPitch": "🪙 Platina: Valor sólido para diversificar seu patrimônio",
           "catalog.rolexPitch": "⏱️ Rolex: Ícone de precisão e prestígio",
@@ -4829,10 +4844,10 @@ document.addEventListener('DOMContentLoaded', () => {
         '  <table id="tickets-activos-table">'+
         '    <thead>'+
         '      <tr>'+
-        '        <th class="col-date">FECHA</th>'+
-        '        <th class="col-product">PRODUCTO</th>'+
-        '        <th class="col-tickets">TICKETS</th>'+
-        '        <th class="col-referrals">REFERIDO</th>'+
+        '        <th class="col-date"><span data-i18n="table.date">' + (window.dI18n? dI18n.t('table.date') : 'FECHA') + '</span></th>'+
+        '        <th class="col-product"><span data-i18n="table.product">' + (window.dI18n? dI18n.t('table.product') : 'PRODUCTO') + '</span></th>'+
+        '        <th class="col-tickets"><span data-i18n="table.tickets">' + (window.dI18n? dI18n.t('table.tickets') : 'TICKETS') + '</span></th>'+
+        '        <th class="col-referrals"><span data-i18n="table.referral">' + (window.dI18n? dI18n.t('table.referral') : 'REFERIDO') + '</span></th>'+
         '      </tr>'+
         '    </thead>'+
         '    <tbody id="tickets-activos-body"></tbody>'+
@@ -4937,7 +4952,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!tbody) return;
     
     if(!rows || !rows.length){
-      tbody.innerHTML = '<tr><td data-col="date" data-label="FECHA">—</td><td data-col="product" data-label="PRODUCTO">Sin datos</td><td data-col="tickets" data-label="TICKETS">—</td><td data-col="referrals" data-label="REFERIDO">—</td></tr>';
+      tbody.innerHTML = '<tr>'+
+        '<td data-col="date" data-label="' + (window.dI18n? dI18n.t('table.date') : 'FECHA') + '">—</td>'+
+        '<td data-col="product" data-label="' + (window.dI18n? dI18n.t('table.product') : 'PRODUCTO') + '">' + (window.dI18n? dI18n.t('table.noData') : 'Sin datos') + '</td>'+
+        '<td data-col="tickets" data-label="' + (window.dI18n? dI18n.t('table.tickets') : 'TICKETS') + '">—</td>'+
+        '<td data-col="referrals" data-label="' + (window.dI18n? dI18n.t('table.referral') : 'REFERIDO') + '">—</td>'+
+      '</tr>';
       return;
     }
     tbody.innerHTML = rows.map(function(r){
@@ -4945,10 +4965,10 @@ document.addEventListener('DOMContentLoaded', () => {
         ? ('<div class="ref-list">' + r.referido.map(function(x){ return '<span class="ref-chip">'+x+'</span>'; }).join('') + '</div>')
         : '—';
       return '<tr>' +
-        '<td data-col="date" data-label="FECHA">'+ fmtDate(r.date) +'</td>' +
-        '<td data-col="product" data-label="PRODUCTO">'+ r.product +'</td>' +
-        '<td data-col="tickets" data-label="TICKETS">'+ r.tickets +'</td>' +
-        '<td data-col="referrals" data-label="REFERIDO">'+ refHtml +'</td>' +
+        '<td data-col="date" data-label="' + (window.dI18n? dI18n.t('table.date') : 'FECHA') + '">'+ fmtDate(r.date) +'</td>' +
+        '<td data-col="product" data-label="' + (window.dI18n? dI18n.t('table.product') : 'PRODUCTO') + '">'+ r.product +'</td>' +
+        '<td data-col="tickets" data-label="' + (window.dI18n? dI18n.t('table.tickets') : 'TICKETS') + '">'+ r.tickets +'</td>' +
+        '<td data-col="referrals" data-label="' + (window.dI18n? dI18n.t('table.referral') : 'REFERIDO') + '">'+ refHtml +'</td>' +
       '</tr>';
     }).join('');
     
