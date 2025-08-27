@@ -5353,10 +5353,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function _fmtDate(d){
     try{
-      var dt = (typeof d === 'string' && /\d{4}-\d{2}-\d{2}/.test(d)) ? new Date(d+'T00:00:00') : new Date(d);
-      var dd = dt.getDate(); var mm = dt.getMonth()+1; var yy = dt.getFullYear();
-      return dd+'/'+mm+'/'+yy;
-    }catch(_){ return d || '—'; }
+      if(!d) return '—';
+      // If it's a string, try to extract YYYY-MM-DD safely
+      if (typeof d === 'string'){
+        var m = d.match(/(\d{4})-(\d{2})-(\d{2})/);
+        if (m){ return m[3] + '/' + m[2] + '/' + m[1]; }
+        // Fallback to native parser (ISO strings)
+        var dtIso = new Date(d);
+        if (!isNaN(dtIso.getTime())){ return dtIso.toLocaleDateString(); }
+        return '—';
+      }
+      // If it's a Date or timestamp
+      var dt = (d instanceof Date) ? d : new Date(d);
+      if (!isNaN(dt.getTime())){ return dt.toLocaleDateString(); }
+      return '—';
+    }catch(_){ return '—'; }
   }
   async function _getClient(){
     try {
