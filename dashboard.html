@@ -725,7 +725,7 @@
           }
           if (!key) return name;
           // return a translatable span so language switches re-translate automatically
-          return '<span data-i18n=\"'+key+'\">'+(dI18n.t(key) || name)+'</span>';
+          return '<span data-i18n=\"'+key+'\"> + (dI18n.t(key) || name)+'</span>';
         } catch(_){ return name; }
       };
 
@@ -741,7 +741,7 @@
             key = (/(edici[oó]n limitada|limited)/i.test(name)) ? 'productNames.braceletLimited' : 'product.bracelet';
           }
           if (!key) return name;
-          return '<span data-i18n="'+key+'">'+(dI18n.t(key) || name)+'</span>';
+          return '<span data-i18n="'+key+'"> + (dI18n.t(key) || name)+'</span>';
         }catch(_){ return name; }
       }
 
@@ -1644,7 +1644,7 @@ try {
       tbody.innerHTML = data.map(p=>{
         const created = p.created_at ? new Date(p.created_at).toLocaleDateString() : '';
         const value = (typeof p.value === 'number') ? p.value.toFixed(2) : '0.00';
-        const claimCell = '<button class="action-btn" data-action="claim" data-id="'+(p.id||'')+'">'+('<span data-i18n="tables.claim">'+(dI18n.t('tables.claim')||'Claim')+'</span>')+'</button>';
+        const claimCell = '<button class="action-btn" data-action="claim" data-id="'+(p.id||'')+'"> + ('<span data-i18n="tables.claim"> + (dI18n.t('tables.claim')||'Claim')+'</span>')+'</button>;
         return `<tr>
           <td>${(window.i18nProductName?window.i18nProductName(p.product_name||''):(p.product_name||''))}</td>
           <td>${created}</td>
@@ -1820,8 +1820,8 @@ function openSKU(sku, trigger){
     lastTrigger = trigger || document.activeElement;
 
     if (skuEl)  skuEl.textContent  = p.sku;
-    if(nameEl){ var k=i18nKeysForSKU(sku); if(k){ nameEl.innerHTML='<span data-i18n="'+k.name+'">'+(dI18n.t(k.name)||p.name)+'</span>'; } else { nameEl.textContent=p.name; } }
-    if(descEl){ var k=i18nKeysForSKU(sku); if(k){ descEl.innerHTML='<span data-i18n="'+k.desc+'">'+(dI18n.t(k.desc)||p.desc)+'</span>'; } else { descEl.textContent=p.desc; } }
+    if(nameEl){ var k=i18nKeysForSKU(sku); if(k){ nameEl.innerHTML='<span data-i18n="'+k.name+'"> + (dI18n.t(k.name)||p.name)+'</span>'; } else { nameEl.textContent=p.name; } }
+    if(descEl){ var k=i18nKeysForSKU(sku); if(k){ descEl.innerHTML='<span data-i18n="'+k.desc+'"> + (dI18n.t(k.desc)||p.desc)+'</span>'; } else { descEl.textContent=p.desc; } }
     if (priceEl)priceEl.textContent= money(p.price);
     try{ if (window.document && typeof p.price === 'number') { var __buy=document.getElementById('nmBuy'); if(__buy){ __buy.dataset.price = String(p.price); __buy.dataset.sku = p.sku || ''; } } }catch(_){ }
 if (imgEl)  imgEl.src          = p.img;
@@ -1836,7 +1836,7 @@ if (imgEl)  imgEl.src          = p.img;
       }
       var pitchEl = document.getElementById('nmPitch');
       if (pitchEl) {
-        if (p.pitch) { var __k=i18nKeysForSKU(sku); if(__k && __k.pitch){ pitchEl.innerHTML = '<span data-i18n="'+__k.pitch+'">'+(dI18n.t(__k.pitch)||p.pitch)+'</span>'; } else { pitchEl.innerHTML = p.pitch; }
+        if (p.pitch) { var __k=i18nKeysForSKU(sku); if(__k && __k.pitch){ pitchEl.innerHTML = '<span data-i18n="'+__k.pitch+'"> + (dI18n.t(__k.pitch)||p.pitch)+'</span>'; } else { pitchEl.innerHTML = p.pitch; }
           pitchEl.style.display = '';
           try{ if(window.dI18n) dI18n.apply(); }catch(_){ }
         // make sure pitch is right after price
@@ -1852,7 +1852,7 @@ if (imgEl)  imgEl.src          = p.img;
       if (!pitchEl) {
         if (p.pitch && descEl) {
           try {
-            descEl.innerHTML = p.pitch + '<br><br>' + (p.desc || '');
+            descEl.innerHTML = p.pitch + '<br><br> + (p.desc || '');
           } catch(_) {
             descEl.textContent = (p.desc || '');
           }
@@ -2654,7 +2654,7 @@ if (!link) {
     EL.mediaT.textContent = product;
     EL.price.textContent = (value !== '—') ? (value + ' USDT') : '—';
     EL.subtotal.textContent = (value !== '—') ? (value + ' USDT') : '—';
-    EL.total.innerHTML = '<strong>' + ((value !== '—') ? (value + ' USDT') : '—') + '</strong>';
+    EL.total.innerHTML = '<strong> + ((value !== '—') ? (value + ' USDT') : '—') + '</strong>';
     EL.date.textContent = date || '—';
     EL.order.textContent = '#—';
     // Robust: set "Order created" and "Payment link generated" dates from the date chip
@@ -3826,7 +3826,7 @@ if (fn.error || !paymentUrl){
 async function cargarSorteos(){
   try{
     const tbody = document.getElementById('sorteos-tbody');
-    if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">'+ (window.dI18n ? dI18n.t('labels.loading') : 'Cargando…') +'</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;"> + (window.dI18n ? dI18n.t('labels.loading') : 'Cargando…') +'</td></tr>';
 
     const supabase = getSupabase();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -3891,7 +3891,7 @@ async function cargarSorteos(){
 
     const rows = Array.isArray(hist) ? hist : [];
     if (!rows.length){
-      if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;"><span data-i18n="raffles.noParticipations">'+ (window.dI18n ? dI18n.t('raffles.noParticipations') : 'Sin participaciones') +'</span></td></tr>';
+      if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;"><span data-i18n="raffles.noParticipations"> + (window.dI18n ? dI18n.t('raffles.noParticipations') : 'Sin participaciones') +'</span></td></tr>';
       return;
     }
 
@@ -4148,15 +4148,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <div class="mbox-wrap">
               <div class="mbox-tabs">
-                <button class="mbox-tab active"><span data-i18n="mbox.tabs.open">' + (window.dI18n? dI18n.t('mbox.tabs.open') : 'Abiertos') + '</span></button>'
-                <button class="mbox-tab"><span data-i18n="mbox.tabs.upcoming">' + (window.dI18n? dI18n.t('mbox.tabs.upcoming') : 'Próximamente') + '</span></button>'
-                <button class="mbox-tab"><span data-i18n="mbox.tabs.closed">' + (window.dI18n? dI18n.t('mbox.tabs.closed') : 'Finalizados') + '</span></button>'
-                <div class="mbox-search"><input data-i18n-ph="filters.search.raffles" placeholder="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" /></div>
+                <button class="mbox-tab active"><span data-i18n="mbox.tabs.open">${window.dI18n? dI18n.t('mbox.tabs.open') : 'Abiertos'}</span></button>
+                <button class="mbox-tab"><span data-i18n="mbox.tabs.upcoming">${window.dI18n? dI18n.t('mbox.tabs.upcoming') : 'Próximamente'}</span></button>
+                <button class="mbox-tab"><span data-i18n="mbox.tabs.closed">${window.dI18n? dI18n.t('mbox.tabs.closed') : 'Finalizados'}</span></button>
+                <div class="mbox-search"><input data-i18n-ph="filters.search.raffles" placeholder=" + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" /></div>
               </div>
 
               <div class="mbox-card">
                 <div class="mbox-card-head">
-                  <span class="mbox-chip" data-i18n="mbox.status.open">' + (window.dI18n? dI18n.t('mbox.status.open') : 'Abierto') + '</span>'
+                  <span class="mbox-chip" data-i18n="mbox.status.open">${window.dI18n? dI18n.t('mbox.status.open') : 'Abierto'}</span>
                 </div>
                 <div class="mbox-card-body">
                   <div class="mbox-title">Sorteo Semanal</div>
@@ -4171,8 +4171,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="mbox-badge">Neto: 0 tickets</span>
                   </div>
                   <div class="mbox-cta">
-                    <button class="mbox-btn" id="mb-detalles-btn"><span data-i18n="mbox.actions.details">' + (window.dI18n? dI18n.t('mbox.actions.details') : 'Detalles') + '</span></button>'
-                    <button class="mbox-btn mbox-primary" id="mb-participar-btn"><span data-i18n="mbox.actions.participate">' + (window.dI18n? dI18n.t('mbox.actions.participate') : 'Participar') + '</span></button>'
+                    <button class="mbox-btn" id="mb-detalles-btn"><span data-i18n="mbox.actions.details"> + (window.dI18n? dI18n.t('mbox.actions.details') : 'Detalles') + '</span></button>
+                    <button class="mbox-btn mbox-primary" id="mb-participar-btn"><span data-i18n="mbox.actions.participate"> + (window.dI18n? dI18n.t('mbox.actions.participate') : 'Participar') + '</span></button>
                   </div>
                 </div>
               </div>
@@ -4343,15 +4343,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <div class="mbox-wrap">
               <div class="mbox-tabs">
-                <button class="mbox-tab active"><span data-i18n="mbox.tabs.open">' + (window.dI18n? dI18n.t('mbox.tabs.open') : 'Abiertos') + '</span></button>'
-                <button class="mbox-tab"><span data-i18n="mbox.tabs.upcoming">' + (window.dI18n? dI18n.t('mbox.tabs.upcoming') : 'Próximamente') + '</span></button>'
-                <button class="mbox-tab"><span data-i18n="mbox.tabs.closed">' + (window.dI18n? dI18n.t('mbox.tabs.closed') : 'Finalizados') + '</span></button>'
-                <div class="mbox-search"><input data-i18n-ph="filters.search.raffles" placeholder="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" /></div>
+                <button class="mbox-tab active"><span data-i18n="mbox.tabs.open">${window.dI18n? dI18n.t('mbox.tabs.open') : 'Abiertos'}</span></button>
+                <button class="mbox-tab"><span data-i18n="mbox.tabs.upcoming">${window.dI18n? dI18n.t('mbox.tabs.upcoming') : 'Próximamente'}</span></button>
+                <button class="mbox-tab"><span data-i18n="mbox.tabs.closed">${window.dI18n? dI18n.t('mbox.tabs.closed') : 'Finalizados'}</span></button>
+                <div class="mbox-search"><input data-i18n-ph="filters.search.raffles" placeholder=" + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" /></div>
               </div>
 
               <div class="mbox-card">
                 <div class="mbox-card-head">
-                  <span class="mbox-chip" data-i18n="mbox.status.open">' + (window.dI18n? dI18n.t('mbox.status.open') : 'Abierto') + '</span>'
+                  <span class="mbox-chip" data-i18n="mbox.status.open">${window.dI18n? dI18n.t('mbox.status.open') : 'Abierto'}</span>
                 </div>
                 <div class="mbox-card-body">
                   <div class="mbox-title">Sorteo Semanal</div>
@@ -4366,8 +4366,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="mbox-badge">Neto: 0 tickets</span>
                   </div>
                   <div class="mbox-cta">
-                    <button class="mbox-btn" id="mb-detalles-btn"><span data-i18n="mbox.actions.details">' + (window.dI18n? dI18n.t('mbox.actions.details') : 'Detalles') + '</span></button>'
-                    <button class="mbox-btn mbox-primary" id="mb-participar-btn"><span data-i18n="mbox.actions.participate">' + (window.dI18n? dI18n.t('mbox.actions.participate') : 'Participar') + '</span></button>'
+                    <button class="mbox-btn" id="mb-detalles-btn"><span data-i18n="mbox.actions.details"> + (window.dI18n? dI18n.t('mbox.actions.details') : 'Detalles') + '</span></button>
+                    <button class="mbox-btn mbox-primary" id="mb-participar-btn"><span data-i18n="mbox.actions.participate"> + (window.dI18n? dI18n.t('mbox.actions.participate') : 'Participar') + '</span></button>
                   </div>
                 </div>
               </div>
@@ -4450,7 +4450,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!tab) return;
     if(tab.querySelector('#nmn-back-btn')) return;
     var content = tab.innerHTML;
-    tab.innerHTML = '<style>.nmn-toolbar{position:sticky;top:0;z-index:2;display:flex;justify-content:flex-start;}.nmn-back{margin:14px 0 12px 0;background:var(--primary);border:1px solid var(--primary);color:#111;padding:8px 12px;border-radius:12px;font-weight:800;cursor:pointer}.nmn-back:hover{filter:brightness(0.95)}.nmn-back:active{transform:translateY(1px)}</style>' + '<div class="nmn-toolbar"><button id="nmn-back-btn" class="nmn-back"><span data-i18n="buttons.back">'+(window.dI18n?dI18n.t('buttons.back'):'Volver')+'</span></button></div>' + content;
+    tab.innerHTML = '<style>.nmn-toolbar{position:sticky;top:0;z-index:2;display:flex;justify-content:flex-start;}.nmn-back{margin:14px 0 12px 0;background:var(--primary);border:1px solid var(--primary);color:#111;padding:8px 12px;border-radius:12px;font-weight:800;cursor:pointer}.nmn-back:hover{filter:brightness(0.95)}.nmn-back:active{transform:translateY(1px)}</style>' + '<div class="nmn-toolbar"><button id="nmn-back-btn" class="nmn-back"><span data-i18n="buttons.back"> + (window.dI18n?dI18n.t('buttons.back'):'Volver')+'</span></button></div>' + content;
   }
   function resetSearches(root){ try{ var inputs = root.querySelectorAll('input[placeholder*="Buscar"], .mbox-search input'); inputs.forEach(function(inp){ inp.value=''; inp.dispatchEvent(new Event('input', {bubbles:true})); }); root.querySelectorAll('.mbox-card').forEach(function(c){ c.style.display=''; }); }catch(_){}} 
   function wireBack(){ var dash=document.getElementById('main-dashboard'); var tab=document.getElementById('tab-mystery'); if(!tab) return; ensureToolbar(tab); var back=tab.querySelector('#nmn-back-btn'); if(back && !back.__bound){ back.__bound=true; back.addEventListener('click', function(ev){ ev.preventDefault(); resetSearches(tab); fadeOut(tab,200,function(){ if(dash){ dash.classList.remove('section-content'); dash.style.removeProperty('display'); fadeIn(dash,200); try{ window.scrollTo({top:0, behavior:'smooth'}); }catch(_){ } } }); }); } }
@@ -4507,7 +4507,7 @@ document.addEventListener('DOMContentLoaded', () => {
       var btn = document.createElement('button');
       btn.id = 'nmn-back-btn-compras';
       btn.className = 'nmn-back';
-      btn.innerHTML = '<span data-i18n="buttons.back">' + (window.dI18n ? dI18n.t('buttons.back') : 'Volver') + '</span>';bar.appendChild(btn);
+      btn.innerHTML = '<span data-i18n="buttons.back"> + (window.dI18n ? dI18n.t('buttons.back') : 'Volver') + '</span>';bar.appendChild(btn);
       tab.appendChild(style);
       tab.appendChild(bar);
       try{if(window.dI18n&&dI18n.apply)dI18n.apply();}catch(e){}if(dash && dash.parentNode){ dash.parentNode.insertBefore(tab, dash.nextSibling); }
@@ -4679,7 +4679,7 @@ document.addEventListener('DOMContentLoaded', () => {
       var btn = document.createElement('button');
       btn.id = 'nmn-back-btn-referidos';
       btn.className = 'nmn-back';
-      btn.innerHTML = '<span data-i18n="buttons.back">' + (window.dI18n ? dI18n.t('buttons.back') : 'Volver') + '</span>';bar.appendChild(btn);
+      btn.innerHTML = '<span data-i18n="buttons.back"> + (window.dI18n ? dI18n.t('buttons.back') : 'Volver') + '</span>';bar.appendChild(btn);
       tab.appendChild(style);
       tab.appendChild(bar);
       try{if(window.dI18n&&dI18n.apply)dI18n.apply();}catch(e){}if(dash && dash.parentNode){ dash.parentNode.insertBefore(tab, dash.nextSibling); }
@@ -4884,29 +4884,29 @@ document.addEventListener('DOMContentLoaded', () => {
       var btn = document.createElement('button');
       btn.id = 'nmn-back-btn-tickets';
       btn.className = 'nmn-back';
-      btn.innerHTML = '<span data-i18n="buttons.back">' + (window.dI18n ? dI18n.t('buttons.back') : 'Volver') + '</span>';bar.appendChild(btn);
+      btn.innerHTML = '<span data-i18n="buttons.back"> + (window.dI18n ? dI18n.t('buttons.back') : 'Volver') + '</span>';bar.appendChild(btn);
       tab.appendChild(bar);
 
       try{if(window.dI18n&&dI18n.apply)dI18n.apply();}catch(e){}var wrap = document.createElement('div');
       wrap.className = 'ta-wrap';
       wrap.innerHTML =
-        '<div class="ta-title" id="ta-title-i18n" data-i18n="raffles.activeTickets">' + (window.dI18n? dI18n.t('raffles.activeTickets') : 'Tickets activos') + '</div>'+
+        '<div class="ta-title" id="ta-title-i18n" data-i18n="raffles.activeTickets"> + (window.dI18n? dI18n.t('raffles.activeTickets') : 'Tickets activos') + '</div>'+
         '<div class="kpi-row">'+
-        '  <div class="kpi-card"><div class="kpi-title"><span data-i18n="raffles.activeTickets">' + (window.dI18n? dI18n.t('raffles.activeTickets') : 'Tickets activos') + '</div><div class="kpi-value" id="kpi-active">--</div></div>'+
-        '  <div class="kpi-card"><div class="kpi-title"><span data-i18n="raffles.ticketsUsed">' + (window.dI18n? dI18n.t('raffles.ticketsUsed') : 'Tickets usados') + '</div><div class="kpi-value" id="kpi-used">--</div></div>'+
+        '  <div class="kpi-card"><div class="kpi-title"><span data-i18n="raffles.activeTickets"> + (window.dI18n? dI18n.t('raffles.activeTickets') : 'Tickets activos') + '</div><div class="kpi-value" id="kpi-active">--</div></div>'+
+        '  <div class="kpi-card"><div class="kpi-title"><span data-i18n="raffles.ticketsUsed"> + (window.dI18n? dI18n.t('raffles.ticketsUsed') : 'Tickets usados') + '</div><div class="kpi-value" id="kpi-used">--</div></div>'+
         '</div>'+
         '<div class="ta-controls">'+
-        '  <label class="ta-search"><input type="text" data-i18n-ph="filters.search.raffles" placeholder="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '"></label>'+
-        '  <button class="ta-clear"><span data-i18n="filters.clear">' + (window.dI18n? dI18n.t('filters.clear') : 'Limpiar') + '</span></button>'+
+        '  <label class="ta-search"><input type="text" data-i18n-ph="filters.search.raffles" placeholder=" + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '"></label>'+
+        '  <button class="ta-clear"><span data-i18n="filters.clear"> + (window.dI18n? dI18n.t('filters.clear') : 'Limpiar') + '</span></button>+
         '</div>'+
         '<div class="table-container">'+
         '  <table id="tickets-activos-table">'+
         '    <thead>'+
         '      <tr>'+
-        '        <th class="col-date"><span data-i18n="table.date">' + (window.dI18n? dI18n.t('table.date') : 'FECHA') + '</span></th>'+
-        '        <th class="col-product"><span data-i18n="table.product">' + (window.dI18n? dI18n.t('table.product') : 'PRODUCTO') + '</span></th>'+
-        '        <th class="col-tickets"><span data-i18n="table.tickets">' + (window.dI18n? dI18n.t('table.tickets') : 'TICKETS') + '</span></th>'+
-        '        <th class="col-referrals"><span data-i18n="table.referral">' + (window.dI18n? dI18n.t('table.referral') : 'REFERIDO') + '</span></th>'+
+        '        <th class="col-date"><span data-i18n="table.date"> + (window.dI18n? dI18n.t('table.date') : 'FECHA') + '</span></th>'+
+        '        <th class="col-product"><span data-i18n="table.product"> + (window.dI18n? dI18n.t('table.product') : 'PRODUCTO') + '</span></th>'+
+        '        <th class="col-tickets"><span data-i18n="table.tickets"> + (window.dI18n? dI18n.t('table.tickets') : 'TICKETS') + '</span></th>'+
+        '        <th class="col-referrals"><span data-i18n="table.referral"> + (window.dI18n? dI18n.t('table.referral') : 'REFERIDO') + '</span></th>'+
         '      </tr>'+
         '    </thead>'+
         '    <tbody id="tickets-activos-body"></tbody>'+
@@ -5013,7 +5013,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!rows || !rows.length){
       tbody.innerHTML = '<tr>'+
         '<td data-col="date" data-label="' + (window.dI18n? dI18n.t('table.date') : 'FECHA') + '">—</td>'+
-        '<td data-col="product" data-label="' + (window.dI18n? dI18n.t('table.product') : 'PRODUCTO') + '">' + (window.dI18n? dI18n.t('table.noData') : 'Sin datos') + '</td>'+
+        '<td data-col="product" data-label="' + (window.dI18n? dI18n.t('table.product') : 'PRODUCTO') + '"> + (window.dI18n? dI18n.t('table.noData') : 'Sin datos') + '</td>'+
         '<td data-col="tickets" data-label="' + (window.dI18n? dI18n.t('table.tickets') : 'TICKETS') + '">—</td>'+
         '<td data-col="referrals" data-label="' + (window.dI18n? dI18n.t('table.referral') : 'REFERIDO') + '">—</td>'+
       '</tr>';
