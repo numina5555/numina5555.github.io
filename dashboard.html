@@ -5602,25 +5602,22 @@ const fillTicketsRowsFromLedger = async () => {
 </script>
 
 
-<style id="raffle-hero-rect-vertical">
-  /* Solo alargar hacia ABAJO: no tocamos --thumb-w */
+<style id="raffle-hero-rect-vertical-2">
+  /* Apenas más alto hacia ABAJO */
   :root{
-    --thumb-h: clamp(320px, 46vh, 520px);
+    --thumb-h: clamp(340px, 50vh, 560px);
   }
-
-  /* El header crece con el nuevo alto para empujar el contenido */
   .mbox-card-head{
     height: auto !important;
     min-height: calc(var(--thumb-top) + var(--thumb-h) + 24px) !important;
     padding-bottom: 18px;
   }
-
-  /* Ajuste responsive */
   @media (max-width: 840px){
     :root{
-      --thumb-h: clamp(240px, 38vh, 360px);
+      --thumb-h: clamp(240px, 40vh, 380px);
     }
   }
 </style>
 </body>
 </html>
+
