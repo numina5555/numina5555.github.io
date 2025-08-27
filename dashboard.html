@@ -631,6 +631,37 @@
           });
         } catch(_) {}
       })();
+        // === i18n placeholders helper ===
+        (function(){
+          function applyI18nPlaceholders(scope){
+            try{
+              var root = scope || document;
+              var nodes = root.querySelectorAll('[data-i18n-ph]');
+              nodes.forEach(function(el){
+                var key = el.getAttribute('data-i18n-ph');
+                if(!key) return;
+                var txt = (window.dI18n && dI18n.t) ? dI18n.t(key) : (el.getAttribute('placeholder')||'');
+                if(txt) el.setAttribute('placeholder', txt);
+                if(el.hasAttribute('aria-label')) el.setAttribute('aria-label', txt);
+              });
+            }catch(e){}
+          }
+          window.applyI18nPlaceholders = applyI18nPlaceholders;
+          try{
+            if(window.dI18n && typeof dI18n.apply==='function' && !window.__i18nPHWrapped){
+              var _origApply = dI18n.apply.bind(dI18n);
+              dI18n.apply = function(){
+                var r = _origApply.apply(this, arguments);
+                try{ applyI18nPlaceholders(document); }catch(_){}
+                return r;
+              };
+              window.__i18nPHWrapped = true;
+            }
+          }catch(_){}
+          // Run once on load
+          try{ applyI18nPlaceholders(document); }catch(_){}
+        })();
+        
 
       // === Extra NAV labels (merged into DICT) ===
       (function(){
@@ -1275,7 +1306,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 <div class="table-container">
 
 <div class="table-filter-inline" id="sorteos-filterbar">
-  <input id="sorteos-search" type="text" data-i18n-ph="filters.search.raffles" placeholder="Buscar sorteos…" aria-label="Buscar sorteos" />
+  <input id="sorteos-search" type="text" data-i18n-ph="filters.search.raffles" placeholder="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" aria-label="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" />
   <button id="sorteos-clear" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
 </div>
   <table id="sorteos-table">
@@ -4120,7 +4151,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="mbox-tab active"><span data-i18n="mbox.tabs.open">' + (window.dI18n? dI18n.t('mbox.tabs.open') : 'Abiertos') + '</span></button>'
                 <button class="mbox-tab"><span data-i18n="mbox.tabs.upcoming">' + (window.dI18n? dI18n.t('mbox.tabs.upcoming') : 'Próximamente') + '</span></button>'
                 <button class="mbox-tab"><span data-i18n="mbox.tabs.closed">' + (window.dI18n? dI18n.t('mbox.tabs.closed') : 'Finalizados') + '</span></button>'
-                <div class="mbox-search"><input placeholder="Buscar sorteos…" /></div>
+                <div class="mbox-search"><input data-i18n-ph="filters.search.raffles" placeholder="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" /></div>
               </div>
 
               <div class="mbox-card">
@@ -4315,7 +4346,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="mbox-tab active"><span data-i18n="mbox.tabs.open">' + (window.dI18n? dI18n.t('mbox.tabs.open') : 'Abiertos') + '</span></button>'
                 <button class="mbox-tab"><span data-i18n="mbox.tabs.upcoming">' + (window.dI18n? dI18n.t('mbox.tabs.upcoming') : 'Próximamente') + '</span></button>'
                 <button class="mbox-tab"><span data-i18n="mbox.tabs.closed">' + (window.dI18n? dI18n.t('mbox.tabs.closed') : 'Finalizados') + '</span></button>'
-                <div class="mbox-search"><input placeholder="Buscar sorteos…" /></div>
+                <div class="mbox-search"><input data-i18n-ph="filters.search.raffles" placeholder="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" /></div>
               </div>
 
               <div class="mbox-card">
@@ -4882,7 +4913,7 @@ document.addEventListener('DOMContentLoaded', () => {
         '  </table>'+
         '</div>';
       tab.appendChild(wrap);
-      try{ if(window.dI18n && typeof dI18n.apply==='function'){ dI18n.apply(); } }catch(_){ }
+      try{ if(window.dI18n && typeof dI18n.apply==='function'){ dI18n.apply(); } }catch(_){ } try{ if(window.applyI18nPlaceholders) window.applyI18nPlaceholders(tab); }catch(_){ }
       (function(){
         try{
           
