@@ -5415,7 +5415,7 @@ const fillTicketsRowsFromLedger = async () => {
 
       // 1) Fetch ledger rows
       var q = await sb.from('tickets_ledger')
-        .select('*, meta, referrer_id, source')
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       if(q.error){ console.warn('ledger error', q.error); return; }
@@ -5483,10 +5483,7 @@ const fillTicketsRowsFromLedger = async () => {
           ? purchasesById[ev.purchase_id].product_name
           : (_prettyName(ev.sku) || '—');
         var referido = [];
-        if (ev.referrer_id && usersById[ev.referrer_id]){
-          var u = usersById[ev.referrer_id];
-          referido = [ (u.full_name || u.email || (u.id||'')).toString() ];
-        } else if (typeof ev.source === 'string' && /referr?/i.test(ev.source)) {
+else if (typeof ev.source === 'string' && /referr?/i.test(ev.source)) {
           referido = [ 'Sí' ];
         } else if (typeof ev.sku === 'string' && /referr?/i.test(ev.sku)) {
           referido = [ 'Sí' ];
@@ -5521,6 +5518,14 @@ const fillTicketsRowsFromLedger = async () => {
             }
           }
         }
+/* REFERIDO FROM META */
+try{
+  if (!referido || !referido.length){
+    if (ev.meta && Array.isArray(ev.meta.emails) && ev.meta.emails.length){ referido = ev.meta.emails.slice(0,3); }
+    else if (ev.meta && ev.meta.email){ referido = [String(ev.meta.email)]; }
+    else if (/referr?/i.test(String(ev.sku||ev.source||''))){ referido = ['Sí']; }
+  }
+}catch(_){ }
 return { date: ev.created_at, product: product, tickets: parseInt(ev.count,10)||0, referido: referido };
       });
 
