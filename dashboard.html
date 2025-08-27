@@ -4819,14 +4819,14 @@ document.addEventListener('DOMContentLoaded', () => {
       var wrap = document.createElement('div');
       wrap.className = 'ta-wrap';
       wrap.innerHTML =
-        '<div class="ta-title">Tickets <em>Activos</em></div>'+
+        '<div class="ta-title"><span data-i18n="raffles.activeTickets">' + (window.dI18n? dI18n.t('raffles.activeTickets') : 'Tickets activos') + '</span></div>'+
         '<div class="kpi-row">'+
-        '  <div class="kpi-card"><div class="kpi-title">Tickets Activos</div><div class="kpi-value" id="kpi-active">--</div></div>'+
-        '  <div class="kpi-card"><div class="kpi-title">Tickets Usados</div><div class="kpi-value" id="kpi-used">--</div></div>'+
+        '  <div class="kpi-card"><div class="kpi-title"><span data-i18n="raffles.activeTickets">' + (window.dI18n? dI18n.t('raffles.activeTickets') : 'Tickets activos') + '</span></div><div class="kpi-value" id="kpi-active">--</div></div>'+
+        '  <div class="kpi-card"><div class="kpi-title"><span data-i18n="raffles.ticketsUsed">' + (window.dI18n? dI18n.t('raffles.ticketsUsed') : 'Tickets usados') + '</span></div><div class="kpi-value" id="kpi-used">--</div></div>'+
         '</div>'+
         '<div class="ta-controls">'+
-        '  <label class="ta-search"><input type="text" placeholder="Buscar…"></label>'+
-        '  <button class="ta-clear">Limpiar</button>'+
+        '  <label class="ta-search"><input type="text" data-i18n-ph="filters.search.raffles" placeholder="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '"></label>'+
+        '  <button class="ta-clear"><span data-i18n="filters.clear">' + (window.dI18n? dI18n.t('filters.clear') : 'Limpiar') + '</span></button>'+
         '</div>'+
         '<div class="table-container">'+
         '  <table id="tickets-activos-table">'+
@@ -4842,6 +4842,7 @@ document.addEventListener('DOMContentLoaded', () => {
         '  </table>'+
         '</div>';
       tab.appendChild(wrap);
+      try{ if(window.dI18n && typeof dI18n.apply==='function'){ dI18n.apply(); } }catch(_){ }
 
       if(dash && dash.parentNode){ dash.parentNode.insertBefore(tab, dash.nextSibling); }
       else { document.body.appendChild(tab); }
