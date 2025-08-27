@@ -1069,6 +1069,37 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 }
 
 </style>
+
+<!-- NUMINA: Hero para Sorteo Semanal (ticket brillante) -->
+<style id="raffle-hero-css">
+  /* Ruta sugerida del asset (cambiala cuando lo subas a tu server) */
+  :root{ --raffle-hero:url("assets/nmn_sorteo_ticket_wide_1600x600.webp"); }
+  /* Head del card con imagen de fondo + overlays para legibilidad */
+  .mbox-card-head{
+    position:relative;
+    height: clamp(220px, 28vh, 320px);
+    background-image:
+      radial-gradient(120% 100% at 85% 15%, rgba(255,215,0,.12) 0%, rgba(0,0,0,0) 60%),
+      linear-gradient(180deg, rgba(21,21,21,.6), rgba(15,15,15,.75)),
+      var(--raffle-hero);
+    background-size: cover, cover, cover;
+    background-position: left center, center, left center;
+    background-blend-mode: normal, multiply, normal;
+  }
+  .mbox-card-head::after{
+    content:""; position:absolute; inset:0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%,
+                                        rgba(0,0,0,.25) 40%,
+                                        rgba(0,0,0,.55) 100%);
+    pointer-events:none;
+  }
+  /* Asegura que el chip "Abierto" quede por encima del overlay */
+  .mbox-chip{ z-index:3; }
+
+  /* Safari vendor prefix fix for user-select on language menu (harmless elsewhere) */
+  .lang-item{ -webkit-user-select:none; user-select:none; }
+</style>
+
 </head>
 <body>
   <header class="dashboard-header">
