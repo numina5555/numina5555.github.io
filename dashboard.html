@@ -5273,5 +5273,69 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
+
+<!-- NUMINA PATCH 2: Unify KPI logic in Tickets Activos tab with Sorteos (use tickets_ledger) -->
+<script>
+(function(){
+  async function _getClient(){
+    try {
+      if (typeof getSupabase === 'function') return getSupabase();
+      if (window.supabase && window.SUPABASE_URL && window.SUPABASE_ANON_KEY){
+        return window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+      }
+    } catch(_) {}
+    return null;
+  }
+  async function _sumLedger(sb, uid){
+    try{
+      var { data, error } = await sb.from('tickets_ledger').select('count').eq('user_id', uid);
+      if (error || !Array.isArray(data)) return null;
+      var active = 0, used = 0;
+      for (var i=0;i<data.length;i++){
+        var n = parseInt(data[i] && data[i].count, 10); if (isNaN(n)) n = 0;
+        active += n;
+        if (n < 0) used += Math.abs(n);
+      }
+      return { active: active, used: used };
+    }catch(_){ return null; }
+  }
+  async function writeTicketsTabKpis(){
+    try{
+      var tab = document.getElementById('tab-tickets');
+      if (!tab || tab.style.display === 'none') return;
+      var sb = await _getClient();
+      if (!sb) return;
+      var auth = await sb.auth.getUser();
+      var user = auth && auth.data ? auth.data.user : null;
+      if (!user) return;
+      var sums = await _sumLedger(sb, user.id);
+      if (!sums) return;
+      var a = tab.querySelector('#kpi-active'); if (a) a.textContent = String(sums.active);
+      var u = tab.querySelector('#kpi-used');   if (u) u.textContent = String(sums.used);
+    }catch(_){}
+  }
+  // Run once on ready, and whenever the Tickets tab is inserted/shown.
+  function schedule(){
+    try { writeTicketsTabKpis(); } catch(_) {}
+    setTimeout(writeTicketsTabKpis, 150);  // after table paint
+    setTimeout(writeTicketsTabKpis, 600);  // after any async fills
+  }
+  // Observe visibility changes and DOM mutations within the app container
+  var obs = new MutationObserver(function(){
+    var tab = document.getElementById('tab-tickets');
+    if (tab && tab.style.display !== 'none') schedule();
+  });
+  try { obs.observe(document.body, { childList: true, subtree: true }); } catch(_){}
+  // Also run on hash changes (since navigation uses location hash)
+  window.addEventListener('hashchange', schedule);
+  window.addEventListener('popstate', schedule);
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', schedule);
+  } else { schedule(); }
+  // Expose a manual hook (optional)
+  window.nmnWriteTicketsTabKpis = writeTicketsTabKpis;
+})();
+</script>
+
 </body>
 </html>
