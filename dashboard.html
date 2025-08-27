@@ -5404,7 +5404,8 @@ document.addEventListener('DOMContentLoaded', () => {
       '</tr>';
     }).join('');
   }
-  async function fillTicketsRowsFromLedger(){
+  
+async function fillTicketsRowsFromLedger(){
     try{
       var tab = document.getElementById('tab-tickets');
       if(!tab || tab.style.display === 'none') return;
@@ -5412,7 +5413,7 @@ document.addEventListener('DOMContentLoaded', () => {
       var auth = await sb.auth.getUser();
       var user = auth && auth.data && auth.data.user; if(!user) return;
 
-      // 1) Fetch ledger rows (all fields so we can detect referrers if they exist)
+      // 1) Fetch ledger rows
       var q = await sb.from('tickets_ledger')
         .select('*')
         .eq('user_id', user.id)
@@ -5428,9 +5429,12 @@ document.addEventListener('DOMContentLoaded', () => {
       // 2) Preload purchases and (optionally) referrer users
       var pidSet = new Set();
       var refSet = new Set();
-      earned.forEach(function(ev){
+      var refRowsIdx = []; // indexes of earned that look like referral
+      earned.forEach(function(ev, idx){
         if (ev.purchase_id) pidSet.add(ev.purchase_id);
         if (ev.referrer_id) refSet.add(ev.referrer_id);
+        var sk = (ev.sku || ev.source || '').toString().toLowerCase();
+        if (/referr?/.test(sk)) refRowsIdx.push(idx);
       });
 
       var purchasesById = {};
@@ -5447,7 +5451,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }catch(_){} // users table podría no permitir lectura por RLS
       }
 
-      // 3) Map rows to table format
+      // 3) Opcional: buscar eventos para identificar 3Ref.C1 vs 1Ref.C3
+      var events = [];
+      try{
+        var er = await sb.from('ticket_events')
+          .select('type, emails, email, tickets, created_at')
+          .eq('user_id', user.id);
+        if(!er.error && Array.isArray(er.data)){ events = er.data.slice(); }
+      }catch(_){}
+
+      function nearestEvent(ts){
+        if(!events.length) return null;
+        var target = (new Date(ts)).getTime();
+        var best=null, bestAbs=Infinity, bestIdx=-1;
+        for(var i=0;i<events.length;i++){
+          var e = events[i];
+          var et = (new Date(e.created_at)).getTime();
+          var diff = Math.abs(et - target);
+          // accept within 36h; pick nearest
+          if (diff < bestAbs && diff <= 36*60*60*1000){ best=e; bestAbs=diff; bestIdx=i; }
+        }
+        if(best){ events.splice(bestIdx,1); }
+        return best;
+      }
+
+      // 4) Map rows
       var rows = earned.map(function(ev){
         var product = (ev.purchase_id && purchasesById[ev.purchase_id] && purchasesById[ev.purchase_id].product_name)
           ? purchasesById[ev.purchase_id].product_name
@@ -5461,6 +5489,22 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (typeof ev.sku === 'string' && /referr?/i.test(ev.sku)) {
           referido = [ 'Sí' ];
         }
+
+        // identificar patron 3Ref.C1 vs 1Ref.C3
+        var isReferral = /referr?/i.test((ev.sku||ev.source||'').toString());
+        if(isReferral){
+          var ne = nearestEvent(ev.created_at);
+          if(ne && typeof ne.type === 'string'){
+            var t = ne.type;
+            if(t === 'third_referral_first_purchase'){ product = '3Ref.C1'; if(Array.isArray(ne.emails)) referido = ne.emails.slice(0,3); }
+            else if(t === 'third_purchase'){ product = '1Ref.C3'; if(ne.email) referido = [ne.email]; }
+          } else {
+            // heuristic fallback
+            if((ev.sku||'').toString().toLowerCase().includes('c3')) product = '1Ref.C3';
+            else product = '3Ref.C1';
+          }
+        }
+
         return { date: ev.created_at, product: product, tickets: parseInt(ev.count,10)||0, referido: referido };
       });
 
@@ -5469,6 +5513,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.warn('fillTicketsRowsFromLedger failed', err);
     }
   }
+}
 
   // Run when the tab shows and after small delays to win last-write
   function scheduleFill(){
