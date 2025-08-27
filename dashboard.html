@@ -5458,8 +5458,6 @@ const fillTicketsRowsFromLedger = async () => {
           .select('type, emails, email, tickets, created_at')
           .eq('user_id', user.id);
         if(!er.error && Array.isArray(er.data)){ events = er.data.slice(); }
-      var poolC1 = events.filter(function(e){ return e && e.type === 'third_referral_first_purchase'; });
-      var poolC3 = events.filter(function(e){ return e && e.type === 'third_purchase'; });
       }catch(_){}
 
       function nearestEvent(ts){
@@ -5471,7 +5469,7 @@ const fillTicketsRowsFromLedger = async () => {
           var et = (new Date(e.created_at)).getTime();
           var diff = Math.abs(et - target);
           // accept within 36h; pick nearest
-          if (diff < bestAbs && diff <= 7*24*60*60*1000){ best=e; bestAbs=diff; bestIdx=i; }
+          if (diff < bestAbs && diff <= 36*60*60*1000){ best=e; bestAbs=diff; bestIdx=i; }
         }
         if(best){ events.splice(bestIdx,1); }
         return best;
@@ -5483,50 +5481,31 @@ const fillTicketsRowsFromLedger = async () => {
           ? purchasesById[ev.purchase_id].product_name
           : (_prettyName(ev.sku) || '—');
         var referido = [];
-else if (typeof ev.source === 'string' && /referr?/i.test(ev.source)) {
+        if (ev.referrer_id && usersById[ev.referrer_id]){
+          var u = usersById[ev.referrer_id];
+          referido = [ (u.full_name || u.email || (u.id||'')).toString() ];
+        } else if (typeof ev.source === 'string' && /referr?/i.test(ev.source)) {
           referido = [ 'Sí' ];
         } else if (typeof ev.sku === 'string' && /referr?/i.test(ev.sku)) {
           referido = [ 'Sí' ];
         }
 
-        
-        
         // identificar patron 3Ref.C1 vs 1Ref.C3
         var isReferral = /referr?/i.test((ev.sku||ev.source||'').toString());
-        // Preferir meta.kind si está presente
-        var kind = ev && ev.meta && (ev.meta.kind || ev.meta.KIND || ev.meta.reason || ev.meta.type);
-        if(kind){
-          var k = String(kind).toLowerCase();
-          if(k.includes('1ref') || k.includes('c3') || k.includes('third_purchase')){ product = '1Ref.C3'; }
-          else if(k.includes('3ref') || k.includes('c1') || k.includes('third_referral_first_purchase')){ product = '3Ref.C1'; }
-          isReferral = true;
-        }
-        if(isReferral && !kind){
+        if(isReferral){
           var ne = nearestEvent(ev.created_at);
           if(ne && typeof ne.type === 'string'){
             var t = ne.type;
             if(t === 'third_referral_first_purchase'){ product = '3Ref.C1'; if(Array.isArray(ne.emails)) referido = ne.emails.slice(0,3); }
             else if(t === 'third_purchase'){ product = '1Ref.C3'; if(ne.email) referido = [ne.email]; }
           } else {
-            // Fallback por pools (si hay eventos restantes sin usar)
-            if(poolC3 && poolC3.length){ var e3 = poolC3.shift(); product = '1Ref.C3'; if(e3 && e3.email) referido = [e3.email]; }
-            else if(poolC1 && poolC1.length){ var e1 = poolC1.shift(); product = '3Ref.C1'; if(e1 && Array.isArray(e1.emails)) referido = e1.emails.slice(0,3); }
-            else {
-              // Último recurso: heurística por SKU
-              if((ev.sku||'').toString().toLowerCase().includes('c3')) product = '1Ref.C3';
-              else product = '3Ref.C1';
-            }
+            // heuristic fallback
+            if((ev.sku||'').toString().toLowerCase().includes('c3')) product = '1Ref.C3';
+            else product = '3Ref.C1';
           }
         }
-/* REFERIDO FROM META */
-try{
-  if (!referido || !referido.length){
-    if (ev.meta && Array.isArray(ev.meta.emails) && ev.meta.emails.length){ referido = ev.meta.emails.slice(0,3); }
-    else if (ev.meta && ev.meta.email){ referido = [String(ev.meta.email)]; }
-    else if (/referr?/i.test(String(ev.sku||ev.source||''))){ referido = ['Sí']; }
-  }
-}catch(_){ }
-return { date: ev.created_at, product: product, tickets: parseInt(ev.count,10)||0, referido: referido };
+
+        return { date: ev.created_at, product: product, tickets: parseInt(ev.count,10)||0, referido: referido };
       });
 
       _renderRows(rows);
