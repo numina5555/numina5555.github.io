@@ -4845,27 +4845,42 @@ document.addEventListener('DOMContentLoaded', () => {
       try{ if(window.dI18n && typeof dI18n.apply==='function'){ dI18n.apply(); } }catch(_){ }
       (function(){
         try{
+          
           var el = document.getElementById('ta-title-i18n');
           if(!el) return;
-          var t = (el.textContent||'').trim();
-          if(!t) return;
-          // Split words; simple heuristic: highlight the word that is not "tickets"
-          var parts = t.split(/\s+/);
-          if(parts.length===1){
-            el.innerHTML = '<em>'+parts[0]+'</em>';
-            return;
+          function applyTitleHighlight(){
+            try{
+              if(!el) return;
+              // Avoid re-highlighting if <em> already present
+              if(el.querySelector('em')) return;
+              var t = (el.textContent||'').trim();
+              if(!t) return;
+              var parts = t.split(/\s+/);
+              if(parts.length===1){
+                el.innerHTML = '<em style=\"color:var(--primary)\">'+parts[0]+'</em>';
+                return;
+              }
+              function norm(w){ return w.toLowerCase().replace(/[^a-záéíóúüñçãõâêô]+/g,''); }
+              var idxTickets = parts.findIndex(function(w){ return norm(w)==='tickets'; });
+              if(idxTickets<0){
+                parts[0] = '<em style=\"color:var(--primary)\">'+parts[0]+'</em>';
+              }else{
+                var idxOther = idxTickets===0 ? 1 : 0;
+                parts[idxOther] = '<em style=\"color:var(--primary)\">'+parts[idxOther]+'</em>';
+              }
+              el.innerHTML = parts.join(' ');
+            }catch(e){}
           }
-          // find index of a word that equals "tickets" (case-insensitive, punctuation stripped)
-          function norm(w){ return w.toLowerCase().replace(/[^a-záéíóúüñçãõâêô]+/g,''); }
-          var idxTickets = parts.findIndex(function(w){ return norm(w)==='tickets'; });
-          if(idxTickets<0){
-            // default: highlight first word
-            parts[0] = '<em>'+parts[0]+'</em>';
-          }else{
-            var idxOther = idxTickets===0 ? 1 : 0;
-            parts[idxOther] = '<em>'+parts[idxOther]+'</em>';
-          }
-          el.innerHTML = parts.join(' ');
+          applyTitleHighlight();
+          // Keep highlight even if i18n rewrites later
+          try{
+            var mo = new MutationObserver(function() {
+              try{ mo.disconnect(); }catch(_){} // avoid loops
+              applyTitleHighlight();
+            });
+            mo.observe(el, {childList:true, characterData:true, subtree:true});
+          }catch(_){}
+
         }catch(e){}
       })();
 
