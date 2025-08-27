@@ -4819,7 +4819,7 @@ document.addEventListener('DOMContentLoaded', () => {
       var wrap = document.createElement('div');
       wrap.className = 'ta-wrap';
       wrap.innerHTML =
-        '<div class="ta-title"><span data-i18n="raffles.activeTickets">' + (window.dI18n? dI18n.t('raffles.activeTickets') : 'Tickets activos') + '</span></div>'+
+        '<div class="ta-title"><span id="ta-title-i18n" data-i18n="raffles.activeTickets">' + (window.dI18n? dI18n.t('raffles.activeTickets') : 'Tickets activos') + '</span></div>'+
         '<div class="kpi-row">'+
         '  <div class="kpi-card"><div class="kpi-title"><span data-i18n="raffles.activeTickets">' + (window.dI18n? dI18n.t('raffles.activeTickets') : 'Tickets activos') + '</span></div><div class="kpi-value" id="kpi-active">--</div></div>'+
         '  <div class="kpi-card"><div class="kpi-title"><span data-i18n="raffles.ticketsUsed">' + (window.dI18n? dI18n.t('raffles.ticketsUsed') : 'Tickets usados') + '</span></div><div class="kpi-value" id="kpi-used">--</div></div>'+
@@ -4843,6 +4843,31 @@ document.addEventListener('DOMContentLoaded', () => {
         '</div>';
       tab.appendChild(wrap);
       try{ if(window.dI18n && typeof dI18n.apply==='function'){ dI18n.apply(); } }catch(_){ }
+      (function(){
+        try{
+          var el = document.getElementById('ta-title-i18n');
+          if(!el) return;
+          var t = (el.textContent||'').trim();
+          if(!t) return;
+          // Split words; simple heuristic: highlight the word that is not "tickets"
+          var parts = t.split(/\s+/);
+          if(parts.length===1){
+            el.innerHTML = '<em>'+parts[0]+'</em>';
+            return;
+          }
+          // find index of a word that equals "tickets" (case-insensitive, punctuation stripped)
+          function norm(w){ return w.toLowerCase().replace(/[^a-záéíóúüñçãõâêô]+/g,''); }
+          var idxTickets = parts.findIndex(function(w){ return norm(w)==='tickets'; });
+          if(idxTickets<0){
+            // default: highlight first word
+            parts[0] = '<em>'+parts[0]+'</em>';
+          }else{
+            var idxOther = idxTickets===0 ? 1 : 0;
+            parts[idxOther] = '<em>'+parts[idxOther]+'</em>';
+          }
+          el.innerHTML = parts.join(' ');
+        }catch(e){}
+      })();
 
       if(dash && dash.parentNode){ dash.parentNode.insertBefore(tab, dash.nextSibling); }
       else { document.body.appendChild(tab); }
