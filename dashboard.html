@@ -1073,22 +1073,22 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
           <div class="stat-card">
             <h3>Tickets.vip</h3>
             <div class="value" id="balance-value">$---</div>
-            <div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</span></div>
+            <div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</div>
           </div>
           <div class="stat-card">
             <h3 data-i18n="stats.activePurchases">Compras activas</h3>
             <div class="value" id="purchases-value">--</div>
-            <div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</span></div>
+            <div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</div>
           </div>
           <div class="stat-card">
             <h3 data-i18n="stats.referrals">Referidos</h3>
             <div class="value" id="referrals-value">--</div>
-            <div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</span></div>
+            <div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</div>
           </div>
           <div class="stat-card">
             <h3 data-i18n="stats.tickets">Tickets activos</h3>
             <div class="value" id="tickets-value">--</div>
-            <div class="change negative"><i class="fas fa-arrow-down"></i><span data-i18n="labels.loading">Cargando…</span></div>
+            <div class="change negative"><i class="fas fa-arrow-down"></i><span data-i18n="labels.loading">Cargando…</div>
           </div>
         </div>
 
@@ -2845,7 +2845,7 @@ if (!link) {
             <div class="k">Producto</div> <div id="scProduct">—</div>
             <div class="k">Fecha</div>    <div id="scDate">—</div>
             <div class="k">Monto</div>    <div id="scAmount">—</div>
-            <div class="k">Estado</div>   <div><span id="scStatusBadge" class="sc-badge pending">Pendiente</span></div>
+            <div class="k">Estado</div>   <div><span id="scStatusBadge" class="sc-badge pending">Pendiente</div>
           </div>
         </div>
 
@@ -4319,9 +4319,9 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class=\"mb-head\">\
             <div class=\"mb-title\">Mystery Box — <em><span data-i18n=\"sections.sorteoTitle\">Sorteos</span></em></div>\
             <div class=\"mb-kpis\">\
-              <div class=\"mb-kpi\"><div class=\"label\"><span data-i18n=\"mb.kpi.yourTickets\">TUS TICKETS</span></div><div class=\"value\" id=\"mb-kpi-tickets\">—</div></div>\
-              <div class=\"mb-kpi\"><div class=\"label\"><span data-i18n=\"mb.kpi.openRaffles\">SORTEOS ABIERTOS</span></div><div class=\"value\" id=\"mb-kpi-abiertos\">—</div></div>\
-              <div class=\"mb-kpi\"><div class=\"label\"><span data-i18n=\"mb.kpi.yourParticipation\">TU PARTICIPACIÓN</span></div><div class=\"value\" id=\"mb-kpi-part\">—</div></div>\
+              <div class=\"mb-kpi\"><div class=\"label\"><span data-i18n=\"mb.kpi.yourTickets\">TUS TICKETS</div><div class=\"value\" id=\"mb-kpi-tickets\">—</div></div>\
+              <div class=\"mb-kpi\"><div class=\"label\"><span data-i18n=\"mb.kpi.openRaffles\">SORTEOS ABIERTOS</div><div class=\"value\" id=\"mb-kpi-abiertos\">—</div></div>\
+              <div class=\"mb-kpi\"><div class=\"label\"><span data-i18n=\"mb.kpi.yourParticipation\">TU PARTICIPACIÓN</div><div class=\"value\" id=\"mb-kpi-part\">—</div></div>\
             </div>\
           </div>';
         var header = headerWrap.firstElementChild; // <style> is first, then .mb-head
@@ -4819,10 +4819,10 @@ document.addEventListener('DOMContentLoaded', () => {
       var wrap = document.createElement('div');
       wrap.className = 'ta-wrap';
       wrap.innerHTML =
-        '<div class="ta-title"><span id="ta-title-i18n" data-i18n="raffles.activeTickets">' + (window.dI18n? dI18n.t('raffles.activeTickets') : 'Tickets activos') + '</span></div>'+
+        '<div class="ta-title" id="ta-title-i18n" data-i18n="raffles.activeTickets">' + (window.dI18n? dI18n.t('raffles.activeTickets') : 'Tickets activos') + '</div>'+
         '<div class="kpi-row">'+
-        '  <div class="kpi-card"><div class="kpi-title"><span data-i18n="raffles.activeTickets">' + (window.dI18n? dI18n.t('raffles.activeTickets') : 'Tickets activos') + '</span></div><div class="kpi-value" id="kpi-active">--</div></div>'+
-        '  <div class="kpi-card"><div class="kpi-title"><span data-i18n="raffles.ticketsUsed">' + (window.dI18n? dI18n.t('raffles.ticketsUsed') : 'Tickets usados') + '</span></div><div class="kpi-value" id="kpi-used">--</div></div>'+
+        '  <div class="kpi-card"><div class="kpi-title"><span data-i18n="raffles.activeTickets">' + (window.dI18n? dI18n.t('raffles.activeTickets') : 'Tickets activos') + '</div><div class="kpi-value" id="kpi-active">--</div></div>'+
+        '  <div class="kpi-card"><div class="kpi-title"><span data-i18n="raffles.ticketsUsed">' + (window.dI18n? dI18n.t('raffles.ticketsUsed') : 'Tickets usados') + '</div><div class="kpi-value" id="kpi-used">--</div></div>'+
         '</div>'+
         '<div class="ta-controls">'+
         '  <label class="ta-search"><input type="text" data-i18n-ph="filters.search.raffles" placeholder="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '"></label>'+
