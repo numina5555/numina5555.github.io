@@ -5222,5 +5222,56 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
+
+<!-- NUMINA PATCH: Unify tickets KPI logic across Dashboard and Sorteos -->
+<script>
+(function(){
+  // Sum tickets from tickets_ledger for the current user (positives + negatives)
+  async function sumActiveTickets(){
+    try{
+      var sb = (typeof getSupabase === 'function') ? getSupabase() : null;
+      if(!sb) return null;
+      var auth = await sb.auth.getUser();
+      if (auth && auth.error) return null;
+      var user = auth && auth.data ? auth.data.user : null;
+      if(!user) return null;
+      var resp = await sb.from('tickets_ledger').select('count').eq('user_id', user.id);
+      if (resp && !resp.error && Array.isArray(resp.data)){
+        return resp.data.reduce(function(acc, r){
+          var n = parseInt(r && r.count, 10); if (isNaN(n)) n = 0;
+          return acc + n;
+        }, 0);
+      }
+      return null;
+    }catch(_){ return null; }
+  }
+
+  async function writeDashboardTickets(){
+    try{
+      var el = document.getElementById('tickets-value');
+      if(!el) return;
+      var total = await sumActiveTickets();
+      if (typeof total === 'number') el.textContent = String(total);
+    }catch(_){}
+  }
+
+  // Wrap cargarDashboard to enforce the correct logic after it runs
+  try{
+    var _orig = window.cargarDashboard;
+    window.cargarDashboard = async function(){
+      if (typeof _orig === 'function') { try { await _orig(); } catch(_){ } }
+      try { await writeDashboardTickets(); } catch(_){}
+    };
+  }catch(_){}
+
+  // Also run once on DOM ready (in case dashboard is visible already)
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ writeDashboardTickets(); });
+  } else {
+    writeDashboardTickets();
+  }
+})();
+</script>
+
 </body>
 </html>
