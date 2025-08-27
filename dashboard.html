@@ -5622,6 +5622,15 @@ const fillTicketsRowsFromLedger = async () => {
     }
   }
 </style>
+
+<style id="raffle-hero-ticket-safe">
+  /* Evitar que el ticket se corte: ajustamos la imagen a CONTAIN dentro del recuadro */
+  .mbox-card-head::before{
+    background-size: contain !important;
+    background-position: left top !important;
+    background-repeat: no-repeat !important;
+  }
+</style>
 </body>
 </html>
 
