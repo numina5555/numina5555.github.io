@@ -5601,6 +5601,24 @@ const fillTicketsRowsFromLedger = async () => {
 })();
 </script>
 
+
+<style id="raffle-hero-rect">
+  :root{
+    --thumb-w: clamp(560px, 62vw, 960px);
+    --thumb-h: clamp(300px, 42vh, 480px);
+  }
+  .mbox-card-head{
+    height: auto !important;
+    min-height: calc(var(--thumb-top) + var(--thumb-h) + 24px) !important;
+    padding-bottom: 18px;
+  }
+  @media (max-width: 840px){
+    :root{
+      --thumb-w: clamp(300px, 92vw, 640px);
+      --thumb-h: clamp(220px, 36vh, 360px);
+    }
+  }
+</style>
 </body>
 </html>
 
