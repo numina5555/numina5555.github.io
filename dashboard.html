@@ -4215,7 +4215,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="mbox-wrap">
               <div class="mbox-tabs">
                 <button class="mbox-tab active"><span data-i18n="mbox.tabs.open">' + (window.dI18n? dI18n.t('mbox.tabs.open') : 'Abiertos') + '</span></button>'
-               <button class="mbox-tab"><span data-i18n="mbox.tabs.closed">' + (window.dI18n? dI18n.t('mbox.tabs.closed') : 'Finalizados') + '</span></button>'
+                <button class="mbox-tab"><span data-i18n="mbox.tabs.upcoming">' + (window.dI18n? dI18n.t('mbox.tabs.upcoming') : 'Próximamente') + '</span></button>'
+                <button class="mbox-tab"><span data-i18n="mbox.tabs.closed">' + (window.dI18n? dI18n.t('mbox.tabs.closed') : 'Finalizados') + '</span></button>'
                 <div class="mbox-search"><input data-i18n-ph="filters.search.raffles" placeholder="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" /></div>
               </div>
 
@@ -5648,4 +5649,3 @@ const fillTicketsRowsFromLedger = async () => {
 </style>
 </body>
 </html>
-
