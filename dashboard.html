@@ -3666,9 +3666,9 @@ if (fn.error || !paymentUrl){
   function injectRowButtons(){
     var nodes = Array.from(document.querySelectorAll('button, a'));
     nodes.forEach(function(btn){
+      if(btn && btn.closest && btn.closest('.mbox-card')){ return; }
       var label = (btn.textContent||btn.innerText||'').trim().toLowerCase();
       var looksDetails = (btn.dataset && (btn.dataset.action==='details' || btn.dataset.action==='reclamo')) || /^detall/.test(label) || /^reclamo/.test(label);
-      var inMB = btn.closest && btn.closest(\'.mbox-card\'); if(inMB) return;
       if(!looksDetails) return;
       if(btn.nextElementSibling && btn.nextElementSibling.dataset && btn.nextElementSibling.dataset.action==='delete-purchase') return;
 
