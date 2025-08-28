@@ -5623,12 +5623,28 @@ const fillTicketsRowsFromLedger = async () => {
   }
 </style>
 
-<style id="raffle-hero-ticket-safe">
-  /* Evitar que el ticket se corte: ajustamos la imagen a CONTAIN dentro del recuadro */
+<style id="raffle-hero-rect-cover-taller">
+  /* Queremos que la imagen ocupe TODO el rectángulo SIN cortarse: 
+     hacemos el rectángulo un poco más ALTO y usamos cover */
+  :root{
+    /* +10–15% de alto respecto a la versión anterior */
+    --thumb-h: clamp(380px, 54vh, 620px);
+  }
+  .mbox-card-head{
+    height: auto !important;
+    min-height: calc(var(--thumb-top) + var(--thumb-h) + 24px) !important;
+    padding-bottom: 18px;
+  }
   .mbox-card-head::before{
-    background-size: contain !important;
+    background-size: cover !important;
+    /* encuadre para priorizar que se vea el ticket */
     background-position: left top !important;
     background-repeat: no-repeat !important;
+  }
+  @media (max-width: 840px){
+    :root{
+      --thumb-h: clamp(280px, 44vh, 460px);
+    }
   }
 </style>
 </body>
