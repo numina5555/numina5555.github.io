@@ -896,29 +896,12 @@
 </style>
 <script id="sidebar-uniform-fix-v4-script">
   (function(){
-    function measureEl(el){
+    // Lightweight sidebar sizing: avoid forcing layouts on hidden tabs
+    function visibleHeight(el){
       if(!el) return 0;
       var cs = window.getComputedStyle(el);
-      var hidden = cs.display === 'none';
-      var prev = {display: el.style.display, position: el.style.position, visibility: el.style.visibility, height: el.style.height, left: el.style.left, top: el.style.top};
-      if(hidden){
-        el.style.visibility = 'hidden';
-        el.style.display = 'block';
-        el.style.position = 'absolute';
-        el.style.height = 'auto';
-        el.style.left = '-10000px';
-        el.style.top = '0';
-      }
-      var h = Math.max(el.scrollHeight, el.offsetHeight, el.clientHeight);
-      if(hidden){
-        el.style.display = prev.display;
-        el.style.position = prev.position;
-        el.style.visibility = prev.visibility;
-        el.style.height = prev.height;
-        el.style.left = prev.left;
-        el.style.top = prev.top;
-      }
-      return h || 0;
+      if (cs.display === 'none' || cs.visibility === 'hidden') return 0;
+      return Math.max(el.scrollHeight, el.offsetHeight, el.clientHeight);
     }
 
     function setHeaderVar(){
@@ -932,29 +915,36 @@
       var headerH = setHeaderVar();
       var ids = ['main-dashboard','section-configuracion','section-compras','section-sorteos','section-referidos','section-productos'];
       var maxH = 0;
-      for(var i=0;i<ids.length;i++){
+      for (var i=0;i<ids.length;i++){
         var el = document.getElementById(ids[i]);
-        maxH = Math.max(maxH, measureEl(el));
+        maxH = Math.max(maxH, visibleHeight(el));
       }
-      // Ensure at least viewport height minus header so it never shrinks
       var viewportH = Math.max(0, window.innerHeight - headerH);
       var sidebarH = Math.max(maxH, viewportH);
       document.documentElement.style.setProperty('--sidebar-h', sidebarH + 'px');
     }
 
-    // Recalculate on load, resize, language changes and DOM mutations
-    recalc();
-    window.addEventListener('load', recalc);
-    window.addEventListener('resize', recalc);
-    setTimeout(recalc, 150);
-    setTimeout(recalc, 600);
-    setTimeout(recalc, 1500);
+    // rAF-throttled scheduler to coalesce multiple triggers
+    var scheduled = false;
+    function scheduleRecalc(){
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(function(){
+        scheduled = false;
+        recalc();
+      });
+    }
 
-    // Observe dynamic content
+    // Initial + listeners (no extra setTimeout cascades)
+    scheduleRecalc();
+    window.addEventListener('load', scheduleRecalc);
+    window.addEventListener('resize', scheduleRecalc);
+
+    // Observe only the main content for size-affecting mutations; throttle via scheduleRecalc
     try{
       var root = document.querySelector('.main-content') || document.body;
-      var obs = new MutationObserver(function(){ setTimeout(recalc, 30); });
-      obs.observe(root, {childList: true, subtree: true});
+      var mo = new MutationObserver(function(){ scheduleRecalc(); });
+      mo.observe(root, {childList: true, subtree: true, attributes: true, attributeFilter: ['style','class']});
     }catch(_){}
   })();
 </script>
@@ -1495,7 +1485,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 <button aria-label="Cerrar" class="nm-close" id="nmClose">✕</button>
 </header>
 <div class="nm-body">
-<div class="nm-imgbox"><img alt="Producto" id="nmImg"/></div>
+<div class="nm-imgbox"><img loading="lazy" alt="Producto" id="nmImg"/></div>
 <div class="nm-info">
 <span class="label" id="nmSku" style="display:inline-block;padding:.15rem .5rem;border-radius:999px;background:#2a2a2a;color:#d7d7d7;font-size:12px;margin-bottom:12px"></span>
 <h4 id="nmName">—</h4>
@@ -2076,7 +2066,7 @@ if (!link) {
     try{
       const conf = MAP[sku] || {};
       const card = srcEl?.closest('.product-card');
-      // Trying to get a representative image (svg) snapshot as data url is overkill – just mirror the SVG via outerHTML into an <img> via Blob URL would require extra work.
+      // Trying to get a representative image (svg) snapshot as data url is overkill – just mirror the SVG via outerHTML into an <img loading="lazy"> via Blob URL would require extra work.
       // We'll keep a simple placeholder.
       if (EL_IMG) { EL_IMG.alt = dI18n.t(conf.keyName || 'catalog.title'); EL_IMG.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='; }
       if (EL_SKU) EL_SKU.textContent = sku || '';
@@ -2302,594 +2292,7 @@ if (!link) {
   // Re-apply whenever the tbody is re-rendered
   var tb = document.getElementById('purchases-body');
   if (window.MutationObserver && tb){
-    var obs = new MutationObserver(function(){ try{ window.__applyPurchasesFilter && __applyPurchasesFilter(); }catch(e){} });
-    obs.observe(tb, {childList:true});
-  }
-})();
-</script>
-
-
-<script>
-(function(){
-  function attachReferralsFilter(){
-    var input = document.getElementById('refs-search');
-    var clearBtn = document.getElementById('refs-clear');
-    var tbody = document.getElementById('referrals-body');
-    if(!input || !tbody) return;
-    function apply(){
-      var q = (input.value||'').toLowerCase().trim();
-      Array.prototype.forEach.call(tbody.querySelectorAll('tr'), function(tr){
-        var text = tr.textContent.toLowerCase();
-        tr.style.display = q==='' || text.indexOf(q)!==-1 ? '' : 'none';
-      });
     }
-    input.addEventListener('input', apply);
-    if (clearBtn){
-      clearBtn.addEventListener('click', function(){
-        input.value='';
-        apply();
-        input.focus();
-      });
-    }
-    window.__applyReferralsFilter = apply;
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attachReferralsFilter);
-  else attachReferralsFilter();
-  // re-apply when tbody updates
-  var tb = document.getElementById('referrals-body');
-  if (window.MutationObserver && tb){
-    var obs = new MutationObserver(function(){ try{ window.__applyReferralsFilter && __applyReferralsFilter(); }catch(e){} });
-    obs.observe(tb, {childList:true});
-  }
-})();
-</script>
-
-
-<script>
-(function(){
-  function attachMisComprasFilter(){
-    var input = document.getElementById('miscompras-search');
-    var clearBtn = document.getElementById('miscompras-clear');
-    var tbody = document.getElementById('miscompras-body');
-    if(!input || !tbody) return;
-    function apply(){
-      var q = (input.value||'').toLowerCase().trim();
-      Array.prototype.forEach.call(tbody.querySelectorAll('tr'), function(tr){
-        var text = tr.textContent.toLowerCase();
-        tr.style.display = q==='' || text.indexOf(q)!==-1 ? '' : 'none';
-      });
-    }
-    input.addEventListener('input', apply);
-    if (clearBtn){
-      clearBtn.addEventListener('click', function(){
-        input.value='';
-        apply();
-        input.focus();
-      });
-    }
-    window.__applyMisComprasFilter = apply;
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attachMisComprasFilter);
-  else attachMisComprasFilter();
-  // re-apply when tbody updates
-  var tb = document.getElementById('miscompras-body');
-  if (window.MutationObserver && tb){
-    var obs = new MutationObserver(function(){ try{ window.__applyMisComprasFilter && __applyMisComprasFilter(); }catch(e){} });
-    obs.observe(tb, {childList:true});
-  }
-})();
-</script>
-
-
-<script>
-(function(){
-  function attachSorteosFilter(){
-    var input = document.getElementById('sorteos-search');
-    var clearBtn = document.getElementById('sorteos-clear');
-    var tbody = document.getElementById('sorteos-tbody');
-    if(!input || !tbody) return;
-    function apply(){
-      var q = (input.value||'').toLowerCase().trim();
-      Array.prototype.forEach.call(tbody.querySelectorAll('tr'), function(tr){
-        var text = tr.textContent.toLowerCase();
-        tr.style.display = q==='' || text.indexOf(q)!==-1 ? '' : 'none';
-      });
-    }
-    input.addEventListener('input', apply);
-    if (clearBtn){
-      clearBtn.addEventListener('click', function(){
-        input.value='';
-        apply();
-        input.focus();
-      });
-    }
-    window.__applySorteosFilter = apply;
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attachSorteosFilter);
-  else attachSorteosFilter();
-  var tb = document.getElementById('sorteos-tbody');
-  if (window.MutationObserver && tb){
-    var obs = new MutationObserver(function(){ try{ window.__applySorteosFilter && __applySorteosFilter(); }catch(e){} });
-    obs.observe(tb, {childList:true});
-  }
-})();
-</script>
-
-
-
-
-<script>
-// --- Hardening patch: force-translate the modal even if other i18n mutates texts ---
-(function(){
-  function lang(){
-    try {
-      if (window.dI18n && (dI18n.lang || dI18n.current || dI18n.locale)) return (dI18n.lang||dI18n.current||dI18n.locale);
-    } catch(_) {}
-    return document.documentElement.getAttribute('lang') || localStorage.getItem('lang') || 'es';
-  }
-  function dict(){
-    const L = (lang()||'es').slice(0,2);
-    // Prefer PD_I18N (our local dict); fallback to global DICT if available
-    const local = (window.PD_I18N && window.PD_I18N[L]) || {};
-    const global = (window.DICT && window.DICT[L]) || {};
-    return Object.assign({}, global, local);
-  }
-  function translate(root){
-    const d = dict();
-    (root || document).querySelectorAll('#pdOverlay [data-i18n]').forEach(el=>{
-      const k = el.getAttribute('data-i18n');
-      if (d[k]) el.textContent = d[k];
-    });
-  }
-  // Apply on ready and after a tick (in case other scripts run late)
-  document.addEventListener('DOMContentLoaded', ()=>{
-    translate(document);
-    setTimeout(()=>translate(document), 50);
-    setTimeout(()=>translate(document), 200);
-  });
-  // Re-apply whenever Details opens (the open handler should be present)
-  document.addEventListener('click', (e)=>{
-    if (e.target.closest('button.action-btn[data-action="details"]')) {
-      setTimeout(()=>translate(document), 0);
-      setTimeout(()=>translate(document), 50);
-    }
-  });
-  // Observe changes inside the modal and translate any new nodes
-  const obs = new MutationObserver(()=>translate(document));
-  const overlay = document.getElementById('pdOverlay');
-  if (overlay) obs.observe(overlay, {childList:true, subtree:true, characterData:true});
-})();
-</script>
-
-
-<!-- ===== PURCHASE DETAILS MODAL (Numina style · static · no-keys i18n) ===== -->
-<style id="pd-modal-styles">
-  .pd-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);display:none;z-index:1100;padding:24px}
-  .pd-overlay.show{display:block}
-  .pd-modal{width:min(920px,95vw);margin:auto;border-radius:16px;
-    background:linear-gradient(135deg,rgba(255,215,0,.06),rgba(255,215,0,.02) 24%,#111 60%);
-    border:1px solid rgba(255,215,0,.14);box-shadow:0 18px 50px rgba(0,0,0,.55);color:#fff;font-family:Montserrat,system-ui,sans-serif}
-  .pd-modal header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid rgba(255,215,0,.14)}
-  .pd-modal header h3{margin:0;color:var(--primary, #ffd700);font-size:1.35rem;letter-spacing:.3px}
-  .pd-x{background:transparent;border:0;color:#cfcfcf;font-size:22px;font-weight:700;cursor:pointer}
-  .pd-content{display:grid;grid-template-columns:260px 1fr;gap:18px;padding:20px 22px 8px}
-  .pd-media{background:#1f1f1f;border:1px solid rgba(255,255,255,.08);border-radius:12px;aspect-ratio:5/6;display:flex;align-items:center;justify-content:center;overflow:hidden}
-  .pd-details h4{margin:.15rem 0 .4rem;font-size:1.25rem}
-  .pd-desc{color:#d5d5d5;line-height:1.55;margin:0 0 .6rem}
-  .pd-meta{display:flex;flex-wrap:wrap;gap:12px;color:#e8e8e8;margin:.2rem 0 .6rem}
-  .pd-pill{display:inline-flex;align-items:center;gap:.5ch;padding:.28rem .65rem;border-radius:999px;font-weight:700;font-size:.82rem;border:1px solid rgba(255,255,255,.09);background:#161616}
-  .pd-status{border:none}
-  .pd-status.pending{background:rgba(255,193,7,.18);color:var(--warn,#ffc107);}
-  .pd-status.active{background:rgba(40,167,69,.18);color:var(--ok,#28a745);}
-  .pd-status.cancelled{background:rgba(220,53,69,.18);color:var(--danger,#dc3545);}
-  .pd-status.completed{background:rgba(13,110,253,.20);color:#0d6efd;}
-  .pd-hr{height:1px;background:linear-gradient(90deg,transparent,rgba(255,215,0,.25),transparent);margin:12px 0}
-  .pd-actions{display:flex;flex-wrap:wrap;gap:.7rem;padding:0 22px 18px}
-  .pd-btn{border-radius:12px;padding:.6rem 1rem;font-weight:800;letter-spacing:.2px;border:1px solid transparent;cursor:pointer}
-  .pd-btn.gold{background:var(--primary, #ffd700);color:#111;border-color:var(--primary, #ffd700)}
-  .pd-btn.warn{background:#ffc107;color:#111;border-color:#ffc107}
-  .pd-btn.outline{background:transparent;color:var(--primary, #ffd700);border-color:rgba(255,215,0,.7)}
-  .pd-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:0 22px 22px}
-  .pd-card{background:linear-gradient(180deg,#141414,#101010);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 14px}
-  .pd-card h5{margin:0 0 .4rem;color:var(--primary, #ffd700);font-size:.95rem}
-  .pd-kv{display:grid;grid-template-columns:150px 1fr;gap:.4rem .8rem;color:#eaeaea;font-size:.92rem}
-  .pd-kv .k{color:#a7a7a7}
-  .pd-timeline{display:grid;gap:.6rem}
-  .pd-tl{display:grid;grid-template-columns:18px 1fr;gap:.6rem;align-items:start}
-  .pd-dot{width:10px;height:10px;border-radius:50%;background:var(--primary, #ffd700);box-shadow:0 0 0 3px rgba(255,215,0,.15)}
-  @media(max-width:860px){.pd-content{grid-template-columns:1fr}}
-
-.btn-delete-row{border:1px solid #f5c400;color:#f5c400;background:transparent;
-  padding:.35rem .7rem;border-radius:.55rem;font-weight:700;cursor:pointer;
-  transition:all .12s ease}
-.btn-delete-row:hover{background:#f5c400;color:#111}
-
-</style>
-
-<div id="pdOverlay" class="pd-overlay" hidden>
-  <section class="pd-modal" role="dialog" aria-modal="true" aria-labelledby="pdTitle">
-    <header>
-      <h3 id="pdTitle" data-i18n-key="purchase.detailsTitle">Detalles de la Compra</h3>
-      <button class="pd-x" id="pdClose" aria-label="Cerrar">✕</button>
-    </header>
-
-    <div class="pd-content">
-      <figure class="pd-media" aria-label="Imagen del producto">
-        <svg viewBox="0 0 600 720" role="img">
-          <defs><linearGradient id="pdg" x1="0" x2="1"><stop offset="0" stop-color="#2a0d2d"/><stop offset="1" stop-color="#6f1d75"/></linearGradient></defs>
-          <rect width="600" height="720" fill="url(#pdg)"/>
-          <text id="pdMediaText" x="50%" y="52%" text-anchor="middle" fill="#fff" font-size="34" font-weight="800" font-family="Montserrat, sans-serif">Producto</text>
-        </svg>
-      </figure>
-
-      <div class="pd-details">
-        <h4 id="pdName">—</h4>
-        <p class="pd-desc" id="pdDesc" data-i18n-key="purchase.sampleDesc">Diseño exclusivo con materiales premium.</p>
-        <div class="pd-meta">
-          <span class="pd-pill" id="pdPrice">—</span>
-          <span class="pd-pill" id="pdDate">—</span>
-          <span class="pd-pill" id="pdOrder">—</span>
-          <span class="pd-pill pd-status pending" id="pdStatus" data-i18n-key="status.pending">Pendiente</span>
-          <span class="pd-pill" data-i18n-key="purchase.usdt">USDT</span>
-        </div>
-        <div class="pd-hr"></div>
-      </div>
-    </div>
-
-    <div class="pd-actions">
-      <button class="pd-btn gold" id="pdInvoice" data-i18n-key="purchase.downloadInvoice">Descargar factura</button>
-      <button class="pd-btn warn" id="pdRegen" data-i18n-key="purchase.regeneratePayment">Generar nuevo link de pago</button>
-     
-    </div>
-
-    <div class="pd-grid">
-      <div class="pd-card">
-        <h5 data-i18n-key="purchase.paymentInfo">Información de pago</h5>
-        <div class="pd-kv">
-          <div class="k" data-i18n-key="purchase.method">Método</div><div data-i18n-key="purchase.methodValue">Cripto · USDT</div>
-          <div class="k" data-i18n-key="purchase.currency">Moneda</div><div data-i18n-key="purchase.usdt">USDT</div>
-          <div class="k" data-i18n-key="purchase.subtotal">Subtotal</div><div id="pdSubtotal">—</div>
-          <div class="k" data-i18n-key="purchase.fees">Comisiones</div><div data-i18n-key="purchase.zeroUsdt">0 USDT</div>
-          <div class="k" data-i18n-key="purchase.total">Total</div><div id="pdTotal"><strong>—</strong></div>
-        </div>
-      </div>
-      <div class="pd-card">
-        <h5 data-i18n-key="purchase.history">Historial</h5>
-        <div class="pd-timeline" id="pdTimeline">
-          <div class="pd-tl"><span class="pd-dot"></span><div><div class="t" data-i18n-key="purchase.orderCreated">Pedido creado</div><div class="s">—</div></div></div>
-          <div class="pd-tl"><span class="pd-dot"></span><div><div class="t" data-i18n-key="purchase.paymentLinkGenerated">Link de pago generado</div><div class="s">—</div></div></div>
-        </div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<script>
-// == PD translator (no-keys). Uses data-i18n-key and repairs any leaked keys in text ==
-(function(){
-  window.PD_I18N = window.PD_I18N || {};
-  const ensure = (lng, entries) => { PD_I18N[lng] = Object.assign({}, PD_I18N[lng]||{}, entries); };
-
-  ensure('es', {
-    'purchase.detailsTitle':'Detalles de la Compra',
-    'purchase.sampleDesc':'Diseño exclusivo con materiales premium.',
-    'purchase.usdt':'USDT',
-    'purchase.downloadInvoice':'Descargar factura',
-    'purchase.regeneratePayment':'Generar nuevo link de pago',
-    'purchase.contactSupport':'Contactar soporte',
-    'purchase.paymentInfo':'Información de pago',
-    'purchase.method':'Método',
-    'purchase.methodValue':'Cripto · USDT',
-    'purchase.currency':'Moneda',
-    'purchase.subtotal':'Subtotal',
-    'purchase.fees':'Comisiones',
-    'purchase.zeroUsdt':'0 USDT',
-    'purchase.total':'Total',
-    'purchase.history':'Historial',
-    'purchase.orderCreated':'Pedido creado',
-    'purchase.paymentLinkGenerated':'Link de pago generado',
-    'status.pending':'Pendiente',
-    'status.active':'Activo',
-    'status.cancelled':'Cancelado',
-    'status.completed':'Completado'
-  });
-  ensure('en', {
-    'purchase.detailsTitle':'Purchase Details',
-    'purchase.sampleDesc':'Exclusive design with premium materials.',
-    'purchase.usdt':'USDT',
-    'purchase.downloadInvoice':'Download invoice',
-    'purchase.regeneratePayment':'Generate new payment link',
-    'purchase.contactSupport':'Contact support',
-    'purchase.paymentInfo':'Payment information',
-    'purchase.method':'Method',
-    'purchase.methodValue':'Crypto · USDT',
-    'purchase.currency':'Currency',
-    'purchase.subtotal':'Subtotal',
-    'purchase.fees':'Fees',
-    'purchase.zeroUsdt':'0 USDT',
-    'purchase.total':'Total',
-    'purchase.history':'History',
-    'purchase.orderCreated':'Order created',
-    'purchase.paymentLinkGenerated':'Payment link generated',
-    'status.pending':'Pending',
-    'status.active':'Active',
-    'status.cancelled':'Cancelled',
-    'status.completed':'Completed'
-  });
-  ensure('pt', {
-    'purchase.detailsTitle':'Detalhes da Compra',
-    'purchase.sampleDesc':'Design exclusivo com materiais premium.',
-    'purchase.usdt':'USDT',
-    'purchase.downloadInvoice':'Baixar fatura',
-    'purchase.regeneratePayment':'Gerar novo link de pagamento',
-    'purchase.contactSupport':'Contactar suporte',
-    'purchase.paymentInfo':'Informações de pagamento',
-    'purchase.method':'Método',
-    'purchase.methodValue':'Cripto · USDT',
-    'purchase.currency':'Moeda',
-    'purchase.subtotal':'Subtotal',
-    'purchase.fees':'Comissões',
-    'purchase.zeroUsdt':'0 USDT',
-    'purchase.total':'Total',
-    'purchase.history':'Histórico',
-    'purchase.orderCreated':'Pedido criado',
-    'purchase.paymentLinkGenerated':'Link de pagamento gerado',
-    'status.pending':'Pendente',
-    'status.active':'Ativo',
-    'status.cancelled':'Cancelado',
-    'status.completed':'Concluído'
-  });
-
-  function getLang(){
-    try {
-      if (window.dI18n && (dI18n.lang || dI18n.current || dI18n.locale)) return (dI18n.lang||dI18n.current||dI18n.locale);
-    } catch(_) {}
-    return document.documentElement.getAttribute('lang') || localStorage.getItem('lang') || 'es';
-  }
-  function t(key){
-    const L = (getLang()||'es').slice(0,2);
-    return (PD_I18N[L] && PD_I18N[L][key]) || null;
-  }
-  function apply(root){
-    const scope = root || document;
-    // 1) Apply by data-i18n-key (our safe attribute)
-    scope.querySelectorAll('#pdOverlay [data-i18n-key]').forEach(el=>{
-      const key = el.getAttribute('data-i18n-key');
-      const val = t(key);
-      if (val) el.textContent = val;
-    });
-    // 2) Repair any visible keys (purchase.* / status.*) written by other scripts
-    scope.querySelectorAll('#pdOverlay *').forEach(el=>{
-      if (!el.childNodes) return;
-      el.childNodes.forEach(node=>{
-        if (node.nodeType === 3) { // text node
-          const s = node.nodeValue.trim();
-          if (s && (s.startsWith('purchase.') || s.startsWith('status.'))) {
-            const val = t(s);
-            if (val) node.nodeValue = node.nodeValue.replace(s, val);
-          }
-        }
-      });
-    });
-  }
-  window.pdI18n = { apply };
-  document.addEventListener('DOMContentLoaded', ()=> apply());
-})();
-
-// == Modal open/fill/close ==
-(function(){
-  const OVERLAY = document.getElementById('pdOverlay');
-  const CLOSE   = document.getElementById('pdClose');
-  const EL = {
-    name:   document.getElementById('pdName'),
-    desc:   document.getElementById('pdDesc'),
-    mediaT: document.getElementById('pdMediaText'),
-    price:  document.getElementById('pdPrice'),
-    date:   document.getElementById('pdDate'),
-    order:  document.getElementById('pdOrder'),
-    status: document.getElementById('pdStatus'),
-    subtotal: document.getElementById('pdSubtotal'),
-    total:    document.getElementById('pdTotal'),
-    regen:    document.getElementById('pdRegen'),
-  };
-
-  function open(){ OVERLAY.classList.add('show'); OVERLAY.removeAttribute('hidden'); document.body.style.overflow='hidden'; }
-  function close(){ OVERLAY.classList.remove('show'); OVERLAY.setAttribute('hidden',''); document.body.style.overflow=''; }
-
-  function readStatusKey(el){
-    if(!el) return 'pending';
-    const known = ['pending','active','completed','cancelled','inactive','paid','disputed'];
-    const k = known.find(k => el.classList.contains(k));
-    return (k === 'paid') ? 'completed' : (k || 'pending');
-  }
-
-  document.addEventListener('click', (e)=>{
-    const btn = e.target.closest('button.action-btn[data-action="details"]');
-    if(!btn) return;
-
-    const tr = btn.closest('tr');
-    const tds = tr ? tr.querySelectorAll('td') : [];
-    const product = tds[0]?.innerText?.trim() || 'Producto';
-    const date    = tds[1]?.innerText?.trim() || '—';
-    let value     = '—';
-    if (tds[2]) value = tds[2].innerText.replace('$','').replace('USDT','').trim() || '—';
-    const statusEl= tr?.querySelector('.status');
-    const statusK = readStatusKey(statusEl);
-
-    EL.name.textContent = product;
-    EL.mediaT.textContent = product;
-    EL.price.textContent = (value !== '—') ? (value + ' USDT') : '—';
-    EL.subtotal.textContent = (value !== '—') ? (value + ' USDT') : '—';
-    EL.total.innerHTML = '<strong>' + ((value !== '—') ? (value + ' USDT') : '—') + '</strong>';
-    EL.date.textContent = date || '—';
-    EL.order.textContent = '#—';
-    // Robust: set "Order created" and "Payment link generated" dates from the date chip
-    (function(){
-      const orderDateText = (EL.date && EL.date.textContent || '').trim();
-      // Support either .pd-timeline or #pdTimeline containers
-      const sNodes = document.querySelectorAll('#pdOverlay .pd-timeline .s, #pdOverlay #pdTimeline .s');
-      if (sNodes[0]) sNodes[0].textContent = orderDateText || '—';                // Order created
-      if (sNodes[1]) sNodes[1].textContent = (statusK !== 'pending') ? (orderDateText || '—') : '—'; // Payment link generated
-    })();
-
-
-    EL.status.classList.remove('pending','active','cancelled','completed');
-    EL.status.classList.add(statusK);
-    EL.status.setAttribute('data-i18n-key','status.'+statusK);
-
-    // Translate/repair
-    if (window.pdI18n && typeof pdI18n.apply === 'function') {
-      pdI18n.apply(OVERLAY);
-      setTimeout(()=>pdI18n.apply(OVERLAY), 0);
-    }
-
-    EL.regen.style.display = (statusK === 'pending') ? 'inline-block' : 'none';
-
-    open();
-  });
-
-  CLOSE?.addEventListener('click', close);
-  OVERLAY?.addEventListener('click', (e)=>{ if(e.target === OVERLAY) close(); });
-  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') close(); });
-})();
-</script>
-<!-- END PD MODAL -->
-
-
-<script>
-(function(){
-  function resolveSKUFromModal(){
-    try{
-      var priceText = (document.getElementById('pdPrice')?.textContent || '').replace(/[^0-9.,]/g,'');
-      if (priceText) {
-        var norm = priceText.replace(/\./g, '').replace(',', '.');
-        var price = parseFloat(norm);
-        if (!isNaN(price)) {
-          if (Math.abs(price - 13500) < 0.01) return 'GOLD-100G';
-          if (Math.abs(price - 6500)  < 0.01) return 'PLAT-100G';
-          if (Math.abs(price - 19600) < 0.01) return 'ROLEX-126610L';
-          if (Math.abs(price - 35)    < 0.01) return 'NUMINA-BRACELET';
-        }
-      }
-      var name = (document.getElementById('pdName')?.textContent || '').toLowerCase();
-      if (/oro|gold/.test(name)) return 'GOLD-100G';
-      if (/platino|platinum/.test(name)) return 'PLAT-100G';
-      if (/rolex|126610/.test(name)) return 'ROLEX-126610L';
-      if (/pulsera|bracelet/.test(name)) return 'NUMINA-BRACELET';
-    }catch(e){ console.warn('resolveSKUFromModal error', e); }
-    return null;
-  }
-
-  function handleRegen(){
-    try{
-      var sku = resolveSKUFromModal();
-      var map = (window.FIXED_PAY_URL || {});
-      var url = sku ? map[sku] : null;
-      if (url) {
-        window.open(url, '_blank', 'noopener'); // abre NOWPayments en una nueva pestaña
-      } else {
-        alert('No se encontró un link de pago para este producto.');
-      }
-    }catch(e){
-      console.error(e);
-      alert('Ocurrió un error al generar el link de pago.');
-    }
-  }
-
-  function init(){
-    var btn = document.getElementById('pdRegen');
-    if (btn && !btn.__wired) {
-      btn.addEventListener('click', handleRegen);
-      btn.__wired = true;
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-})();
-</script>
-
-
-
-<!-- Moved scripts that were incorrectly placed after </html> -->
-
-<!-- === NUMINA: Regenerar link de pago (NOWPayments) — v3 con fallback de ID === -->
-<script>
-(function(){
-  function getSB(){
-    try{ return (typeof getSupabase==='function' && getSupabase()) || window.supabaseClient || window.supabase; }
-    catch(_){ return null; }
-  }
-  async function getAccessToken(){
-    try{
-      const sb = getSB(); if(!sb || !sb.auth) return null;
-      const { data } = await sb.auth.getSession();
-      return (data && data.session && data.session.access_token) || null;
-    }catch(_){ return null; }
-  }
-  function parseMoney(txt){
-    try{
-      if(!txt) return null;
-      let s = (txt+'').replace(/[^0-9.,]/g,''); s = s.replace(/[,.](?=\d{3}(?:\D|$))/g,''); s = s.replace(/,/g,'.');
-      const n = parseFloat(s); return isFinite(n) ? n : null;
-    }catch(_){ return null; }
-  }
-  function text(el){ return (el && (el.textContent||el.innerText)||'').trim(); }
-
-  function findPurchaseId(fromEl){
-    let id = fromEl && fromEl.getAttribute && fromEl.getAttribute('data-purchase-id'); if (id) return id;
-    let box = fromEl && fromEl.closest && fromEl.closest('[data-purchase-id]'); if (box) return box.getAttribute('data-purchase-id');
-    let any = document.querySelector('#purchase-detail [data-purchase-id], .purchase-detail [data-purchase-id]'); if (any) return any.getAttribute('data-purchase-id');
-    let t = text(document.querySelector('#nmOrderId, #nmPurchaseId')); if (t) return t;
-    return null;
-  }
-
-  async function fallbackGuessPurchaseId(){
-    const sb = getSB(); if(!sb) return null;
-    let userId = null;
-    try{ const { data } = await sb.auth.getUser(); userId = data && data.user && data.user.id; }catch(_){}
-    if(!userId) return null;
-
-    const scope = document.querySelector('#purchase-detail, .purchase-detail, .modal, body'); if(!scope) return null;
-    const totalEl = scope.querySelector('[data-total], .total, .info-de-pago .total, .payment-info .total, .resumen .total, .summary .total');
-    const totalText = text(totalEl) || text(scope.querySelector('.info-de-pago, .payment-info, .summary')) || '';
-    const amount = parseMoney(totalText);
-
-    let dateStr = text(scope.querySelector('[data-date], .chip-date, .date, .fecha, .badges .date, .chips .date')) || '';
-    if(!/\d{1,2}\s*\/\s*\d{1,2}\s*\/\s*\d{2,4}/.test(dateStr)){
-      const match = (scope.textContent||'').match(/(\d{1,2}\/\d{1,2}\/\d{2,4})/);
-      if(match) dateStr = match[1];
-    }
-    let startISO=null, endISO=null;
-    if(dateStr){
-      const [d,m,y] = dateStr.split('/').map(x=>parseInt(x,10));
-      if(d && m && y){
-        const dt0 = new Date(Date.UTC(y<100?2000+y:y, (m-1), d, 0,0,0));
-        const dt1 = new Date(Date.UTC(y<100?2000+y:y, (m-1), d, 23,59,59));
-        startISO = dt0.toISOString(); endISO = dt1.toISOString();
-      }
-    }
-
-    let q = sb.from('purchases').select('id, value, created_at, status').eq('user_id', userId).order('created_at', { ascending:false }).limit(50);
-    if (amount != null) q = q.eq('value', amount);
-    if (startISO && endISO) q = q.gte('created_at', startISO).lte('created_at', endISO);
-    try{
-      const { data, error } = await q; if(error || !data) return null;
-      if(data.length === 1) return data[0].id;
-      const pend = data.find(r => (r.status||'').toLowerCase().startsWith('pend')); if(pend) return pend.id;
-      return data[0] ? data[0].id : null;
-    }catch(_){ return null; }
-  }
-
-  async function callEdge(fnName, payload, accessToken){
-    try{
-      let base = (window.__SB_BASE || '').replace(/\/$/, '');
-      if (!base) {
-        try { const sb = getSB(); base = (sb && sb.storage && sb.storage.url) ? sb.storage.url.split('/storage')[0] : ''; } catch(_){}
-      }
       if (!base) throw new Error('No pude obtener la URL base de Supabase.');
       const url = base + '/functions/v1/' + fnName;
       const headers = { 'Content-Type': 'application/json' };
@@ -5574,11 +4977,16 @@ const fillTicketsRowsFromLedger = async () => {
   };
 
   // Run when the tab shows and after small delays to win last-write
-  const scheduleFill = () =>{
-    try{ fillTicketsRowsFromLedger(); }catch(_){}
-    setTimeout(fillTicketsRowsFromLedger, 150);
-    setTimeout(fillTicketsRowsFromLedger, 600);
+  const scheduleFill = (() => {
+  let raf = 0;
+  return () => {
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      try { fillTicketsRowsFromLedger(); } catch(_) {}
+    });
   };
+})();
 
   var obs = new MutationObserver(function(){
     var tab = document.getElementById('tab-tickets');
@@ -5642,4 +5050,3 @@ const fillTicketsRowsFromLedger = async () => {
 </style>
 </body>
 </html>
-
