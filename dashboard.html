@@ -1215,7 +1215,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 <th data-i18n="tables.actions">Acciones</th>
 </tr>
 </thead>
-<tbody id="purchases-body"><tr><td colspan="5" style="text-align:center;"><span data-i18n="labels.loading">Cargando…</span></td></tr></tbody>
+<tbody id="sorteos-tbody" id="purchases-body"><tr><td colspan="5" style="text-align:center;"><span data-i18n="labels.loading">Cargando…</span></td></tr></tbody>
 </table>
 </div>
 <h2 class="section-title"><i class="fas fa-users"></i><span data-i18n="sections.referralsHistory">Historial de Referidos</span></h2>
@@ -3788,7 +3788,7 @@ if (fn.error || !paymentUrl){
 })()</script>
 <script>(async function(){
 
-async function cargarSorteos(){
+function cargarSorteos_old(){
   try{
     const tbody = document.getElementById('sorteos-tbody');
     if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">'+ (window.dI18n ? dI18n.t('labels.loading') : 'Cargando…') +'</td></tr>';
@@ -5539,5 +5539,56 @@ const fillTicketsRowsFromLedger = async () => {
 })();
 </script>
 
+<script>
+async function cargarSorteos(){
+  try{
+    const sb = window.supabase || (window.getSupabase && window.getSupabase());
+    if(!sb) return;
+    const { data: { user } = {} } = await sb.auth.getUser();
+    if(!user || !user.id) return;
+
+    // Ledger del usuario
+    const { data: ledger, error } = await sb
+      .from('tickets_ledger')
+      .select('count, created_at, purchase_id, sku')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+    if(error) throw error;
+
+    // KPIs
+    const activos = (ledger||[]).reduce((a,r)=>a + (Number(r.count)||0), 0);
+    const usados  = (ledger||[]).reduce((a,r)=>a + (r.count<0 ? -Number(r.count) : 0), 0);
+    const k1 = document.querySelector('#kpi-active'); if(k1) k1.textContent = String(activos);
+    const k2 = document.querySelector('#kpi-used');   if(k2) k2.textContent = String(usados);
+
+    // Nombres de producto (si hay purchase_id)
+    const ids = [...new Set((ledger||[]).filter(r=>r.purchase_id).map(r=>r.purchase_id))];
+    const prodById = {};
+    if(ids.length){
+      const { data: prods } = await sb.from('purchases').select('id, product_name').in('id', ids);
+      (prods||[]).forEach(p => prodById[p.id] = p.product_name);
+    }
+
+    // Tabla: solo usos (count<0)
+    const filas = (ledger||[]).filter(r=>Number(r.count)<0).map(r=>{
+      const d = new Date(r.created_at);
+      const fecha = d.toLocaleDateString();
+      const producto = prodById[r.purchase_id] || r.sku || '—';
+      const usados = Math.abs(Number(r.count)||0);
+      return `<tr><td>${fecha}</td><td>${producto}</td><td>${usados}</td></tr>`;
+    });
+
+    const tbody = document.querySelector('#sorteos-tbody');
+    if(tbody){
+      tbody.innerHTML = filas.length ? filas.join('') : `<tr><td colspan="3">Sin usos todavía</td></tr>`;
+    }
+  }catch(err){
+    console.error(err);
+    const tbody = document.querySelector('#sorteos-tbody');
+    if(tbody) tbody.innerHTML = `<tr><td colspan="3">Error al cargar</td></tr>`;
+  }
+}
+window.cargarSorteos = cargarSorteos;
+</script>
 </body>
 </html>
