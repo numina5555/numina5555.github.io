@@ -1512,8 +1512,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
     })();
   </script>
 
-  <script>(async()=>{
-
+  <script>(async()=>{\n
     function ready(fn){ if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn); else fn(); }
     function initLangMenu(){
       const dropdown = document.getElementById('langDropdown');
@@ -1725,7 +1724,7 @@ try {
           mainDashboard.style.display = 'none';
           sections.forEach(s=> s.style.display = (s.id === 'section-'+target ? 'block' : 'none'));
           if (target === 'compras') { cargarMisCompras(); }
-          if (target === 'sorteos') { cargarSorteos(); }
+          if (target === 'sorteos') { if (window.cargarSorteos) window.cargarSorteos(); else window.addEventListener('cargarSorteosReady', () => window.cargarSorteos && window.cargarSorteos(), {once:true}); }
         });
       });
     }
@@ -1791,10 +1790,8 @@ alert('Contraseña actualizada');
       initConfig(supabase);
       document.getElementById('logout-btn')?.addEventListener('click', async ()=>{ await getSupabase().auth.signOut(); window.location.href = '/login.html'; });
     });
-  
-})();</script>
-<script>(async()=>{
-
+  \n})();</script>
+<script>(async()=>{\n
 
 // NUMINA: Catálogo y modal a pantalla completa (sin aria-hidden warnings)
 
@@ -2015,8 +2012,7 @@ if (!link) {
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
 });
 
-
-})();</script>
+\n})();</script>
 
 <script>
 // === NUMINA product modal wiring with i18n-safe content ===
@@ -2267,8 +2263,7 @@ if (!link) {
 </script>
 
 
-<script>(async()=>{
-
+<script>(async()=>{\n
 (function(){
   function attachPurchasesFilter(){
     var input = document.getElementById('purchases-search');
@@ -2339,8 +2334,7 @@ if (!link) {
     finally{ btn.disabled = false; btn.textContent = original; }
   }, true);
 })();
-
-})();</script>
+\n})();</script>
 
 <style>
 /* === Support Claim Modal (sc-*) === */
@@ -2420,8 +2414,7 @@ if (!link) {
   </div>
 </div>
 
-<script>(async()=>{
-
+<script>(async()=>{\n
 // === Support Claim Modal wiring ===
 (function(){
   const SUPPORT_EMAIL = "numina5555@gmail.com"; // ej: 'soporte@tu-dominio.com'
@@ -2566,8 +2559,7 @@ ${msg}`;
 });
 
 })();
-
-})();</script>
+\n})();</script>
 
 <script>
 (function(){
@@ -2816,8 +2808,7 @@ function bindShare(){
     
 
 <!-- BEGIN: NOWPayments email param injector -->
-<script>(async()=>{
-
+<script>(async()=>{\n
 (function(){
   // Runs after DOM is ready
   const onReady = (fn) => {
@@ -2894,12 +2885,10 @@ function bindShare(){
     }, true);
   });
 })();
-
-})();</script>
+\n})();</script>
 <!-- END: NOWPayments email param injector -->
 
-<script>(async()=>{
-
+<script>(async()=>{\n
 /* === NOWPayments dynamic USDT checkout override (capture-phase) ===
    This block intercepts clicks on the modal "Comprar" button (#nmBuy) and the
    "Generar nuevo link de pago" (#pdRegen), creates a purchase in Supabase with currency USDT,
@@ -3030,11 +3019,9 @@ if (fn.error || !paymentUrl){
 
   ready(wireOverrides);
 })();
+\n})();</script>
 
-})();</script>
-
-<script>(async()=>{
-
+<script>(async()=>{\n
 (function(){
   window.__callEdge = async function(fnName, body, accessToken){
     try{
@@ -3059,8 +3046,7 @@ if (fn.error || !paymentUrl){
     }
   };
 })();
-
-})();</script>
+\n})();</script>
 
 
 <style>
@@ -3072,8 +3058,7 @@ if (fn.error || !paymentUrl){
 .btn-delete-row:hover{ background:#f5c400; color:#111 }
 </style>
 
-<script>(async()=>{
-
+<script>(async()=>{\n
 (function () {
   function getSB() {
     try { return (typeof getSupabase === 'function') ? getSupabase() : (window.supabaseClient || window.supabase); }
@@ -3139,12 +3124,10 @@ if (fn.error || !paymentUrl){
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup);
   else setup();
 })();
-
-})();</script>
+\n})();</script>
 
 <!-- === NUMINA: Regenerar link de pago (NOWPayments) sin leer monto del DOM === -->
-<script>(async()=>{
-
+<script>(async()=>{\n
 (function(){
   async function getAccessToken(){
     try{
@@ -3215,14 +3198,12 @@ if (fn.error || !paymentUrl){
     }
   });
 })();
-
-})();</script>
+\n})();</script>
 
 
 
 <!-- NUMINA share-invite upgrade: builds https://numina.vip/login.html?ref=YOUR_CODE -->
-<script>(async()=>{
-
+<script>(async()=>{\n
 (function(){
   function getSB(){
     try{ return (typeof getSupabase==='function' && getSupabase()) || window.supabaseClient || window.supabase || null; }
@@ -3310,10 +3291,8 @@ if (fn.error || !paymentUrl){
     }
   }, {capture:true});
 })();
-
-})();</script>
-<script>(async()=>{
-
+\n})();</script>
+<script>(async()=>{\n
 async function cargarSorteos(){
   try{
     const tbody = document.getElementById('sorteos-tbody');
@@ -3415,8 +3394,7 @@ async function cargarSorteos(){
     if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Error</td></tr>';
   }
 }
-
-})();</script>
+\n})();</script>
 <!-- jsPDF (para generar PDF del lado del cliente) -->
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
@@ -4309,8 +4287,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 <!-- === NUMINA: Tickets Activos (inline tab) + KPI cards === -->
-<script>(async()=>{
-
+<script>(async()=>{\n
 (function(){
   function ensureTicketsTab(){
     var dash = document.getElementById('main-dashboard');
@@ -4705,13 +4682,11 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('popstate', function(){ var tab=document.getElementById('tab-tickets'); if(tab){ tab.classList.add('section-content'); tab.style.display='none'; } });
   window.addEventListener('hashchange', function(){ var tab=document.getElementById('tab-tickets'); if(tab){ tab.classList.add('section-content'); tab.style.display='none'; } });
 })();
-
-})();</script>
+\n})();</script>
 
 
 <!-- NUMINA PATCH: Unify tickets KPI logic across Dashboard and Sorteos -->
-<script>(async()=>{
-
+<script>(async()=>{\n
 (function(){
   // Sum tickets from tickets_ledger for the current user (positives + negatives)
   async function sumActiveTickets(){
@@ -4758,13 +4733,11 @@ document.addEventListener('DOMContentLoaded', () => {
     writeDashboardTickets();
   }
 })();
-
-})();</script>
+\n})();</script>
 
 
 <!-- NUMINA PATCH 2: Unify KPI logic in Tickets Activos tab with Sorteos (use tickets_ledger) -->
-<script>(async()=>{
-
+<script>(async()=>{\n
 (function(){
   async function _getClient(){
     try {
@@ -4824,13 +4797,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Expose a manual hook (optional)
   window.nmnWriteTicketsTabKpis = writeTicketsTabKpis;
 })();
-
-})();</script>
+\n})();</script>
 
 
 <!-- NUMINA PATCH 3: Fill Tickets Activos table from tickets_ledger (fecha, producto, tickets, referido) -->
-<script>(async()=>{
-
+<script>(async()=>{\n
 (function(){
   function _prettyName(sku){
     try{
@@ -5029,8 +5000,7 @@ const fillTicketsRowsFromLedger = async () => {
   } else { scheduleFill(); }
   window.nmnFillTicketsRowsFromLedger = fillTicketsRowsFromLedger;
 })();
-
-})();</script>
+\n})();</script>
 
 
 <style id="raffle-hero-rect-vertical">
