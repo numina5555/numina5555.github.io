@@ -181,30 +181,22 @@
   .nm-pitch strong{color:#ffd700}
 }
 
-
-
-
 /* --- Ensure sidebar labels are visible next to icons --- */
 .sidebar .nav-label{display:inline-block;margin-left:.75rem;white-space:nowrap}
 .sidebar a{display:flex;align-items:center}
-
 
 /* inline filter bar for purchases */
 .table-filter-inline{display:flex;gap:.6rem;align-items:center;justify-content:flex-end;background:var(--dark-light);padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.05)}
 .table-filter-inline input{background:#0f0f0f;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.45rem .7rem;color:#f0f0f0;outline:none;min-width:260px}
 .table-filter-inline input::placeholder{color:#8a8a8a}
 
-
-/* === GPT patch: Sorteos alignment fix === */
 .srt-marks{ padding-right: 8px; }
 .srt-marks .srt-mark:last-child{ transform: translateX(-100%); text-align: right; }
-
 
 .btn-delete-row{border:1px solid #f5c400;color:#f5c400;background:transparent;
   padding:.35rem .7rem;border-radius:.55rem;font-weight:700;cursor:pointer;
   transition:all .12s ease}
 .btn-delete-row:hover{background:#f5c400;color:#111}
-
 
 /* Efecto: la línea amarilla se llena al hover */
 .stat-card{ position: relative; overflow: hidden; }
@@ -224,7 +216,6 @@
   will-change: transform;
   backface-visibility: hidden;
 }
-
 
 .stat-card:hover::after,
 .stat-card:hover::before,
@@ -274,8 +265,7 @@
 .stat-card:hover{ border-left-color: transparent; }
 .stat-card:focus-within{ border-left-color: transparent; }
 </style>
-
-  <script>
+<script>
     (function(){
       const DICT = {
         en: {
@@ -588,7 +578,6 @@
             "filters.search.raffles": "Search raffles…",
             "filters.clear": "Clear",
 
-
           "referrals.shareLink": "Share invitation link",
           "referrals.confirmed": "Confirmed referrals",
           "referrals.progress": "Progress to next ticket","mb.kpi.yourTickets": "Your tickets",            "mb.kpi.openRaffles": "Open raffles",            "mb.kpi.yourParticipation": "Your participation",
@@ -603,7 +592,6 @@
             "filters.search.raffles": "Buscar sorteos…",
             "filters.clear": "Limpiar",
 
-
           "referrals.shareLink": "Compartir enlace de invitación",
           "referrals.confirmed": "Referidos confirmados",
           "referrals.progress": "Progreso hacia próximo ticket","mb.kpi.yourTickets": "Tus tickets",            "mb.kpi.openRaffles": "Sorteos abiertos",            "mb.kpi.yourParticipation": "Tu participación",
@@ -617,7 +605,6 @@
             "filters.search.miscompras": "Buscar minhas compras…",
             "filters.search.raffles": "Buscar sorteios…",
             "filters.clear": "Limpar",
-
 
           "referrals.shareLink": "Compartilhar link de convite",
           "referrals.confirmed": "Indicações confirmadas",
@@ -711,7 +698,7 @@
         try{ Object.keys(EXTRA).forEach(function(L){ if (DICT[L]) Object.assign(DICT[L], EXTRA[L]); }); }catch(_){}
       })();
 
-      // Global helper to translate product names in tables (available before first render)
+      
       window.i18nProductName = function(name){
         try{
           if(!name) return '';
@@ -868,8 +855,6 @@
 
 </style>
 
-
-<!-- Sidebar uniform height = tallest section (v4) -->
 <style id="sidebar-uniform-fix-v4">
   :root { --header-h: 0px; --sidebar-h: auto; }
 
@@ -896,12 +881,29 @@
 </style>
 <script id="sidebar-uniform-fix-v4-script">
   (function(){
-    // Lightweight sidebar sizing: avoid forcing layouts on hidden tabs
-    function visibleHeight(el){
+    function measureEl(el){
       if(!el) return 0;
       var cs = window.getComputedStyle(el);
-      if (cs.display === 'none' || cs.visibility === 'hidden') return 0;
-      return Math.max(el.scrollHeight, el.offsetHeight, el.clientHeight);
+      var hidden = cs.display === 'none';
+      var prev = {display: el.style.display, position: el.style.position, visibility: el.style.visibility, height: el.style.height, left: el.style.left, top: el.style.top};
+      if(hidden){
+        el.style.visibility = 'hidden';
+        el.style.display = 'block';
+        el.style.position = 'absolute';
+        el.style.height = 'auto';
+        el.style.left = '-10000px';
+        el.style.top = '0';
+      }
+      var h = Math.max(el.scrollHeight, el.offsetHeight, el.clientHeight);
+      if(hidden){
+        el.style.display = prev.display;
+        el.style.position = prev.position;
+        el.style.visibility = prev.visibility;
+        el.style.height = prev.height;
+        el.style.left = prev.left;
+        el.style.top = prev.top;
+      }
+      return h || 0;
     }
 
     function setHeaderVar(){
@@ -915,41 +917,33 @@
       var headerH = setHeaderVar();
       var ids = ['main-dashboard','section-configuracion','section-compras','section-sorteos','section-referidos','section-productos'];
       var maxH = 0;
-      for (var i=0;i<ids.length;i++){
+      for(var i=0;i<ids.length;i++){
         var el = document.getElementById(ids[i]);
-        maxH = Math.max(maxH, visibleHeight(el));
+        maxH = Math.max(maxH, measureEl(el));
       }
+      // Ensure at least viewport height minus header so it never shrinks
       var viewportH = Math.max(0, window.innerHeight - headerH);
       var sidebarH = Math.max(maxH, viewportH);
       document.documentElement.style.setProperty('--sidebar-h', sidebarH + 'px');
     }
 
-    // rAF-throttled scheduler to coalesce multiple triggers
-    var scheduled = false;
-    function scheduleRecalc(){
-      if (scheduled) return;
-      scheduled = true;
-      requestAnimationFrame(function(){
-        scheduled = false;
-        recalc();
-      });
-    }
+    // Recalculate on load, resize, language changes and DOM mutations
+    recalc();
+    window.addEventListener('load', recalc);
+    window.addEventListener('resize', recalc);
+    setTimeout(recalc, 150);
+    setTimeout(recalc, 600);
+    setTimeout(recalc, 1500);
 
-    // Initial + listeners (no extra setTimeout cascades)
-    scheduleRecalc();
-    window.addEventListener('load', scheduleRecalc);
-    window.addEventListener('resize', scheduleRecalc);
-
-    // Observe only the main content for size-affecting mutations; throttle via scheduleRecalc
+    // Observe dynamic content
     try{
       var root = document.querySelector('.main-content') || document.body;
-      var mo = new MutationObserver(function(){ scheduleRecalc(); });
-      mo.observe(root, {childList: true, subtree: true, attributes: true, attributeFilter: ['style','class']});
+      var obs = new MutationObserver(function(){ setTimeout(recalc, 30); });
+      obs.observe(root, {childList: true, subtree: true});
     }catch(_){}
   })();
 </script>
 
-<!-- Fix: animation visibility + hover unification -->
 <style>
 /* Smooth hover transitions for buttons and cards */
 button, .stat-card, .settings-card, .srt-card, .pd-card, .sc-card, .card, .product-card{
@@ -973,7 +967,6 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 }
 </style>
 
-<!-- NUMINA: Opción E (Neon suave) para botones Detalles/Eliminar + separación -->
 <style id="numina-buttons-opcion-e">
   /* Separación entre botones en la columna de Acciones */
   #purchases-table td:nth-child(5),
@@ -1024,10 +1017,8 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
   }
 </style>
 
-
 <style id="numina-actions-visible-fix">
 
-/* === NUMINA FIX v2: acciones en una sola línea === */
 .table-container { overflow-x: auto; }
 #purchases-table th:nth-child(5),
 #miscompras-table th:nth-child(5),
@@ -1060,12 +1051,9 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 
 </style>
 
-
-
-<!-- NUMINA: Hero en recuadro (tuneado para mayor visibilidad) -->
 <style id="raffle-hero-css">
   :root{
-    --raffle-img: url("https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/foto%20sorteo%20dinero");
+    --raffle-img: url("https:
     --thumb-left: 22px;  /* posición */
     --thumb-top: 18px;
     --thumb-w: clamp(240px, 24vw, 320px);  /* tamaño */
@@ -1121,7 +1109,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
     }
   }
 
-  /* Safari fix */
+  
   .lang-item{ -webkit-user-select: none; user-select: none; }
 </style>
 
@@ -1135,8 +1123,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
       <div class="user-avatar" id="user-avatar">U</div>
     </div>
   </header>
-
-  <div class="dashboard-container">
+<div class="dashboard-container">
     <nav class="sidebar">
       <ul class="sidebar-menu">
         <li class="menu-item active" data-target="dashboard">
@@ -1169,8 +1156,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
         </li>
       </ul>
     </nav>
-
-    <main class="main-content">
+<main class="main-content">
       <div id="main-dashboard">
         <section class="welcome-banner" id="welcome-banner">
           <div class="welcome-text">
@@ -1197,8 +1183,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
             </div>
           </div>
         </section>
-
-        <div class="stats-grid">
+<div class="stats-grid">
           <div class="stat-card">
             <h3>Tickets.vip</h3>
             <div class="value" id="balance-value">$---</div>
@@ -1220,8 +1205,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
             <div class="change negative"><i class="fas fa-arrow-down"></i><span data-i18n="labels.loading">Cargando…</div>
           </div>
         </div>
-
-        <h2 class="section-title"><i class="fas fa-shopping-bag"></i><span data-i18n="sections.comprasActivas">Compras Activas</span></h2>
+<h2 class="section-title"><i class="fas fa-shopping-bag"></i><span data-i18n="sections.comprasActivas">Compras Activas</span></h2>
         <div class="table-container">
           <div class="table-filter-inline" id="purchases-filterbar">
   <input id="purchases-search" type="text" data-i18n-ph="filters.search.purchases" placeholder="Buscar compras…" aria-label="Buscar compras" />
@@ -1240,11 +1224,9 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
             <tbody id="purchases-body"><tr><td colspan="5" style="text-align:center;"><span data-i18n="labels.loading">Cargando…</span></td></tr></tbody>
           </table>
         </div>
-
-        <h2 class="section-title"><i class="fas fa-users"></i><span data-i18n="sections.referralsHistory">Historial de Referidos</span></h2>
+<h2 class="section-title"><i class="fas fa-users"></i><span data-i18n="sections.referralsHistory">Historial de Referidos</span></h2>
         <div class="table-container">
-          
-          <div class="table-filter-inline" id="referrals-filterbar-hist">
+<div class="table-filter-inline" id="referrals-filterbar-hist">
             <input id="referrals-search-hist" type="text" data-i18n-ph="filters.search.referrals" placeholder="Buscar referidos…" aria-label="Buscar referidos" />
             <button id="referrals-clear-hist" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
           </div>
@@ -1253,8 +1235,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
               <tr>
                 <th data-i18n="tables.referral">Referido</th>
                 <th style="padding:12px 16px;border-bottom:1px solid #1f1f1f;" data-i18n="tables.date">Fecha</th>
-                
-                <th data-i18n="tables.purchases">Compras</th>
+<th data-i18n="tables.purchases">Compras</th>
                 <th data-i18n="tables.status">Estado</th>
                 <th data-i18n="tables.commission">Comisión</th>
               </tr>
@@ -1262,8 +1243,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
             <tbody id="referrals-body"><tr><td colspan="5" style="text-align:center;"><span data-i18n="labels.loading">Cargando…</span></td></tr></tbody>
           </table>
         </div>
-
-        <h2 class="section-title"><i class="fas fa-user-circle"></i><span data-i18n="account.info.title">Información de la Cuenta</span></h2>
+<h2 class="section-title"><i class="fas fa-user-circle"></i><span data-i18n="account.info.title">Información de la Cuenta</span></h2>
         <div class="table-container">
           <table class="account-info-table">
             <tbody>
@@ -1278,8 +1258,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
           </table>
         </div>
       </div>
-
-      <section class="section-content" id="section-configuracion">
+<section class="section-content" id="section-configuracion">
         <h2 class="section-title"><i class="fas fa-cog"></i><span data-i18n="account.settings.title">Configuración de la Cuenta</span></h2>
         <div class="settings-card">
           <h3><i class="fas fa-id-card"></i> <span data-i18n="account.settings.personalData">Datos Personales</span></h3>
@@ -1306,12 +1285,10 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
           </form>
         </div>
       </section>
-
-      <section class="section-content" id="section-compras">
+<section class="section-content" id="section-compras">
         <h2 class="section-title"><i class="fas fa-shopping-bag"></i><span data-i18n="sections.misCompras">Mis Compras</span></h2>
         <div class="table-container">
-          
-          <div class="table-filter-inline" id="miscompras-filterbar">
+<div class="table-filter-inline" id="miscompras-filterbar">
             <input id="miscompras-search" type="text" data-i18n-ph="filters.search.miscompras" placeholder="Buscar mis compras…" aria-label="Buscar mis compras" />
             <button id="miscompras-clear" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
           </div>
@@ -1333,19 +1310,19 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 <section class="section-content" id="section-sorteos" style="display:none;">
 <h2 class="section-title"><i class="fas fa-ticket-alt"></i><span data-i18n="sections.sorteoTitle"></span></h2>
 <div class="srt-stats">
-<!-- Tickets activos -->
+
 <article class="srt-card gold">
 <h3><span data-i18n="raffles.activeTickets"></span></h3>
 <div class="val" id="srt-tickets-activos">--</div>
 </article>
-<!-- Upgrade Numina con barra e hitos -->
+
 <article class="srt-card">
 <h3>Upgrade Numina</h3>
 <div class="val" id="srt-upgrade-valor">0 / 10,000</div>
 <div aria-valuemax="10000" aria-valuemin="0" aria-valuenow="0" class="srt-progress" role="progressbar">
 <div class="srt-track" id="srt-track">
 <div class="srt-fill" id="srt-fill"></div>
-<!-- Hitos -->
+
 <span class="srt-hit" id="srt-25" style="left:25%"></span>
 <span class="srt-hit" id="srt-50" style="left:50%"></span>
 <span class="srt-hit" id="srt-100" style="left:100%"></span>
@@ -1379,13 +1356,9 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 </table>
 </div>
 </section>
-
-      
-      <!-- ===================== REFERIDOS (inserción mínima, sin romper lógica existente) ===================== -->
-      <section class="section-content" id="section-referidos" style="display:none;">
+<section class="section-content" id="section-referidos" style="display:none;">
         <h2 class="section-title"><i class="fas fa-users"></i><span data-i18n="sections.referidos">Referidos</span></h2>
-
-        <div class="card" style="background:#0f0f0f;border:1px solid #222;border-radius:16px;padding:16px;margin-bottom:16px;">
+<div class="card" style="background:#0f0f0f;border:1px solid #222;border-radius:16px;padding:16px;margin-bottom:16px;">
           <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
             <div style="color:#cfcfcf;font-size:14px;" id="refs-count-wrap"><span id="refs-label-confirmed" data-i18n="referrals.confirmed" data-fallback-es="Referidos confirmados" data-fallback-pt="Indicações confirmadas" data-fallback-en="Confirmed referrals">Referidos confirmados</span>: <strong id="refs-count">0/0</strong></div>
             <div style="color:#facc15;font-weight:800;font-size:14px;">Tickets: <strong id="refs-tickets">0</strong></div>
@@ -1393,17 +1366,14 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
           <div style="width:100%;background:#232323;border-radius:9999px;height:12px;overflow:hidden;margin-bottom:14px;">
             <div id="refs-bar-general" style="height:12px;background:#facc15;width:0;border-radius:9999px;"></div>
           </div>
-
-          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:10px 0 8px;">
+<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:10px 0 8px;">
             <div style="color:#cfcfcf;font-size:14px;"><span id="refs-label-progress" data-i18n="referrals.progress" data-fallback-es="Progreso hacia próximo ticket" data-fallback-pt="Progresso para o próximo ticket" data-fallback-en="Progress to next ticket">Progreso hacia próximo ticket</span>: <strong id="refs-progress-count">0/3</strong></div>
           </div>
           <div style="width:100%;background:#232323;border-radius:9999px;height:12px;overflow:hidden;">
             <div id="refs-bar-progress" style="height:12px;background:#10b981;width:0;border-radius:9999px;"></div>
           </div>
         </div>
-
-        
-          <div class="table-filter-inline" id="referrals-filterbar">
+<div class="table-filter-inline" id="referrals-filterbar">
             <input id="refs-search" type="text" data-i18n-ph="filters.search.referrals" placeholder="Buscar referidos…" aria-label="Buscar referidos" />
             <button id="refs-clear" type="button" class="action-btn" style="padding:.45rem .9rem;border:1px solid rgba(212,175,55,.35);background:transparent;color:#facc15;border-radius:.7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
           </div>
@@ -1419,8 +1389,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
             <tbody id="refs-tbody"></tbody>
           </table>
         </div>
-
-        <div style="margin-top:16px;display:flex;justify-content:center;">
+<div style="margin-top:16px;display:flex;justify-content:center;">
           <button id="refs-share" class="action-btn" style="background:#facc15;color:#111;font-weight:900;padding:10px 14px;border-radius:10px;border:1px solid #d4af37" data-i18n="referrals.shareLink">
             Compartir enlace de invitación
           </button>
@@ -1501,8 +1470,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 </div>
 </main>
   </div>
-
-  <script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
   <script>
     (function(){
       const URL = 'https://xaeybhscsxpvtnqzpgwj.supabase.co';
@@ -1511,8 +1479,8 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
       window.getSupabase = function(){ if (_client) return _client; _client = window.supabase.createClient(URL, KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: localStorage } }); return _client; }; window.__SB_BASE = URL; window.__SB_ANON = KEY;
     })();
   </script>
+<script>(async function(){
 
-  <script>(async()=>{\n
     function ready(fn){ if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn); else fn(); }
     function initLangMenu(){
       const dropdown = document.getElementById('langDropdown');
@@ -1724,7 +1692,7 @@ try {
           mainDashboard.style.display = 'none';
           sections.forEach(s=> s.style.display = (s.id === 'section-'+target ? 'block' : 'none'));
           if (target === 'compras') { cargarMisCompras(); }
-          if (target === 'sorteos') { if (window.cargarSorteos) window.cargarSorteos(); else window.addEventListener('cargarSorteosReady', () => window.cargarSorteos && window.cargarSorteos(), {once:true}); }
+          if (target === 'sorteos') { cargarSorteos(); }
         });
       });
     }
@@ -1790,10 +1758,9 @@ alert('Contraseña actualizada');
       initConfig(supabase);
       document.getElementById('logout-btn')?.addEventListener('click', async ()=>{ await getSupabase().auth.signOut(); window.location.href = '/login.html'; });
     });
-  \n})();</script>
-<script>(async()=>{\n
-
-// NUMINA: Catálogo y modal a pantalla completa (sin aria-hidden warnings)
+  
+})()</script>
+<script>(async function(){
 
   function applyI18n(container){
 
@@ -2012,7 +1979,7 @@ if (!link) {
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
 });
 
-\n})();</script>
+})()</script>
 
 <script>
 // === NUMINA product modal wiring with i18n-safe content ===
@@ -2066,7 +2033,7 @@ if (!link) {
     try{
       const conf = MAP[sku] || {};
       const card = srcEl?.closest('.product-card');
-      // Trying to get a representative image (svg) snapshot as data url is overkill – just mirror the SVG via outerHTML into an <img loading="lazy"> via Blob URL would require extra work.
+      
       // We'll keep a simple placeholder.
       if (EL_IMG) { EL_IMG.alt = dI18n.t(conf.keyName || 'catalog.title'); EL_IMG.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='; }
       if (EL_SKU) EL_SKU.textContent = sku || '';
@@ -2108,7 +2075,6 @@ if (!link) {
   });
 })();
 </script>
-
 
 <script>
 // === Ensure sidebar labels are present and translated ===
@@ -2157,7 +2123,6 @@ if (!link) {
 })();
 </script>
 
-
 <script>
 // === Ensure sidebar labels are present and translated ===
 (function(){
@@ -2192,7 +2157,6 @@ if (!link) {
 })();
 </script>
 
-
 <script id="auto-scale-75-js">
 (function(){
   function apply(mq){
@@ -2211,7 +2175,7 @@ if (!link) {
 <script>
 (function () {
   // 1) Enlaces fijos de NOWPayments por SKU
-  /* NOWPayments links removed by ChatGPT: using placeholders */
+  
   var FIXED_PAY_URL = {
     'NUMINA-BRACELET': '#', // USDT 35
     'GOLD-100G':       '#', // USDT 13500
@@ -2219,7 +2183,6 @@ if (!link) {
     'ROLEX-126610L':   '#'  // USDT 19600
   };
   window.FIXED_PAY_URL = FIXED_PAY_URL;
-
 
   // 2) Garantiza que el SKU del botón "Más información" quede en el modal
   function wireMoreInfoButtons() {
@@ -2262,8 +2225,7 @@ if (!link) {
 })();
 </script>
 
-
-<script>(async()=>{\n
+<script>
 (function(){
   function attachPurchasesFilter(){
     var input = document.getElementById('purchases-search');
@@ -2292,7 +2254,574 @@ if (!link) {
   // Re-apply whenever the tbody is re-rendered
   var tb = document.getElementById('purchases-body');
   if (window.MutationObserver && tb){
+    var obs = new MutationObserver(function(){ try{ window.__applyPurchasesFilter && __applyPurchasesFilter(); }catch(e){} });
+    obs.observe(tb, {childList:true});
+  }
+})();
+</script>
+
+<script>
+(function(){
+  function attachReferralsFilter(){
+    var input = document.getElementById('refs-search');
+    var clearBtn = document.getElementById('refs-clear');
+    var tbody = document.getElementById('referrals-body');
+    if(!input || !tbody) return;
+    function apply(){
+      var q = (input.value||'').toLowerCase().trim();
+      Array.prototype.forEach.call(tbody.querySelectorAll('tr'), function(tr){
+        var text = tr.textContent.toLowerCase();
+        tr.style.display = q==='' || text.indexOf(q)!==-1 ? '' : 'none';
+      });
     }
+    input.addEventListener('input', apply);
+    if (clearBtn){
+      clearBtn.addEventListener('click', function(){
+        input.value='';
+        apply();
+        input.focus();
+      });
+    }
+    window.__applyReferralsFilter = apply;
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attachReferralsFilter);
+  else attachReferralsFilter();
+  // re-apply when tbody updates
+  var tb = document.getElementById('referrals-body');
+  if (window.MutationObserver && tb){
+    var obs = new MutationObserver(function(){ try{ window.__applyReferralsFilter && __applyReferralsFilter(); }catch(e){} });
+    obs.observe(tb, {childList:true});
+  }
+})();
+</script>
+
+<script>
+(function(){
+  function attachMisComprasFilter(){
+    var input = document.getElementById('miscompras-search');
+    var clearBtn = document.getElementById('miscompras-clear');
+    var tbody = document.getElementById('miscompras-body');
+    if(!input || !tbody) return;
+    function apply(){
+      var q = (input.value||'').toLowerCase().trim();
+      Array.prototype.forEach.call(tbody.querySelectorAll('tr'), function(tr){
+        var text = tr.textContent.toLowerCase();
+        tr.style.display = q==='' || text.indexOf(q)!==-1 ? '' : 'none';
+      });
+    }
+    input.addEventListener('input', apply);
+    if (clearBtn){
+      clearBtn.addEventListener('click', function(){
+        input.value='';
+        apply();
+        input.focus();
+      });
+    }
+    window.__applyMisComprasFilter = apply;
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attachMisComprasFilter);
+  else attachMisComprasFilter();
+  // re-apply when tbody updates
+  var tb = document.getElementById('miscompras-body');
+  if (window.MutationObserver && tb){
+    var obs = new MutationObserver(function(){ try{ window.__applyMisComprasFilter && __applyMisComprasFilter(); }catch(e){} });
+    obs.observe(tb, {childList:true});
+  }
+})();
+</script>
+
+<script>
+(function(){
+  function attachSorteosFilter(){
+    var input = document.getElementById('sorteos-search');
+    var clearBtn = document.getElementById('sorteos-clear');
+    var tbody = document.getElementById('sorteos-tbody');
+    if(!input || !tbody) return;
+    function apply(){
+      var q = (input.value||'').toLowerCase().trim();
+      Array.prototype.forEach.call(tbody.querySelectorAll('tr'), function(tr){
+        var text = tr.textContent.toLowerCase();
+        tr.style.display = q==='' || text.indexOf(q)!==-1 ? '' : 'none';
+      });
+    }
+    input.addEventListener('input', apply);
+    if (clearBtn){
+      clearBtn.addEventListener('click', function(){
+        input.value='';
+        apply();
+        input.focus();
+      });
+    }
+    window.__applySorteosFilter = apply;
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attachSorteosFilter);
+  else attachSorteosFilter();
+  var tb = document.getElementById('sorteos-tbody');
+  if (window.MutationObserver && tb){
+    var obs = new MutationObserver(function(){ try{ window.__applySorteosFilter && __applySorteosFilter(); }catch(e){} });
+    obs.observe(tb, {childList:true});
+  }
+})();
+</script>
+
+<script>
+
+(function(){
+  function lang(){
+    try {
+      if (window.dI18n && (dI18n.lang || dI18n.current || dI18n.locale)) return (dI18n.lang||dI18n.current||dI18n.locale);
+    } catch(_) {}
+    return document.documentElement.getAttribute('lang') || localStorage.getItem('lang') || 'es';
+  }
+  function dict(){
+    const L = (lang()||'es').slice(0,2);
+    
+    const local = (window.PD_I18N && window.PD_I18N[L]) || {};
+    const global = (window.DICT && window.DICT[L]) || {};
+    return Object.assign({}, global, local);
+  }
+  function translate(root){
+    const d = dict();
+    (root || document).querySelectorAll('#pdOverlay [data-i18n]').forEach(el=>{
+      const k = el.getAttribute('data-i18n');
+      if (d[k]) el.textContent = d[k];
+    });
+  }
+  // Apply on ready and after a tick (in case other scripts run late)
+  document.addEventListener('DOMContentLoaded', ()=>{
+    translate(document);
+    setTimeout(()=>translate(document), 50);
+    setTimeout(()=>translate(document), 200);
+  });
+  
+  document.addEventListener('click', (e)=>{
+    if (e.target.closest('button.action-btn[data-action="details"]')) {
+      setTimeout(()=>translate(document), 0);
+      setTimeout(()=>translate(document), 50);
+    }
+  });
+  // Observe changes inside the modal and translate any new nodes
+  const obs = new MutationObserver(()=>translate(document));
+  const overlay = document.getElementById('pdOverlay');
+  if (overlay) obs.observe(overlay, {childList:true, subtree:true, characterData:true});
+})();
+</script>
+
+<style id="pd-modal-styles">
+  .pd-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);display:none;z-index:1100;padding:24px}
+  .pd-overlay.show{display:block}
+  .pd-modal{width:min(920px,95vw);margin:auto;border-radius:16px;
+    background:linear-gradient(135deg,rgba(255,215,0,.06),rgba(255,215,0,.02) 24%,#111 60%);
+    border:1px solid rgba(255,215,0,.14);box-shadow:0 18px 50px rgba(0,0,0,.55);color:#fff;font-family:Montserrat,system-ui,sans-serif}
+  .pd-modal header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid rgba(255,215,0,.14)}
+  .pd-modal header h3{margin:0;color:var(--primary, #ffd700);font-size:1.35rem;letter-spacing:.3px}
+  .pd-x{background:transparent;border:0;color:#cfcfcf;font-size:22px;font-weight:700;cursor:pointer}
+  .pd-content{display:grid;grid-template-columns:260px 1fr;gap:18px;padding:20px 22px 8px}
+  .pd-media{background:#1f1f1f;border:1px solid rgba(255,255,255,.08);border-radius:12px;aspect-ratio:5/6;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .pd-details h4{margin:.15rem 0 .4rem;font-size:1.25rem}
+  .pd-desc{color:#d5d5d5;line-height:1.55;margin:0 0 .6rem}
+  .pd-meta{display:flex;flex-wrap:wrap;gap:12px;color:#e8e8e8;margin:.2rem 0 .6rem}
+  .pd-pill{display:inline-flex;align-items:center;gap:.5ch;padding:.28rem .65rem;border-radius:999px;font-weight:700;font-size:.82rem;border:1px solid rgba(255,255,255,.09);background:#161616}
+  .pd-status{border:none}
+  .pd-status.pending{background:rgba(255,193,7,.18);color:var(--warn,#ffc107);}
+  .pd-status.active{background:rgba(40,167,69,.18);color:var(--ok,#28a745);}
+  .pd-status.cancelled{background:rgba(220,53,69,.18);color:var(--danger,#dc3545);}
+  .pd-status.completed{background:rgba(13,110,253,.20);color:#0d6efd;}
+  .pd-hr{height:1px;background:linear-gradient(90deg,transparent,rgba(255,215,0,.25),transparent);margin:12px 0}
+  .pd-actions{display:flex;flex-wrap:wrap;gap:.7rem;padding:0 22px 18px}
+  .pd-btn{border-radius:12px;padding:.6rem 1rem;font-weight:800;letter-spacing:.2px;border:1px solid transparent;cursor:pointer}
+  .pd-btn.gold{background:var(--primary, #ffd700);color:#111;border-color:var(--primary, #ffd700)}
+  .pd-btn.warn{background:#ffc107;color:#111;border-color:#ffc107}
+  .pd-btn.outline{background:transparent;color:var(--primary, #ffd700);border-color:rgba(255,215,0,.7)}
+  .pd-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:0 22px 22px}
+  .pd-card{background:linear-gradient(180deg,#141414,#101010);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 14px}
+  .pd-card h5{margin:0 0 .4rem;color:var(--primary, #ffd700);font-size:.95rem}
+  .pd-kv{display:grid;grid-template-columns:150px 1fr;gap:.4rem .8rem;color:#eaeaea;font-size:.92rem}
+  .pd-kv .k{color:#a7a7a7}
+  .pd-timeline{display:grid;gap:.6rem}
+  .pd-tl{display:grid;grid-template-columns:18px 1fr;gap:.6rem;align-items:start}
+  .pd-dot{width:10px;height:10px;border-radius:50%;background:var(--primary, #ffd700);box-shadow:0 0 0 3px rgba(255,215,0,.15)}
+  @media(max-width:860px){.pd-content{grid-template-columns:1fr}}
+
+.btn-delete-row{border:1px solid #f5c400;color:#f5c400;background:transparent;
+  padding:.35rem .7rem;border-radius:.55rem;font-weight:700;cursor:pointer;
+  transition:all .12s ease}
+.btn-delete-row:hover{background:#f5c400;color:#111}
+
+</style>
+
+<div id="pdOverlay" class="pd-overlay" hidden>
+  <section class="pd-modal" role="dialog" aria-modal="true" aria-labelledby="pdTitle">
+    <header>
+      <h3 id="pdTitle" data-i18n-key="purchase.detailsTitle">Detalles de la Compra</h3>
+      <button class="pd-x" id="pdClose" aria-label="Cerrar">✕</button>
+    </header>
+<div class="pd-content">
+      <figure class="pd-media" aria-label="Imagen del producto">
+        <svg viewBox="0 0 600 720" role="img">
+          <defs><linearGradient id="pdg" x1="0" x2="1"><stop offset="0" stop-color="#2a0d2d"/><stop offset="1" stop-color="#6f1d75"/></linearGradient></defs>
+          <rect width="600" height="720" fill="url(#pdg)"/>
+          <text id="pdMediaText" x="50%" y="52%" text-anchor="middle" fill="#fff" font-size="34" font-weight="800" font-family="Montserrat, sans-serif">Producto</text>
+        </svg>
+      </figure>
+<div class="pd-details">
+        <h4 id="pdName">—</h4>
+        <p class="pd-desc" id="pdDesc" data-i18n-key="purchase.sampleDesc">Diseño exclusivo con materiales premium.</p>
+        <div class="pd-meta">
+          <span class="pd-pill" id="pdPrice">—</span>
+          <span class="pd-pill" id="pdDate">—</span>
+          <span class="pd-pill" id="pdOrder">—</span>
+          <span class="pd-pill pd-status pending" id="pdStatus" data-i18n-key="status.pending">Pendiente</span>
+          <span class="pd-pill" data-i18n-key="purchase.usdt">USDT</span>
+        </div>
+        <div class="pd-hr"></div>
+      </div>
+    </div>
+<div class="pd-actions">
+      <button class="pd-btn gold" id="pdInvoice" data-i18n-key="purchase.downloadInvoice">Descargar factura</button>
+      <button class="pd-btn warn" id="pdRegen" data-i18n-key="purchase.regeneratePayment">Generar nuevo link de pago</button>
+</div>
+<div class="pd-grid">
+      <div class="pd-card">
+        <h5 data-i18n-key="purchase.paymentInfo">Información de pago</h5>
+        <div class="pd-kv">
+          <div class="k" data-i18n-key="purchase.method">Método</div><div data-i18n-key="purchase.methodValue">Cripto · USDT</div>
+          <div class="k" data-i18n-key="purchase.currency">Moneda</div><div data-i18n-key="purchase.usdt">USDT</div>
+          <div class="k" data-i18n-key="purchase.subtotal">Subtotal</div><div id="pdSubtotal">—</div>
+          <div class="k" data-i18n-key="purchase.fees">Comisiones</div><div data-i18n-key="purchase.zeroUsdt">0 USDT</div>
+          <div class="k" data-i18n-key="purchase.total">Total</div><div id="pdTotal"><strong>—</strong></div>
+        </div>
+      </div>
+      <div class="pd-card">
+        <h5 data-i18n-key="purchase.history">Historial</h5>
+        <div class="pd-timeline" id="pdTimeline">
+          <div class="pd-tl"><span class="pd-dot"></span><div><div class="t" data-i18n-key="purchase.orderCreated">Pedido creado</div><div class="s">—</div></div></div>
+          <div class="pd-tl"><span class="pd-dot"></span><div><div class="t" data-i18n-key="purchase.paymentLinkGenerated">Link de pago generado</div><div class="s">—</div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+
+(function(){
+  window.PD_I18N = window.PD_I18N || {};
+  const ensure = (lng, entries) => { PD_I18N[lng] = Object.assign({}, PD_I18N[lng]||{}, entries); };
+
+  ensure('es', {
+    'purchase.detailsTitle':'Detalles de la Compra',
+    'purchase.sampleDesc':'Diseño exclusivo con materiales premium.',
+    'purchase.usdt':'USDT',
+    'purchase.downloadInvoice':'Descargar factura',
+    'purchase.regeneratePayment':'Generar nuevo link de pago',
+    'purchase.contactSupport':'Contactar soporte',
+    'purchase.paymentInfo':'Información de pago',
+    'purchase.method':'Método',
+    'purchase.methodValue':'Cripto · USDT',
+    'purchase.currency':'Moneda',
+    'purchase.subtotal':'Subtotal',
+    'purchase.fees':'Comisiones',
+    'purchase.zeroUsdt':'0 USDT',
+    'purchase.total':'Total',
+    'purchase.history':'Historial',
+    'purchase.orderCreated':'Pedido creado',
+    'purchase.paymentLinkGenerated':'Link de pago generado',
+    'status.pending':'Pendiente',
+    'status.active':'Activo',
+    'status.cancelled':'Cancelado',
+    'status.completed':'Completado'
+  });
+  ensure('en', {
+    'purchase.detailsTitle':'Purchase Details',
+    'purchase.sampleDesc':'Exclusive design with premium materials.',
+    'purchase.usdt':'USDT',
+    'purchase.downloadInvoice':'Download invoice',
+    'purchase.regeneratePayment':'Generate new payment link',
+    'purchase.contactSupport':'Contact support',
+    'purchase.paymentInfo':'Payment information',
+    'purchase.method':'Method',
+    'purchase.methodValue':'Crypto · USDT',
+    'purchase.currency':'Currency',
+    'purchase.subtotal':'Subtotal',
+    'purchase.fees':'Fees',
+    'purchase.zeroUsdt':'0 USDT',
+    'purchase.total':'Total',
+    'purchase.history':'History',
+    'purchase.orderCreated':'Order created',
+    'purchase.paymentLinkGenerated':'Payment link generated',
+    'status.pending':'Pending',
+    'status.active':'Active',
+    'status.cancelled':'Cancelled',
+    'status.completed':'Completed'
+  });
+  ensure('pt', {
+    'purchase.detailsTitle':'Detalhes da Compra',
+    'purchase.sampleDesc':'Design exclusivo com materiais premium.',
+    'purchase.usdt':'USDT',
+    'purchase.downloadInvoice':'Baixar fatura',
+    'purchase.regeneratePayment':'Gerar novo link de pagamento',
+    'purchase.contactSupport':'Contactar suporte',
+    'purchase.paymentInfo':'Informações de pagamento',
+    'purchase.method':'Método',
+    'purchase.methodValue':'Cripto · USDT',
+    'purchase.currency':'Moeda',
+    'purchase.subtotal':'Subtotal',
+    'purchase.fees':'Comissões',
+    'purchase.zeroUsdt':'0 USDT',
+    'purchase.total':'Total',
+    'purchase.history':'Histórico',
+    'purchase.orderCreated':'Pedido criado',
+    'purchase.paymentLinkGenerated':'Link de pagamento gerado',
+    'status.pending':'Pendente',
+    'status.active':'Ativo',
+    'status.cancelled':'Cancelado',
+    'status.completed':'Concluído'
+  });
+
+  function getLang(){
+    try {
+      if (window.dI18n && (dI18n.lang || dI18n.current || dI18n.locale)) return (dI18n.lang||dI18n.current||dI18n.locale);
+    } catch(_) {}
+    return document.documentElement.getAttribute('lang') || localStorage.getItem('lang') || 'es';
+  }
+  function t(key){
+    const L = (getLang()||'es').slice(0,2);
+    return (PD_I18N[L] && PD_I18N[L][key]) || null;
+  }
+  function apply(root){
+    const scope = root || document;
+    // 1) Apply by data-i18n-key (our safe attribute)
+    scope.querySelectorAll('#pdOverlay [data-i18n-key]').forEach(el=>{
+      const key = el.getAttribute('data-i18n-key');
+      const val = t(key);
+      if (val) el.textContent = val;
+    });
+    
+    scope.querySelectorAll('#pdOverlay *').forEach(el=>{
+      if (!el.childNodes) return;
+      el.childNodes.forEach(node=>{
+        if (node.nodeType === 3) { // text node
+          const s = node.nodeValue.trim();
+          if (s && (s.startsWith('purchase.') || s.startsWith('status.'))) {
+            const val = t(s);
+            if (val) node.nodeValue = node.nodeValue.replace(s, val);
+          }
+        }
+      });
+    });
+  }
+  window.pdI18n = { apply };
+  document.addEventListener('DOMContentLoaded', ()=> apply());
+})();
+
+// == Modal open/fill/close ==
+(function(){
+  const OVERLAY = document.getElementById('pdOverlay');
+  const CLOSE   = document.getElementById('pdClose');
+  const EL = {
+    name:   document.getElementById('pdName'),
+    desc:   document.getElementById('pdDesc'),
+    mediaT: document.getElementById('pdMediaText'),
+    price:  document.getElementById('pdPrice'),
+    date:   document.getElementById('pdDate'),
+    order:  document.getElementById('pdOrder'),
+    status: document.getElementById('pdStatus'),
+    subtotal: document.getElementById('pdSubtotal'),
+    total:    document.getElementById('pdTotal'),
+    regen:    document.getElementById('pdRegen'),
+  };
+
+  function open(){ OVERLAY.classList.add('show'); OVERLAY.removeAttribute('hidden'); document.body.style.overflow='hidden'; }
+  function close(){ OVERLAY.classList.remove('show'); OVERLAY.setAttribute('hidden',''); document.body.style.overflow=''; }
+
+  function readStatusKey(el){
+    if(!el) return 'pending';
+    const known = ['pending','active','completed','cancelled','inactive','paid','disputed'];
+    const k = known.find(k => el.classList.contains(k));
+    return (k === 'paid') ? 'completed' : (k || 'pending');
+  }
+
+  document.addEventListener('click', (e)=>{
+    const btn = e.target.closest('button.action-btn[data-action="details"]');
+    if(!btn) return;
+
+    const tr = btn.closest('tr');
+    const tds = tr ? tr.querySelectorAll('td') : [];
+    const product = tds[0]?.innerText?.trim() || 'Producto';
+    const date    = tds[1]?.innerText?.trim() || '—';
+    let value     = '—';
+    if (tds[2]) value = tds[2].innerText.replace('$','').replace('USDT','').trim() || '—';
+    const statusEl= tr?.querySelector('.status');
+    const statusK = readStatusKey(statusEl);
+
+    EL.name.textContent = product;
+    EL.mediaT.textContent = product;
+    EL.price.textContent = (value !== '—') ? (value + ' USDT') : '—';
+    EL.subtotal.textContent = (value !== '—') ? (value + ' USDT') : '—';
+    EL.total.innerHTML = '<strong>' + ((value !== '—') ? (value + ' USDT') : '—') + '</strong>';
+    EL.date.textContent = date || '—';
+    EL.order.textContent = '#—';
+    // Robust: set "Order created" and "Payment link generated" dates from the date chip
+    (function(){
+      const orderDateText = (EL.date && EL.date.textContent || '').trim();
+      
+      const sNodes = document.querySelectorAll('#pdOverlay .pd-timeline .s, #pdOverlay #pdTimeline .s');
+      if (sNodes[0]) sNodes[0].textContent = orderDateText || '—';                // Order created
+      if (sNodes[1]) sNodes[1].textContent = (statusK !== 'pending') ? (orderDateText || '—') : '—'; // Payment link generated
+    })();
+
+    EL.status.classList.remove('pending','active','cancelled','completed');
+    EL.status.classList.add(statusK);
+    EL.status.setAttribute('data-i18n-key','status.'+statusK);
+
+    
+    if (window.pdI18n && typeof pdI18n.apply === 'function') {
+      pdI18n.apply(OVERLAY);
+      setTimeout(()=>pdI18n.apply(OVERLAY), 0);
+    }
+
+    EL.regen.style.display = (statusK === 'pending') ? 'inline-block' : 'none';
+
+    open();
+  });
+
+  CLOSE?.addEventListener('click', close);
+  OVERLAY?.addEventListener('click', (e)=>{ if(e.target === OVERLAY) close(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') close(); });
+})();
+</script>
+
+<script>
+(function(){
+  function resolveSKUFromModal(){
+    try{
+      var priceText = (document.getElementById('pdPrice')?.textContent || '').replace(/[^0-9.,]/g,'');
+      if (priceText) {
+        var norm = priceText.replace(/\./g, '').replace(',', '.');
+        var price = parseFloat(norm);
+        if (!isNaN(price)) {
+          if (Math.abs(price - 13500) < 0.01) return 'GOLD-100G';
+          if (Math.abs(price - 6500)  < 0.01) return 'PLAT-100G';
+          if (Math.abs(price - 19600) < 0.01) return 'ROLEX-126610L';
+          if (Math.abs(price - 35)    < 0.01) return 'NUMINA-BRACELET';
+        }
+      }
+      var name = (document.getElementById('pdName')?.textContent || '').toLowerCase();
+      if (/oro|gold/.test(name)) return 'GOLD-100G';
+      if (/platino|platinum/.test(name)) return 'PLAT-100G';
+      if (/rolex|126610/.test(name)) return 'ROLEX-126610L';
+      if (/pulsera|bracelet/.test(name)) return 'NUMINA-BRACELET';
+    }catch(e){ console.warn('resolveSKUFromModal error', e); }
+    return null;
+  }
+
+  function handleRegen(){
+    try{
+      var sku = resolveSKUFromModal();
+      var map = (window.FIXED_PAY_URL || {});
+      var url = sku ? map[sku] : null;
+      if (url) {
+        window.open(url, '_blank', 'noopener'); // abre NOWPayments en una nueva pestaña
+      } else {
+        alert('No se encontró un link de pago para este producto.');
+      }
+    }catch(e){
+      console.error(e);
+      alert('Ocurrió un error al generar el link de pago.');
+    }
+  }
+
+  function init(){
+    var btn = document.getElementById('pdRegen');
+    if (btn && !btn.__wired) {
+      btn.addEventListener('click', handleRegen);
+      btn.__wired = true;
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+<script>(async function(){
+
+(function(){
+  function getSB(){
+    try{ return (typeof getSupabase==='function' && getSupabase()) || window.supabaseClient || window.supabase; }
+    catch(_){ return null; }
+  }
+  async function getAccessToken(){
+    try{
+      const sb = getSB(); if(!sb || !sb.auth) return null;
+      const { data } = await sb.auth.getSession();
+      return (data && data.session && data.session.access_token) || null;
+    }catch(_){ return null; }
+  }
+  function parseMoney(txt){
+    try{
+      if(!txt) return null;
+      let s = (txt+'').replace(/[^0-9.,]/g,''); s = s.replace(/[,.](?=\d{3}(?:\D|$))/g,''); s = s.replace(/,/g,'.');
+      const n = parseFloat(s); return isFinite(n) ? n : null;
+    }catch(_){ return null; }
+  }
+  function text(el){ return (el && (el.textContent||el.innerText)||'').trim(); }
+
+  function findPurchaseId(fromEl){
+    let id = fromEl && fromEl.getAttribute && fromEl.getAttribute('data-purchase-id'); if (id) return id;
+    let box = fromEl && fromEl.closest && fromEl.closest('[data-purchase-id]'); if (box) return box.getAttribute('data-purchase-id');
+    let any = document.querySelector('#purchase-detail [data-purchase-id], .purchase-detail [data-purchase-id]'); if (any) return any.getAttribute('data-purchase-id');
+    let t = text(document.querySelector('#nmOrderId, #nmPurchaseId')); if (t) return t;
+    return null;
+  }
+
+  async function fallbackGuessPurchaseId(){
+    const sb = getSB(); if(!sb) return null;
+    let userId = null;
+    try{ const { data } = await sb.auth.getUser(); userId = data && data.user && data.user.id; }catch(_){}
+    if(!userId) return null;
+
+    const scope = document.querySelector('#purchase-detail, .purchase-detail, .modal, body'); if(!scope) return null;
+    const totalEl = scope.querySelector('[data-total], .total, .info-de-pago .total, .payment-info .total, .resumen .total, .summary .total');
+    const totalText = text(totalEl) || text(scope.querySelector('.info-de-pago, .payment-info, .summary')) || '';
+    const amount = parseMoney(totalText);
+
+    let dateStr = text(scope.querySelector('[data-date], .chip-date, .date, .fecha, .badges .date, .chips .date')) || '';
+    if(!/\d{1,2}\s*\/\s*\d{1,2}\s*\/\s*\d{2,4}/.test(dateStr)){
+      const match = (scope.textContent||'').match(/(\d{1,2}\/\d{1,2}\/\d{2,4})/);
+      if(match) dateStr = match[1];
+    }
+    let startISO=null, endISO=null;
+    if(dateStr){
+      const [d,m,y] = dateStr.split('/').map(x=>parseInt(x,10));
+      if(d && m && y){
+        const dt0 = new Date(Date.UTC(y<100?2000+y:y, (m-1), d, 0,0,0));
+        const dt1 = new Date(Date.UTC(y<100?2000+y:y, (m-1), d, 23,59,59));
+        startISO = dt0.toISOString(); endISO = dt1.toISOString();
+      }
+    }
+
+    let q = sb.from('purchases').select('id, value, created_at, status').eq('user_id', userId).order('created_at', { ascending:false }).limit(50);
+    if (amount != null) q = q.eq('value', amount);
+    if (startISO && endISO) q = q.gte('created_at', startISO).lte('created_at', endISO);
+    try{
+      const { data, error } = await q; if(error || !data) return null;
+      if(data.length === 1) return data[0].id;
+      const pend = data.find(r => (r.status||'').toLowerCase().startsWith('pend')); if(pend) return pend.id;
+      return data[0] ? data[0].id : null;
+    }catch(_){ return null; }
+  }
+
+  async function callEdge(fnName, payload, accessToken){
+    try{
+      let base = (window.__SB_BASE || '').replace(/\/$/, '');
+      if (!base) {
+        try { const sb = getSB(); base = (sb && sb.storage && sb.storage.url) ? sb.storage.url.split('/storage')[0] : ''; } catch(_){}
+      }
       if (!base) throw new Error('No pude obtener la URL base de Supabase.');
       const url = base + '/functions/v1/' + fnName;
       const headers = { 'Content-Type': 'application/json' };
@@ -2334,7 +2863,8 @@ if (!link) {
     finally{ btn.disabled = false; btn.textContent = original; }
   }, true);
 })();
-\n})();</script>
+
+})()</script>
 
 <style>
 /* === Support Claim Modal (sc-*) === */
@@ -2373,15 +2903,13 @@ if (!link) {
 
 </style>
 
-<!-- === SUPPORT CLAIM MODAL === -->
 <div id="scOverlay" class="sc-overlay" aria-hidden="true">
   <div class="sc-modal" role="dialog" aria-modal="true" aria-labelledby="scTitle" tabindex="-1">
     <button class="sc-close" id="scClose" aria-label="Cerrar">×</button>
     <h3 id="scTitle">Contacto de soporte</h3>
     <div class="sc-body">
       <div class="sc-grid">
-        <!-- Columna izquierda: detalle -->
-        <div class="sc-card">
+<div class="sc-card">
           <h5>Detalle de la compra</h5>
           <div class="sc-kv">
             <div class="k">Producto</div> <div id="scProduct">—</div>
@@ -2390,9 +2918,7 @@ if (!link) {
             <div class="k">Estado</div>   <div><span id="scStatusBadge" class="sc-badge pending">Pendiente</div>
           </div>
         </div>
-
-        <!-- Columna derecha: formulario -->
-        <div class="sc-card">
+<div class="sc-card">
           <h5>Contacto con soporte</h5>
           <label class="sc-label" for="scReason">Motivo</label>
           <select id="scReason" class="sc-input">
@@ -2414,8 +2940,8 @@ if (!link) {
   </div>
 </div>
 
-<script>(async()=>{\n
-// === Support Claim Modal wiring ===
+<script>(async function(){
+
 (function(){
   const SUPPORT_EMAIL = "numina5555@gmail.com"; // ej: 'soporte@tu-dominio.com'
   function $(id){ return document.getElementById(id); }
@@ -2458,7 +2984,7 @@ if (!link) {
   $('scOverlay')?.addEventListener('click', function(e){ if(e.target === this) closeModal(); });
   document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeModal(); });
 
-  // Enviar: validación + mailto
+  
   
 $('scSubmit')?.addEventListener('click', async function(){
   const btn = this;
@@ -2495,7 +3021,7 @@ Estado: ${status}
 Descripción:
 ${msg}`;
 
-  // Enviar a Supabase y notificar por Edge Function
+  
   try {
     btn.disabled = true;
     const originalLabel = btn.textContent;
@@ -2559,7 +3085,8 @@ ${msg}`;
 });
 
 })();
-\n})();</script>
+
+})()</script>
 
 <script>
 (function(){
@@ -2805,10 +3332,8 @@ function bindShare(){
   });
 })();
 </script>
-    
+<script>(async function(){
 
-<!-- BEGIN: NOWPayments email param injector -->
-<script>(async()=>{\n
 (function(){
   // Runs after DOM is ready
   const onReady = (fn) => {
@@ -2817,7 +3342,7 @@ function bindShare(){
   };
 
   onReady(function(){
-    // Helper: try to get user email from Supabase auth OR from dashboard UI fallback
+    
     async function getUserEmail() {
       try {
         if (window.supabase && window.supabase.auth && typeof window.supabase.auth.getUser === "function") {
@@ -2842,7 +3367,7 @@ function bindShare(){
       try {
         const hasQuery = url.includes("?");
         const sep = hasQuery ? "&" : "?";
-        // If URL already contains an 'email' param, replace it
+        
         const u = new URL(url, window.location.origin);
         if (u.searchParams.has("email")) {
           u.searchParams.set("email", email);
@@ -2850,7 +3375,7 @@ function bindShare(){
         }
         return url + sep + "email=" + encodeURIComponent(email);
       } catch(_){
-        // If URL() constructor fails (cross-origin relative edge cases), do a best-effort append
+        
         return url + (url.includes("?") ? "&" : "?") + "email=" + encodeURIComponent(email);
       }
     }
@@ -2885,10 +3410,11 @@ function bindShare(){
     }, true);
   });
 })();
-\n})();</script>
-<!-- END: NOWPayments email param injector -->
 
-<script>(async()=>{\n
+})()</script>
+
+<script>(async function(){
+
 /* === NOWPayments dynamic USDT checkout override (capture-phase) ===
    This block intercepts clicks on the modal "Comprar" button (#nmBuy) and the
    "Generar nuevo link de pago" (#pdRegen), creates a purchase in Supabase with currency USDT,
@@ -3019,9 +3545,11 @@ if (fn.error || !paymentUrl){
 
   ready(wireOverrides);
 })();
-\n})();</script>
 
-<script>(async()=>{\n
+})()</script>
+
+<script>(async function(){
+
 (function(){
   window.__callEdge = async function(fnName, body, accessToken){
     try{
@@ -3046,8 +3574,8 @@ if (fn.error || !paymentUrl){
     }
   };
 })();
-\n})();</script>
 
+})()</script>
 
 <style>
 .btn-delete-row{
@@ -3058,7 +3586,8 @@ if (fn.error || !paymentUrl){
 .btn-delete-row:hover{ background:#f5c400; color:#111 }
 </style>
 
-<script>(async()=>{\n
+<script>(async function(){
+
 (function () {
   function getSB() {
     try { return (typeof getSupabase === 'function') ? getSupabase() : (window.supabaseClient || window.supabase); }
@@ -3124,10 +3653,11 @@ if (fn.error || !paymentUrl){
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup);
   else setup();
 })();
-\n})();</script>
 
-<!-- === NUMINA: Regenerar link de pago (NOWPayments) sin leer monto del DOM === -->
-<script>(async()=>{\n
+})()</script>
+
+<script>(async function(){
+
 (function(){
   async function getAccessToken(){
     try{
@@ -3198,12 +3728,11 @@ if (fn.error || !paymentUrl){
     }
   });
 })();
-\n})();</script>
 
+})()</script>
 
+<script>(async function(){
 
-<!-- NUMINA share-invite upgrade: builds https://numina.vip/login.html?ref=YOUR_CODE -->
-<script>(async()=>{\n
 (function(){
   function getSB(){
     try{ return (typeof getSupabase==='function' && getSupabase()) || window.supabaseClient || window.supabase || null; }
@@ -3215,7 +3744,7 @@ if (fn.error || !paymentUrl){
     var dom = document.querySelector('[data-ref-code], #refCode, #nmRefCode, .ref-code, .referral-code code, .referral-code .value');
     var code = (dom && (dom.dataset && dom.dataset.refCode || (dom.textContent||'').trim())) || '';
 
-    // 2) Heuristic: look near a "Copiar" button
+    
     if(!code){
       try{
         var copyBtns = Array.from(document.querySelectorAll('button, a')).filter(function(b){
@@ -3291,8 +3820,10 @@ if (fn.error || !paymentUrl){
     }
   }, {capture:true});
 })();
-\n})();</script>
-<script>(async()=>{\n
+
+})()</script>
+<script>(async function(){
+
 async function cargarSorteos(){
   try{
     const tbody = document.getElementById('sorteos-tbody');
@@ -3302,7 +3833,7 @@ async function cargarSorteos(){
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user){ window.location.href = '/login.html'; return; }
 
-    // 1) Tickets activos (sumatoria en tickets_ledger)
+    
     let totalTickets = 0;
     let tksRows = [];
     try{
@@ -3345,7 +3876,7 @@ async function cargarSorteos(){
     if (hit25) hit25.classList.toggle('on', totalHistorico >= 2500);
     if (hit50) hit50.classList.toggle('on', totalHistorico >= 5000);
     if (hit100) hit100.classList.toggle('on', totalHistorico >= 10000);
-// 2) Historial de uso: negativos (tickets usados)
+
     const { data: hist, error } = await supabase
       .from('tickets_ledger')
       .select('id, sku, count, created_at')
@@ -3394,11 +3925,11 @@ async function cargarSorteos(){
     if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Error</td></tr>';
   }
 }
-\n})();</script>
-<!-- jsPDF (para generar PDF del lado del cliente) -->
+
+})()</script>
+
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
-<!-- Handler simple para el botón "Descargar factura" -->
 <script>
 (function(){
   function t(id){ try{ return (document.getElementById(id)?.textContent || '').trim(); }catch(_){ return ''; } }
@@ -3533,9 +4064,6 @@ async function cargarSorteos(){
 })();
 </script>
 
-
-
-<!-- Fix: IntersectionObserver para animaciones en scroll y contenido dinámico -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const SELECTOR = '.section-title, .product-card';
@@ -3575,7 +4103,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<!-- ==== NUMINA FINAL PATCH: Mystery Box dentro del overlay existente (sin borrar nada) ==== -->
 <script>
 (function(){
   function renderMBContent(){
@@ -3615,15 +4142,13 @@ document.addEventListener('DOMContentLoaded', () => {
               .mbox-btn:hover{transform:translateY(-2px)}
               .mbox-primary{background:var(--primary);border-color:var(--primary);color:#111}
             </style>
-
-            <div class="mbox-wrap">
+<div class="mbox-wrap">
               <div class="mbox-tabs">
                 <button class="mbox-tab active"><span data-i18n="mbox.tabs.open">' + (window.dI18n? dI18n.t('mbox.tabs.open') : 'Abiertos') + '</span></button>
                 <button class=\"mbox-tab\"><span data-i18n="mbox.tabs.closed">' + (window.dI18n? dI18n.t('mbox.tabs.closed') : 'Finalizados') + '</span></button>
                 <div class="mbox-search"><input data-i18n-ph="filters.search.raffles" placeholder="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" /></div>
               </div>
-
-              <div class="mbox-card">
+<div class="mbox-card">
                 <div class="mbox-card-head">
                   <span class="mbox-chip" data-i18n="mbox.status.open">' + (window.dI18n? dI18n.t('mbox.status.open') : 'Abierto') + '</span>'
                 </div>
@@ -3639,8 +4164,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   <div class="mbox-badges">
                     <span class="mbox-badge">Neto: 0 tickets</span>
                   </div>
-                  
-                </div>
+</div>
               </div>
             </div>
           `;
@@ -3688,7 +4212,6 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
-<!-- ==== NUMINA SCOPE GUARD: Mystery Box solo desde #balance-value o [data-open="mystery"] ==== -->
 <script>
 (function(){
   // Flag que habilita MB solo si el click vino del target correcto
@@ -3712,7 +4235,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, true); // captura
 
-  // Si existen funciones previas para renderizar MB, las guardamos y envolvemos con el guard
+  
   var _r1 = window.renderMBContent;
   var _r2 = window.renderMysteryBox;
   window.renderMBContent = function(){
@@ -3724,7 +4247,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof _r2 === 'function') return _r2.apply(this, arguments);
   };
 
-  // Además, si algún listener viejo llama a renderMBContent inmediatamente, lo anulamos con un microtask
+  
   // hasta que haya un click válido marcando __mbAllow=true.
   setInterval(function(){
     // resetea el flag si no hubo clicks válidos recientemente
@@ -3733,10 +4256,6 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
-
-
-
-<!-- NMN: Yellow card opens NEW tab (no overlay, no sidebar) -->
 <script>
 (function(){
   var valueEl = document.getElementById('balance-value');
@@ -3806,15 +4325,13 @@ document.addEventListener('DOMContentLoaded', () => {
               .mbox-btn:hover{transform:translateY(-2px)}
               .mbox-primary{background:var(--primary);border-color:var(--primary);color:#111}
             </style>
-
-            <div class="mbox-wrap">
+<div class="mbox-wrap">
               <div class="mbox-tabs">
                 <button class="mbox-tab active"><span data-i18n="mbox.tabs.open">' + (window.dI18n? dI18n.t('mbox.tabs.open') : 'Abiertos') + '</span></button>
                 <button class=\"mbox-tab\"><span data-i18n="mbox.tabs.closed">' + (window.dI18n? dI18n.t('mbox.tabs.closed') : 'Finalizados') + '</span></button>
                 <div class="mbox-search"><input data-i18n-ph="filters.search.raffles" placeholder="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" /></div>
               </div>
-
-              <div class="mbox-card">
+<div class="mbox-card">
                 <div class="mbox-card-head">
                   <span class="mbox-chip" data-i18n="mbox.status.open">' + (window.dI18n? dI18n.t('mbox.status.open') : 'Abierto') + '</span>'
                 </div>
@@ -3830,8 +4347,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   <div class="mbox-badges">
                     <span class="mbox-badge">Neto: 0 tickets</span>
                   </div>
-                  
-                </div>
+</div>
               </div>
             </div>
           `;
@@ -3903,7 +4419,6 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
-<!-- NMN: Back button (yellow), fade, reset filters -->
 <script>
 (function(){
   function fadeIn(el, dur){ dur = dur||200; if(!el) return; el.style.removeProperty('display'); if(!el.style.display) el.style.display='block'; el.style.opacity=0; el.style.transition='opacity '+dur+'ms ease'; requestAnimationFrame(function(){ el.style.opacity=1; }); }
@@ -3920,8 +4435,6 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
-
-<!-- NMN: Auto-hide the custom Mystery tab when navigating via sidebar -->
 <script>
 (function(){
   function hideMysteryTab(){
@@ -3946,8 +4459,6 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
-
-<!-- NMN: 'Compras Activas' card opens its own tab (not sidebar) -->
 <script>
 (function(){
   function ensureComprasTab(){
@@ -3982,7 +4493,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Find the <h2> with data-i18n="sections.comprasActivas"
     var titleSpan = document.querySelector('h2.section-title [data-i18n="sections.comprasActivas"]');
     var h2 = titleSpan ? titleSpan.closest('h2') : null;
-    // The purchases table container should be the next .table-container that contains #purchases-table or #purchases-body
+    
     var container = null;
     if(h2){
       var sib = h2.nextElementSibling;
@@ -4118,8 +4629,6 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
-
-<!-- NMN: 'Referidos' card opens its own tab (not sidebar) -->
 <script>
 (function(){
   function ensureReferidosTab(){
@@ -4151,7 +4660,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function findReferidosNodes(){
-    // h2.section-title containing data-i18n="sections.referralsHistory"
+    
     var titleSpan = document.querySelector('h2.section-title [data-i18n="sections.referralsHistory"]');
     var h2 = titleSpan ? titleSpan.closest('h2') : null;
     var container = null;
@@ -4285,9 +4794,8 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
+<script>(async function(){
 
-<!-- === NUMINA: Tickets Activos (inline tab) + KPI cards === -->
-<script>(async()=>{\n
 (function(){
   function ensureTicketsTab(){
     var dash = document.getElementById('main-dashboard');
@@ -4682,11 +5190,11 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('popstate', function(){ var tab=document.getElementById('tab-tickets'); if(tab){ tab.classList.add('section-content'); tab.style.display='none'; } });
   window.addEventListener('hashchange', function(){ var tab=document.getElementById('tab-tickets'); if(tab){ tab.classList.add('section-content'); tab.style.display='none'; } });
 })();
-\n})();</script>
 
+})()</script>
 
-<!-- NUMINA PATCH: Unify tickets KPI logic across Dashboard and Sorteos -->
-<script>(async()=>{\n
+<script>(async function(){
+
 (function(){
   // Sum tickets from tickets_ledger for the current user (positives + negatives)
   async function sumActiveTickets(){
@@ -4733,11 +5241,11 @@ document.addEventListener('DOMContentLoaded', () => {
     writeDashboardTickets();
   }
 })();
-\n})();</script>
 
+})()</script>
 
-<!-- NUMINA PATCH 2: Unify KPI logic in Tickets Activos tab with Sorteos (use tickets_ledger) -->
-<script>(async()=>{\n
+<script>(async function(){
+
 (function(){
   async function _getClient(){
     try {
@@ -4779,10 +5287,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Run once on ready, and whenever the Tickets tab is inserted/shown.
   function schedule(){
     try { writeTicketsTabKpis(); } catch(_) {}
-    setTimeout(writeTicketsTabKpis, 150);  // after table paint
+    setTimeout(writeTicketsTabKpis, 150);  
     setTimeout(writeTicketsTabKpis, 600);  // after any async fills
   }
-  // Observe visibility changes and DOM mutations within the app container
+  
   var obs = new MutationObserver(function(){
     var tab = document.getElementById('tab-tickets');
     if (tab && tab.style.display !== 'none') schedule();
@@ -4797,11 +5305,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Expose a manual hook (optional)
   window.nmnWriteTicketsTabKpis = writeTicketsTabKpis;
 })();
-\n})();</script>
 
+})()</script>
 
-<!-- NUMINA PATCH 3: Fill Tickets Activos table from tickets_ledger (fecha, producto, tickets, referido) -->
-<script>(async()=>{\n
+<script>(async function(){
+
 (function(){
   function _prettyName(sku){
     try{
@@ -4977,16 +5485,11 @@ const fillTicketsRowsFromLedger = async () => {
   };
 
   // Run when the tab shows and after small delays to win last-write
-  const scheduleFill = (() => {
-  let raf = 0;
-  return () => {
-    if (raf) cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(() => {
-      raf = 0;
-      try { fillTicketsRowsFromLedger(); } catch(_) {}
-    });
+  const scheduleFill = () =>{
+    try{ fillTicketsRowsFromLedger(); }catch(_){}
+    setTimeout(fillTicketsRowsFromLedger, 150);
+    setTimeout(fillTicketsRowsFromLedger, 600);
   };
-})();
 
   var obs = new MutationObserver(function(){
     var tab = document.getElementById('tab-tickets');
@@ -5000,8 +5503,8 @@ const fillTicketsRowsFromLedger = async () => {
   } else { scheduleFill(); }
   window.nmnFillTicketsRowsFromLedger = fillTicketsRowsFromLedger;
 })();
-\n})();</script>
 
+})()</script>
 
 <style id="raffle-hero-rect-vertical">
   /* Solo alargar hacia ABAJO: no tocamos --thumb-w */
