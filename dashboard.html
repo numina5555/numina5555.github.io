@@ -1,15 +1,14 @@
 <!DOCTYPE html>
-
 <html lang="es">
-<head><script>window.__callCargarSorteos__=function(){if(window.cargarSorteos)return window.__callCargarSorteos__();window.addEventListener('cargarSorteosReady',function(){window.cargarSorteos&&window.__callCargarSorteos__()},{once:true});};</script>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>NUMINA | Dashboard</title>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-<style>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NUMINA | Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
     :root {
       --primary: #ffd700;
       --primary-dark: #e6c200;
@@ -182,22 +181,30 @@
   .nm-pitch strong{color:#ffd700}
 }
 
+
+
+
 /* --- Ensure sidebar labels are visible next to icons --- */
 .sidebar .nav-label{display:inline-block;margin-left:.75rem;white-space:nowrap}
 .sidebar a{display:flex;align-items:center}
+
 
 /* inline filter bar for purchases */
 .table-filter-inline{display:flex;gap:.6rem;align-items:center;justify-content:flex-end;background:var(--dark-light);padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.05)}
 .table-filter-inline input{background:#0f0f0f;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.45rem .7rem;color:#f0f0f0;outline:none;min-width:260px}
 .table-filter-inline input::placeholder{color:#8a8a8a}
 
+
+/* === GPT patch: Sorteos alignment fix === */
 .srt-marks{ padding-right: 8px; }
 .srt-marks .srt-mark:last-child{ transform: translateX(-100%); text-align: right; }
+
 
 .btn-delete-row{border:1px solid #f5c400;color:#f5c400;background:transparent;
   padding:.35rem .7rem;border-radius:.55rem;font-weight:700;cursor:pointer;
   transition:all .12s ease}
 .btn-delete-row:hover{background:#f5c400;color:#111}
+
 
 /* Efecto: la línea amarilla se llena al hover */
 .stat-card{ position: relative; overflow: hidden; }
@@ -217,6 +224,7 @@
   will-change: transform;
   backface-visibility: hidden;
 }
+
 
 .stat-card:hover::after,
 .stat-card:hover::before,
@@ -266,7 +274,8 @@
 .stat-card:hover{ border-left-color: transparent; }
 .stat-card:focus-within{ border-left-color: transparent; }
 </style>
-<script>
+
+  <script>
     (function(){
       const DICT = {
         en: {
@@ -579,6 +588,7 @@
             "filters.search.raffles": "Search raffles…",
             "filters.clear": "Clear",
 
+
           "referrals.shareLink": "Share invitation link",
           "referrals.confirmed": "Confirmed referrals",
           "referrals.progress": "Progress to next ticket","mb.kpi.yourTickets": "Your tickets",            "mb.kpi.openRaffles": "Open raffles",            "mb.kpi.yourParticipation": "Your participation",
@@ -593,6 +603,7 @@
             "filters.search.raffles": "Buscar sorteos…",
             "filters.clear": "Limpiar",
 
+
           "referrals.shareLink": "Compartir enlace de invitación",
           "referrals.confirmed": "Referidos confirmados",
           "referrals.progress": "Progreso hacia próximo ticket","mb.kpi.yourTickets": "Tus tickets",            "mb.kpi.openRaffles": "Sorteos abiertos",            "mb.kpi.yourParticipation": "Tu participación",
@@ -606,6 +617,7 @@
             "filters.search.miscompras": "Buscar minhas compras…",
             "filters.search.raffles": "Buscar sorteios…",
             "filters.clear": "Limpar",
+
 
           "referrals.shareLink": "Compartilhar link de convite",
           "referrals.confirmed": "Indicações confirmadas",
@@ -699,7 +711,7 @@
         try{ Object.keys(EXTRA).forEach(function(L){ if (DICT[L]) Object.assign(DICT[L], EXTRA[L]); }); }catch(_){}
       })();
 
-      
+      // Global helper to translate product names in tables (available before first render)
       window.i18nProductName = function(name){
         try{
           if(!name) return '';
@@ -824,6 +836,7 @@
       };
     })();
   </script>
+
 <style id="auto-scale-75">
 /* Scale the whole UI to look like browser zoom 75% on large screens only */
 @media (min-width: 1200px) {
@@ -854,6 +867,9 @@
 .btn-delete-row:hover{background:#f5c400;color:#111}
 
 </style>
+
+
+<!-- Sidebar uniform height = tallest section (v4) -->
 <style id="sidebar-uniform-fix-v4">
   :root { --header-h: 0px; --sidebar-h: auto; }
 
@@ -942,6 +958,8 @@
     }catch(_){}
   })();
 </script>
+
+<!-- Fix: animation visibility + hover unification -->
 <style>
 /* Smooth hover transitions for buttons and cards */
 button, .stat-card, .settings-card, .srt-card, .pd-card, .sc-card, .card, .product-card{
@@ -964,6 +982,8 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
   button, .stat-card, .settings-card, .srt-card, .pd-card, .sc-card, .card, .product-card{ transition: none; }
 }
 </style>
+
+<!-- NUMINA: Opción E (Neon suave) para botones Detalles/Eliminar + separación -->
 <style id="numina-buttons-opcion-e">
   /* Separación entre botones en la columna de Acciones */
   #purchases-table td:nth-child(5),
@@ -1013,8 +1033,11 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
     box-shadow: 0 0 18px rgba(220,53,69,.35), 0 0 0 1px rgba(220,53,69,.6) inset;
   }
 </style>
+
+
 <style id="numina-actions-visible-fix">
 
+/* === NUMINA FIX v2: acciones en una sola línea === */
 .table-container { overflow-x: auto; }
 #purchases-table th:nth-child(5),
 #miscompras-table th:nth-child(5),
@@ -1046,9 +1069,13 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 }
 
 </style>
+
+
+
+<!-- NUMINA: Hero en recuadro (tuneado para mayor visibilidad) -->
 <style id="raffle-hero-css">
   :root{
-    --raffle-img: url("https:
+    --raffle-img: url("https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/foto%20sorteo%20dinero");
     --thumb-left: 22px;  /* posición */
     --thumb-top: 18px;
     --thumb-w: clamp(240px, 24vw, 320px);  /* tamaño */
@@ -1104,215 +1131,231 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
     }
   }
 
-  
+  /* Safari fix */
   .lang-item{ -webkit-user-select: none; user-select: none; }
 </style>
-</link></link></head>
+
+</head>
 <body>
-<header class="dashboard-header">
-<div style="flex-grow:1; text-align:center;">
-<div class="logo">NUMINA</div>
+  <header class="dashboard-header">
+    <div style="flex-grow:1; text-align:center;">
+      <div class="logo">NUMINA</div>
+    </div>
+    <div class="user-menu">
+      <div class="user-avatar" id="user-avatar">U</div>
+    </div>
+  </header>
+
+  <div class="dashboard-container">
+    <nav class="sidebar">
+      <ul class="sidebar-menu">
+        <li class="menu-item active" data-target="dashboard">
+          <i class="fas fa-home"></i>
+          <span data-i18n="sections.dashboard">Dashboard</span>
+        </li>
+        <li class="menu-item" data-target="compras">
+          <i class="fas fa-shopping-bag"></i>
+          <span data-i18n="sections.compras">Compras</span>
+        </li>
+        <li class="menu-item" data-target="sorteos">
+          <i class="fas fa-ticket-alt"></i>
+          <span data-i18n="sections.sorteos">Sorteos</span>
+        </li>
+        <li class="menu-item" data-target="referidos">
+          <i class="fas fa-users"></i>
+          <span data-i18n="sections.referidos">Referidos</span>
+        </li>
+        <li class="menu-item" data-target="productos">
+          <i class="fas fa-box"></i>
+          <span id="sidebar-productos-text-nav" data-i18n="catalog.title">Catálogo</span>
+        </li>
+        <li class="menu-item" data-target="configuracion">
+          <i class="fas fa-cog"></i>
+          <span data-i18n="sections.configuracion">Configuración</span>
+        </li>
+        <li class="menu-item" data-target="logout" id="logout-btn">
+          <i class="fas fa-sign-out-alt"></i>
+          <span data-i18n="actions.logout">Cerrar Sesión</span>
+        </li>
+      </ul>
+    </nav>
+
+    <main class="main-content">
+      <div id="main-dashboard">
+        <section class="welcome-banner" id="welcome-banner">
+          <div class="welcome-text">
+            <h2 id="welcome-title">Cargando…</h2>
+            <p id="welcome-subtitle" style="display:none;">Por favor espera</p>
+          </div>
+          <div class="welcome-right">
+            <div class="lang-dropdown" id="langDropdown">
+              <button id="langBtn" class="lang-btn" aria-haspopup="listbox" aria-expanded="false">
+                <span aria-hidden="true">🌐</span>
+                <span id="langCurrentText">Español</span>
+                <svg class="chevron" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
+              </button>
+              <ul id="langMenu" class="lang-menu" role="listbox" aria-label="Language">
+                <li class="lang-item" role="option" data-lang="es" aria-selected="true"><span class="lang-flag">🇪🇸</span><span>Español</span></li>
+                <li class="lang-item" role="option" data-lang="en" aria-selected="false"><span class="lang-flag">🇬🇧</span><span>English</span></li>
+                <li class="lang-item" role="option" data-lang="pt" aria-selected="false"><span class="lang-flag">🇧🇷</span><span>Português</span></li>
+              </ul>
+            </div>
+            <div class="referral-code">
+              <i class="fas fa-user-plus"></i>
+              <span id="referral-code">---</span>
+              <button class="copy-btn" id="copy-btn" data-i18n="actions.copy">Copiar</button>
+            </div>
+          </div>
+        </section>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Tickets.vip</h3>
+            <div class="value" id="balance-value">$---</div>
+            <div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</div>
+          </div>
+          <div class="stat-card">
+            <h3 data-i18n="stats.activePurchases">Compras activas</h3>
+            <div class="value" id="purchases-value">--</div>
+            <div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</div>
+          </div>
+          <div class="stat-card">
+            <h3 data-i18n="stats.referrals">Referidos</h3>
+            <div class="value" id="referrals-value">--</div>
+            <div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</div>
+          </div>
+          <div class="stat-card">
+            <h3 data-i18n="stats.tickets">Tickets activos</h3>
+            <div class="value" id="tickets-value">--</div>
+            <div class="change negative"><i class="fas fa-arrow-down"></i><span data-i18n="labels.loading">Cargando…</div>
+          </div>
+        </div>
+
+        <h2 class="section-title"><i class="fas fa-shopping-bag"></i><span data-i18n="sections.comprasActivas">Compras Activas</span></h2>
+        <div class="table-container">
+          <div class="table-filter-inline" id="purchases-filterbar">
+  <input id="purchases-search" type="text" data-i18n-ph="filters.search.purchases" placeholder="Buscar compras…" aria-label="Buscar compras" />
+  <button id="purchases-clear" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
 </div>
-<div class="user-menu">
-<div class="user-avatar" id="user-avatar">U</div>
-</div>
-</header>
-<div class="dashboard-container">
-<nav class="sidebar">
-<ul class="sidebar-menu">
-<li class="menu-item active" data-target="dashboard">
-<i class="fas fa-home"></i>
-<span data-i18n="sections.dashboard">Dashboard</span>
-</li>
-<li class="menu-item" data-target="compras">
-<i class="fas fa-shopping-bag"></i>
-<span data-i18n="sections.compras">Compras</span>
-</li>
-<li class="menu-item" data-target="sorteos">
-<i class="fas fa-ticket-alt"></i>
-<span data-i18n="sections.sorteos">Sorteos</span>
-</li>
-<li class="menu-item" data-target="referidos">
-<i class="fas fa-users"></i>
-<span data-i18n="sections.referidos">Referidos</span>
-</li>
-<li class="menu-item" data-target="productos">
-<i class="fas fa-box"></i>
-<span data-i18n="catalog.title" id="sidebar-productos-text-nav">Catálogo</span>
-</li>
-<li class="menu-item" data-target="configuracion">
-<i class="fas fa-cog"></i>
-<span data-i18n="sections.configuracion">Configuración</span>
-</li>
-<li class="menu-item" data-target="logout" id="logout-btn">
-<i class="fas fa-sign-out-alt"></i>
-<span data-i18n="actions.logout">Cerrar Sesión</span>
-</li>
-</ul>
-</nav>
-<main class="main-content">
-<div id="main-dashboard">
-<section class="welcome-banner" id="welcome-banner">
-<div class="welcome-text">
-<h2 id="welcome-title">Cargando…</h2>
-<p id="welcome-subtitle" style="display:none;">Por favor espera</p>
-</div>
-<div class="welcome-right">
-<div class="lang-dropdown" id="langDropdown">
-<button aria-expanded="false" aria-haspopup="listbox" class="lang-btn" id="langBtn">
-<span aria-hidden="true">🌐</span>
-<span id="langCurrentText">Español</span>
-<svg aria-hidden="true" class="chevron" viewbox="0 0 10 6"><path d="M1 1l4 4 4-4"></path></svg>
-</button>
-<ul aria-label="Language" class="lang-menu" id="langMenu" role="listbox">
-<li aria-selected="true" class="lang-item" data-lang="es" role="option"><span class="lang-flag">🇪🇸</span><span>Español</span></li>
-<li aria-selected="false" class="lang-item" data-lang="en" role="option"><span class="lang-flag">🇬🇧</span><span>English</span></li>
-<li aria-selected="false" class="lang-item" data-lang="pt" role="option"><span class="lang-flag">🇧🇷</span><span>Português</span></li>
-</ul>
-</div>
-<div class="referral-code">
-<i class="fas fa-user-plus"></i>
-<span id="referral-code">---</span>
-<button class="copy-btn" data-i18n="actions.copy" id="copy-btn">Copiar</button>
-</div>
-</div>
-</section>
-<div class="stats-grid">
-<div class="stat-card">
-<h3>Tickets.vip</h3>
-<div class="value" id="balance-value">$---</div>
-<div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</span></div>
-</div>
-<div class="stat-card">
-<h3 data-i18n="stats.activePurchases">Compras activas</h3>
-<div class="value" id="purchases-value">--</div>
-<div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</span></div>
-</div>
-<div class="stat-card">
-<h3 data-i18n="stats.referrals">Referidos</h3>
-<div class="value" id="referrals-value">--</div>
-<div class="change positive"><i class="fas fa-arrow-up"></i><span data-i18n="labels.loading">Cargando…</span></div>
-</div>
-<div class="stat-card">
-<h3 data-i18n="stats.tickets">Tickets activos</h3>
-<div class="value" id="tickets-value">--</div>
-<div class="change negative"><i class="fas fa-arrow-down"></i><span data-i18n="labels.loading">Cargando…</span></div>
-</div>
-</div>
-<h2 class="section-title"><i class="fas fa-shopping-bag"></i><span data-i18n="sections.comprasActivas">Compras Activas</span></h2>
-<div class="table-container">
-<div class="table-filter-inline" id="purchases-filterbar">
-<input aria-label="Buscar compras" data-i18n-ph="filters.search.purchases" id="purchases-search" placeholder="Buscar compras…" type="text"/>
-<button class="action-btn" id="purchases-clear" style="min-width:auto;padding:.35rem .7rem;" type="button"><span data-i18n="filters.clear">Limpiar</span></button>
-</div>
-<table id="purchases-table">
-<thead>
-<tr>
-<th data-i18n="tables.product">Producto</th>
-<th data-i18n="tables.date">Fecha</th>
-<th data-i18n="tables.value">Valor</th>
-<th data-i18n="tables.status">Estado</th>
-<th data-i18n="tables.actions">Acciones</th>
-</tr>
-</thead>
-<tbody id="purchases-body"><tr><td colspan="5" style="text-align:center;"><span data-i18n="labels.loading">Cargando…</span></td></tr></tbody>
-</table>
-</div>
-<h2 class="section-title"><i class="fas fa-users"></i><span data-i18n="sections.referralsHistory">Historial de Referidos</span></h2>
-<div class="table-container">
-<div class="table-filter-inline" id="referrals-filterbar-hist">
-<input aria-label="Buscar referidos" data-i18n-ph="filters.search.referrals" id="referrals-search-hist" placeholder="Buscar referidos…" type="text"/>
-<button class="action-btn" id="referrals-clear-hist" style="min-width:auto;padding:.35rem .7rem;" type="button"><span data-i18n="filters.clear">Limpiar</span></button>
-</div>
-<table id="referrals-table">
-<thead>
-<tr>
-<th data-i18n="tables.referral">Referido</th>
-<th data-i18n="tables.date" style="padding:12px 16px;border-bottom:1px solid #1f1f1f;">Fecha</th>
-<th data-i18n="tables.purchases">Compras</th>
-<th data-i18n="tables.status">Estado</th>
-<th data-i18n="tables.commission">Comisión</th>
-</tr>
-</thead>
-<tbody id="referrals-body"><tr><td colspan="5" style="text-align:center;"><span data-i18n="labels.loading">Cargando…</span></td></tr></tbody>
-</table>
-</div>
-<h2 class="section-title"><i class="fas fa-user-circle"></i><span data-i18n="account.info.title">Información de la Cuenta</span></h2>
-<div class="table-container">
-<table class="account-info-table">
-<tbody>
-<tr><td data-i18n="accountForm.labels.fullName">Nombre Completo</td><td id="full-name">Cargando…</td></tr>
-<tr><td data-i18n="accountForm.labels.email">Correo Electrónico</td><td id="user-email">Cargando…</td></tr>
-<tr><td data-i18n="accountForm.labels.phone">Teléfono</td><td id="user-phone">Cargando…</td></tr>
-<tr><td data-i18n="accountForm.labels.address">Dirección</td><td id="user-address">Cargando…</td></tr>
-<tr><td data-i18n="accountForm.labels.country">País</td><td id="user-country">Cargando…</td></tr>
-<tr><td data-i18n="accountForm.labels.city">Ciudad</td><td id="user-city">Cargando…</td></tr>
-<tr><td data-i18n="accountForm.labels.zip">Código postal</td><td id="user-postal">Cargando…</td></tr>
-</tbody>
-</table>
-</div>
-</div>
-<section class="section-content" id="section-configuracion">
-<h2 class="section-title"><i class="fas fa-cog"></i><span data-i18n="account.settings.title">Configuración de la Cuenta</span></h2>
-<div class="settings-card">
-<h3><i class="fas fa-id-card"></i> <span data-i18n="account.settings.personalData">Datos Personales</span></h3>
-<form id="config-datos-form">
-<div class="form-grid">
-<div class="form-row"><label data-i18n="accountForm.labels.fullName" for="cfg-fullname">Nombre completo</label><input data-i18n-ph="accountForm.ph.fullName" id="cfg-fullname" type="text"/></div>
-<div class="form-row"><label data-i18n="accountForm.labels.phone" for="cfg-phone">Teléfono</label><input data-i18n-ph="accountForm.ph.phone" id="cfg-phone" type="tel"/></div>
-<div class="form-row"><label data-i18n="accountForm.labels.address" for="cfg-address">Dirección</label><input data-i18n-ph="accountForm.ph.address" id="cfg-address" type="text"/></div>
-<div class="form-row"><label data-i18n="accountForm.labels.country" for="cfg-country">País</label><input data-i18n-ph="accountForm.ph.country" id="cfg-country" type="text"/></div>
-<div class="form-row"><label data-i18n="accountForm.labels.city" for="cfg-city">Ciudad</label><input data-i18n-ph="accountForm.ph.city" id="cfg-city" type="text"/></div>
-<div class="form-row"><label data-i18n="accountForm.labels.zip" for="cfg-postal">Código postal</label><input data-i18n-ph="accountForm.ph.zip" id="cfg-postal" type="text"/></div>
-</div>
-<div class="form-actions"><button class="btn" data-i18n="account.settings.save" type="submit">Guardar cambios</button></div>
-</form>
-</div>
-<div class="settings-card">
-<h3><i class="fas fa-shield-alt"></i> <span data-i18n="account.settings.security">Seguridad</span></h3>
-<form id="config-pass-form">
-<div class="form-grid">
-<div class="form-row"><label data-i18n="accountForm.labels.newPassword" for="cfg-pass1">Nueva contraseña</label><input id="cfg-pass1" placeholder="********" type="password"/></div>
-<div class="form-row"><label data-i18n="accountForm.labels.repeatPassword" for="cfg-pass2">Repetir contraseña</label><input id="cfg-pass2" placeholder="********" type="password"/></div>
-</div>
-<div class="form-actions"><button class="btn" data-i18n="account.settings.updatePassword" type="submit">Actualizar contraseña</button></div>
-</form>
-</div>
-</section>
-<section class="section-content" id="section-compras">
-<h2 class="section-title"><i class="fas fa-shopping-bag"></i><span data-i18n="sections.misCompras">Mis Compras</span></h2>
-<div class="table-container">
-<div class="table-filter-inline" id="miscompras-filterbar">
-<input aria-label="Buscar mis compras" data-i18n-ph="filters.search.miscompras" id="miscompras-search" placeholder="Buscar mis compras…" type="text"/>
-<button class="action-btn" id="miscompras-clear" style="min-width:auto;padding:.35rem .7rem;" type="button"><span data-i18n="filters.clear">Limpiar</span></button>
-</div>
-<table id="miscompras-table">
-<thead>
-<tr>
-<th data-i18n="tables.product">Producto</th>
-<th data-i18n="tables.date">Fecha</th>
-<th data-i18n="tables.value">Valor</th>
-<th data-i18n="tables.status">Estado</th>
-<th data-i18n="tables.claim">Reclamo</th>
-</tr>
-</thead>
-<tbody id="miscompras-body"><tr><td colspan="5" style="text-align:center;"><span data-i18n="labels.loading">Cargando…</span></td></tr></tbody>
-</table>
-</div>
-</section>
+            <table id="purchases-table">
+            <thead>
+              <tr>
+                <th data-i18n="tables.product">Producto</th>
+                <th data-i18n="tables.date">Fecha</th>
+                <th data-i18n="tables.value">Valor</th>
+                <th data-i18n="tables.status">Estado</th>
+                <th data-i18n="tables.actions">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="purchases-body"><tr><td colspan="5" style="text-align:center;"><span data-i18n="labels.loading">Cargando…</span></td></tr></tbody>
+          </table>
+        </div>
+
+        <h2 class="section-title"><i class="fas fa-users"></i><span data-i18n="sections.referralsHistory">Historial de Referidos</span></h2>
+        <div class="table-container">
+          
+          <div class="table-filter-inline" id="referrals-filterbar-hist">
+            <input id="referrals-search-hist" type="text" data-i18n-ph="filters.search.referrals" placeholder="Buscar referidos…" aria-label="Buscar referidos" />
+            <button id="referrals-clear-hist" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
+          </div>
+            <table id="referrals-table">
+            <thead>
+              <tr>
+                <th data-i18n="tables.referral">Referido</th>
+                <th style="padding:12px 16px;border-bottom:1px solid #1f1f1f;" data-i18n="tables.date">Fecha</th>
+                
+                <th data-i18n="tables.purchases">Compras</th>
+                <th data-i18n="tables.status">Estado</th>
+                <th data-i18n="tables.commission">Comisión</th>
+              </tr>
+            </thead>
+            <tbody id="referrals-body"><tr><td colspan="5" style="text-align:center;"><span data-i18n="labels.loading">Cargando…</span></td></tr></tbody>
+          </table>
+        </div>
+
+        <h2 class="section-title"><i class="fas fa-user-circle"></i><span data-i18n="account.info.title">Información de la Cuenta</span></h2>
+        <div class="table-container">
+          <table class="account-info-table">
+            <tbody>
+              <tr><td data-i18n="accountForm.labels.fullName">Nombre Completo</td><td id="full-name">Cargando…</td></tr>
+              <tr><td data-i18n="accountForm.labels.email">Correo Electrónico</td><td id="user-email">Cargando…</td></tr>
+              <tr><td data-i18n="accountForm.labels.phone">Teléfono</td><td id="user-phone">Cargando…</td></tr>
+              <tr><td data-i18n="accountForm.labels.address">Dirección</td><td id="user-address">Cargando…</td></tr>
+              <tr><td data-i18n="accountForm.labels.country">País</td><td id="user-country">Cargando…</td></tr>
+              <tr><td data-i18n="accountForm.labels.city">Ciudad</td><td id="user-city">Cargando…</td></tr>
+              <tr><td data-i18n="accountForm.labels.zip">Código postal</td><td id="user-postal">Cargando…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <section class="section-content" id="section-configuracion">
+        <h2 class="section-title"><i class="fas fa-cog"></i><span data-i18n="account.settings.title">Configuración de la Cuenta</span></h2>
+        <div class="settings-card">
+          <h3><i class="fas fa-id-card"></i> <span data-i18n="account.settings.personalData">Datos Personales</span></h3>
+          <form id="config-datos-form">
+            <div class="form-grid">
+              <div class="form-row"><label for="cfg-fullname" data-i18n="accountForm.labels.fullName">Nombre completo</label><input id="cfg-fullname" type="text" data-i18n-ph="accountForm.ph.fullName" /></div>
+              <div class="form-row"><label for="cfg-phone" data-i18n="accountForm.labels.phone">Teléfono</label><input id="cfg-phone" type="tel" data-i18n-ph="accountForm.ph.phone" /></div>
+              <div class="form-row"><label for="cfg-address" data-i18n="accountForm.labels.address">Dirección</label><input id="cfg-address" type="text" data-i18n-ph="accountForm.ph.address" /></div>
+              <div class="form-row"><label for="cfg-country" data-i18n="accountForm.labels.country">País</label><input id="cfg-country" type="text" data-i18n-ph="accountForm.ph.country" /></div>
+              <div class="form-row"><label for="cfg-city" data-i18n="accountForm.labels.city">Ciudad</label><input id="cfg-city" type="text" data-i18n-ph="accountForm.ph.city" /></div>
+              <div class="form-row"><label for="cfg-postal" data-i18n="accountForm.labels.zip">Código postal</label><input id="cfg-postal" type="text" data-i18n-ph="accountForm.ph.zip" /></div>
+            </div>
+            <div class="form-actions"><button class="btn" type="submit" data-i18n="account.settings.save">Guardar cambios</button></div>
+          </form>
+        </div>
+        <div class="settings-card">
+          <h3><i class="fas fa-shield-alt"></i> <span data-i18n="account.settings.security">Seguridad</span></h3>
+          <form id="config-pass-form">
+            <div class="form-grid">
+              <div class="form-row"><label for="cfg-pass1" data-i18n="accountForm.labels.newPassword">Nueva contraseña</label><input id="cfg-pass1" type="password" placeholder="********" /></div>
+              <div class="form-row"><label for="cfg-pass2" data-i18n="accountForm.labels.repeatPassword">Repetir contraseña</label><input id="cfg-pass2" type="password" placeholder="********" /></div>
+            </div>
+            <div class="form-actions"><button class="btn" type="submit" data-i18n="account.settings.updatePassword">Actualizar contraseña</button></div>
+          </form>
+        </div>
+      </section>
+
+      <section class="section-content" id="section-compras">
+        <h2 class="section-title"><i class="fas fa-shopping-bag"></i><span data-i18n="sections.misCompras">Mis Compras</span></h2>
+        <div class="table-container">
+          
+          <div class="table-filter-inline" id="miscompras-filterbar">
+            <input id="miscompras-search" type="text" data-i18n-ph="filters.search.miscompras" placeholder="Buscar mis compras…" aria-label="Buscar mis compras" />
+            <button id="miscompras-clear" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
+          </div>
+            <table id="miscompras-table">
+            <thead>
+              <tr>
+                <th data-i18n="tables.product">Producto</th>
+                <th data-i18n="tables.date">Fecha</th>
+                <th data-i18n="tables.value">Valor</th>
+                <th data-i18n="tables.status">Estado</th>
+                <th data-i18n="tables.claim">Reclamo</th>
+              </tr>
+            </thead>
+            <tbody id="miscompras-body"><tr><td colspan="5" style="text-align:center;"><span data-i18n="labels.loading">Cargando…</span></td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
 <section class="section-content" id="section-sorteos" style="display:none;">
 <h2 class="section-title"><i class="fas fa-ticket-alt"></i><span data-i18n="sections.sorteoTitle"></span></h2>
 <div class="srt-stats">
+<!-- Tickets activos -->
 <article class="srt-card gold">
 <h3><span data-i18n="raffles.activeTickets"></span></h3>
 <div class="val" id="srt-tickets-activos">--</div>
 </article>
+<!-- Upgrade Numina con barra e hitos -->
 <article class="srt-card">
 <h3>Upgrade Numina</h3>
 <div class="val" id="srt-upgrade-valor">0 / 10,000</div>
 <div aria-valuemax="10000" aria-valuemin="0" aria-valuenow="0" class="srt-progress" role="progressbar">
 <div class="srt-track" id="srt-track">
 <div class="srt-fill" id="srt-fill"></div>
+<!-- Hitos -->
 <span class="srt-hit" id="srt-25" style="left:25%"></span>
 <span class="srt-hit" id="srt-50" style="left:50%"></span>
 <span class="srt-hit" id="srt-100" style="left:100%"></span>
@@ -1327,11 +1370,12 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 </div>
 <h3 class="section-title"><i class="fas fa-history"></i><span data-i18n="sections.raffleHistory"></span></h3>
 <div class="table-container">
+
 <div class="table-filter-inline" id="sorteos-filterbar">
-<input aria-label="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" data-i18n-ph="filters.search.raffles" id="sorteos-search" placeholder="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" type="text"/>
-<button class="action-btn" id="sorteos-clear" style="min-width:auto;padding:.35rem .7rem;" type="button"><span data-i18n="filters.clear">Limpiar</span></button>
+  <input id="sorteos-search" type="text" data-i18n-ph="filters.search.raffles" placeholder="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" aria-label="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" />
+  <button id="sorteos-clear" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
 </div>
-<table id="sorteos-table">
+  <table id="sorteos-table">
 <thead>
 <tr>
 <th data-i18n="raffles.date"></th>
@@ -1345,104 +1389,113 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 </table>
 </div>
 </section>
-<section class="section-content" id="section-referidos" style="display:none;">
-<h2 class="section-title"><i class="fas fa-users"></i><span data-i18n="sections.referidos">Referidos</span></h2>
-<div class="card" style="background:#0f0f0f;border:1px solid #222;border-radius:16px;padding:16px;margin-bottom:16px;">
-<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
-<div id="refs-count-wrap" style="color:#cfcfcf;font-size:14px;"><span data-fallback-en="Confirmed referrals" data-fallback-es="Referidos confirmados" data-fallback-pt="Indicações confirmadas" data-i18n="referrals.confirmed" id="refs-label-confirmed">Referidos confirmados</span>: <strong id="refs-count">0/0</strong></div>
-<div style="color:#facc15;font-weight:800;font-size:14px;">Tickets: <strong id="refs-tickets">0</strong></div>
-</div>
-<div style="width:100%;background:#232323;border-radius:9999px;height:12px;overflow:hidden;margin-bottom:14px;">
-<div id="refs-bar-general" style="height:12px;background:#facc15;width:0;border-radius:9999px;"></div>
-</div>
-<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:10px 0 8px;">
-<div style="color:#cfcfcf;font-size:14px;"><span data-fallback-en="Progress to next ticket" data-fallback-es="Progreso hacia próximo ticket" data-fallback-pt="Progresso para o próximo ticket" data-i18n="referrals.progress" id="refs-label-progress">Progreso hacia próximo ticket</span>: <strong id="refs-progress-count">0/3</strong></div>
-</div>
-<div style="width:100%;background:#232323;border-radius:9999px;height:12px;overflow:hidden;">
-<div id="refs-bar-progress" style="height:12px;background:#10b981;width:0;border-radius:9999px;"></div>
-</div>
-</div>
-<div class="table-filter-inline" id="referrals-filterbar">
-<input aria-label="Buscar referidos" data-i18n-ph="filters.search.referrals" id="refs-search" placeholder="Buscar referidos…" type="text"/>
-<button class="action-btn" id="refs-clear" style="padding:.45rem .9rem;border:1px solid rgba(212,175,55,.35);background:transparent;color:#facc15;border-radius:.7rem;" type="button"><span data-i18n="filters.clear">Limpiar</span></button>
-</div>
-<div class="table-container">
-<table class="table" style="width:100%;border-collapse:collapse;">
-<thead>
-<tr style="text-align:left;background:#121212;color:#facc15;text-transform:uppercase;font-size:12px;letter-spacing:.08em;">
-<th data-i18n="tables.referral" style="padding:12px 16px;border-bottom:1px solid #1f1f1f;">Referido</th>
-<th data-i18n="tables.date" style="padding:12px 16px;border-bottom:1px solid #1f1f1f;">Fecha</th>
-<th data-i18n="tables.status" style="padding:12px 16px;border-bottom:1px solid #1f1f1f;">Estado</th>
-</tr>
-</thead>
-<tbody id="refs-tbody"></tbody>
-</table>
-</div>
-<div style="margin-top:16px;display:flex;justify-content:center;">
-<button class="action-btn" data-i18n="referrals.shareLink" id="refs-share" style="background:#facc15;color:#111;font-weight:900;padding:10px 14px;border-radius:10px;border:1px solid #d4af37">
+
+      
+      <!-- ===================== REFERIDOS (inserción mínima, sin romper lógica existente) ===================== -->
+      <section class="section-content" id="section-referidos" style="display:none;">
+        <h2 class="section-title"><i class="fas fa-users"></i><span data-i18n="sections.referidos">Referidos</span></h2>
+
+        <div class="card" style="background:#0f0f0f;border:1px solid #222;border-radius:16px;padding:16px;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+            <div style="color:#cfcfcf;font-size:14px;" id="refs-count-wrap"><span id="refs-label-confirmed" data-i18n="referrals.confirmed" data-fallback-es="Referidos confirmados" data-fallback-pt="Indicações confirmadas" data-fallback-en="Confirmed referrals">Referidos confirmados</span>: <strong id="refs-count">0/0</strong></div>
+            <div style="color:#facc15;font-weight:800;font-size:14px;">Tickets: <strong id="refs-tickets">0</strong></div>
+          </div>
+          <div style="width:100%;background:#232323;border-radius:9999px;height:12px;overflow:hidden;margin-bottom:14px;">
+            <div id="refs-bar-general" style="height:12px;background:#facc15;width:0;border-radius:9999px;"></div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:10px 0 8px;">
+            <div style="color:#cfcfcf;font-size:14px;"><span id="refs-label-progress" data-i18n="referrals.progress" data-fallback-es="Progreso hacia próximo ticket" data-fallback-pt="Progresso para o próximo ticket" data-fallback-en="Progress to next ticket">Progreso hacia próximo ticket</span>: <strong id="refs-progress-count">0/3</strong></div>
+          </div>
+          <div style="width:100%;background:#232323;border-radius:9999px;height:12px;overflow:hidden;">
+            <div id="refs-bar-progress" style="height:12px;background:#10b981;width:0;border-radius:9999px;"></div>
+          </div>
+        </div>
+
+        
+          <div class="table-filter-inline" id="referrals-filterbar">
+            <input id="refs-search" type="text" data-i18n-ph="filters.search.referrals" placeholder="Buscar referidos…" aria-label="Buscar referidos" />
+            <button id="refs-clear" type="button" class="action-btn" style="padding:.45rem .9rem;border:1px solid rgba(212,175,55,.35);background:transparent;color:#facc15;border-radius:.7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
+          </div>
+    <div class="table-container">
+          <table class="table" style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr style="text-align:left;background:#121212;color:#facc15;text-transform:uppercase;font-size:12px;letter-spacing:.08em;">
+                <th style="padding:12px 16px;border-bottom:1px solid #1f1f1f;" data-i18n="tables.referral">Referido</th>
+                <th style="padding:12px 16px;border-bottom:1px solid #1f1f1f;" data-i18n="tables.date">Fecha</th>
+                <th style="padding:12px 16px;border-bottom:1px solid #1f1f1f;" data-i18n="tables.status">Estado</th>
+              </tr>
+            </thead>
+            <tbody id="refs-tbody"></tbody>
+          </table>
+        </div>
+
+        <div style="margin-top:16px;display:flex;justify-content:center;">
+          <button id="refs-share" class="action-btn" style="background:#facc15;color:#111;font-weight:900;padding:10px 14px;border-radius:10px;border:1px solid #d4af37" data-i18n="referrals.shareLink">
             Compartir enlace de invitación
           </button>
-</div>
-</section>
+        </div>
+      </section>
+    
 <section class="section-content" id="section-productos">
-<div class="products-wrap">
-<h2 class="section-title"><i class="fas fa-box"></i><span data-i18n="catalog.title" id="productos-title">Catálogo</span></h2>
-<section class="products-grid">
-<article class="product-card">
-<figure class="product-media">
-<svg aria-label="Lingote de Oro" height="100%" preserveaspectratio="xMidYMid slice" role="img" viewbox="0 0 640 360" width="100%"><defs><lineargradient id="g1" x1="0" x2="1"><stop offset="0%" stop-color="#4b4300"></stop><stop offset="100%" stop-color="#8a7a00"></stop></lineargradient></defs><rect fill="url(#g1)" height="360" width="640"></rect><text fill="#fff" font-family="Montserrat, sans-serif" font-size="36" font-weight="700" text-anchor="middle" x="50%" y="52%">Lingote de Oro</text></svg>
-</figure>
-<div class="product-body">
-<h3 class="product-title" data-i18n="catalog.goldTitle">Lingote de Oro</h3>
-<p class="product-desc" data-i18n="catalog.goldDesc">Oro 999.9 certificado. Ideal para inversión y resguardo de valor.</p>
-<span class="price">US$ 13,500</span>
-<button class="btn" data-action="more" data-i18n="catalog.moreInfo" data-sku="GOLD-100G">Más información</button>
-</div>
-</article>
-<article class="product-card">
-<figure class="product-media">
-<svg aria-label="Lingote de Platino" height="100%" preserveaspectratio="xMidYMid slice" role="img" viewbox="0 0 640 360" width="100%"><defs><lineargradient id="g2" x1="0" x2="1"><stop offset="0%" stop-color="#2e3136"></stop><stop offset="100%" stop-color="#6a6f78"></stop></lineargradient></defs><rect fill="url(#g2)" height="360" width="640"></rect><text fill="#fff" font-family="Montserrat, sans-serif" font-size="36" font-weight="700" text-anchor="middle" x="50%" y="52%">Lingote de Platino</text></svg>
-</figure>
-<div class="product-body">
-<h3 class="product-title" data-i18n="catalog.platinumTitle">Lingote de Platino</h3>
-<p class="product-desc" data-i18n="catalog.platinumDesc">Platino 999.5 certificado. Inversión de alto valor y rareza.</p>
-<span class="price">US$ 6,500</span>
-<button class="btn" data-action="more" data-i18n="catalog.moreInfo" data-sku="PLAT-100G">Más información</button>
-</div>
-</article>
-<article class="product-card">
-<figure class="product-media">
-<svg aria-label="Rolex 126610L" height="100%" preserveaspectratio="xMidYMid slice" role="img" viewbox="0 0 640 360" width="100%"><defs><lineargradient id="g3" x1="0" x2="1"><stop offset="0%" stop-color="#0d1f14"></stop><stop offset="100%" stop-color="#1d6c3a"></stop></lineargradient></defs><rect fill="url(#g3)" height="360" width="640"></rect><text fill="#fff" font-family="Montserrat, sans-serif" font-size="34" font-weight="700" text-anchor="middle" x="50%" y="52%">Rolex 126610L</text></svg>
-</figure>
-<div class="product-body">
-<h3 class="product-title">Rolex 126610L</h3>
-<p class="product-desc" data-i18n="catalog.rolexDesc">Submariner Date con bisel verde y caja Oystersteel. Automático.</p>
-<span class="price">US$ 19,600</span>
-<button class="btn" data-action="more" data-i18n="catalog.moreInfo" data-sku="ROLEX-126610L">Más información</button>
-</div>
-</article>
-<article class="product-card">
-<figure class="product-media">
-<svg aria-label="Pulsera Numina" height="100%" preserveaspectratio="xMidYMid slice" role="img" viewbox="0 0 640 360" width="100%"><defs><lineargradient id="g4" x1="0" x2="1"><stop offset="0%" stop-color="#2a0d2d"></stop><stop offset="100%" stop-color="#6f1d75"></stop></lineargradient></defs><rect fill="url(#g4)" height="360" width="640"></rect><text fill="#fff" font-family="Montserrat, sans-serif" font-size="34" font-weight="700" text-anchor="middle" x="50%" y="52%">Pulsera Numina</text></svg>
-</figure>
-<div class="product-body">
-<h3 class="product-title" data-i18n="catalog.braceletTitle">Pulsera Numina</h3>
-<p class="product-desc" data-i18n="catalog.braceletDesc">Diseño exclusivo con materiales de alta calidad. Edición limitada.</p>
-<span class="price">US$ 35</span>
-<button class="btn" data-action="more" data-i18n="catalog.moreInfo" data-sku="NUMINA-BRACELET">Más información</button>
-</div>
-</article>
-</section>
-</div>
-</section>
-<div class="nm-overlay" hidden="" id="nmOverlay" inert="">
+        <div class="products-wrap">
+          <h2 class="section-title"><i class="fas fa-box"></i><span id="productos-title" data-i18n="catalog.title">Catálogo</span></h2>
+          <section class="products-grid">
+            <article class="product-card">
+              <figure class="product-media">
+                <svg role="img" aria-label="Lingote de Oro" viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g1" x1="0" x2="1"><stop offset="0%" stop-color="#4b4300"/><stop offset="100%" stop-color="#8a7a00"/></linearGradient></defs><rect width="640" height="360" fill="url(#g1)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="36">Lingote de Oro</text></svg>
+              </figure>
+              <div class="product-body">
+                <h3 class="product-title" data-i18n="catalog.goldTitle">Lingote de Oro</h3>
+                <p class="product-desc" data-i18n="catalog.goldDesc">Oro 999.9 certificado. Ideal para inversión y resguardo de valor.</p>
+                <span class="price">US$ 13,500</span>
+                <button class="btn" data-action="more" data-sku="GOLD-100G" data-i18n="catalog.moreInfo">Más información</button>
+              </div>
+            </article>
+            <article class="product-card">
+              <figure class="product-media">
+                <svg role="img" aria-label="Lingote de Platino" viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g2" x1="0" x2="1"><stop offset="0%" stop-color="#2e3136"/><stop offset="100%" stop-color="#6a6f78"/></linearGradient></defs><rect width="640" height="360" fill="url(#g2)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="36">Lingote de Platino</text></svg>
+              </figure>
+              <div class="product-body">
+                <h3 class="product-title" data-i18n="catalog.platinumTitle">Lingote de Platino</h3>
+                <p class="product-desc" data-i18n="catalog.platinumDesc">Platino 999.5 certificado. Inversión de alto valor y rareza.</p>
+                <span class="price">US$ 6,500</span>
+                <button class="btn" data-action="more" data-sku="PLAT-100G" data-i18n="catalog.moreInfo">Más información</button>
+              </div>
+            </article>
+            <article class="product-card">
+              <figure class="product-media">
+                <svg role="img" aria-label="Rolex 126610L" viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g3" x1="0" x2="1"><stop offset="0%" stop-color="#0d1f14"/><stop offset="100%" stop-color="#1d6c3a"/></linearGradient></defs><rect width="640" height="360" fill="url(#g3)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="34">Rolex 126610L</text></svg>
+              </figure>
+              <div class="product-body">
+                <h3 class="product-title">Rolex 126610L</h3>
+                <p class="product-desc" data-i18n="catalog.rolexDesc">Submariner Date con bisel verde y caja Oystersteel. Automático.</p>
+                <span class="price">US$ 19,600</span>
+                <button class="btn" data-action="more" data-sku="ROLEX-126610L" data-i18n="catalog.moreInfo">Más información</button>
+              </div>
+            </article>
+            <article class="product-card">
+              <figure class="product-media">
+                <svg role="img" aria-label="Pulsera Numina" viewBox="0 0 640 360" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g4" x1="0" x2="1"><stop offset="0%" stop-color="#2a0d2d"/><stop offset="100%" stop-color="#6f1d75"/></linearGradient></defs><rect width="640" height="360" fill="url(#g4)"/><text x="50%" y="52%" text-anchor="middle" fill="#fff" font-family="Montserrat, sans-serif" font-weight="700" font-size="34">Pulsera Numina</text></svg>
+              </figure>
+              <div class="product-body">
+                <h3 class="product-title" data-i18n="catalog.braceletTitle">Pulsera Numina</h3>
+                <p class="product-desc" data-i18n="catalog.braceletDesc">Diseño exclusivo con materiales de alta calidad. Edición limitada.</p>
+                <span class="price">US$ 35</span>
+                <button class="btn" data-action="more" data-sku="NUMINA-BRACELET" data-i18n="catalog.moreInfo">Más información</button>
+              </div>
+            </article>
+          </section>
+        </div>
+      </section>
+    <div class="nm-overlay" hidden="" id="nmOverlay" inert="">
 <div aria-labelledby="nmTitle" aria-modal="true" class="nm-modal" role="dialog">
 <header>
 <h3 id="nmTitle"><span data-i18n="raffles.activeTickets"></span></h3>
 <button aria-label="Cerrar" class="nm-close" id="nmClose">✕</button>
 </header>
 <div class="nm-body">
-<div class="nm-imgbox"><img alt="Producto" id="nmImg" loading="lazy"/></div>
+<div class="nm-imgbox"><img alt="Producto" id="nmImg"/></div>
 <div class="nm-info">
 <span class="label" id="nmSku" style="display:inline-block;padding:.15rem .5rem;border-radius:999px;background:#2a2a2a;color:#d7d7d7;font-size:12px;margin-bottom:12px"></span>
 <h4 id="nmName">—</h4>
@@ -1456,10 +1509,11 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 </div>
 </div>
 </div>
-</div></main>
-</div>
-<script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
-<script>
+</main>
+  </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
+  <script>
     (function(){
       const URL = 'https://xaeybhscsxpvtnqzpgwj.supabase.co';
       const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhZXliaHNjc3hwdnRucXpwZ3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5MjQ0NzYsImV4cCI6MjA2OTUwMDQ3Nn0.o470dGkIyNKNP552A6DUB3pkJI3Lty9AZOdCmo3MQvU';
@@ -1467,8 +1521,8 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
       window.getSupabase = function(){ if (_client) return _client; _client = window.supabase.createClient(URL, KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: localStorage } }); return _client; }; window.__SB_BASE = URL; window.__SB_ANON = KEY;
     })();
   </script>
-<script>(async function(){
 
+  <script>
     function ready(fn){ if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn); else fn(); }
     function initLangMenu(){
       const dropdown = document.getElementById('langDropdown');
@@ -1516,8 +1570,8 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
       document.getElementById('referrals-value').textContent = '--';
       document.getElementById('tickets-value').textContent = '--';
       ['full-name','user-email','user-phone','user-address','user-country','user-city','user-postal'].forEach(id=> setText(id, ''));
-      document.getElementById('purchases-body').innerHTML = `<tr><td colspan="5" style="text-align:center;">${dI18n.t(\'labels.loading\')}</td></tr>`;">'+dI18n.t('labels.loading')+'</td></tr>';
-      document.getElementById('referrals-body').innerHTML = `<tr><td colspan="5" style="text-align:center;">${dI18n.t(\'labels.loading\')}</td></tr>`;">'+dI18n.t('labels.loading')+'</td></tr>';
+      document.getElementById('purchases-body').innerHTML = '<tr><td colspan="5" style="text-align:center;">'+dI18n.t('labels.loading')+'</td></tr>';
+      document.getElementById('referrals-body').innerHTML = '<tr><td colspan="5" style="text-align:center;">'+dI18n.t('labels.loading')+'</td></tr>';
       const supabase = getSupabase();
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) { window.location.href = '/login.html'; return; }
@@ -1680,7 +1734,7 @@ try {
           mainDashboard.style.display = 'none';
           sections.forEach(s=> s.style.display = (s.id === 'section-'+target ? 'block' : 'none'));
           if (target === 'compras') { cargarMisCompras(); }
-          if (target === 'sorteos') { __callCargarSorteos__(); }
+          if (target === 'sorteos') { cargarSorteos(); }
         });
       });
     }
@@ -1746,9 +1800,10 @@ alert('Contraseña actualizada');
       initConfig(supabase);
       document.getElementById('logout-btn')?.addEventListener('click', async ()=>{ await getSupabase().auth.signOut(); window.location.href = '/login.html'; });
     });
-  
-})()</script>
-<script>(async function(){
+  </script>
+<script>
+
+// NUMINA: Catálogo y modal a pantalla completa (sin aria-hidden warnings)
 
   function applyI18n(container){
 
@@ -1967,7 +2022,8 @@ if (!link) {
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
 });
 
-})()</script>
+</script>
+
 <script>
 // === NUMINA product modal wiring with i18n-safe content ===
 (function(){
@@ -2020,7 +2076,7 @@ if (!link) {
     try{
       const conf = MAP[sku] || {};
       const card = srcEl?.closest('.product-card');
-      
+      // Trying to get a representative image (svg) snapshot as data url is overkill – just mirror the SVG via outerHTML into an <img> via Blob URL would require extra work.
       // We'll keep a simple placeholder.
       if (EL_IMG) { EL_IMG.alt = dI18n.t(conf.keyName || 'catalog.title'); EL_IMG.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='; }
       if (EL_SKU) EL_SKU.textContent = sku || '';
@@ -2062,6 +2118,8 @@ if (!link) {
   });
 })();
 </script>
+
+
 <script>
 // === Ensure sidebar labels are present and translated ===
 (function(){
@@ -2108,6 +2166,8 @@ if (!link) {
   }
 })();
 </script>
+
+
 <script>
 // === Ensure sidebar labels are present and translated ===
 (function(){
@@ -2141,6 +2201,8 @@ if (!link) {
   if (document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', apply); } else { apply(); }
 })();
 </script>
+
+
 <script id="auto-scale-75-js">
 (function(){
   function apply(mq){
@@ -2159,7 +2221,7 @@ if (!link) {
 <script>
 (function () {
   // 1) Enlaces fijos de NOWPayments por SKU
-  
+  /* NOWPayments links removed by ChatGPT: using placeholders */
   var FIXED_PAY_URL = {
     'NUMINA-BRACELET': '#', // USDT 35
     'GOLD-100G':       '#', // USDT 13500
@@ -2167,6 +2229,7 @@ if (!link) {
     'ROLEX-126610L':   '#'  // USDT 19600
   };
   window.FIXED_PAY_URL = FIXED_PAY_URL;
+
 
   // 2) Garantiza que el SKU del botón "Más información" quede en el modal
   function wireMoreInfoButtons() {
@@ -2208,6 +2271,8 @@ if (!link) {
   }
 })();
 </script>
+
+
 <script>
 (function(){
   function attachPurchasesFilter(){
@@ -2242,6 +2307,8 @@ if (!link) {
   }
 })();
 </script>
+
+
 <script>
 (function(){
   function attachReferralsFilter(){
@@ -2276,6 +2343,8 @@ if (!link) {
   }
 })();
 </script>
+
+
 <script>
 (function(){
   function attachMisComprasFilter(){
@@ -2310,6 +2379,8 @@ if (!link) {
   }
 })();
 </script>
+
+
 <script>
 (function(){
   function attachSorteosFilter(){
@@ -2343,8 +2414,12 @@ if (!link) {
   }
 })();
 </script>
-<script>
 
+
+
+
+<script>
+// --- Hardening patch: force-translate the modal even if other i18n mutates texts ---
 (function(){
   function lang(){
     try {
@@ -2354,7 +2429,7 @@ if (!link) {
   }
   function dict(){
     const L = (lang()||'es').slice(0,2);
-    
+    // Prefer PD_I18N (our local dict); fallback to global DICT if available
     const local = (window.PD_I18N && window.PD_I18N[L]) || {};
     const global = (window.DICT && window.DICT[L]) || {};
     return Object.assign({}, global, local);
@@ -2372,7 +2447,7 @@ if (!link) {
     setTimeout(()=>translate(document), 50);
     setTimeout(()=>translate(document), 200);
   });
-  
+  // Re-apply whenever Details opens (the open handler should be present)
   document.addEventListener('click', (e)=>{
     if (e.target.closest('button.action-btn[data-action="details"]')) {
       setTimeout(()=>translate(document), 0);
@@ -2385,6 +2460,9 @@ if (!link) {
   if (overlay) obs.observe(overlay, {childList:true, subtree:true, characterData:true});
 })();
 </script>
+
+
+<!-- ===== PURCHASE DETAILS MODAL (Numina style · static · no-keys i18n) ===== -->
 <style id="pd-modal-styles">
   .pd-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);display:none;z-index:1100;padding:24px}
   .pd-overlay.show{display:block}
@@ -2427,60 +2505,67 @@ if (!link) {
 .btn-delete-row:hover{background:#f5c400;color:#111}
 
 </style>
-<div class="pd-overlay" hidden="" id="pdOverlay">
-<section aria-labelledby="pdTitle" aria-modal="true" class="pd-modal" role="dialog">
-<header>
-<h3 data-i18n-key="purchase.detailsTitle" id="pdTitle">Detalles de la Compra</h3>
-<button aria-label="Cerrar" class="pd-x" id="pdClose">✕</button>
-</header>
-<div class="pd-content">
-<figure aria-label="Imagen del producto" class="pd-media">
-<svg role="img" viewbox="0 0 600 720">
-<defs><lineargradient id="pdg" x1="0" x2="1"><stop offset="0" stop-color="#2a0d2d"></stop><stop offset="1" stop-color="#6f1d75"></stop></lineargradient></defs>
-<rect fill="url(#pdg)" height="720" width="600"></rect>
-<text fill="#fff" font-family="Montserrat, sans-serif" font-size="34" font-weight="800" id="pdMediaText" text-anchor="middle" x="50%" y="52%">Producto</text>
-</svg>
-</figure>
-<div class="pd-details">
-<h4 id="pdName">—</h4>
-<p class="pd-desc" data-i18n-key="purchase.sampleDesc" id="pdDesc">Diseño exclusivo con materiales premium.</p>
-<div class="pd-meta">
-<span class="pd-pill" id="pdPrice">—</span>
-<span class="pd-pill" id="pdDate">—</span>
-<span class="pd-pill" id="pdOrder">—</span>
-<span class="pd-pill pd-status pending" data-i18n-key="status.pending" id="pdStatus">Pendiente</span>
-<span class="pd-pill" data-i18n-key="purchase.usdt">USDT</span>
-</div>
-<div class="pd-hr"></div>
-</div>
-</div>
-<div class="pd-actions">
-<button class="pd-btn gold" data-i18n-key="purchase.downloadInvoice" id="pdInvoice">Descargar factura</button>
-<button class="pd-btn warn" data-i18n-key="purchase.regeneratePayment" id="pdRegen">Generar nuevo link de pago</button>
-</div>
-<div class="pd-grid">
-<div class="pd-card">
-<h5 data-i18n-key="purchase.paymentInfo">Información de pago</h5>
-<div class="pd-kv">
-<div class="k" data-i18n-key="purchase.method">Método</div><div data-i18n-key="purchase.methodValue">Cripto · USDT</div>
-<div class="k" data-i18n-key="purchase.currency">Moneda</div><div data-i18n-key="purchase.usdt">USDT</div>
-<div class="k" data-i18n-key="purchase.subtotal">Subtotal</div><div id="pdSubtotal">—</div>
-<div class="k" data-i18n-key="purchase.fees">Comisiones</div><div data-i18n-key="purchase.zeroUsdt">0 USDT</div>
-<div class="k" data-i18n-key="purchase.total">Total</div><div id="pdTotal"><strong>—</strong></div>
-</div>
-</div>
-<div class="pd-card">
-<h5 data-i18n-key="purchase.history">Historial</h5>
-<div class="pd-timeline" id="pdTimeline">
-<div class="pd-tl"><span class="pd-dot"></span><div><div class="t" data-i18n-key="purchase.orderCreated">Pedido creado</div><div class="s">—</div></div></div>
-<div class="pd-tl"><span class="pd-dot"></span><div><div class="t" data-i18n-key="purchase.paymentLinkGenerated">Link de pago generado</div><div class="s">—</div></div></div>
-</div>
-</div>
-</div>
-</section>
-</div>
-<script>
 
+<div id="pdOverlay" class="pd-overlay" hidden>
+  <section class="pd-modal" role="dialog" aria-modal="true" aria-labelledby="pdTitle">
+    <header>
+      <h3 id="pdTitle" data-i18n-key="purchase.detailsTitle">Detalles de la Compra</h3>
+      <button class="pd-x" id="pdClose" aria-label="Cerrar">✕</button>
+    </header>
+
+    <div class="pd-content">
+      <figure class="pd-media" aria-label="Imagen del producto">
+        <svg viewBox="0 0 600 720" role="img">
+          <defs><linearGradient id="pdg" x1="0" x2="1"><stop offset="0" stop-color="#2a0d2d"/><stop offset="1" stop-color="#6f1d75"/></linearGradient></defs>
+          <rect width="600" height="720" fill="url(#pdg)"/>
+          <text id="pdMediaText" x="50%" y="52%" text-anchor="middle" fill="#fff" font-size="34" font-weight="800" font-family="Montserrat, sans-serif">Producto</text>
+        </svg>
+      </figure>
+
+      <div class="pd-details">
+        <h4 id="pdName">—</h4>
+        <p class="pd-desc" id="pdDesc" data-i18n-key="purchase.sampleDesc">Diseño exclusivo con materiales premium.</p>
+        <div class="pd-meta">
+          <span class="pd-pill" id="pdPrice">—</span>
+          <span class="pd-pill" id="pdDate">—</span>
+          <span class="pd-pill" id="pdOrder">—</span>
+          <span class="pd-pill pd-status pending" id="pdStatus" data-i18n-key="status.pending">Pendiente</span>
+          <span class="pd-pill" data-i18n-key="purchase.usdt">USDT</span>
+        </div>
+        <div class="pd-hr"></div>
+      </div>
+    </div>
+
+    <div class="pd-actions">
+      <button class="pd-btn gold" id="pdInvoice" data-i18n-key="purchase.downloadInvoice">Descargar factura</button>
+      <button class="pd-btn warn" id="pdRegen" data-i18n-key="purchase.regeneratePayment">Generar nuevo link de pago</button>
+     
+    </div>
+
+    <div class="pd-grid">
+      <div class="pd-card">
+        <h5 data-i18n-key="purchase.paymentInfo">Información de pago</h5>
+        <div class="pd-kv">
+          <div class="k" data-i18n-key="purchase.method">Método</div><div data-i18n-key="purchase.methodValue">Cripto · USDT</div>
+          <div class="k" data-i18n-key="purchase.currency">Moneda</div><div data-i18n-key="purchase.usdt">USDT</div>
+          <div class="k" data-i18n-key="purchase.subtotal">Subtotal</div><div id="pdSubtotal">—</div>
+          <div class="k" data-i18n-key="purchase.fees">Comisiones</div><div data-i18n-key="purchase.zeroUsdt">0 USDT</div>
+          <div class="k" data-i18n-key="purchase.total">Total</div><div id="pdTotal"><strong>—</strong></div>
+        </div>
+      </div>
+      <div class="pd-card">
+        <h5 data-i18n-key="purchase.history">Historial</h5>
+        <div class="pd-timeline" id="pdTimeline">
+          <div class="pd-tl"><span class="pd-dot"></span><div><div class="t" data-i18n-key="purchase.orderCreated">Pedido creado</div><div class="s">—</div></div></div>
+          <div class="pd-tl"><span class="pd-dot"></span><div><div class="t" data-i18n-key="purchase.paymentLinkGenerated">Link de pago generado</div><div class="s">—</div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+// == PD translator (no-keys). Uses data-i18n-key and repairs any leaked keys in text ==
 (function(){
   window.PD_I18N = window.PD_I18N || {};
   const ensure = (lng, entries) => { PD_I18N[lng] = Object.assign({}, PD_I18N[lng]||{}, entries); };
@@ -2573,7 +2658,7 @@ if (!link) {
       const val = t(key);
       if (val) el.textContent = val;
     });
-    
+    // 2) Repair any visible keys (purchase.* / status.*) written by other scripts
     scope.querySelectorAll('#pdOverlay *').forEach(el=>{
       if (!el.childNodes) return;
       el.childNodes.forEach(node=>{
@@ -2641,17 +2726,18 @@ if (!link) {
     // Robust: set "Order created" and "Payment link generated" dates from the date chip
     (function(){
       const orderDateText = (EL.date && EL.date.textContent || '').trim();
-      
+      // Support either .pd-timeline or #pdTimeline containers
       const sNodes = document.querySelectorAll('#pdOverlay .pd-timeline .s, #pdOverlay #pdTimeline .s');
       if (sNodes[0]) sNodes[0].textContent = orderDateText || '—';                // Order created
       if (sNodes[1]) sNodes[1].textContent = (statusK !== 'pending') ? (orderDateText || '—') : '—'; // Payment link generated
     })();
 
+
     EL.status.classList.remove('pending','active','cancelled','completed');
     EL.status.classList.add(statusK);
     EL.status.setAttribute('data-i18n-key','status.'+statusK);
 
-    
+    // Translate/repair
     if (window.pdI18n && typeof pdI18n.apply === 'function') {
       pdI18n.apply(OVERLAY);
       setTimeout(()=>pdI18n.apply(OVERLAY), 0);
@@ -2667,6 +2753,9 @@ if (!link) {
   document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') close(); });
 })();
 </script>
+<!-- END PD MODAL -->
+
+
 <script>
 (function(){
   function resolveSKUFromModal(){
@@ -2722,8 +2811,13 @@ if (!link) {
   }
 })();
 </script>
-<script>(async function(){
 
+
+
+<!-- Moved scripts that were incorrectly placed after </html> -->
+
+<!-- === NUMINA: Regenerar link de pago (NOWPayments) — v3 con fallback de ID === -->
+<script>
 (function(){
   function getSB(){
     try{ return (typeof getSupabase==='function' && getSupabase()) || window.supabaseClient || window.supabase; }
@@ -2837,8 +2931,8 @@ if (!link) {
     finally{ btn.disabled = false; btn.textContent = original; }
   }, true);
 })();
+</script>
 
-})()</script>
 <style>
 /* === Support Claim Modal (sc-*) === */
 .sc-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;z-index:2000;}
@@ -2875,44 +2969,50 @@ if (!link) {
 .btn-delete-row:hover{background:#f5c400;color:#111}
 
 </style>
-<div aria-hidden="true" class="sc-overlay" id="scOverlay">
-<div aria-labelledby="scTitle" aria-modal="true" class="sc-modal" role="dialog" tabindex="-1">
-<button aria-label="Cerrar" class="sc-close" id="scClose">×</button>
-<h3 id="scTitle">Contacto de soporte</h3>
-<div class="sc-body">
-<div class="sc-grid">
-<div class="sc-card">
-<h5>Detalle de la compra</h5>
-<div class="sc-kv">
-<div class="k">Producto</div> <div id="scProduct">—</div>
-<div class="k">Fecha</div> <div id="scDate">—</div>
-<div class="k">Monto</div> <div id="scAmount">—</div>
-<div class="k">Estado</div> <div><span class="sc-badge pending" id="scStatusBadge">Pendiente</span></div>
-</div>
-</div>
-<div class="sc-card">
-<h5>Contacto con soporte</h5>
-<label class="sc-label" for="scReason">Motivo</label>
-<select class="sc-input" id="scReason">
-<option value="payment_pending">Realicé el pago y no cambió el estado</option>
-<option value="no_delivery">Nunca recibí mi producto</option>
-<option value="wrong_item">El producto recibido no corresponde</option>
-<option value="otros">Otros</option>
-</select>
-<label class="sc-label" for="scMessage">Descripción</label>
-<textarea class="sc-textarea" id="scMessage" placeholder="Contanos qué pasó…"></textarea>
-<div class="sc-err" id="scError">Escribí una breve descripción (mínimo 10 caracteres).</div>
-</div>
-</div>
-</div>
-<div class="sc-actions">
-<button class="sc-btn sc-btn-gold" id="scSubmit">Enviar</button>
-<button class="sc-btn sc-btn-ghost" id="scCancel">Cancelar</button>
-</div>
-</div>
-</div>
-<script>(async function(){
 
+<!-- === SUPPORT CLAIM MODAL === -->
+<div id="scOverlay" class="sc-overlay" aria-hidden="true">
+  <div class="sc-modal" role="dialog" aria-modal="true" aria-labelledby="scTitle" tabindex="-1">
+    <button class="sc-close" id="scClose" aria-label="Cerrar">×</button>
+    <h3 id="scTitle">Contacto de soporte</h3>
+    <div class="sc-body">
+      <div class="sc-grid">
+        <!-- Columna izquierda: detalle -->
+        <div class="sc-card">
+          <h5>Detalle de la compra</h5>
+          <div class="sc-kv">
+            <div class="k">Producto</div> <div id="scProduct">—</div>
+            <div class="k">Fecha</div>    <div id="scDate">—</div>
+            <div class="k">Monto</div>    <div id="scAmount">—</div>
+            <div class="k">Estado</div>   <div><span id="scStatusBadge" class="sc-badge pending">Pendiente</div>
+          </div>
+        </div>
+
+        <!-- Columna derecha: formulario -->
+        <div class="sc-card">
+          <h5>Contacto con soporte</h5>
+          <label class="sc-label" for="scReason">Motivo</label>
+          <select id="scReason" class="sc-input">
+            <option value="payment_pending">Realicé el pago y no cambió el estado</option>
+            <option value="no_delivery">Nunca recibí mi producto</option>
+            <option value="wrong_item">El producto recibido no corresponde</option>
+            <option value="otros">Otros</option>
+          </select>
+          <label class="sc-label" for="scMessage">Descripción</label>
+          <textarea id="scMessage" class="sc-textarea" placeholder="Contanos qué pasó…"></textarea>
+          <div id="scError" class="sc-err">Escribí una breve descripción (mínimo 10 caracteres).</div>
+        </div>
+      </div>
+    </div>
+    <div class="sc-actions">
+      <button id="scSubmit" class="sc-btn sc-btn-gold">Enviar</button>
+      <button id="scCancel" class="sc-btn sc-btn-ghost">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// === Support Claim Modal wiring ===
 (function(){
   const SUPPORT_EMAIL = "numina5555@gmail.com"; // ej: 'soporte@tu-dominio.com'
   function $(id){ return document.getElementById(id); }
@@ -2955,7 +3055,7 @@ if (!link) {
   $('scOverlay')?.addEventListener('click', function(e){ if(e.target === this) closeModal(); });
   document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeModal(); });
 
-  
+  // Enviar: validación + mailto
   
 $('scSubmit')?.addEventListener('click', async function(){
   const btn = this;
@@ -2992,7 +3092,7 @@ Estado: ${status}
 Descripción:
 ${msg}`;
 
-  
+  // Enviar a Supabase y notificar por Edge Function
   try {
     btn.disabled = true;
     const originalLabel = btn.textContent;
@@ -3056,8 +3156,8 @@ ${msg}`;
 });
 
 })();
+</script>
 
-})()</script>
 <script>
 (function(){
   function hideAllSections(){
@@ -3095,7 +3195,7 @@ try{
   .then(({ data, error }) => {
     if (error) { console.error('RPC error:', error); return; }
     console.log('RPC delta otorgado:', data); // 0 si no había nada, >0 si insertó
-    try { if (typeof cargarSorteos === 'function') __callCargarSorteos__(); } catch(_){}
+    try { if (typeof cargarSorteos === 'function') cargarSorteos(); } catch(_){}
   })
   .catch(e => console.warn('award_referral_tickets_me rpc', e));
 
@@ -3302,8 +3402,10 @@ function bindShare(){
   });
 })();
 </script>
-<script>(async function(){
+    
 
+<!-- BEGIN: NOWPayments email param injector -->
+<script>
 (function(){
   // Runs after DOM is ready
   const onReady = (fn) => {
@@ -3312,7 +3414,7 @@ function bindShare(){
   };
 
   onReady(function(){
-    
+    // Helper: try to get user email from Supabase auth OR from dashboard UI fallback
     async function getUserEmail() {
       try {
         if (window.supabase && window.supabase.auth && typeof window.supabase.auth.getUser === "function") {
@@ -3337,7 +3439,7 @@ function bindShare(){
       try {
         const hasQuery = url.includes("?");
         const sep = hasQuery ? "&" : "?";
-        
+        // If URL already contains an 'email' param, replace it
         const u = new URL(url, window.location.origin);
         if (u.searchParams.has("email")) {
           u.searchParams.set("email", email);
@@ -3345,7 +3447,7 @@ function bindShare(){
         }
         return url + sep + "email=" + encodeURIComponent(email);
       } catch(_){
-        
+        // If URL() constructor fails (cross-origin relative edge cases), do a best-effort append
         return url + (url.includes("?") ? "&" : "?") + "email=" + encodeURIComponent(email);
       }
     }
@@ -3380,10 +3482,10 @@ function bindShare(){
     }, true);
   });
 })();
+</script>
+<!-- END: NOWPayments email param injector -->
 
-})()</script>
-<script>(async function(){
-
+<script>
 /* === NOWPayments dynamic USDT checkout override (capture-phase) ===
    This block intercepts clicks on the modal "Comprar" button (#nmBuy) and the
    "Generar nuevo link de pago" (#pdRegen), creates a purchase in Supabase with currency USDT,
@@ -3514,10 +3616,9 @@ if (fn.error || !paymentUrl){
 
   ready(wireOverrides);
 })();
+</script>
 
-})()</script>
-<script>(async function(){
-
+<script>
 (function(){
   window.__callEdge = async function(fnName, body, accessToken){
     try{
@@ -3542,8 +3643,9 @@ if (fn.error || !paymentUrl){
     }
   };
 })();
+</script>
 
-})()</script>
+
 <style>
 .btn-delete-row{
   border:1px solid #f5c400; color:#f5c400; background:transparent;
@@ -3552,8 +3654,8 @@ if (fn.error || !paymentUrl){
 }
 .btn-delete-row:hover{ background:#f5c400; color:#111 }
 </style>
-<script>(async function(){
 
+<script>
 (function () {
   function getSB() {
     try { return (typeof getSupabase === 'function') ? getSupabase() : (window.supabaseClient || window.supabase); }
@@ -3619,10 +3721,10 @@ if (fn.error || !paymentUrl){
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup);
   else setup();
 })();
+</script>
 
-})()</script>
-<script>(async function(){
-
+<!-- === NUMINA: Regenerar link de pago (NOWPayments) sin leer monto del DOM === -->
+<script>
 (function(){
   async function getAccessToken(){
     try{
@@ -3693,10 +3795,12 @@ if (fn.error || !paymentUrl){
     }
   });
 })();
+</script>
 
-})()</script>
-<script>(async function(){
 
+
+<!-- NUMINA share-invite upgrade: builds https://numina.vip/login.html?ref=YOUR_CODE -->
+<script>
 (function(){
   function getSB(){
     try{ return (typeof getSupabase==='function' && getSupabase()) || window.supabaseClient || window.supabase || null; }
@@ -3708,7 +3812,7 @@ if (fn.error || !paymentUrl){
     var dom = document.querySelector('[data-ref-code], #refCode, #nmRefCode, .ref-code, .referral-code code, .referral-code .value');
     var code = (dom && (dom.dataset && dom.dataset.refCode || (dom.textContent||'').trim())) || '';
 
-    
+    // 2) Heuristic: look near a "Copiar" button
     if(!code){
       try{
         var copyBtns = Array.from(document.querySelectorAll('button, a')).filter(function(b){
@@ -3784,10 +3888,8 @@ if (fn.error || !paymentUrl){
     }
   }, {capture:true});
 })();
-
-})()</script>
-<script>(async function(){
-
+</script>
+<script>
 async function cargarSorteos(){
   try{
     const tbody = document.getElementById('sorteos-tbody');
@@ -3797,7 +3899,7 @@ async function cargarSorteos(){
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user){ window.location.href = '/login.html'; return; }
 
-    
+    // 1) Tickets activos (sumatoria en tickets_ledger)
     let totalTickets = 0;
     let tksRows = [];
     try{
@@ -3840,7 +3942,7 @@ async function cargarSorteos(){
     if (hit25) hit25.classList.toggle('on', totalHistorico >= 2500);
     if (hit50) hit50.classList.toggle('on', totalHistorico >= 5000);
     if (hit100) hit100.classList.toggle('on', totalHistorico >= 10000);
-
+// 2) Historial de uso: negativos (tickets usados)
     const { data: hist, error } = await supabase
       .from('tickets_ledger')
       .select('id, sku, count, created_at')
@@ -3889,10 +3991,11 @@ async function cargarSorteos(){
     if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Error</td></tr>';
   }
 }
-
-})()
-try{window.cargarSorteos=cargarSorteos;try{window.dispatchEvent(new Event('cargarSorteosReady'));}catch(e){}}catch(e){}</script>
+</script>
+<!-- jsPDF (para generar PDF del lado del cliente) -->
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+<!-- Handler simple para el botón "Descargar factura" -->
 <script>
 (function(){
   function t(id){ try{ return (document.getElementById(id)?.textContent || '').trim(); }catch(_){ return ''; } }
@@ -4026,6 +4129,10 @@ try{window.cargarSorteos=cargarSorteos;try{window.dispatchEvent(new Event('carga
   (document.readyState === 'loading') ? document.addEventListener('DOMContentLoaded', wire) : wire();
 })();
 </script>
+
+
+
+<!-- Fix: IntersectionObserver para animaciones en scroll y contenido dinámico -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const SELECTOR = '.section-title, .product-card';
@@ -4064,6 +4171,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }catch(_){}
 });
 </script>
+
+<!-- ==== NUMINA FINAL PATCH: Mystery Box dentro del overlay existente (sin borrar nada) ==== -->
 <script>
 (function(){
   function renderMBContent(){
@@ -4103,13 +4212,15 @@ document.addEventListener('DOMContentLoaded', () => {
               .mbox-btn:hover{transform:translateY(-2px)}
               .mbox-primary{background:var(--primary);border-color:var(--primary);color:#111}
             </style>
-<div class="mbox-wrap">
+
+            <div class="mbox-wrap">
               <div class="mbox-tabs">
                 <button class="mbox-tab active"><span data-i18n="mbox.tabs.open">' + (window.dI18n? dI18n.t('mbox.tabs.open') : 'Abiertos') + '</span></button>
                 <button class=\"mbox-tab\"><span data-i18n="mbox.tabs.closed">' + (window.dI18n? dI18n.t('mbox.tabs.closed') : 'Finalizados') + '</span></button>
                 <div class="mbox-search"><input data-i18n-ph="filters.search.raffles" placeholder="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" /></div>
               </div>
-<div class="mbox-card">
+
+              <div class="mbox-card">
                 <div class="mbox-card-head">
                   <span class="mbox-chip" data-i18n="mbox.status.open">' + (window.dI18n? dI18n.t('mbox.status.open') : 'Abierto') + '</span>'
                 </div>
@@ -4125,7 +4236,8 @@ document.addEventListener('DOMContentLoaded', () => {
                   <div class="mbox-badges">
                     <span class="mbox-badge">Neto: 0 tickets</span>
                   </div>
-</div>
+                  
+                </div>
               </div>
             </div>
           `;
@@ -4172,6 +4284,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }catch(_){}
 })();
 </script>
+
+<!-- ==== NUMINA SCOPE GUARD: Mystery Box solo desde #balance-value o [data-open="mystery"] ==== -->
 <script>
 (function(){
   // Flag que habilita MB solo si el click vino del target correcto
@@ -4195,7 +4309,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, true); // captura
 
-  
+  // Si existen funciones previas para renderizar MB, las guardamos y envolvemos con el guard
   var _r1 = window.renderMBContent;
   var _r2 = window.renderMysteryBox;
   window.renderMBContent = function(){
@@ -4207,7 +4321,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof _r2 === 'function') return _r2.apply(this, arguments);
   };
 
-  
+  // Además, si algún listener viejo llama a renderMBContent inmediatamente, lo anulamos con un microtask
   // hasta que haya un click válido marcando __mbAllow=true.
   setInterval(function(){
     // resetea el flag si no hubo clicks válidos recientemente
@@ -4215,6 +4329,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 350);
 })();
 </script>
+
+
+
+
+<!-- NMN: Yellow card opens NEW tab (no overlay, no sidebar) -->
 <script>
 (function(){
   var valueEl = document.getElementById('balance-value');
@@ -4284,13 +4403,15 @@ document.addEventListener('DOMContentLoaded', () => {
               .mbox-btn:hover{transform:translateY(-2px)}
               .mbox-primary{background:var(--primary);border-color:var(--primary);color:#111}
             </style>
-<div class="mbox-wrap">
+
+            <div class="mbox-wrap">
               <div class="mbox-tabs">
                 <button class="mbox-tab active"><span data-i18n="mbox.tabs.open">' + (window.dI18n? dI18n.t('mbox.tabs.open') : 'Abiertos') + '</span></button>
                 <button class=\"mbox-tab\"><span data-i18n="mbox.tabs.closed">' + (window.dI18n? dI18n.t('mbox.tabs.closed') : 'Finalizados') + '</span></button>
                 <div class="mbox-search"><input data-i18n-ph="filters.search.raffles" placeholder="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" /></div>
               </div>
-<div class="mbox-card">
+
+              <div class="mbox-card">
                 <div class="mbox-card-head">
                   <span class="mbox-chip" data-i18n="mbox.status.open">' + (window.dI18n? dI18n.t('mbox.status.open') : 'Abierto') + '</span>'
                 </div>
@@ -4306,7 +4427,8 @@ document.addEventListener('DOMContentLoaded', () => {
                   <div class="mbox-badges">
                     <span class="mbox-badge">Neto: 0 tickets</span>
                   </div>
-</div>
+                  
+                </div>
               </div>
             </div>
           `;
@@ -4377,6 +4499,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 })();
 </script>
+
+<!-- NMN: Back button (yellow), fade, reset filters -->
 <script>
 (function(){
   function fadeIn(el, dur){ dur = dur||200; if(!el) return; el.style.removeProperty('display'); if(!el.style.display) el.style.display='block'; el.style.opacity=0; el.style.transition='opacity '+dur+'ms ease'; requestAnimationFrame(function(){ el.style.opacity=1; }); }
@@ -4392,6 +4516,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', wireBack);} else { wireBack(); } try{ var mo=new MutationObserver(wireBack); mo.observe(document.body,{childList:true,subtree:true}); }catch(_){}
 })();
 </script>
+
+
+<!-- NMN: Auto-hide the custom Mystery tab when navigating via sidebar -->
 <script>
 (function(){
   function hideMysteryTab(){
@@ -4415,6 +4542,9 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('hashchange', hideMysteryTab);
 })();
 </script>
+
+
+<!-- NMN: 'Compras Activas' card opens its own tab (not sidebar) -->
 <script>
 (function(){
   function ensureComprasTab(){
@@ -4449,7 +4579,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Find the <h2> with data-i18n="sections.comprasActivas"
     var titleSpan = document.querySelector('h2.section-title [data-i18n="sections.comprasActivas"]');
     var h2 = titleSpan ? titleSpan.closest('h2') : null;
-    
+    // The purchases table container should be the next .table-container that contains #purchases-table or #purchases-body
     var container = null;
     if(h2){
       var sib = h2.nextElementSibling;
@@ -4584,6 +4714,9 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('hashchange', function(){ var tab=document.getElementById('tab-compras'); if(tab){ restoreComprasToDashboard(); tab.classList.add('section-content'); tab.style.display='none'; } });
 })();
 </script>
+
+
+<!-- NMN: 'Referidos' card opens its own tab (not sidebar) -->
 <script>
 (function(){
   function ensureReferidosTab(){
@@ -4615,7 +4748,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function findReferidosNodes(){
-    
+    // h2.section-title containing data-i18n="sections.referralsHistory"
     var titleSpan = document.querySelector('h2.section-title [data-i18n="sections.referralsHistory"]');
     var h2 = titleSpan ? titleSpan.closest('h2') : null;
     var container = null;
@@ -4748,8 +4881,10 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('hashchange', function(){ var tab=document.getElementById('tab-referidos'); if(tab){ restoreReferidosToDashboard(); tab.classList.add('section-content'); tab.style.display='none'; } });
 })();
 </script>
-<script>(async function(){
 
+
+<!-- === NUMINA: Tickets Activos (inline tab) + KPI cards === -->
+<script>
 (function(){
   function ensureTicketsTab(){
     var dash = document.getElementById('main-dashboard');
@@ -5144,10 +5279,11 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('popstate', function(){ var tab=document.getElementById('tab-tickets'); if(tab){ tab.classList.add('section-content'); tab.style.display='none'; } });
   window.addEventListener('hashchange', function(){ var tab=document.getElementById('tab-tickets'); if(tab){ tab.classList.add('section-content'); tab.style.display='none'; } });
 })();
+</script>
 
-})()</script>
-<script>(async function(){
 
+<!-- NUMINA PATCH: Unify tickets KPI logic across Dashboard and Sorteos -->
+<script>
 (function(){
   // Sum tickets from tickets_ledger for the current user (positives + negatives)
   async function sumActiveTickets(){
@@ -5194,10 +5330,11 @@ document.addEventListener('DOMContentLoaded', () => {
     writeDashboardTickets();
   }
 })();
+</script>
 
-})()</script>
-<script>(async function(){
 
+<!-- NUMINA PATCH 2: Unify KPI logic in Tickets Activos tab with Sorteos (use tickets_ledger) -->
+<script>
 (function(){
   async function _getClient(){
     try {
@@ -5239,10 +5376,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Run once on ready, and whenever the Tickets tab is inserted/shown.
   function schedule(){
     try { writeTicketsTabKpis(); } catch(_) {}
-    setTimeout(writeTicketsTabKpis, 150);  
+    setTimeout(writeTicketsTabKpis, 150);  // after table paint
     setTimeout(writeTicketsTabKpis, 600);  // after any async fills
   }
-  
+  // Observe visibility changes and DOM mutations within the app container
   var obs = new MutationObserver(function(){
     var tab = document.getElementById('tab-tickets');
     if (tab && tab.style.display !== 'none') schedule();
@@ -5257,10 +5394,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Expose a manual hook (optional)
   window.nmnWriteTicketsTabKpis = writeTicketsTabKpis;
 })();
+</script>
 
-})()</script>
-<script>(async function(){
 
+<!-- NUMINA PATCH 3: Fill Tickets Activos table from tickets_ledger (fecha, producto, tickets, referido) -->
+<script>
 (function(){
   function _prettyName(sku){
     try{
@@ -5454,8 +5592,9 @@ const fillTicketsRowsFromLedger = async () => {
   } else { scheduleFill(); }
   window.nmnFillTicketsRowsFromLedger = fillTicketsRowsFromLedger;
 })();
+</script>
 
-})()</script>
+
 <style id="raffle-hero-rect-vertical">
   /* Solo alargar hacia ABAJO: no tocamos --thumb-w */
   :root{
@@ -5476,6 +5615,7 @@ const fillTicketsRowsFromLedger = async () => {
     }
   }
 </style>
+
 <style id="raffle-hero-rect-cover-taller">
   /* Queremos que la imagen ocupe TODO el rectángulo SIN cortarse: 
      hacemos el rectángulo un poco más ALTO y usamos cover */
@@ -5500,44 +5640,6 @@ const fillTicketsRowsFromLedger = async () => {
     }
   }
 </style>
-
-<script>
-(function(){
-  function cssVarURL(name){
-    var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-    if(!v) return null;
-    // v like: url("https://...") or url(https://...)
-    var m = v.match(/^url\((['"]?)(.*?)\1\)$/i);
-    return m ? m[2] : null;
-  }
-  function ensureMBImage(){
-    var wrap = document.querySelector('.mbox-card-body');
-    if(!wrap) return;
-    var img = wrap.querySelector('img.mbox-photo');
-    if(img && img.getAttribute('src')) return;
-    var u = cssVarURL('--raffle-img');
-    if(!u) return;
-    if(!img){
-      img = document.createElement('img');
-      img.className = 'mbox-photo';
-      img.loading = 'lazy';
-      img.decoding = 'async';
-      img.style.width='100%';
-      img.style.height='auto';
-      img.style.borderRadius='12px';
-      wrap.insertBefore(img, wrap.firstChild);
-    }
-    img.src = u;
-  }
-  // Run on load and after MB content renders
-  window.addEventListener('load', ensureMBImage);
-  document.addEventListener('click', function(ev){
-    var el = ev.target.closest && ev.target.closest('.mbox-tab');
-    if(el) setTimeout(ensureMBImage, 0);
-  });
-  window.ensureMysteryImage = ensureMBImage;
-})();
-</script>
-
 </body>
 </html>
+
