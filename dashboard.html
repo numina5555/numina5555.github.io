@@ -1107,8 +1107,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
   
   .lang-item{ -webkit-user-select: none; user-select: none; }
 </style>
-</link></link><script>window.__setHTML=function(id,html){var el=document.getElementById(id);if(el)el.innerHTML=html;};</script>
-</head>
+</link></link></head>
 <body>
 <header class="dashboard-header">
 <div style="flex-grow:1; text-align:center;">
@@ -1468,7 +1467,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
       window.getSupabase = function(){ if (_client) return _client; _client = window.supabase.createClient(URL, KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: localStorage } }); return _client; }; window.__SB_BASE = URL; window.__SB_ANON = KEY;
     })();
   </script>
-<script type="module">(async function(){
+<script>(async function(){
 
     function ready(fn){ if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn); else fn(); }
     function initLangMenu(){
@@ -1517,8 +1516,8 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
       document.getElementById('referrals-value').textContent = '--';
       document.getElementById('tickets-value').textContent = '--';
       ['full-name','user-email','user-phone','user-address','user-country','user-city','user-postal'].forEach(id=> setText(id, ''));
-      __setHTML('purchases-body', '<tr><td colspan="5" style="text-align:center);">'+dI18n.t('labels.loading')+'</td></tr>';
-      __setHTML('referrals-body', '<tr><td colspan="5" style="text-align:center);">'+dI18n.t('labels.loading')+'</td></tr>';
+      document.getElementById('purchases-body').innerHTML = `<tr><td colspan="5" style="text-align:center;">${dI18n.t('labels.loading')}</td></tr>`;">'+dI18n.t('labels.loading')+'</td></tr>';
+      document.getElementById('referrals-body').innerHTML = `<tr><td colspan="5" style="text-align:center;">${dI18n.t('labels.loading')}</td></tr>`;">'+dI18n.t('labels.loading')+'</td></tr>';
       const supabase = getSupabase();
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) { window.location.href = '/login.html'; return; }
@@ -1749,7 +1748,7 @@ alert('Contraseña actualizada');
     });
   
 })()</script>
-<script type="module">(async function(){
+<script>(async function(){
 
   function applyI18n(container){
 
@@ -2723,7 +2722,7 @@ if (!link) {
   }
 })();
 </script>
-<script type="module">(async function(){
+<script>(async function(){
 
 (function(){
   function getSB(){
@@ -2912,7 +2911,7 @@ if (!link) {
 </div>
 </div>
 </div>
-<script type="module">(async function(){
+<script>(async function(){
 
 (function(){
   const SUPPORT_EMAIL = "numina5555@gmail.com"; // ej: 'soporte@tu-dominio.com'
@@ -3303,7 +3302,7 @@ function bindShare(){
   });
 })();
 </script>
-<script type="module">(async function(){
+<script>(async function(){
 
 (function(){
   // Runs after DOM is ready
@@ -3383,7 +3382,7 @@ function bindShare(){
 })();
 
 })()</script>
-<script type="module">(async function(){
+<script>(async function(){
 
 /* === NOWPayments dynamic USDT checkout override (capture-phase) ===
    This block intercepts clicks on the modal "Comprar" button (#nmBuy) and the
@@ -3517,7 +3516,7 @@ if (fn.error || !paymentUrl){
 })();
 
 })()</script>
-<script type="module">(async function(){
+<script>(async function(){
 
 (function(){
   window.__callEdge = async function(fnName, body, accessToken){
@@ -3553,7 +3552,7 @@ if (fn.error || !paymentUrl){
 }
 .btn-delete-row:hover{ background:#f5c400; color:#111 }
 </style>
-<script type="module">(async function(){
+<script>(async function(){
 
 (function () {
   function getSB() {
@@ -3622,7 +3621,7 @@ if (fn.error || !paymentUrl){
 })();
 
 })()</script>
-<script type="module">(async function(){
+<script>(async function(){
 
 (function(){
   async function getAccessToken(){
@@ -3696,7 +3695,7 @@ if (fn.error || !paymentUrl){
 })();
 
 })()</script>
-<script type="module">(async function(){
+<script>(async function(){
 
 (function(){
   function getSB(){
@@ -3787,7 +3786,7 @@ if (fn.error || !paymentUrl){
 })();
 
 })()</script>
-<script type="module">(async function(){
+<script>(async function(){
 
 async function cargarSorteos(){
   try{
@@ -4749,7 +4748,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('hashchange', function(){ var tab=document.getElementById('tab-referidos'); if(tab){ restoreReferidosToDashboard(); tab.classList.add('section-content'); tab.style.display='none'; } });
 })();
 </script>
-<script type="module">(async function(){
+<script>(async function(){
 
 (function(){
   function ensureTicketsTab(){
@@ -5147,7 +5146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 
 })()</script>
-<script type="module">(async function(){
+<script>(async function(){
 
 (function(){
   // Sum tickets from tickets_ledger for the current user (positives + negatives)
@@ -5197,7 +5196,7 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 
 })()</script>
-<script type="module">(async function(){
+<script>(async function(){
 
 (function(){
   async function _getClient(){
@@ -5260,7 +5259,7 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 
 })()</script>
-<script type="module">(async function(){
+<script>(async function(){
 
 (function(){
   function _prettyName(sku){
