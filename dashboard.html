@@ -5626,56 +5626,77 @@ const fillTicketsRowsFromLedger = async () => {
   }
 </style>
 
-<!-- === Mystery Box: two-card grid injection (auto) === -->
-<style id="mystery-grid-css">
-  .mbox-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:6px}
-  @media(max-width:900px){.mbox-grid{grid-template-columns:1fr}}
+<!-- === Mystery Box: duo-poster injection (single card, two posters) === -->
+<style id="mystery-duo-css">
+  .mbox-card-head{position:relative}
+  .mbox-card-head.mbox-duo-mode{background:none !important}
+  .mbox-duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;padding:4px 4px 0 4px}
+  @media(max-width:900px){.mbox-duo{grid-template-columns:1fr}}
+  .mbox-duo .poster{position:relative;border-radius:16px;overflow:hidden;border:1px solid rgba(255,211,0,.25);box-shadow:0 8px 30px rgba(0,0,0,.45);aspect-ratio:3/4;background:#000}
+  .mbox-duo .poster img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  .mbox-card-head .mbox-chip{position:absolute;left:16px;top:16px;z-index:2}
 </style>
-<script id="mystery-grid-init">
+
+<script id="mystery-duo-init">
 (function(){
   var MYSTERY_IMG = "https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/sorteo%20mystery%20box%20jpg";
-  function ensureTwoCards(root){
+  var MONEY_FALLBACK = "https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/foto%20sorteo%20dinero";
+  function extractBgURL(el){
+    try{
+      var bg = getComputedStyle(el).backgroundImage || "";
+      var m = bg.match(/url\((["']?)(.*?)\1\)/i);
+      return m ? m[2] : "";
+    }catch(_){ return ""; }
+  }
+  function ensureDuo(root){
     try{
       var wrap = (root && root.querySelector) ? root.querySelector('.mbox-wrap') : null;
-      if(!wrap || wrap.__hasMystery) return;
-      var firstCard = wrap.querySelector('.mbox-card');
-      if(!firstCard) return;
-      // If a grid already exists, skip
-      var grid = wrap.querySelector('.mbox-grid');
-      if(!grid){
-        grid = document.createElement('div');
-        grid.className = 'mbox-grid';
-        // Insert grid and move the first card into it
-        wrap.insertBefore(grid, firstCard);
-        grid.appendChild(firstCard);
-      }
-      // Clone card for Mystery Box
-      var clone = firstCard.cloneNode(true);
-      var head = clone.querySelector('.mbox-card-head');
-      if(head){ head.style.setProperty('--raffle-img', "url('"+MYSTERY_IMG+"')"); }
-      var title = clone.querySelector('.mbox-title');
-      if(title){ title.textContent = 'Sorteo Mystery Box'; }
-      grid.appendChild(clone);
-      wrap.__hasMystery = true;
-    }catch(e){}
+      if(!wrap || wrap.__hasMysteryDuo) return;
+      var head = wrap.querySelector('.mbox-card .mbox-card-head');
+      if(!head) return;
+
+      // If duo already exists, skip
+      if (head.querySelector('.mbox-duo')) { wrap.__hasMysteryDuo = true; return; }
+
+      // Compute left poster src (from existing background if available)
+      var leftSrc = extractBgURL(head) || MONEY_FALLBACK;
+
+      // Build duo container
+      var duo = document.createElement('div');
+      duo.className = 'mbox-duo';
+
+      var left = document.createElement('div');
+      left.className = 'poster';
+      var li = new Image(); li.alt = "Sorteo de Dinero";
+      li.src = leftSrc; left.appendChild(li);
+
+      var right = document.createElement('div');
+      right.className = 'poster';
+      var ri = new Image(); ri.alt = "Sorteo Mystery Box";
+      ri.src = MYSTERY_IMG; right.appendChild(ri);
+
+      // Activate duo mode: hide original background and insert posters
+      head.classList.add('mbox-duo-mode');
+      // Keep existing "Abierto" chip (if present) floating above
+      head.appendChild(duo);
+      duo.appendChild(left);
+      duo.appendChild(right);
+
+      wrap.__hasMysteryDuo = true;
+    }catch(e){ /*noop*/ }
   }
-  // Observe dynamic insertions where the raffle overlay/cards are rendered
-  var mo = new MutationObserver(function(mutations){
-    mutations.forEach(function(m){
-      m.addedNodes && m.addedNodes.forEach(function(node){
-        try{
-          if(node.querySelector && node.querySelector('.mbox-wrap')) ensureTwoCards(node);
-        }catch(_){}
+  // Observe for dynamic content
+  var mo = new MutationObserver(function(muts){
+    muts.forEach(function(m){
+      m.addedNodes && m.addedNodes.forEach(function(n){
+        try{ if(n.querySelector && n.querySelector('.mbox-wrap')) ensureDuo(n); }catch(_){}
       });
     });
   });
   try{ mo.observe(document.body, {childList:true, subtree:true}); }catch(_){}
-  // Fallback: run once on DOMContentLoaded
   if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', function(){ ensureTwoCards(document); });
-  } else {
-    ensureTwoCards(document);
-  }
+    document.addEventListener('DOMContentLoaded', function(){ ensureDuo(document); });
+  } else { ensureDuo(document); }
 })();
 </script>
 
