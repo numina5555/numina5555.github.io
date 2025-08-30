@@ -4219,7 +4219,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="mbox-card-body">
                   <div class="mbox-title">Sorteo Mystery Box</div>
                   <div class="mbox-subtle">Pozo acumulado</div>
-                  <div class="mbox-badges">
+                  
+                  <!-- NUEVA BARRA DESPLAZABLE: 4 en la misma fila -->
+                  <div class="mbox-scroll" role="list">
+                    <div class="mbox-mini" role="listitem">
+                      <span class="mbox-pill">Abierto</span>
+                    </div>
+                    <div class="mbox-mini" role="listitem"></div>
+                    <div class="mbox-mini" role="listitem"></div>
+                    <div class="mbox-mini" role="listitem"></div>
+                  </div>
+<div class="mbox-badges">
                     <span class="mbox-badge">2 ticket(s)</span>
                     <span class="mbox-badge">3h</span>
                     <span class="mbox-badge">Pozo: 0 tickets</span>
@@ -4395,6 +4405,43 @@ document.addEventListener('DOMContentLoaded', () => {
               .mbox-btn{background:#161616;border:1px solid #2a2a2a;color:#f5f5f5;padding:12px 16px;border-radius:12px;font-weight:800;cursor:pointer}
               .mbox-btn:hover{transform:translateY(-2px)}
               .mbox-primary{background:var(--primary);border-color:var(--primary);color:#111}
+            
+              /* ===== Barra horizontal de sorteos dentro de la card (Sorteo Semanal) ===== */
+              .mbox-scroll{
+                display:flex;
+                gap:12px;
+                flex-wrap:nowrap;
+                overflow-x:auto;
+                scroll-snap-type:x mandatory;
+                padding:2px 2px 8px;
+                margin:10px 0 12px;
+              }
+              .mbox-scroll::-webkit-scrollbar{ height:8px; }
+              .mbox-scroll::-webkit-scrollbar-thumb{ background:#2a2a2a; border-radius:999px; }
+              .mbox-mini{
+                position:relative;
+                flex:0 0 14rem;  /* ~224px */
+                aspect-ratio:1 / 1;
+                background:#121212;
+                border:1px solid #2a2a2a;
+                border-radius:16px;
+                box-shadow:0 6px 20px rgba(0,0,0,.35);
+                scroll-snap-align:start;
+              }
+              .mbox-mini::after{
+                content:"";
+                position:absolute; inset:0;
+                border-radius:16px;
+                box-shadow: inset 0 0 0 1px rgba(255,215,0,.15);
+                pointer-events:none;
+              }
+              .mbox-pill{
+                position:absolute; top:-10px; left:10px;
+                background:var(--primary); color:#111;
+                padding:6px 10px; border-radius:999px;
+                font-weight:800; font-size:.75rem;
+              }
+
             </style>
 
             <div class="mbox-wrap">
@@ -4411,7 +4458,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="mbox-card-body">
                   <div class="mbox-title">Sorteo Semanal</div>
                   <div class="mbox-subtle">Pozo acumulado</div>
-                  <div class="mbox-badges">
+                  
+                  <!-- NUEVA BARRA DESPLAZABLE: 4 en la misma fila -->
+                  <div class="mbox-scroll" role="list">
+                    <div class="mbox-mini" role="listitem">
+                      <span class="mbox-pill">Abierto</span>
+                    </div>
+                    <div class="mbox-mini" role="listitem"></div>
+                    <div class="mbox-mini" role="listitem"></div>
+                    <div class="mbox-mini" role="listitem"></div>
+                  </div>
+<div class="mbox-badges">
                     <span class="mbox-badge">2 ticket(s)</span>
                     <span class="mbox-badge">3h</span>
                     <span class="mbox-badge">Pozo: 0 tickets</span>
