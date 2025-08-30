@@ -1060,7 +1060,6 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 <!-- NUMINA: Hero en recuadro (tuneado para mayor visibilidad) -->
 <style id="raffle-hero-css">
   :root{
-    --raffle-img: url("https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/foto%20sorteo%20dinero");
     --thumb-left: 22px;  /* posición */
     --thumb-top: 18px;
     --thumb-w: clamp(240px, 24vw, 320px);  /* tamaño */
@@ -4198,6 +4197,9 @@ document.addEventListener('DOMContentLoaded', () => {
               .mbox-primary{background:var(--primary);border-color:var(--primary);color:#111}
             
               .mbox-cards-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:8px}
+              .mbox-card.imgonly .mbox-card-body{display:none}
+              .mbox-cards-grid .mbox-card.imgonly{order:0}
+              .mbox-cards-grid .mbox-card:not(.imgonly){order:1}
               @media(max-width:980px){.mbox-cards-grid{grid-template-columns:1fr}}
         
             </style>
@@ -4229,8 +4231,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   
                 </div>
               </div>
-<div class="mbox-card">
-                <div class="mbox-card-head" style="--raffle-img: url('https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/sorteo%20mystery%20box%20jpg')">
+<div class="mbox-card imgonly"><div class="mbox-card-head" style="--raffle-img: url('https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/sorteo%20mystery%20box%20jpg')">
                   <span class="mbox-chip" data-i18n="mbox.status.open">' + (window.dI18n? dI18n.t('mbox.status.open') : 'Abierto') + '</span>'
                 </div>
                 <div class="mbox-card-body">
@@ -4247,6 +4248,12 @@ document.addEventListener('DOMContentLoaded', () => {
                   </div>
                   
                 </div>
+              </div>
+<div class="mbox-card imgonly">
+                <div class="mbox-card-head" style="--raffle-img: url('REEMPLAZAR_URL_SORTEO_2')">
+                  <span class="mbox-chip" data-i18n="mbox.status.open">Abierto</span>
+                </div>
+                <div class="mbox-card-body"></div>
               </div>
 </div>
             </div>
@@ -4394,6 +4401,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!tab.dataset.filled){
       tab.innerHTML = `
             <style>
+              .mbox-cards-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:8px}
+              .mbox-card.imgonly .mbox-card-body{display:none}
+              .mbox-cards-grid .mbox-card.imgonly{order:0}
+              .mbox-cards-grid .mbox-card:not(.imgonly){order:1}
+
               .mbox-wrap{max-width:1100px;margin:0 auto}
               .mbox-tabs{display:flex;gap:10px;align-items:center;margin-bottom:14px}
               .mbox-tab{background:#1a1a1a;border:1px solid #2a2a2a;color:#f0f0f0;padding:10px 14px;border-radius:999px;font-weight:800;cursor:pointer}
@@ -4421,7 +4433,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="mbox-search"><input data-i18n-ph="filters.search.raffles" placeholder="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" /></div>
               </div>
 
-              <div class="mbox-card">
+              <div class="mbox-cards-grid">
+<div class="mbox-card imgonly">
+                <div class="mbox-card-head" style="--raffle-img: url('https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/sorteo%20mystery%20box%20jpg')">
+                  <span class="mbox-chip" data-i18n="mbox.status.open">Abierto</span>
+                </div>
+                <div class="mbox-card-body"></div>
+              </div>
+<div class="mbox-card imgonly">
+                <div class="mbox-card-head" style="--raffle-img: url('REEMPLAZAR_URL_SORTEO_2')">
+                  <span class="mbox-chip" data-i18n="mbox.status.open">Abierto</span>
+                </div>
+                <div class="mbox-card-body"></div>
+              </div><div class="mbox-card">
                 <div class="mbox-card-head">
                   <span class="mbox-chip" data-i18n="mbox.status.open">' + (window.dI18n? dI18n.t('mbox.status.open') : 'Abierto') + '</span>'
                 </div>
@@ -4438,7 +4462,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="mbox-badge">Neto: 0 tickets</span>
                   </div>
                   
-                </div>
+                </div></div>
               </div>
             </div>
           `;
