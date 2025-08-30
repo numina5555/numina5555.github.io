@@ -105,12 +105,12 @@
     }
     button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:hover, .sc-card:hover, .card:hover{
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,10,10,.35);
+      box-shadow: 0 8px 24px rgba(0,0,0,.35);
     }
     /* Entry animations */
     .section-title, .product-card{ opacity:0; transform:translateY(20px); }
     .section-title.animate-in, .product-card.animate-in{ animation:fadeInUp .6s ease forwards; }
-    @keyframes fadeInUp{ to{ opacity:1; transform:translateY(4); } }
+    @keyframes fadeInUp{ to{ opacity:1; transform:translateY(0); } }
 
     #section-productos .products-wrap{ max-width:1100px; margin:0 auto; padding: .5rem 1rem 0; }
     #section-productos .products-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:1.5rem; justify-items:center; }
@@ -273,13 +273,6 @@
 /* Evitar línea/solapado en el borde izquierdo durante el relleno */
 .stat-card:hover{ border-left-color: transparent; }
 .stat-card:focus-within{ border-left-color: transparent; }
-
-/* --- Duo posters: small row inside header --- */
-.mbox-card-head.duo-no-bg{background:none!important}
-.raffle-thumbs{display:flex;gap:12px;align-items:center;justify-content:flex-start;padding:8px 6px 6px 6px}
-.raffle-thumbs .thumb{width:180px;max-width:40%;aspect-ratio:3/4;border-radius:12px;overflow:hidden;border:1px solid rgba(255,211,0,.22);box-shadow:0 6px 24px rgba(0,0,0,.35);background:#000}
-.raffle-thumbs .thumb img{display:block;width:100%;height:100%;object-fit:cover}
-@media(max-width:720px){.raffle-thumbs .thumb{width:46%;max-width:46%}}
 </style>
 
   <script>
@@ -4203,6 +4196,10 @@ document.addEventListener('DOMContentLoaded', () => {
               .mbox-btn{background:#161616;border:1px solid #2a2a2a;color:#f5f5f5;padding:12px 16px;border-radius:12px;font-weight:800;cursor:pointer}
               .mbox-btn:hover{transform:translateY(-2px)}
               .mbox-primary{background:var(--primary);border-color:var(--primary);color:#111}
+            
+              .mbox-cards-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:8px}
+              @media(max-width:980px){.mbox-cards-grid{grid-template-columns:1fr}}
+        
             </style>
 
             <div class="mbox-wrap">
@@ -4212,14 +4209,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="mbox-search"><input data-i18n-ph="filters.search.raffles" placeholder="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" /></div>
               </div>
 
-              <div class="mbox-card">
-                <div class="mbox-card-head duo-no-bg">
-                  <span class="mbox-chip" data-i18n="mbox.status.open">' + (window.dI18n? dI18n.t('mbox.status.open') : 'Abierto') + '</span>
-                  <div class="raffle-thumbs">
-                    <div class="thumb"><img src="https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/foto%20sorteo%20dinero" alt="Sorteo de Dinero" loading="lazy"></div>
-                    <div class="thumb"><img src="https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/sorteo%20mystery%20box%20jpg" alt="Sorteo Mystery Box" loading="lazy"></div>
-                  </div>
-'
+              <div class="mbox-cards-grid">
+<div class="mbox-card">
+                <div class="mbox-card-head">
+                  <span class="mbox-chip" data-i18n="mbox.status.open">' + (window.dI18n? dI18n.t('mbox.status.open') : 'Abierto') + '</span>'
                 </div>
                 <div class="mbox-card-body">
                   <div class="mbox-title">Sorteo Semanal</div>
@@ -4236,6 +4229,26 @@ document.addEventListener('DOMContentLoaded', () => {
                   
                 </div>
               </div>
+<div class="mbox-card">
+                <div class="mbox-card-head" style="--raffle-img: url('https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/sorteo%20mystery%20box%20jpg')">
+                  <span class="mbox-chip" data-i18n="mbox.status.open">' + (window.dI18n? dI18n.t('mbox.status.open') : 'Abierto') + '</span>'
+                </div>
+                <div class="mbox-card-body">
+                  <div class="mbox-title">Sorteo Mystery Box</div>
+                  <div class="mbox-subtle">Pozo acumulado</div>
+                  <div class="mbox-badges">
+                    <span class="mbox-badge">2 ticket(s)</span>
+                    <span class="mbox-badge">3h</span>
+                    <span class="mbox-badge">Pozo: 0 tickets</span>
+                    <span class="mbox-badge">Casa: 10%</span>
+                  </div>
+                  <div class="mbox-badges">
+                    <span class="mbox-badge">Neto: 0 tickets</span>
+                  </div>
+                  
+                </div>
+              </div>
+</div>
             </div>
           `;
           overlay.appendChild(wrap);
