@@ -5625,6 +5625,60 @@ const fillTicketsRowsFromLedger = async () => {
     }
   }
 </style>
+
+<!-- === Mystery Box: two-card grid injection (auto) === -->
+<style id="mystery-grid-css">
+  .mbox-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:6px}
+  @media(max-width:900px){.mbox-grid{grid-template-columns:1fr}}
+</style>
+<script id="mystery-grid-init">
+(function(){
+  var MYSTERY_IMG = "https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/sorteo%20mystery%20box%20jpg";
+  function ensureTwoCards(root){
+    try{
+      var wrap = (root && root.querySelector) ? root.querySelector('.mbox-wrap') : null;
+      if(!wrap || wrap.__hasMystery) return;
+      var firstCard = wrap.querySelector('.mbox-card');
+      if(!firstCard) return;
+      // If a grid already exists, skip
+      var grid = wrap.querySelector('.mbox-grid');
+      if(!grid){
+        grid = document.createElement('div');
+        grid.className = 'mbox-grid';
+        // Insert grid and move the first card into it
+        wrap.insertBefore(grid, firstCard);
+        grid.appendChild(firstCard);
+      }
+      // Clone card for Mystery Box
+      var clone = firstCard.cloneNode(true);
+      var head = clone.querySelector('.mbox-card-head');
+      if(head){ head.style.setProperty('--raffle-img', "url('"+MYSTERY_IMG+"')"); }
+      var title = clone.querySelector('.mbox-title');
+      if(title){ title.textContent = 'Sorteo Mystery Box'; }
+      grid.appendChild(clone);
+      wrap.__hasMystery = true;
+    }catch(e){}
+  }
+  // Observe dynamic insertions where the raffle overlay/cards are rendered
+  var mo = new MutationObserver(function(mutations){
+    mutations.forEach(function(m){
+      m.addedNodes && m.addedNodes.forEach(function(node){
+        try{
+          if(node.querySelector && node.querySelector('.mbox-wrap')) ensureTwoCards(node);
+        }catch(_){}
+      });
+    });
+  });
+  try{ mo.observe(document.body, {childList:true, subtree:true}); }catch(_){}
+  // Fallback: run once on DOMContentLoaded
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ ensureTwoCards(document); });
+  } else {
+    ensureTwoCards(document);
+  }
+})();
+</script>
+
 </body>
 </html>
 
