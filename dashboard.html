@@ -4215,14 +4215,14 @@ document.addEventListener('DOMContentLoaded', () => {
 <div class="mbox-card">
                 <div class="mbox-card-head" style="--raffle-img: url('https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/sorteo%20mystery%20box%20jpg')">
                   <span class="mbox-chip" data-i18n="mbox.status.open">' + (window.dI18n? dI18n.t('mbox.status.open') : 'Abierto') + '</span>'
-                <
+                
                   <div class="mbox-head-scroll" role="list">
                     <div class="mbox-head-mini" role="listitem"><span class="mbox-pill">Abierto</span></div>
                     <div class="mbox-head-mini" role="listitem"></div>
                     <div class="mbox-head-mini" role="listitem"></div>
                     <div class="mbox-head-mini" role="listitem"></div>
                   </div>
-</div>
+                </div>
                 <div class="mbox-card-body">
                   <div class="mbox-title">Sorteo Mystery Box</div>
                   <div class="mbox-subtle">Pozo acumulado</div>
@@ -4391,7 +4391,7 @@ document.addEventListener('DOMContentLoaded', () => {
               .mbox-search{flex:1;display:flex}
               .mbox-search input{width:100%;background:#141414;border:1px solid #2a2a2a;color:#eaeaea;padding:10px 14px;border-radius:999px;outline:none}
               .mbox-card{background:#0f0f0f;border:1px solid #1f1f1f;border-radius:16px;box-shadow:0 12px 30px rgba(0,0,0,.35);overflow:hidden}
-              .mbox-card-head{position:relative;height:240px;background:linear-gradient(180deg,#151515,#0f0f0f)}
+              .mbox-card-head{padding:16px;min-height:260px;position:relative;height:240px;background:linear-gradient(180deg,#151515,#0f0f0f)}
               .mbox-chip{position:absolute;top:14px;left:14px;background:var(--primary);color:#111;border-radius:999px;padding:6px 12px;font-weight:800;font-size:.85rem}
               .mbox-card-body{padding:18px}
               .mbox-title{font-size:1.25rem;font-weight:900;margin:2px 0 6px}
@@ -4403,24 +4403,14 @@ document.addEventListener('DOMContentLoaded', () => {
               .mbox-btn:hover{transform:translateY(-2px)}
               .mbox-primary{background:var(--primary);border-color:var(--primary);color:#111}
             
-              /* === Head con 4 cuadros (fila scrollable) === */
-              .mbox-head-scroll{
-                display:flex; gap:12px; flex-wrap:nowrap; overflow-x:auto;
-                padding:16px; margin:10px 0 0;
-              }
-              .mbox-head-scroll::-webkit-scrollbar{ height:8px; }
-              .mbox-head-scroll::-webkit-scrollbar-thumb{ background:#2a2a2a; border-radius:999px; }
-              .mbox-head-mini{
-                position:relative; flex:0 0 15rem; aspect-ratio:1/1;
-                background:rgba(0,0,0,.35); border:1px solid rgba(255,215,0,.2);
-                border-radius:16px; box-shadow:0 6px 20px rgba(0,0,0,.35);
-              }
-              .mbox-head-mini::after{ content:""; position:absolute; inset:0; border-radius:16px;
-                box-shadow: inset 0 0 0 1px rgba(255,215,0,.15); pointer-events:none; }
-              .mbox-pill{ position:absolute; top:-10px; left:10px; background:var(--primary); color:#111;
-                padding:6px 10px; border-radius:999px; font-weight:800; font-size:.75rem; }
-              .mbox-card-head{ min-height: 240px; }
-
+              /* === Head con 4 cuadros (fila en el HEAD) === */
+              .mbox-head-scroll{display:flex;gap:14px;flex-wrap:nowrap;overflow-x:auto;padding:2px 2px 12px;margin-top:6px}
+              .mbox-head-scroll::-webkit-scrollbar{height:8px}
+              .mbox-head-scroll::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:999px}
+              .mbox-head-mini{position:relative;flex:0 0 15rem;aspect-ratio:1/1;background:#121212;border:1px solid #2a2a2a;border-radius:16px;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+              .mbox-head-mini::after{content:"";position:absolute;inset:0;border-radius:16px;box-shadow:inset 0 0 0 1px rgba(255,215,0,.18);pointer-events:none}
+              .mbox-pill{position:absolute;top:-10px;left:10px;background:var(--primary);color:#111;padding:6px 10px;border-radius:999px;font-weight:800;font-size:.75rem}
+    
             </style>
 
             <div class="mbox-wrap">
