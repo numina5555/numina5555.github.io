@@ -5626,59 +5626,6 @@ const fillTicketsRowsFromLedger = async () => {
   }
 </style>
 
-<!-- === Mystery Box: SMALL duo posters (single card) === -->
-<style id="mystery-duo-small-css">
-  .mbx-duo-small{background:none!important;position:relative;padding:8px 6px 6px 6px}
-  .mbx-duo-row{display:flex;gap:12px;align-items:center;justify-content:flex-start;flex-wrap:wrap}
-  .mbx-duo-row .poster{width:180px;max-width:40%;aspect-ratio:3/4;border-radius:12px;overflow:hidden;border:1px solid rgba(255,211,0,.22);box-shadow:0 6px 24px rgba(0,0,0,.35);background:#000}
-  .mbx-duo-row .poster img{display:block;width:100%;height:100%;object-fit:cover;pointer-events:none;user-select:none}
-  @media(max-width:720px){.mbx-duo-row .poster{width:46%;max-width:46%}}
-</style>
-<script id="mystery-duo-small-init">
-(function(){
-  var LEFT_SRC = "https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/foto%20sorteo%20dinero";
-  var RIGHT_SRC = "https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/sorteo%20mystery%20box%20jpg";
-  function makeDuo(root){
-    try{
-      var wrap = root.querySelector ? root.querySelector('.mbox-wrap') : null;
-      if(!wrap || wrap.__mbxDuoSmall) return;
-      var head = wrap.querySelector('.mbox-card .mbox-card-head');
-      if(!head) return;
-      if (head.querySelector('.mbx-duo-row')) { wrap.__mbxDuoSmall = true; return; }
-      head.classList.add('mbx-duo-small');
-      head.style.background = 'none';
-      var row = document.createElement('div');
-      row.className = 'mbx-duo-row';
-      function poster(src, alt){
-        var p = document.createElement('div');
-        p.className = 'poster';
-        var img = new Image();
-        img.alt = alt || '';
-        img.src = src;
-        p.appendChild(img);
-        return p;
-      }
-      row.appendChild(poster(LEFT_SRC, 'Sorteo de Dinero'));
-      row.appendChild(poster(RIGHT_SRC, 'Sorteo Mystery Box'));
-      head.appendChild(row);
-      wrap.__mbxDuoSmall = true;
-    }catch(e){}
-  }
-  function tryInit(){ makeDuo(document); }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', tryInit); else tryInit();
-  try{
-    var mo = new MutationObserver(function(muts){
-      muts.forEach(function(m){
-        m.addedNodes && m.addedNodes.forEach(function(n){
-          try{ if(n.querySelector && n.querySelector('.mbox-wrap')) makeDuo(n); }catch(_){}
-        });
-      });
-    });
-    mo.observe(document.body, {childList:true, subtree:true});
-  }catch(_){}
-})();
-</script>
-
 </body>
 </html>
 
