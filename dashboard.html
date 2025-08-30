@@ -1060,7 +1060,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 <!-- NUMINA: Hero en recuadro (tuneado para mayor visibilidad) -->
 <style id="raffle-hero-css">
   :root{
-    --raffle-img: url("https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/sorteo%20mystery%20box%20jpg");
+    --raffle-img: url("https://raw.githubusercontent.com/numina5555/numina5555.github.io/main/sorteo%20mystery%20box%20jpg");
     --thumb-left: 22px;  /* posición */
     --thumb-top: 18px;
     --thumb-w: clamp(240px, 24vw, 320px);  /* tamaño */
@@ -1326,6 +1326,35 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
       </section>
 
 <section class="section-content" id="section-sorteos" style="display:none;">
+
+<style>
+  /* === Sorteos de la semana: dos imágenes chicas en fila === */
+  .sorteos-semana{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(140px, 1fr));
+    gap:10px;
+    margin:10px 0 18px;
+  }
+  .sorteos-semana img{
+    width:100%;
+    max-width:260px;
+    aspect-ratio:13/9;
+    object-fit:cover;
+    border-radius:12px;
+    display:block;
+  }
+  @media (max-width:640px){
+    .sorteos-semana{ grid-template-columns:1fr; }
+    .sorteos-semana img{ max-width:100%; }
+  }
+</style>
+
+<!-- Sorteos de la semana (dos imágenes en fila, tamaño chico) -->
+<div class="sorteos-semana">
+  <img src="https://raw.githubusercontent.com/numina5555/numina5555.github.io/main/sorteo%20mystery%20box%20jpg" alt="Sorteo Mystery Box" loading="lazy" decoding="async">
+  <img src="https://raw.githubusercontent.com/numina5555/numina5555.github.io/main/foto%20sorteo%20dinero" alt="Sorteo Dinero" loading="lazy" decoding="async">
+</div>
+
 <h2 class="section-title"><i class="fas fa-ticket-alt"></i><span data-i18n="sections.sorteoTitle"></span></h2>
 <div class="srt-stats">
 <!-- Tickets activos -->
@@ -1360,36 +1389,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
   <input id="sorteos-search" type="text" data-i18n-ph="filters.search.raffles" placeholder="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" aria-label="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" />
   <button id="sorteos-clear" type="button" class="action-btn" style="min-width:auto;padding:.35rem .7rem;"><span data-i18n="filters.clear">Limpiar</span></button>
 </div>
-  
-
-<style>
-  /* === Sorteos de la semana: dos imágenes chicas en fila === */
-  .sorteos-semana{
-    display:grid;
-    grid-template-columns:repeat(2, minmax(140px, 1fr));
-    gap:10px;
-    margin:10px 0 18px;
-  }
-  .sorteos-semana img{
-    width:100%;
-    max-width:260px;
-    aspect-ratio:13/9;
-    object-fit:cover;
-    border-radius:12px;
-    display:block;
-  }
-  @media (max-width:640px){
-    .sorteos-semana{ grid-template-columns:1fr; }
-    .sorteos-semana img{ max-width:100%; }
-  }
-</style>
-
-<!-- Sorteos de la semana (dos imágenes en fila, tamaño chico) -->
-<div class="sorteos-semana">
-  <img src="https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/sorteo%20mystery%20box%20jpg" alt="Sorteo Mystery Box" loading="lazy" decoding="async">
-  <img src="https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/foto%20sorteo%20dinero" alt="Sorteo Dinero" loading="lazy" decoding="async">
-</div>
-<table id="sorteos-table">
+  <table id="sorteos-table">
 <thead>
 <tr>
 <th data-i18n="raffles.date"></th>
