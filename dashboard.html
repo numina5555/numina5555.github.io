@@ -5626,77 +5626,56 @@ const fillTicketsRowsFromLedger = async () => {
   }
 </style>
 
-<!-- === Mystery Box: duo-poster injection (single card, two posters) === -->
-<style id="mystery-duo-css">
-  .mbox-card-head{position:relative}
-  .mbox-card-head.mbox-duo-mode{background:none !important}
-  .mbox-duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;padding:4px 4px 0 4px}
-  @media(max-width:900px){.mbox-duo{grid-template-columns:1fr}}
-  .mbox-duo .poster{position:relative;border-radius:16px;overflow:hidden;border:1px solid rgba(255,211,0,.25);box-shadow:0 8px 30px rgba(0,0,0,.45);aspect-ratio:3/4;background:#000}
-  .mbox-duo .poster img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-  .mbox-card-head .mbox-chip{position:absolute;left:16px;top:16px;z-index:2}
+<!-- === Mystery Box: SMALL duo posters (single card) === -->
+<style id="mystery-duo-small-css">
+  .mbx-duo-small{background:none!important;position:relative;padding:8px 6px 6px 6px}
+  .mbx-duo-row{display:flex;gap:12px;align-items:center;justify-content:flex-start;flex-wrap:wrap}
+  .mbx-duo-row .poster{width:180px;max-width:40%;aspect-ratio:3/4;border-radius:12px;overflow:hidden;border:1px solid rgba(255,211,0,.22);box-shadow:0 6px 24px rgba(0,0,0,.35);background:#000}
+  .mbx-duo-row .poster img{display:block;width:100%;height:100%;object-fit:cover;pointer-events:none;user-select:none}
+  @media(max-width:720px){.mbx-duo-row .poster{width:46%;max-width:46%}}
 </style>
-
-<script id="mystery-duo-init">
+<script id="mystery-duo-small-init">
 (function(){
-  var MYSTERY_IMG = "https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/sorteo%20mystery%20box%20jpg";
-  var MONEY_FALLBACK = "https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/foto%20sorteo%20dinero";
-  function extractBgURL(el){
+  var LEFT_SRC = "https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/foto%20sorteo%20dinero";
+  var RIGHT_SRC = "https://github.com/numina5555/numina5555.github.io/raw/refs/heads/main/sorteo%20mystery%20box%20jpg";
+  function makeDuo(root){
     try{
-      var bg = getComputedStyle(el).backgroundImage || "";
-      var m = bg.match(/url\((["']?)(.*?)\1\)/i);
-      return m ? m[2] : "";
-    }catch(_){ return ""; }
-  }
-  function ensureDuo(root){
-    try{
-      var wrap = (root && root.querySelector) ? root.querySelector('.mbox-wrap') : null;
-      if(!wrap || wrap.__hasMysteryDuo) return;
+      var wrap = root.querySelector ? root.querySelector('.mbox-wrap') : null;
+      if(!wrap || wrap.__mbxDuoSmall) return;
       var head = wrap.querySelector('.mbox-card .mbox-card-head');
       if(!head) return;
-
-      // If duo already exists, skip
-      if (head.querySelector('.mbox-duo')) { wrap.__hasMysteryDuo = true; return; }
-
-      // Compute left poster src (from existing background if available)
-      var leftSrc = extractBgURL(head) || MONEY_FALLBACK;
-
-      // Build duo container
-      var duo = document.createElement('div');
-      duo.className = 'mbox-duo';
-
-      var left = document.createElement('div');
-      left.className = 'poster';
-      var li = new Image(); li.alt = "Sorteo de Dinero";
-      li.src = leftSrc; left.appendChild(li);
-
-      var right = document.createElement('div');
-      right.className = 'poster';
-      var ri = new Image(); ri.alt = "Sorteo Mystery Box";
-      ri.src = MYSTERY_IMG; right.appendChild(ri);
-
-      // Activate duo mode: hide original background and insert posters
-      head.classList.add('mbox-duo-mode');
-      // Keep existing "Abierto" chip (if present) floating above
-      head.appendChild(duo);
-      duo.appendChild(left);
-      duo.appendChild(right);
-
-      wrap.__hasMysteryDuo = true;
-    }catch(e){ /*noop*/ }
+      if (head.querySelector('.mbx-duo-row')) { wrap.__mbxDuoSmall = true; return; }
+      head.classList.add('mbx-duo-small');
+      head.style.background = 'none';
+      var row = document.createElement('div');
+      row.className = 'mbx-duo-row';
+      function poster(src, alt){
+        var p = document.createElement('div');
+        p.className = 'poster';
+        var img = new Image();
+        img.alt = alt || '';
+        img.src = src;
+        p.appendChild(img);
+        return p;
+      }
+      row.appendChild(poster(LEFT_SRC, 'Sorteo de Dinero'));
+      row.appendChild(poster(RIGHT_SRC, 'Sorteo Mystery Box'));
+      head.appendChild(row);
+      wrap.__mbxDuoSmall = true;
+    }catch(e){}
   }
-  // Observe for dynamic content
-  var mo = new MutationObserver(function(muts){
-    muts.forEach(function(m){
-      m.addedNodes && m.addedNodes.forEach(function(n){
-        try{ if(n.querySelector && n.querySelector('.mbox-wrap')) ensureDuo(n); }catch(_){}
+  function tryInit(){ makeDuo(document); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', tryInit); else tryInit();
+  try{
+    var mo = new MutationObserver(function(muts){
+      muts.forEach(function(m){
+        m.addedNodes && m.addedNodes.forEach(function(n){
+          try{ if(n.querySelector && n.querySelector('.mbox-wrap')) makeDuo(n); }catch(_){}
+        });
       });
     });
-  });
-  try{ mo.observe(document.body, {childList:true, subtree:true}); }catch(_){}
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', function(){ ensureDuo(document); });
-  } else { ensureDuo(document); }
+    mo.observe(document.body, {childList:true, subtree:true});
+  }catch(_){}
 })();
 </script>
 
