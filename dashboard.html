@@ -1156,6 +1156,45 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 /* Flechas del carrusel centradas verticalmente (por si hay posters) */
 .mbox-scroll-btn{ top:50%; transform:translateY(-50%); }
 </style>
+<style>
+/* === NUMINA Mobile Fixes v1 (2025-08-31) === */
+html, body { overflow-x: hidden; }
+
+/* Tables: allow wrapping to avoid overflow on narrow screens */
+@media (max-width: 900px){
+  table { table-layout: auto !important; }
+  #purchases-table th:nth-child(2), #purchases-table td:nth-child(2),
+  #purchases-table th:nth-child(3), #purchases-table td:nth-child(3),
+  #referrals-table th:nth-child(2), #referrals-table td:nth-child(2),
+  #referrals-table th:nth-child(3), #referrals-table td:nth-child(3),
+  #sorteos-table  th:nth-child(2),  #sorteos-table  td:nth-child(2),
+  #sorteos-table  th:nth-child(3),  #sorteos-table  td:nth-child(3){
+    white-space: normal !important;
+  }
+}
+
+/* Modal: switch to single column on mobile */
+@media (max-width: 900px){
+  .nm-body{ display:block !important; }
+  .nm-imgbox{ max-width: 480px; margin: 0 auto 12px; }
+}
+
+/* Actions column: wrap buttons on very small phones to avoid overflow */
+@media (max-width: 480px){
+  #purchases-table td:nth-child(5),
+  #miscompras-table td:nth-child(5),
+  #referrals-table td:nth-child(5){
+    flex-wrap: wrap !important;
+    white-space: normal !important;
+    gap: 10px !important;
+    min-width: 0 !important;
+    padding-right: 0 !important;
+  }
+  .table-container .action-btn, .table-container .btn-delete-row{
+    flex: 1 1 calc(50% - 10px) !important;
+  }
+}
+</style>
 </head>
 <body>
   <header class="dashboard-header">
