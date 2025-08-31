@@ -1120,6 +1120,21 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
   .lang-item{ -webkit-user-select: none; user-select: none; }
 </style>
 
+<style>/* === Mystery Box cinema-style posters (scoped) === */
+.mbox-poster-row{position:relative;margin-top:24px}
+.mbox-scroller{overflow-x:auto;padding:4px 44px 4px 4px}
+.mbox-posters{display:flex;gap:24px}
+.mbox-poster{width:220px;flex:0 0 auto;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(23,23,23,.8);overflow:hidden;position:relative;box-shadow:0 6px 14px rgba(0,0,0,.25)}
+.mbox-poster-img{position:relative;width:100%;height:0;padding-bottom:150%; /* 2:3 */ background-size:cover;background-position:center}
+.mbox-poster-img.placeholder{background-image:linear-gradient(180deg,#343434,#1f1f1f);display:grid;place-items:center;color:#a6a6a6;font-size:12px}
+.mbox-badge{position:absolute;left:12px;top:12px;background:#ffd400;color:#111;font-weight:800;border-radius:999px;padding:4px 8px;font-size:11px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.mbox-scroll-btn{position:absolute;top:50%;transform:translateY(-50%);z-index:2;border:1px solid rgba(255,255,255,.12);background:rgba(17,17,17,.75);backdrop-filter:saturate(1.2) blur(2px);color:#eee;border-radius:999px;width:36px;height:36px;line-height:32px;text-align:center;font-size:20px;cursor:pointer}
+.mbox-scroll-btn.left{left:0}
+.mbox-scroll-btn.right{right:0}
+.mbox-scroll-btn:hover{background:rgba(17,17,17,.95)}
+.mbox-subtitle{margin-top:18px;font-weight:800;letter-spacing:-.01em;color:#fff;font-size:19.9px}
+@media(min-width: 768px){.mbox-subtitle{font-size:24.9px}}
+/* === end Mystery Box posters === */</style>
 </head>
 <body>
   <header class="dashboard-header">
@@ -4210,8 +4225,24 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
 
               <div class="mbox-cards-grid">
-
-              </div>
+<div class="mbox-poster-row" data-block="mystery-weekly">
+  <button class="mbox-scroll-btn left" aria-label="scroll left" type="button">‹</button>
+  <button class="mbox-scroll-btn right" aria-label="scroll right" type="button">›</button>
+  <div class="mbox-scroller" data-scroller="weekly">
+    <div class="mbox-posters">
+      <div class="mbox-poster" data-status="Abierto">
+        <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"></div>
+        <span class="mbox-badge">Abierto</span>
+      </div>
+      <div class="mbox-poster" data-status="Abierto">
+        <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"></div>
+        <span class="mbox-badge">Abierto</span>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="mbox-subtitle">Sorteos semanales</div>
+</div>
 
 </div>
             </div>
@@ -5607,5 +5638,21 @@ const fillTicketsRowsFromLedger = async () => {
   }
 </style>
 
+<script>// === Mystery Box posters scroll ===
+(function(){
+  const rows = document.querySelectorAll('.mbox-poster-row');
+  rows.forEach(row => {
+    const scroller = row.querySelector('.mbox-scroller');
+    const leftBtn = row.querySelector('.mbox-scroll-btn.left');
+    const rightBtn = row.querySelector('.mbox-scroll-btn.right');
+    function scrollByAmount(dir){ 
+      const amount = Math.round((scroller.offsetWidth/2) || 300);
+      scroller.scrollBy({ left: dir==='left' ? -amount : amount, behavior: 'smooth' });
+    }
+    if(leftBtn) leftBtn.addEventListener('click', () => scrollByAmount('left'));
+    if(rightBtn) rightBtn.addEventListener('click', () => scrollByAmount('right'));
+  });
+})();
+// === end Mystery Box posters scroll ===</script>
 </body>
 </html>
