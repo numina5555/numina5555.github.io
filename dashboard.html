@@ -5650,6 +5650,21 @@ const fillTicketsRowsFromLedger = async () => {
     const scroller = row.querySelector('.mbox-scroller');
     const leftBtn = row.querySelector('.mbox-scroll-btn.left');
     const rightBtn = row.querySelector('.mbox-scroll-btn.right');
+    // === NUMINA: Set images for Mystery Box posters (two rectangles) ===
+    try {
+      const scWrap = row.closest('.mbox-wrap') || document;
+      const posters = scWrap.querySelectorAll('#mboxcin-block .mboxcin-img');
+      const imgs = ["./foto%20sorteo%20dinero", "./sorteo%20mystery%20box%20jpg"];
+      posters.forEach((div, i) => {
+        if (imgs[i]) {
+          div.style.backgroundImage = "url('" + imgs[i] + "')";
+          div.classList.remove('is-placeholder');
+          div.setAttribute('aria-label', i === 0 ? 'Foto sorteo dinero' : 'Sorteo mystery box');
+          div.setAttribute('role', 'img');
+        }
+      });
+    } catch(_){}
+
     function scrollByAmount(dir){ 
       const amount = Math.round((scroller.offsetWidth/2) || 300);
       scroller.scrollBy({ left: dir==='left' ? -amount : amount, behavior: 'smooth' });
