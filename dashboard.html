@@ -5735,5 +5735,136 @@ const fillTicketsRowsFromLedger = async () => {
 
 
 
+
+<section id="tab-mystery" class="section-content"></section>
+
+<style id="mbox-patch-styles">
+#tab-mystery { padding: 16px; }
+.mbox-tabs { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.mbox-tab { padding: 8px 12px; border-radius: 999px; border: 1px solid #ddd; background: #fff; cursor: pointer; }
+.mbox-tab.active { font-weight: 600; border-color: #bbb; }
+.mbox-search { margin: 12px 0; width: 100%; }
+.mbox-search input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; }
+.mbox-poster-wrapper { margin-top: 8px; position: relative; }
+.mbox-poster-row { position: relative; }
+.mbox-scroller { overflow-x: auto; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
+.mbox-posters { display: flex; gap: 12px; padding: 8px 2px; }
+.mbox-poster { position: relative; flex: 0 0 auto; width: 180px; }
+.mbox-poster-img { width: 100%; padding-top: 150%; background-size: cover; background-position: center; border-radius: 12px; background-color: #f2f2f2; }
+.mbox-badge { position: absolute; top: 8px; left: 8px; background: #16a34a; color: #fff; border-radius: 999px; padding: 4px 8px; font-size: 12px; line-height: 1; }
+.mbox-scroll-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border: none; border-radius: 999px; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.12); cursor: pointer; display: grid; place-items: center; }
+.mbox-scroll-btn.left { left: -8px; }
+.mbox-scroll-btn.right { right: -8px; }
+.mbox-scroll-btn[disabled] { opacity: .4; pointer-events: none; }
+</style>
+
+
+<script id="mbox-patch-script">
+(function () {
+  function ensureTabMystery(mountSelector) {
+    const sel = mountSelector || '#tab-mystery';
+    let root = document.querySelector(sel);
+    if (!root) {
+      root = document.createElement('section');
+      root.id = sel.replace('#','');
+      root.className = 'section-content';
+      document.body.appendChild(root);
+    }
+    return root;
+  }
+  function renderMBHeader(root) {
+    const header = document.createElement('div');
+    header.className = 'mbox-header';
+    header.innerHTML = [
+      '<div class="mbox-tabs" role="tablist" aria-label="Filtros de sorteos">',
+      '  <button class="mbox-tab active" role="tab" aria-selected="true" data-tab="open">Abiertos</button>',
+      '  <button class="mbox-tab" role="tab" aria-selected="false" data-tab="closed">Finalizados</button>',
+      '</div>',
+      '<div class="mbox-search"><input id="mbox-q" type="search" placeholder="Buscar sorteos…" autocomplete="off"></div>'
+    ].join('');
+    root.appendChild(header);
+    return header;
+  }
+  function renderMBCarousel(root, items) {
+    const wrap = document.createElement('div');
+    wrap.className = 'mbox-poster-wrapper';
+    wrap.innerHTML = [
+      '<div class="mbox-poster-row">',
+      '  <button class="mbox-scroll-btn left" aria-label="Desplazar a la izquierda">&#8249;</button>',
+      '  <div class="mbox-scroller" tabindex="0">',
+      '    <div class="mbox-posters" aria-live="polite"></div>',
+      '  </div>',
+      '  <button class="mbox-scroll-btn right" aria-label="Desplazar a la derecha">&#8250;</button>',
+      '</div>'
+    ].join('');
+    const postersEl = wrap.querySelector('.mbox-posters');
+    (items || []).forEach(function (it) {
+      const card = document.createElement('article');
+      card.className = 'mbox-poster';
+      card.dataset.title  = (it.title  || '').toLowerCase();
+      card.dataset.status = (it.status || 'open').toLowerCase(); // 'open' | 'closed'
+      card.innerHTML = [
+        '<div class="mbox-poster-img" role="img" aria-label="'+(it.title||'')+'" style="background-image:url(''+(it.image||'')+'')"></div>',
+        '<div class="mbox-badge">'+(it.badge || it.status || 'Abierto')+'</div>'
+      ].join('');
+      postersEl.appendChild(card);
+    });
+    root.appendChild(wrap);
+    const scroller = wrap.querySelector('.mbox-scroller');
+    const btnL = wrap.querySelector('.mbox-scroll-btn.left');
+    const btnR = wrap.querySelector('.mbox-scroll-btn.right');
+    const by = function(){ return Math.round(scroller.clientWidth * 0.5); };
+    btnL.addEventListener('click', function(){ scroller.scrollBy({ left: -by(), behavior: 'smooth' }); });
+    btnR.addEventListener('click', function(){ scroller.scrollBy({ left:  by(), behavior: 'smooth' }); });
+    const update = function(){
+      btnL.disabled = scroller.scrollLeft <= 0;
+      btnR.disabled = scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 1;
+    };
+    scroller.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    setTimeout(update, 50);
+    return wrap;
+  }
+  function wireFilters(root) {
+    const tabs = root.querySelectorAll('.mbox-tab');
+    const input = root.querySelector('#mbox-q');
+    const apply = function () {
+      const active = root.querySelector('.mbox-tab.active');
+      const state  = active ? active.dataset.tab : 'open';
+      const q = (input && input.value || '').trim().toLowerCase();
+      root.querySelectorAll('.mbox-poster').forEach(function (p) {
+        const byState = (p.dataset.status || 'open') === state;
+        const byText  = (p.dataset.title  || '').includes(q);
+        p.style.display = (byState && byText) ? '' : 'none';
+      });
+    };
+    tabs.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        tabs.forEach(function(b){ b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+        btn.classList.add('active'); btn.setAttribute('aria-selected','true');
+        apply();
+      });
+    });
+    if (input) input.addEventListener('input', apply);
+    apply();
+  }
+  function openMystery(opts) {
+    opts = opts || {};
+    var mount = opts.mount || '#tab-mystery';
+    var posters = opts.posters || [];
+    var root = (typeof mount === 'string') ? ensureTabMystery(mount) : mount;
+    root.innerHTML = '';
+    var header = renderMBHeader(root);
+    var carousel = renderMBCarousel(root, posters);
+    if (header.nextSibling !== carousel) {
+      root.insertBefore(carousel, header.nextSibling);
+    }
+    wireFilters(root);
+  }
+  window.openMystery = openMystery;
+  window.renderMysteryBox = openMystery;
+  window.renderMBContent  = openMystery;
+})();
+</script>
 </body>
 </html>
