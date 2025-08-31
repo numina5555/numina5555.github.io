@@ -1135,10 +1135,6 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 .mbox-subtitle{margin-top:18px;font-weight:800;letter-spacing:-.01em;color:#fff;font-size:19.9px}
 @media(min-width: 768px){.mbox-subtitle{font-size:24.9px}}
 /* === end Mystery Box posters === */</style>
-<style>
-/* === Mystery Box poster wrapper: full-width under tabs/search === */
-.mbox-poster-wrapper{display:block;grid-column:1 / -1;width:100%;margin-top:24px}
-</style>
 </head>
 <body>
   <header class="dashboard-header">
@@ -5734,38 +5730,29 @@ const fillTicketsRowsFromLedger = async () => {
 
 
 <script>
-// === Inject posters under tabs/search (full width) ===
 (function(){
   const MARKUP = '<div id="mbox-poster-wrapper" class="mbox-poster-wrapper">\n  <div class="mbox-poster-row" data-block="mystery-weekly">\n    <button class="mbox-scroll-btn left" aria-label="scroll left" type="button">‹</button>\n    <button class="mbox-scroll-btn right" aria-label="scroll right" type="button">›</button>\n    <div class="mbox-scroller" data-scroller="weekly">\n      <div class="mbox-posters">\n        <div class="mbox-poster" data-status="Abierto">\n          <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"></div>\n          <span class="mbox-badge">Abierto</span>\n        </div>\n        <div class="mbox-poster" data-status="Abierto">\n          <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"></div>\n          <span class="mbox-badge">Abierto</span>\n        </div>\n      </div>\n    </div>\n  </div>\n  <div class="mbox-subtitle">Sorteos semanales</div>\n</div>';
-  function findRow(el){
-    return el && (el.closest('.mbox-row, .row, .grid, .mb-row') || el.parentElement);
+  function lowestCommonAncestor(a,b){
+    if(!a) return b?.parentElement || null; if(!b) return a?.parentElement || null;
+    const set=new Set(); let n=a; while(n){set.add(n); n=n.parentElement;} n=b; while(n){if(set.has(n)) return n; n=n.parentElement;} return a.parentElement;
   }
   function mount(){
-    if (document.getElementById('mbox-poster-wrapper')) return true;
-    const wrap = document.querySelector('.mbox-wrap');
-    if (!wrap) return false;
-    // prefer after search, else after tabs
-    const search = wrap.querySelector('.mbox-search');
-    const tabs   = wrap.querySelector('.mbox-tabs');
-    const anchor = search || tabs;
-    if (!anchor) return false;
-    const row = findRow(anchor) || wrap;
-    row.insertAdjacentHTML('afterend', MARKUP);
-    // grid-span full width if parent is grid
-    try { document.getElementById('mbox-poster-wrapper').style.gridColumn = '1 / -1'; } catch(e){}
-    // scroll buttons
-    const scroller = document.querySelector('#mbox-poster-wrapper .mbox-scroller');
-    const leftBtn  = document.querySelector('#mbox-poster-wrapper .mbox-scroll-btn.left');
-    const rightBtn = document.querySelector('#mbox-poster-wrapper .mbox-scroll-btn.right');
-    function scrollBy(dir){
-      const amount = Math.round((scroller.offsetWidth/2) || 300);
-      scroller.scrollBy({ left: dir==='left' ? -amount : amount, behavior:'smooth' });
-    }
-    leftBtn.addEventListener('click', ()=>scrollBy('left'));
-    rightBtn.addEventListener('click', ()=>scrollBy('right'));
+    if(document.getElementById('mbox-poster-wrapper')) return true;
+    const wrap=document.querySelector('.mbox-wrap'); if(!wrap) return false;
+    const tabs=wrap.querySelector('.mbox-tabs');
+    const search=wrap.querySelector('.mbox-search');
+    const container=lowestCommonAncestor(tabs, search) || tabs || search || wrap;
+    if(!container) return false;
+    container.insertAdjacentHTML('afterend', MARKUP);
+    try{ document.getElementById('mbox-poster-wrapper').style.gridColumn='1 / -1'; }catch(e){}
+    const scroller=document.querySelector('#mbox-poster-wrapper .mbox-scroller');
+    const left=document.querySelector('#mbox-poster-wrapper .mbox-scroll-btn.left');
+    const right=document.querySelector('#mbox-poster-wrapper .mbox-scroll-btn.right');
+    function s(dir){ const a=Math.round((scroller.offsetWidth/2)||300); scroller.scrollBy({left:dir==='left'? -a : a, behavior:'smooth'}); }
+    left.addEventListener('click',()=>s('left')); right.addEventListener('click',()=>s('right'));
     return true;
   }
-  // stringify HTML safely
+  if(!mount()){ const mo=new MutationObserver(()=>mount()&&mo.disconnect()); mo.observe(document,{childList:true,subtree:true}); }
 })();
 </script>
 
