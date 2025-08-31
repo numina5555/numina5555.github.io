@@ -106,18 +106,6 @@
     .btn{ background:var(--primary); color:var(--dark); border:0; padding:.6rem 1rem; border-radius:5.76px; font-weight:600; cursor:pointer; }
     .btn:hover{ background: var(--primary-dark); }
 
-  /* Smooth hover transitions for buttons and cards */
-    button, .stat-card, .settings-card, .srt-card, .pd-card, .sc-card, .card, .product-card{
-      transition: transform .2s ease, box-shadow .2s ease;
-    }
-    button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:hover, .sc-card:hover, .card:hover{
-      transform: translateY(-1.44px);
-      box-shadow: 0 5.76px 17.28px rgba(0,0,0,.35);
-    }
-    /* Entry animations */
-    .section-title, .product-card{ opacity:0; transform:translateY(14.4px); }
-    .section-title.animate-in, .product-card.animate-in{ animation:fadeInUp .6s ease forwards; }
-    @keyframes fadeInUp{ to{ opacity:1; transform:translateY(0); } }
 
     #section-productos .products-wrap{ max-width:792px; margin:0 auto; padding: .5rem 1rem 0; }
     #section-productos .products-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:1.5rem; justify-items:center; }
