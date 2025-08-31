@@ -379,7 +379,7 @@
         },
         es: {
             "mbox.tabs.open": "Abiertos",
-            "mbox.tabs.upcoming": "Abierto",
+            "mbox.tabs.upcoming": "Próximamente",
             "mbox.tabs.closed": "Finalizados",
             "mbox.status.open": "Abierto",
             "mbox.actions.details": "Detalles",
@@ -1138,6 +1138,23 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 <style>
 /* === Mystery Box poster wrapper: full-width under tabs/search === */
 .mbox-poster-wrapper{display:block;grid-column:1 / -1;width:100%;margin-top:24px}
+</style>
+<style id="mbox-align-fixes-2">
+/* KPIs: números con misma anchura y baseline estable */
+.stat-card .value{ font-variant-numeric: tabular-nums; line-height:1; }
+
+/* Search input y tabs alineados a una misma línea */
+.mbox-tabs{align-items:center;}
+.mbox-search{flex:1; margin-left:auto; display:flex;}
+.mbox-search input{height:44px;}
+
+/* Cards: footer (CTA) al “piso” y pills coherentes */
+.mbox-card-body{ display:flex; flex-direction:column; }
+.mbox-cta{ margin-top:auto; }
+.mbox-chip{ height:28px; display:inline-flex; align-items:center; padding:0 12px; border-radius:999px; font-size:.78rem; }
+
+/* Flechas del carrusel centradas verticalmente (por si hay posters) */
+.mbox-scroll-btn{ top:50%; transform:translateY(-50%); }
 </style>
 </head>
 <body>
@@ -4201,7 +4218,7 @@ document.addEventListener('DOMContentLoaded', () => {
               .mbox-tabs{display:flex;margin-bottom:16px;gap:10px;align-items:center;margin-bottom:14px}
               .mbox-tab{background:#1a1a1a;border:1px solid #2a2a2a;color:#f0f0f0;padding:10px 14px;border-radius:999px;font-weight:800;cursor:pointer}
               .mbox-tab.active{background:var(--primary);color:#111;border-color:var(--primary)}
-              .mbox-search{flex:1;display:flex margin-left:auto; max-width:600px; width:100%;}
+              .mbox-search{flex:1;display:flex; margin-left:auto; max-width:600px; width:100%;}
               .mbox-search input{width:100%;background:#141414;border:1px solid #2a2a2a;color:#eaeaea;padding:10px 14px;border-radius:999px;outline:none}
               .mbox-card{background:#0f0f0f;border:1px solid #1f1f1f;border-radius:16px;box-shadow:0 12px 30px rgba(0,0,0,.35);overflow:hidden}
               .mbox-card-head{position:relative;height:240px;background:linear-gradient(180deg,#151515,#0f0f0f)}
@@ -4399,7 +4416,7 @@ document.addEventListener('DOMContentLoaded', () => {
               .mbox-tabs{display:flex;margin-bottom:16px;gap:10px;align-items:center;margin-bottom:14px}
               .mbox-tab{background:#1a1a1a;border:1px solid #2a2a2a;color:#f0f0f0;padding:10px 14px;border-radius:999px;font-weight:800;cursor:pointer}
               .mbox-tab.active{background:var(--primary);color:#111;border-color:var(--primary)}
-              .mbox-search{flex:1;display:flex margin-left:auto; max-width:600px; width:100%;}
+              .mbox-search{flex:1;display:flex; margin-left:auto; max-width:600px; width:100%;}
               .mbox-search input{width:100%;background:#141414;border:1px solid #2a2a2a;color:#eaeaea;padding:10px 14px;border-radius:999px;outline:none}
               .mbox-card{background:#0f0f0f;border:1px solid #1f1f1f;border-radius:16px;box-shadow:0 12px 30px rgba(0,0,0,.35);overflow:hidden}
               .mbox-card-head{padding:16px;min-height:260px;position:relative;height:240px;background:linear-gradient(180deg,#151515,#0f0f0f)}
