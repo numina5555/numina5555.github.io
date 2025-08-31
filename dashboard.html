@@ -1,6 +1,4 @@
 <!DOCTYPE html>
-<!-- ChatGPT patch: removed global 75% UI scaling (auto-scale-75) for proper responsive layout. -->
-
 <html lang="es">
 <head>
   <meta charset="utf-8" />
@@ -839,7 +837,36 @@
     })();
   </script>
 
+<style id="auto-scale-75">
+/* Scale the whole UI to look like browser zoom 75% on large screens only */
+@media (min-width: 1200px) {
+  html.__uiScale75 body {
+    transform: scale(0.75);
+    transform-origin: top left;
+    width: 133.333333%;
+  }
+  /* Safari / iOS */
+  @supports (-webkit-touch-callout: none) {
+    html.__uiScale75 body {
+      -webkit-transform: scale(0.75);
+      -webkit-transform-origin: top left;
+    }
+  }
+}
+@media (max-width: 1199.98px) {
+  html.__uiScale75 body {
+    transform: none;
+    -webkit-transform: none;
+    width: 100%;
+  }
+}
 
+.btn-delete-row{border:1px solid #f5c400;color:#f5c400;background:transparent;
+  padding:.35rem .7rem;border-radius:.55rem;font-weight:700;cursor:pointer;
+  transition:all .12s ease}
+.btn-delete-row:hover{background:#f5c400;color:#111}
+
+</style>
 
 
 <!-- Sidebar uniform height = tallest section (v4) -->
@@ -2236,7 +2263,21 @@ if (!link) {
 </script>
 
 
-
+<script id="auto-scale-75-js">
+(function(){
+  function apply(mq){
+    var doc = document.documentElement;
+    if (mq.matches) doc.classList.add('__uiScale75');
+    else doc.classList.remove('__uiScale75');
+  }
+  var mq = window.matchMedia('(min-width: 1200px)');
+  try{
+    if (mq.addEventListener) mq.addEventListener('change', function(e){ apply(e); });
+    else if (mq.addListener) mq.addListener(apply);
+  }catch(_){}
+  apply(mq);
+})();
+</script>
 <script>
 (function () {
   // 1) Enlaces fijos de NOWPayments por SKU
