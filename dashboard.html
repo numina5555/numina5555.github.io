@@ -1139,6 +1139,30 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 /* === Mystery Box poster wrapper: full-width under tabs/search === */
 .mbox-poster-wrapper{display:block;grid-column:1 / -1;width:100%;margin-top:24px}
 </style>
+
+<style>
+  .weekly-raffles-info { margin-top: 8px; }
+  .weekly-raffles-info .wri-wrap {
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    border: 1px solid #2a2a2a;
+    border-radius: 14px;
+    padding: 16px 20px;
+    display: grid;
+    gap: 8px;
+  }
+  .weekly-raffles-info .wri-lead {
+    color: #eaeaea;
+    font-weight: 600;
+    letter-spacing: .2px;
+    margin: 0;
+  }
+  .weekly-raffles-info .wri-list {
+    margin: 0;
+    padding-left: 18px;
+    color: #bdbdbd;
+  }
+  .weekly-raffles-info .wri-list li { margin: 4px 0; }
+</style>
 </head>
 <body>
   <header class="dashboard-header">
@@ -1513,6 +1537,17 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 </div>
 </div>
 </div>
+
+<section class="weekly-raffles-info" aria-labelledby="weekly-title">
+  <div class="wri-wrap">
+    <p class="wri-lead">Los sorteos se realizan <strong>todos los viernes a las 20:00 (GMT-3)</strong>.</p>
+    <ul class="wri-list">
+      <li>Cada ticket genera un <strong>número único</strong>.</li>
+      <li>Realizamos una <strong>extracción aleatoria verificable</strong>.</li>
+      <li>Publicamos los <strong>resultados</strong> y contactamos a las personas ganadoras.</li>
+    </ul>
+  </div>
+</section>
 </main>
   </div>
 
