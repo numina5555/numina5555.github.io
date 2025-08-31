@@ -5722,6 +5722,25 @@ const fillTicketsRowsFromLedger = async () => {
     }
     leftBtn.addEventListener('click', ()=>scrollBy('left'));
     rightBtn.addEventListener('click', ()=>scrollBy('right'));
+    // === NUMINA: ensure correct images and badge labels (left=Abierto, right=Próximamente) ===
+    try {
+      const items = wrap.querySelectorAll('#mboxcin-block .mboxcin-item');
+      const imgs = ["./foto%20sorteo%20dinero", "./sorteo%20mystery%20box%20jpg"];
+      items.forEach((item, i) => {
+        const imgDiv = item.querySelector('.mboxcin-img');
+        const badge = item.querySelector('.mboxcin-badge');
+        if (imgDiv && imgs[i]) {
+          imgDiv.style.backgroundImage = "url('" + imgs[i] + "')";
+          imgDiv.classList.remove('is-placeholder');
+          imgDiv.setAttribute('role','img');
+          imgDiv.setAttribute('aria-label', i === 0 ? 'Foto sorteo dinero' : 'Sorteo mystery box');
+        }
+        if (badge) {
+          badge.textContent = (i === 0) ? 'Abierto' : 'Próximamente';
+        }
+      });
+    } catch (_) {}
+
     // === NUMINA: set images for the two Mystery Box rectangles ===
     try {
       const posters = wrap.querySelectorAll('#mboxcin-block .mboxcin-img');
