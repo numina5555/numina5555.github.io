@@ -4195,85 +4195,63 @@ document.addEventListener('DOMContentLoaded', () => {
           wrap.style.padding = '20px';
           wrap.style.paddingTop = '64px';
           wrap.style.overflow = 'auto';
-          wrap.innerHTML = 
-          // === Numina patch: render header and carousel as separate nodes (order guaranteed) ===
-          (function(){
-            // Build styles as a <style> node to keep your look & feel
-            const style = document.createElement('style');
-            style.textContent = `
+          wrap.innerHTML = `
+            <style>
               .mbox-wrap{max-width:1100px;margin:0;}
-              .mbox-tabs{display:flex;gap:10px;align-items:center;margin-bottom:14px}
-              .mbox-tab{background:#1a1a1a;border:1px solid #2a2a2a;color:#eaeaea;padding:10px 14px;border-radius:999px;font-weight:800;cursor:pointer}
+              .mbox-tabs{display:flex;margin-bottom:16px;gap:10px;align-items:center;margin-bottom:14px}
+              .mbox-tab{background:#1a1a1a;border:1px solid #2a2a2a;color:#f0f0f0;padding:10px 14px;border-radius:999px;font-weight:800;cursor:pointer}
               .mbox-tab.active{background:var(--primary);color:#111;border-color:var(--primary)}
-              .mbox-search{flex:1;display:flex;margin-left:auto; max-width:600px; width:100%;}
+              .mbox-search{flex:1;display:flex margin-left:auto; max-width:600px; width:100%;}
               .mbox-search input{width:100%;background:#141414;border:1px solid #2a2a2a;color:#eaeaea;padding:10px 14px;border-radius:999px;outline:none}
-              .mbox-subtitle{margin:14px 0 8px;font-weight:800;opacity:.9}
-              .mbox-poster-row{position:relative;margin:12px 0 8px}
-              .mbox-scroller{overflow-x:auto;padding:4px 44px 4px 4px}
-              .mbox-posters{display:flex;gap:16px}
-              .mbox-header{margin-bottom:32px}
-              .mbox-poster-wrapper{margin-top:32px !important}
-              .mbox-poster{position:relative;width:220px;flex:0 0 auto;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(23,23,23,.08);overflow:hidden;box-shadow:0 6px 14px rgba(0,0,0,.25)}
-              .mbox-poster-img{position:relative;width:100%;height:0;padding-bottom:150%;background-size:cover;background-position:center}
-              .mbox-poster-img.placeholder{background-image:linear-gradient(180deg,#343434,#1f1f1f);display:grid;place-items:center;color:#a6a6a6;font-size:12px}
-              .mbox-badge{position:absolute;left:12px;top:12px;background:#ffd400;color:#111;font-weight:800;border-radius:999px;padding:4px 8px;font-size:11px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
-              .mbox-scroll-btn{position:absolute;top:50%;transform:translateY(-50%);z-index:2;border:1px solid rgba(255,255,255,.12);background:rgba(17,17,17,.75);backdrop-filter:saturate(1.2) blur(2px);border-radius:999px;width:36px;height:36px;display:grid;place-items:center;cursor:pointer}
-              .mbox-scroll-btn.left{left:6px}
-              .mbox-scroll-btn.right{right:6px}
-            `;
-            wrap.appendChild(style);
-    
-            const mbox = document.createElement('div');
-            mbox.className = 'mbox-wrap';
-            wrap.appendChild(mbox);
-    
-            // --- HEADER (tabs + search)
-            const header = document.createElement('div');
-            header.className = 'mbox-header';
-            header.innerHTML = [
-              '<div class="mbox-tabs" role="tablist" aria-label="Filtros">',
-              '  <button class="mbox-tab active" role="tab" aria-selected="true" data-tab="open">'+(window.dI18n? dI18n.t('mbox.tabs.open') : 'Abiertos')+'</button>',
-              '  <button class="mbox-tab" role="tab" aria-selected="false" data-tab="closed">'+(window.dI18n? dI18n.t('mbox.tabs.closed') : 'Finalizados')+'</button>',
-              '</div>',
-              '<div class="mbox-search"><input id="mbox-q" type="search" placeholder="'+(window.dI18n? dI18n.t('placeholders.search') : 'Buscar sorteos…')+'" autocomplete="off"></div>'
-            ].join('');
-            mbox.appendChild(header);
-    
-            // --- CAROUSEL (exactly below header)
-            const wrapper = document.createElement('div');
-            wrapper.className = 'mbox-poster-wrapper';
-            wrapper.innerHTML = [
-              '<div class="mbox-poster-row">',
-              '  <button class="mbox-scroll-btn left" aria-label="scroll left" type="button">&#8249;</button>',
-              '  <div class="mbox-scroller" data-scroller="weekly">',
-              '    <div class="mbox-posters">',
-              '      <div class="mbox-poster" data-status="Abierto">',
-              '        <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"></div>',
-              '        <span class="mbox-badge">'+(window.dI18n? dI18n.t('mbox.state.open') : 'Abierto')+'</span>',
-              '      </div>',
-              '      <div class="mbox-poster" data-status="Abierto">',
-              '        <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"></div>',
-              '        <span class="mbox-badge">'+(window.dI18n? dI18n.t('mbox.state.open') : 'Abierto')+'</span>',
-              '      </div>',
-              '    </div>',
-              '  </div>',
-              '  <button class="mbox-scroll-btn right" aria-label="scroll right" type="button">&#8250;</button>',
-              '</div>'
-            ].join('');
-            mbox.appendChild(wrapper);
-    
-            // Subtítulo y grid quedan debajo del carrusel
-            const subtitle = document.createElement('div');
-            subtitle.className = 'mbox-subtitle';
-            subtitle.textContent = (window.dI18n? dI18n.t('mbox.titles.weekly') : 'Sorteos semanales');
-            mbox.appendChild(subtitle);
-    
-            const grid = document.createElement('div');
-            grid.className = 'mbox-cards-grid';
-            mbox.appendChild(grid);
-          })();
-          // === end patch ===
-;
+              .mbox-card{background:#0f0f0f;border:1px solid #1f1f1f;border-radius:16px;box-shadow:0 12px 30px rgba(0,0,0,.35);overflow:hidden}
+              .mbox-card-head{position:relative;height:240px;background:linear-gradient(180deg,#151515,#0f0f0f)}
+              .mbox-chip{position:absolute;top:14px;left:14px;background:var(--primary);color:#111;border-radius:999px;padding:6px 12px;font-weight:800;font-size:.85rem}
+              .mbox-card-body{padding:18px}
+              .mbox-title{font-size:1.25rem;font-weight:900;margin:2px 0 6px}
+              .mbox-subtle{color:#cfcfcf;font-size:.9rem;margin-bottom:10px}
+              .mbox-badges{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+              .mbox-badge{background:#141414;border:1px solid #2a2a2a;color:#e7e7e7;padding:8px 12px;border-radius:999px;font-weight:700;font-size:.85rem}
+              .mbox-cta{display:flex;gap:12px;margin-top:10px}
+              .mbox-btn{background:#161616;border:1px solid #2a2a2a;color:#f5f5f5;padding:12px 16px;border-radius:12px;font-weight:800;cursor:pointer}
+              .mbox-btn:hover{transform:translateY(-2px)}
+              .mbox-primary{background:var(--primary);border-color:var(--primary);color:#111}
+            
+              .mbox-cards-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin-top:8px}.mbox-cards-grid>.mbox-card:first-child{display:none}
+              @media(max-width:1300px){.mbox-cards-grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:1100px){.mbox-cards-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:980px){.mbox-cards-grid{grid-template-columns:1fr}}
+        
+            </style>
+
+            <div class="mbox-wrap">
+              <div class="mbox-tabs">
+                <button class="mbox-tab active"><span data-i18n="mbox.tabs.open">' + (window.dI18n? dI18n.t('mbox.tabs.open') : 'Abiertos') + '</span></button>
+                <button class=\"mbox-tab\"><span data-i18n="mbox.tabs.closed">' + (window.dI18n? dI18n.t('mbox.tabs.closed') : 'Finalizados') + '</span></button>
+                <div class="mbox-search"><input data-i18n-ph="filters.search.raffles" placeholder="' + (window.dI18n? dI18n.t('filters.search.raffles') : 'Buscar sorteos…') + '" /></div>
+              </div>
+
+              <div class="mbox-poster-row" data-block="mystery-weekly">
+  <button class="mbox-scroll-btn left" aria-label="scroll left" type="button">‹</button>
+  <button class="mbox-scroll-btn right" aria-label="scroll right" type="button">›</button>
+  <div class="mbox-scroller" data-scroller="weekly">
+    <div class="mbox-posters">
+      <div class="mbox-poster" data-status="Abierto">
+        <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"></div>
+        <span class="mbox-badge">Abierto</span>
+      </div>
+      <div class="mbox-poster" data-status="Abierto">
+        <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"></div>
+        <span class="mbox-badge">Abierto</span>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="mbox-subtitle">Sorteos semanales</div>
+<div class="mbox-cards-grid">
+
+              </div>
+
+</div>
+            </div>
+          `;
           overlay.appendChild(wrap);
           try{ if(window.dI18n && dI18n.apply) dI18n.apply(); }catch(_){}
           // Eventos de ejemplo (no tocan tu lógica)
@@ -4418,7 +4396,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tab.innerHTML = `
             <style>
               .mbox-wrap{max-width:1100px;margin:0;}
-              .mbox-tabs{display:flex;gap:10px;align-items:center;margin-bottom:14px}
+              .mbox-tabs{display:flex;margin-bottom:16px;gap:10px;align-items:center;margin-bottom:14px}
               .mbox-tab{background:#1a1a1a;border:1px solid #2a2a2a;color:#f0f0f0;padding:10px 14px;border-radius:999px;font-weight:800;cursor:pointer}
               .mbox-tab.active{background:var(--primary);color:#111;border-color:var(--primary)}
               .mbox-search{flex:1;display:flex margin-left:auto; max-width:600px; width:100%;}
@@ -5683,7 +5661,8 @@ const fillTicketsRowsFromLedger = async () => {
 // === end Mystery Box posters scroll ===</script>
 <style>
 /* === Mystery Box · catálogo tipo cine (scopeado) === */
-.mboxcin-row{position:relative;margin-top:24px}
+#mboxcin-block{display:block;width:100%;clear:both;margin-top:24px}
+.mboxcin-row{position:relative;margin-top:0}
 .mboxcin-scroller{overflow-x:auto;padding:4px 44px 4px 4px}
 .mboxcin-list{display:flex;gap:24px}
 .mboxcin-item{width:220px;flex:0 0 auto;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(23,23,23,.8);overflow:hidden;position:relative;box-shadow:0 6px 14px rgba(0,0,0,.25)}
@@ -5729,7 +5708,7 @@ const fillTicketsRowsFromLedger = async () => {
     if(document.getElementById('mboxcin-block')) return true;
 
     // insertar justo debajo del buscador o de las pills
-    const after = wrap.querySelector('.mbox-search') || wrap.querySelector('.mbox-tabs');
+    const after = wrap.querySelector('.mbox-tabs');
     if(!after) return false;
 
     after.insertAdjacentHTML('afterend', MARKUP);
