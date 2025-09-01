@@ -1199,16 +1199,6 @@ html, body { overflow-x: hidden; }
   }
 }
 </style>
-
-<style id="caption-static-css">
-.mbox-poster{position:relative; border-radius:14px; overflow:hidden}
-.mbox-poster-img{position:absolute; inset:0; z-index:1; background-size:cover; background-position:center}
-.mbox-caption--force{position:absolute; left:0; right:0; bottom:0; padding:12px 14px 16px; z-index:3}
-.mbox-caption-title{font-weight:900; font-size:20px; line-height:1.12; letter-spacing:.2px; color:var(--primary, #FFD43B)}
-.mbox-caption-sub{margin-top:4px; color:rgba(255,255,255,.92); font-size:13px}
-.mbox-badge{position:absolute; top:10px; left:12px; z-index:4}
-</style>
-
 </head>
 <body>
   <header class="dashboard-header">
@@ -4304,22 +4294,35 @@ document.addEventListener('DOMContentLoaded', () => {
   <div class="mbox-scroller" data-scroller="weekly">
     <div class="mbox-posters">
       <!-- LEFT poster -->
-      <div class="mbox-poster" data-status="Abierto">
-        <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"></div>
-        <span class="mbox-badge" data-i18n="mbox.tabs.open">Abierto</span>
-        <div class="mbox-caption mbox-caption--force">
-          <div class="mbox-caption-title" data-i18n="raffle.money.title">MONEY RAFFLE</div>
-          <div class="mbox-caption-sub" data-i18n="raffle.money.subtitle">Enter with your Tickets.vip</div>
+      <div class="mbox-poster" data-status="open" style="position:relative;border-radius:14px;overflow:hidden;height:330px">
+        <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"
+             style="position:absolute;inset:0;background-size:cover;background-position:center;z-index:1"></div>
+        <span class="mbox-badge" data-i18n="mbox.tabs.open" style="position:absolute;top:10px;left:12px;z-index:4">Open</span>
+        <div class="mbox-caption" style="position:absolute;left:0;right:0;bottom:0;padding:12px 14px 16px;z-index:3">
+          <div class="mbox-caption-title" data-i18n="raffle.money.title"
+               style="font-weight:900;font-size:20px;line-height:1.12;letter-spacing:.2px;color:var(--primary,#FFD43B)">
+               MONEY RAFFLE
+          </div>
+          <div class="mbox-caption-sub" data-i18n="raffle.money.subtitle"
+               style="margin-top:4px;color:rgba(255,255,255,.92);font-size:13px">
+               Enter with your Tickets.vip
+          </div>
         </div>
       </div>
-
       <!-- RIGHT poster -->
-      <div class="mbox-poster" data-status="Proximamente">
-        <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"></div>
-        <span class="mbox-badge" data-i18n="mbox.tabs.upcoming">Próximamente</span>
-        <div class="mbox-caption mbox-caption--force">
-          <div class="mbox-caption-title" data-i18n="raffle.mystery.title">MYSTERY BOX RAFFLE</div>
-          <div class="mbox-caption-sub" data-i18n="raffle.mystery.subtitle">Enter with your Tickets.vip</div>
+      <div class="mbox-poster" data-status="upcoming" style="position:relative;border-radius:14px;overflow:hidden;height:330px">
+        <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"
+             style="position:absolute;inset:0;background-size:cover;background-position:center;z-index:1"></div>
+        <span class="mbox-badge" data-i18n="mbox.tabs.upcoming" style="position:absolute;top:10px;left:12px;z-index:4">Próximamente</span>
+        <div class="mbox-caption" style="position:absolute;left:0;right:0;bottom:0;padding:12px 14px 16px;z-index:3">
+          <div class="mbox-caption-title" data-i18n="raffle.mystery.title"
+               style="font-weight:900;font-size:20px;line-height:1.12;letter-spacing:.2px;color:var(--primary,#FFD43B)">
+               MYSTERY BOX RAFFLE
+          </div>
+          <div class="mbox-caption-sub" data-i18n="raffle.mystery.subtitle"
+               style="margin-top:4px;color:rgba(255,255,255,.92);font-size:13px">
+               Enter with your Tickets.vip
+          </div>
         </div>
       </div>
     </div>
@@ -5855,22 +5858,6 @@ const fillTicketsRowsFromLedger = async () => {
 
 
 
-
-
-<script id="caption-static-i18n">
-(function(){
-  const EXTRA = {
-    es: {"raffle.money.title":"SORTEO DE DINERO","raffle.money.subtitle":"Ingresá con tus Tickets.vip","raffle.mystery.title":"SORTEO CAJA MISTERIOSA","raffle.mystery.subtitle":"Ingresá con tus Tickets.vip"},
-    en: {"raffle.money.title":"MONEY RAFFLE","raffle.money.subtitle":"Enter with your Tickets.vip","raffle.mystery.title":"MYSTERY BOX RAFFLE","raffle.mystery.subtitle":"Enter with your Tickets.vip"},
-    pt: {"raffle.money.title":"SORTEIO EM DINHEIRO","raffle.money.subtitle":"Entre com seus Tickets.vip","raffle.mystery.title":"SORTEIO CAIXA MISTERIOSA","raffle.mystery.subtitle":"Entre com seus Tickets.vip"}
-  };
-  try{
-    const D = window.DICT || (typeof DICT !== "undefined" ? DICT : null);
-    if (D) Object.keys(EXTRA).forEach(L => { D[L] = Object.assign(D[L]||{}, EXTRA[L]); });
-  }catch(_){}
-  try{ if (window.dI18n && typeof dI18n.apply === 'function') dI18n.apply(); }catch(_){}
-})();
-</script>
 
 </body>
 </html>
