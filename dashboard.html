@@ -4,6 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NUMINA | Dashboard</title>
+<!-- ChatGPT patch: Desktop-on-Mobile toggle -->
+<style id="desktop-on-mobile-css">
+.dom-toggle{
+  position: fixed; right: 12px; bottom: 16px; z-index: 5000;
+  background: rgba(0,0,0,.6); color: #ffd000; border: 1px solid rgba(255,208,0,.6);
+  border-radius: 999px; padding: .45rem .9rem; font-size: .9rem;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+.dom-toggle:hover{ background: rgba(0,0,0,.75); }
+@media (min-width: 992px){ .dom-toggle{ display:none; } } /* ocultar en desktop real */
+</style>
 <!-- ChatGPT patch: Responsive full adaptation (v1) -->
 <style id="responsive-full-v1">
 /* ---------- Global/base ---------- */
@@ -5937,6 +5948,51 @@ document.addEventListener('DOMContentLoaded', function(){
     el.addEventListener('click', function(){ setOpen(false); });
   });
 });
+</script>
+<button class="dom-toggle" id="domToggle" type="button">Vista: Escritorio</button>
+<!-- ChatGPT patch: Desktop-on-Mobile logic -->
+<script id="desktop-on-mobile-js">
+(function(){
+  function setViewport(content){
+    var meta = document.querySelector('meta[name="viewport"]');
+    if(!meta){
+      meta = document.createElement('meta'); meta.name = 'viewport';
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', content);
+  }
+  function applyMode(){
+    var wantDesktop = localStorage.getItem('dom_mode') !== 'mobile';
+    var isSmall = Math.min(screen.width, screen.height) < 992 || window.innerWidth < 992;
+    if(isSmall && wantDesktop){
+      // Pretend desktop: width=1200 makes CSS treat it as >=1200px
+      setViewport('width=1200, initial-scale=1');
+      var btn = document.getElementById('domToggle');
+      if(btn) btn.textContent = 'Vista: Escritorio';
+    }else{
+      setViewport('width=device-width, initial-scale=1');
+      var btn = document.getElementById('domToggle');
+      if(btn) btn.textContent = 'Vista: Móvil';
+    }
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    applyMode();
+    var btn = document.getElementById('domToggle');
+    if(btn){
+      btn.addEventListener('click', function(){
+        var now = localStorage.getItem('dom_mode');
+        // toggle
+        if(now === 'mobile'){ localStorage.setItem('dom_mode','desktop'); }
+        else { localStorage.setItem('dom_mode','mobile'); }
+        // Re-apply and reload to ensure layout recalculates correctly
+        applyMode();
+        location.reload();
+      });
+    }
+  });
+  // Re-apply on orientation change
+  window.addEventListener('orientationchange', function(){ setTimeout(function(){ applyMode(); location.reload(); }, 200); });
+})();
 </script>
 </body>
 </html>
