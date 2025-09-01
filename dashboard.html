@@ -1199,18 +1199,6 @@ html, body { overflow-x: hidden; }
   }
 }
 </style>
-
-<style id="poster-caption-core">
-.mbox-poster{position:relative;border-radius:14px;overflow:hidden;background:#0b0b0b;}
-@supports (aspect-ratio: 2/3){ .mbox-poster{aspect-ratio:2/3;} }
-@supports not (aspect-ratio: 2/3){ .mbox-poster{height:330px;} }
-.mbox-poster-img{position:absolute;inset:0;z-index:1;background-size:cover;background-position:center;}
-.mbox-badge{position:absolute;top:10px;left:12px;z-index:4;}
-.mbox-caption{position:absolute;left:0;right:0;bottom:0;padding:12px 14px 16px;z-index:3;}
-.mbox-caption-title{font-weight:900;font-size:20px;line-height:1.12;letter-spacing:.2px;color:var(--primary,#FFD43B);}
-.mbox-caption-sub{margin-top:4px;color:rgba(255,255,255,.92);font-size:13px;}
-</style>
-
 </head>
 <body>
   <header class="dashboard-header">
@@ -4305,27 +4293,27 @@ document.addEventListener('DOMContentLoaded', () => {
   <button class="mbox-scroll-btn right" aria-label="scroll right" type="button">›</button>
   <div class="mbox-scroller" data-scroller="weekly">
     <div class="mbox-posters">
-      <!-- LEFT poster (Money Raffle) -->
-      <div class="mbox-poster" data-status="open">
-        <div class="mbox-poster-img" role="img" aria-label="Poster (2:3)"></div>
-        <span class="mbox-badge" data-i18n="mbox.tabs.open">Abierto</span>
-        <div class="mbox-caption">
-          <div class="mbox-caption-title" data-i18n="raffle.money.title">MONEY RAFFLE</div>
-          <div class="mbox-caption-sub" data-i18n="raffle.money.subtitle">Enter with your Tickets.vip</div>
-        </div>
-      </div>
-      <!-- RIGHT poster (Mystery Box) -->
-      <div class="mbox-poster" data-status="upcoming">
-        <div class="mbox-poster-img" role="img" aria-label="Poster (2:3)"></div>
+      <div class="mbox-poster" data-status="Abierto">
+        <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"></div>
         <span class="mbox-badge" data-i18n="mbox.tabs.upcoming">Próximamente</span>
-        <div class="mbox-caption">
-          <div class="mbox-caption-title" data-i18n="raffle.mystery.title">MYSTERY BOX RAFFLE</div>
-          <div class="mbox-caption-sub" data-i18n="raffle.mystery.subtitle">Enter with your Tickets.vip</div>
-        </div>
       </div>
-    </div>
+      <div class="mbox-poster" data-status="Abierto">
+  <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"><span class="mbox-badge mbox-caption-badge"
+      style="position:absolute;left:0;right:0;bottom:0;z-index:5;
+             background:none;border:none;box-shadow:none;padding:12px 14px 16px;height:auto;display:block;">
+  <div style="font-weight:900;font-size:20px;line-height:1.12;letter-spacing:.2px;color:#FFD43B;">
+    MYSTERY BOX RAFFLE
   </div>
+  <div style="margin-top:4px;color:rgba(255,255,255,.92);font-size:13px;">
+    Enter with your Tickets.vip
+  </div>
+</span>
 </div>
+  <span class="mbox-badge" data-i18n="mbox.tabs.upcoming">Próximamente</span>
+  <div class="mbox-caption">
+    <div class="mbox-caption-title">MYSTERY BOX RAFFLE</div>
+    <div class="mbox-caption-sub">Enter with your Tickets.vip</div>
+  </div>
 </div>
     </div>
   </div>
@@ -5856,37 +5844,6 @@ const fillTicketsRowsFromLedger = async () => {
 
 
 
-
-
-<script id="poster-caption-i18n">
-(function(){
-  const EXTRA = {
-    es: {
-      "raffle.money.title":"SORTEO DE DINERO",
-      "raffle.money.subtitle":"Ingresá con tus Tickets.vip",
-      "raffle.mystery.title":"SORTEO CAJA MISTERIOSA",
-      "raffle.mystery.subtitle":"Ingresá con tus Tickets.vip"
-    },
-    en: {
-      "raffle.money.title":"MONEY RAFFLE",
-      "raffle.money.subtitle":"Enter with your Tickets.vip",
-      "raffle.mystery.title":"MYSTERY BOX RAFFLE",
-      "raffle.mystery.subtitle":"Enter with your Tickets.vip"
-    },
-    pt: {
-      "raffle.money.title":"SORTEIO EM DINHEIRO",
-      "raffle.money.subtitle":"Entre com seus Tickets.vip",
-      "raffle.mystery.title":"SORTEIO CAIXA MISTERIOSA",
-      "raffle.mystery.subtitle":"Entre com seus Tickets.vip"
-    }
-  };
-  try{
-    const D = window.DICT || (typeof DICT!=='undefined'? DICT : null);
-    if (D) Object.keys(EXTRA).forEach(L => { D[L] = Object.assign(D[L]||{}, EXTRA[L]); });
-  }catch(_){}
-  try{ if (window.dI18n && typeof dI18n.apply==='function') dI18n.apply(); }catch(_){}
-})();
-</script>
 
 </body>
 </html>
