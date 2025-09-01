@@ -1134,7 +1134,11 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 .mbox-scroll-btn:hover{background:rgba(17,17,17,.95)}
 .mbox-subtitle{margin-top:18px;font-weight:800;letter-spacing:-.01em;color:#fff;font-size:19.9px}
 @media(min-width: 768px){.mbox-subtitle{font-size:24.9px}}
-/* === end Mystery Box posters === */</style>
+/* === end Mystery Box posters === */
+.mbox-caption{padding:12px 14px 16px}
+.mbox-caption-title{font-weight:900;font-size:20px;line-height:1.12;letter-spacing:.2px;color:var(--primary)}
+.mbox-caption-sub{margin-top:4px;color:#d0d0d0;font-size:13px}
+</style>
 <style>
 /* === Mystery Box poster wrapper: full-width under tabs/search === */
 .mbox-poster-wrapper{display:block;grid-column:1 / -1;width:100%;margin-top:24px}
@@ -4294,9 +4298,13 @@ document.addEventListener('DOMContentLoaded', () => {
         <span class="mbox-badge" data-i18n="mbox.tabs.upcoming">Próximamente</span>
       </div>
       <div class="mbox-poster" data-status="Abierto">
-        <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"></div>
-        <span class="mbox-badge" data-i18n="mbox.tabs.upcoming">Próximamente</span>
-      </div>
+  <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"></div>
+  <span class="mbox-badge" data-i18n="mbox.tabs.upcoming">Próximamente</span>
+  <div class="mbox-caption">
+    <div class="mbox-caption-title">MYSTERY BOX RAFFLE</div>
+    <div class="mbox-caption-sub">Enter with your Tickets.vip</div>
+  </div>
+</div>
     </div>
   </div>
 </div>
