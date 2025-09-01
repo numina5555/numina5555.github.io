@@ -1,24 +1,23 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>NUMINA | Dashboard</title>
-<!-- ChatGPT patch: Forzar layout de escritorio solo en teléfonos -->
-<script id="desktop-on-phone-patch">
+\1
+<!-- ChatGPT patch: viewport instant for phones (no pinch needed), desktop untouched -->
+<script id="viewport-instant-writer">
 (function(){
-  var isPhone = Math.min(window.innerWidth, screen.width) < 992;
-  if (!isPhone) return; // No tocar desktop
-
-  var W = 1200; // ancho 'desktop' de tu layout (activa 4 cards, sidebar visible y tablas completas)
-  var vw = Math.min(window.innerWidth, screen.width);
-  var scale = Math.max(0.36, Math.min(1, vw / W)); // ajusta para encajar sin pellizcar
-
-  var meta = document.querySelector('meta[name="viewport"]');
-  if (!meta) { meta = document.createElement('meta'); meta.name = 'viewport'; document.head.appendChild(meta); }
-  meta.setAttribute('content', 'width=' + W + ', initial-scale=' + scale.toFixed(3) + ', viewport-fit=cover');
+  var W = 1200; // desktop width target
+  var minDim = Math.min(screen.width || 9999, screen.height || 9999, (window.innerWidth||9999));
+  var isPhone = minDim < 992;
+  if (isPhone){
+    var scale = Math.max(0.30, Math.min(1, minDim / W));
+    document.write('<meta name="viewport" content="width='+W+', initial-scale='+scale.toFixed(3)+', viewport-fit=cover, maximum-scale=1">');
+  } else {
+    document.write('<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">');
+  }
 })();
 </script>
+
+  <meta charset="utf-8" />
+  <title>NUMINA | Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
