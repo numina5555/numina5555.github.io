@@ -4,98 +4,84 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NUMINA | Dashboard</title>
-<!-- ChatGPT patch: mobile hotfix (iPhone-size tuning, prevent card/table truncation) -->
-<style id="mobile-hotfix-iphone">
-/* Base: ensure no global overflow clips content */
-.stat-card{ overflow: visible !important; min-width:0; }
-.stats-grid{ min-width:0; overflow: visible; }
+<!-- ChatGPT patch: Responsive full adaptation (v1) -->
+<style id="responsive-full-v1">
+/* ---------- Global/base ---------- */
+:root{
+  /* Desktop font-size was already tuned in this version; leave it. */
+}
+/* Header always accessible */
+.dashboard-header{ position: sticky; top: 0; z-index: 2000; }
+/* Prevent any grid/flex children from overflowing */
+* { min-width: 0; }
+.card, .stat-card, .section, .welcome-banner, .table-container { min-width: 0; }
+.stat-card { overflow: visible; }
+/* Default stats grid is fluid; desktop rule elsewhere will force 4 cols */
+.stats-grid{ display: grid; grid-template-columns: 1fr; gap: 1rem; }
 
-/* Force single-column cards on small phones */
-@media (max-width: 640px){
-  .stats-grid{ grid-template-columns: 1fr !important; }
-  .stat-card{ width: 100% !important; }
+/* ---------- Sidebar off-canvas on mobile ---------- */
+.hamburger-btn{
+  display:none; position:absolute; left:12px; top:50%; transform:translateY(-50%);
+  background:transparent; border:0; color:var(--text, #fff); font-size:1.25rem; padding:.5rem; border-radius:8px;
+}
+.hamburger-btn:focus{ outline:none; box-shadow:0 0 0 3px rgba(255,215,0,.25); }
+.sidebar-backdrop{ display:block; }
+
+@media (max-width: 991.98px){
+  .hamburger-btn{ display:inline-flex; align-items:center; justify-content:center; }
+  .sidebar{
+    position: fixed; left: 0; top: env(safe-area-inset-top); top: 0;
+    height: 100vh; width: 260px;
+    transform: translateX(-100%); transition: transform .22s ease;
+    z-index: 2100; overflow-y: auto; box-shadow: 0 10px 24px rgba(0,0,0,.45);
+  }
+  body.menu-open .sidebar{ transform: translateX(0); }
+  .sidebar-backdrop{
+    position: fixed; inset: 0; background: rgba(0,0,0,.5); opacity: 0; transition: opacity .2s;
+    z-index: 2050;
+  }
+  body.menu-open .sidebar-backdrop{ opacity: 1; }
+  body.menu-open .sidebar-backdrop[hidden]{ display:block; } /* ensure visible */
+  /* Content padding */
+  .main-content{ padding: 1rem !important; }
+  /* Undo any "mini sidebar" variants that hide text */
+  .menu-item span{ display:inline !important; }
 }
 
-/* Make content smaller on phones, especially iPhone widths */
-@media (max-width: 576px){
-  :root{ font-size: 62.5%; } /* 1rem = 10px */
-  .main-content{ padding: 0.9rem !important; }
-  .welcome-banner h1{ font-size: clamp(1.25rem, 4.5vw, 1.6rem); }
-  .section-title{ font-size: clamp(1rem, 4vw, 1.2rem); }
-  .stat-card{ padding: 1rem !important; }
-  .stat-card .title{ font-size: clamp(0.8rem, 2.8vw, 1rem); }
-  .stat-card .value{ font-size: clamp(1.1rem, 5vw, 1.4rem); }
+/* ---------- Typography & spacing scaling for phones ---------- */
+@media (max-width: 767.98px){
+  :root{ font-size: 62.5%; } /* 1rem ≈ 10px */
+  .welcome-banner h1{ font-size: clamp(1.25rem, 5vw, 1.6rem); }
+  .section-title{ font-size: clamp(1rem, 4.4vw, 1.2rem); }
+  .stat-card{ padding: 1rem; }
+  .stat-card .title{ font-size: clamp(0.8rem, 3vw, 1rem); letter-spacing:.02em; }
+  .stat-card .value{ font-size: clamp(1.1rem, 5.2vw, 1.4rem); }
   .btn, .action-btn{ padding: .55rem .85rem; }
 }
+@media (max-width: 389.98px){ :root{ font-size: 58%; } }
 
-/* Extra-tight for <=390px (iPhone 12/13 mini logical width) */
-@media (max-width: 390px){
-  :root{ font-size: 58%; }  /* ~9.3px rem */
-  .stat-card{ padding: 0.85rem !important; }
-}
-
-/* Tables: horizontal scroll on small screens, never truncate */
-.table-container{ width:100%; }
-@media (max-width: 768px){
-  .table-container{ overflow-x:auto !important; -webkit-overflow-scrolling:touch; }
-  .table-container > table{ min-width: 680px; }
-  table th, table td{ white-space: nowrap; }
-}
-</style>
-<!-- ChatGPT patch: Mobile polished (off‑canvas sidebar, grid/table fixes) -->
-<style id="mobile-polish-v2">
-/* Keep header accessible */
-.dashboard-header{ position: sticky; top:0; z-index: 1100; }
-
-/* Hamburger (visible < 992px) */
-.hamburger-btn{ display:none; position:absolute; left:12px; top:50%; transform: translateY(-50%);
-  background: transparent; border:0; color: var(--text); font-size: 1.2rem; padding:.5rem; border-radius:8px; }
-.hamburger-btn:focus{ outline:none; box-shadow:0 0 0 3px rgba(255,215,0,.25); }
-@media (max-width: 992px){
-  .hamburger-btn{ display:inline-flex; align-items:center; justify-content:center; }
-}
-
-/* Override old "mini sidebar" rules and use off‑canvas instead */
-@media (max-width: 992px){
-  .dashboard-container{ position:relative; }
-  .sidebar{ position: fixed; top: 60px; left: 0; height: calc(100vh - 60px); width: 260px !important; 
-            transform: translateX(-100%); transition: transform .22s ease; z-index: 1050; 
-            box-shadow: 0 10px 24px rgba(0,0,0,.45); overflow-y:auto; }
-  .menu-item span{ display:inline !important; } /* volver a mostrar textos */
-  body.menu-open .sidebar{ transform: translateX(0); }
-  .sidebar-backdrop{ position: fixed; inset: 0; background: rgba(0,0,0,.5); opacity: 0; transition: opacity .2s ease; z-index: 1040; }
-  body.menu-open .sidebar-backdrop{ opacity: 1; }
-  body.menu-open .sidebar-backdrop[hidden]{ display:block; }
-  .main-content{ padding: 1rem; } /* más aire para contenido */
-}
-
-/* Stats: evitar truncado, columnas fluidas */
-.stats-grid{ grid-template-columns: 1fr; }
-.stat-card{ min-width: 0; } /* permite que el contenido se contraiga dentro del grid */
-.stat-card .value{ line-height: 1.1; word-break: break-word; }
+/* ---------- Stats grid columns by breakpoint ---------- */
 @media (min-width: 576px){ .stats-grid{ grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 768px){ .stats-grid{ grid-template-columns: repeat(3, 1fr); } }
-@media (min-width: 1200px){ .stats-grid{ grid-template-columns: repeat(4, 1fr) !important; } }
+@media (min-width: 1200px){ .stats-grid{ grid-template-columns: repeat(4, 1fr); } }
 
-/* Tablas: scroll horizontal en móviles + ancho mínimo útil */
-.table-container{ width: 100%; }
-@media (max-width: 992px){
-  .table-container{ overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+/* ---------- Tables: never truncate on mobile ---------- */
+.table-container{ width:100%; }
+@media (max-width: 991.98px){
+  .table-container{ overflow-x:auto !important; -webkit-overflow-scrolling:touch; }
   .table-container > table{ min-width: 760px; }
-  th, td{ white-space: nowrap; }
+  table th, table td{ white-space: nowrap; }
 }
 @media (max-width: 480px){
-  .table-container > table{ min-width: 680px; }
-  th, td{ padding: .6rem .7rem; }
+  .table-container > table{ min-width: 640px; }
+  table th, table td{ padding: .6rem .7rem; }
 }
 
-/* Botones de acciones apilados si no hay espacio */
-@media (max-width: 420px){
-  .action-btn{ display: inline-flex; margin: .2rem .1rem; }
+/* ---------- Desktop specifics (keep like foto 2) ---------- */
+@media (min-width: 1200px){
+  :root{ font-size: 72%; } /* conserves previous desktop scaling */
+  .stats-grid{ grid-template-columns: repeat(4, 1fr) !important; }
 }
-
-/* Evitar desbordes de elementos flex */
-.row, .welcome-banner, .stat-card, .card, .section, .table-filter-inline{ min-width: 0; }
 
 </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -5921,20 +5907,33 @@ const fillTicketsRowsFromLedger = async () => {
 
 
 
-<!-- ChatGPT patch: Mobile menu JS -->
-<script id="mobile-polish-v2-js">
+<!-- ChatGPT patch: Responsive full JS (v1) -->
+<script id="responsive-full-v1-js">
 document.addEventListener('DOMContentLoaded', function(){
   var btn = document.getElementById('hamburger-btn');
   var backdrop = document.getElementById('sidebar-backdrop');
   function setOpen(open){
     document.body.classList.toggle('menu-open', !!open);
-    if (backdrop){ backdrop.hidden = !open; }
+    if (backdrop) backdrop.hidden = !open;
   }
-  if (btn){ btn.addEventListener('click', function(){ setOpen(!document.body.classList.contains('menu-open')); }); }
-  if (backdrop){ backdrop.addEventListener('click', function(){ setOpen(false); }); }
-  // Cerrar con Escape y al tocar un item del menú
-  document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ setOpen(false); } });
-  document.querySelectorAll('.sidebar .menu-item').forEach(function(el){
+  if (btn) btn.addEventListener('click', function(){ setOpen(!document.body.classList.contains('menu-open')); });
+  if (backdrop) backdrop.addEventListener('click', function(){ setOpen(false); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ setOpen(false); }});
+
+  // Auto-wrap tables in .table-container (once)
+  document.querySelectorAll('table').forEach(function(tbl){
+    var parent = tbl.parentElement;
+    if (!parent) return;
+    if (!parent.classList.contains('table-container')){
+      var wrap = document.createElement('div');
+      wrap.className = 'table-container';
+      parent.replaceChild(wrap, tbl);
+      wrap.appendChild(tbl);
+    }
+  });
+
+  // Close menu when clicking any sidebar link
+  document.querySelectorAll('.sidebar a, .sidebar .menu-item').forEach(function(el){
     el.addEventListener('click', function(){ setOpen(false); });
   });
 });
