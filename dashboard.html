@@ -1200,16 +1200,14 @@ html, body { overflow-x: hidden; }
 }
 </style>
 
-<style id="resilient-caption-css">
-/* === RESILIENT CAPTION OVERRIDES === */
-.mbox-poster{position:relative !important; border-radius:14px; overflow:hidden; background:#0b0b0b}
-.mbox-poster-img{position:absolute !important; inset:0 !important; background-size:cover !important; background-position:center !important; z-index:1 !important; pointer-events:none !important;}
-.mbox-caption{position:absolute !important; left:0; right:0; bottom:0; padding:12px 14px 16px !important; z-index:3 !important; display:block !important;}
-.mbox-caption-title{font-weight:900 !important; font-size:20px !important; line-height:1.12 !important; letter-spacing:.2px !important; color:var(--primary, #FFD43B) !important; text-shadow:0 0 2px rgba(0,0,0,.6) !important;}
-.mbox-caption-sub{margin-top:4px !important; color:rgba(255,255,255,.92) !important; font-size:13px !important; text-shadow:0 0 2px rgba(0,0,0,.6) !important;}
-.mbox-badge{position:absolute !important; top:10px !important; left:12px !important; z-index:4 !important;}
-/* if some global rule hides everything inside posters with overflow/height, give a min-height */
-.mbox-poster{min-height:330px !important;}
+<style id="caption-fix-css">
+/* Caption always above image */
+.mbox-poster{position:relative !important; border-radius:14px; overflow:hidden}
+.mbox-poster-img{position:absolute !important; inset:0 !important; z-index:1 !important; background-size:cover !important; background-position:center !important}
+.mbox-caption{position:absolute !important; left:0; right:0; bottom:0; padding:12px 14px 16px !important; z-index:3 !important; display:block !important}
+.mbox-caption-title{font-weight:900; font-size:20px; line-height:1.12; letter-spacing:.2px; color:var(--primary, #FFD43B) !important; text-shadow:0 0 2px rgba(0,0,0,.6)}
+.mbox-caption-sub{margin-top:4px; color:rgba(255,255,255,.92) !important; font-size:13px; text-shadow:0 0 2px rgba(0,0,0,.6)}
+.mbox-badge{position:absolute; top:10px; left:12px; z-index:4 !important}
 </style>
 
 </head>
@@ -5849,66 +5847,49 @@ const fillTicketsRowsFromLedger = async () => {
 
 
 
-<script id="resilient-caption-js">
+<script id="caption-fix-js">
 (function(){
   const STR = {
-    es: {
-      "raffle.money.title": "SORTEO DE DINERO",
-      "raffle.money.subtitle": "Ingresá con tus Tickets.vip",
-      "raffle.mystery.title": "SORTEO CAJA MISTERIOSA",
-      "raffle.mystery.subtitle": "Ingresá con tus Tickets.vip"
-    },
-    en: {
-      "raffle.money.title": "MONEY RAFFLE",
-      "raffle.money.subtitle": "Enter with your Tickets.vip",
-      "raffle.mystery.title": "MYSTERY BOX RAFFLE",
-      "raffle.mystery.subtitle": "Enter with your Tickets.vip"
-    },
-    pt: {
-      "raffle.money.title": "SORTEIO EM DINHEIRO",
-      "raffle.money.subtitle": "Entre com seus Tickets.vip",
-      "raffle.mystery.title": "SORTEIO CAIXA MISTERIOSA",
-      "raffle.mystery.subtitle": "Entre com seus Tickets.vip"
-    }
+    es: {"raffle.money.title":"SORTEO DE DINERO","raffle.money.subtitle":"Ingresá con tus Tickets.vip","raffle.mystery.title":"SORTEO CAJA MISTERIOSA","raffle.mystery.subtitle":"Ingresá con tus Tickets.vip"},
+    en: {"raffle.money.title":"MONEY RAFFLE","raffle.money.subtitle":"Enter with your Tickets.vip","raffle.mystery.title":"MYSTERY BOX RAFFLE","raffle.mystery.subtitle":"Enter with your Tickets.vip"},
+    pt: {"raffle.money.title":"SORTEIO EM DINHEIRO","raffle.money.subtitle":"Entre com seus Tickets.vip","raffle.mystery.title":"SORTEIO CAIXA MISTERIOSA","raffle.mystery.subtitle":"Entre com seus Tickets.vip"}
   };
   function mergeI18n(){
     try{
-      const D = window.DICT || (typeof DICT !== "undefined" ? DICT : null);
-      if (!D) return;
-      Object.keys(STR).forEach(L => { D[L] = Object.assign(D[L]||{}, STR[L]); });
+      const D = window.DICT || (typeof DICT !== 'undefined' ? DICT : null);
+      if (D) Object.keys(STR).forEach(L => D[L] = Object.assign(D[L]||{}, STR[L]));
     }catch(e){}
     try{ if (window.dI18n && typeof dI18n.apply === 'function') dI18n.apply(); }catch(e){}
   }
-  function ensureCaption(poster, type){
+  function ensureCaption(poster, kind){
     if (!poster) return;
-    // ensure structure
+    // ensure image container
     let img = poster.querySelector('.mbox-poster-img');
     if (!img){
       img = document.createElement('div');
       img.className = 'mbox-poster-img';
-      img.setAttribute('role','img');
-      img.setAttribute('aria-label','Poster (2:3)');
+      img.setAttribute('role','img'); img.setAttribute('aria-label','Poster (2:3)');
       poster.insertBefore(img, poster.firstChild);
     }
-    let caption = poster.querySelector('.mbox-caption');
-    if (!caption){
-      caption = document.createElement('div');
-      caption.className = 'mbox-caption';
-      caption.innerHTML = '<div class="mbox-caption-title" data-i18n="raffle.'+type+'.title"></div>' +
-                          '<div class="mbox-caption-sub" data-i18n="raffle.'+type+'.subtitle"></div>';
-      poster.appendChild(caption);
-    } else {
-      // ensure children exist
-      if (!caption.querySelector('.mbox-caption-title')){
-        const t = document.createElement('div'); t.className='mbox-caption-title'; t.setAttribute('data-i18n','raffle.'+type+'.title'); caption.appendChild(t);
-      }
-      if (!caption.querySelector('.mbox-caption-sub')){
-        const s = document.createElement('div'); s.className='mbox-caption-sub'; s.setAttribute('data-i18n','raffle.'+type+'.subtitle'); caption.appendChild(s);
-      }
+    // ensure caption
+    let cap = poster.querySelector('.mbox-caption');
+    if (!cap){
+      cap = document.createElement('div');
+      cap.className = 'mbox-caption';
+      poster.appendChild(cap);
     }
+    let t = cap.querySelector('.mbox-caption-title');
+    if (!t){
+      t = document.createElement('div'); t.className='mbox-caption-title'; cap.appendChild(t);
+    }
+    t.setAttribute('data-i18n','raffle.'+kind+'.title'); if (!t.textContent) t.textContent = STR.en['raffle.'+kind+'.title'];
+    let s = cap.querySelector('.mbox-caption-sub');
+    if (!s){
+      s = document.createElement('div'); s.className='mbox-caption-sub'; cap.appendChild(s);
+    }
+    s.setAttribute('data-i18n','raffle.'+kind+'.subtitle'); if (!s.textContent) s.textContent = STR.en['raffle.'+kind+'.subtitle'];
   }
-  function run(){
-    // Try to detect the "weekly" row; else fallback to the first poster row
+  function applyOnce(){
     const row = document.querySelector('.mbox-poster-row[data-block="mystery-weekly"]') || document.querySelector('.mbox-poster-row');
     if (!row) return;
     const posters = row.querySelectorAll('.mbox-poster');
@@ -5916,8 +5897,11 @@ const fillTicketsRowsFromLedger = async () => {
     if (posters[1]) ensureCaption(posters[1], 'mystery');
     mergeI18n();
   }
-  document.addEventListener('DOMContentLoaded', run);
-  window.addEventListener('load', function(){ setTimeout(run, 0); setTimeout(run, 300); setTimeout(run, 1200); });
+  // run now and keep watching for DOM changes
+  document.addEventListener('DOMContentLoaded', applyOnce);
+  window.addEventListener('load', function(){ applyOnce(); setTimeout(applyOnce,250); setTimeout(applyOnce,1200); });
+  const obs = new MutationObserver(function(){ applyOnce(); });
+  obs.observe(document.documentElement, {childList:true, subtree:true});
 })();
 </script>
 
