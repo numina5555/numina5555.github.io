@@ -1200,12 +1200,14 @@ html, body { overflow-x: hidden; }
 }
 </style>
 
-<style>
-/* injected overrides: bring caption above image */
-.mbox-poster{position:relative}
-.mbox-poster-img{position:absolute;inset:0;z-index:1}
-.mbox-caption{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:12px 14px 16px}
-.mbox-badge{position:absolute;top:10px;left:12px;z-index:3}
+<style id="mbox-caption-overrides">
+/* force caption visible above image */
+.mbox-poster{position:relative !important; height:330px; overflow:hidden; border-radius:14px}
+.mbox-poster-img{position:absolute !important; inset:0 !important; z-index:1 !important; background-size:cover; background-position:center; pointer-events:none}
+.mbox-caption{position:absolute !important; left:0; right:0; bottom:0; padding:12px 14px 16px; z-index:3 !important}
+.mbox-caption-title{font-weight:900; font-size:20px; line-height:1.12; letter-spacing:.2px; color: var(--primary, #FFD43B) !important; text-shadow:0 0 2px rgba(0,0,0,.6)}
+.mbox-caption-sub{margin-top:4px; color: rgba(255,255,255,.92) !important; font-size:13px; text-shadow:0 0 2px rgba(0,0,0,.6)}
+.mbox-badge{position:absolute; top:10px; left:12px; z-index:4 !important}
 </style>
 
 </head>
@@ -4302,9 +4304,9 @@ document.addEventListener('DOMContentLoaded', () => {
   <button class="mbox-scroll-btn right" aria-label="scroll right" type="button">›</button>
   <div class="mbox-scroller" data-scroller="weekly">
     <div class="mbox-posters">
-      <!-- LEFT poster: current Money Raffle (kept as-is image-only) -->
+      <!-- LEFT poster -->
       <div class="mbox-poster" data-status="Abierto">
-        <div class="mbox-poster-img" role="img" aria-label="Poster (2:3)"></div>
+        <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"></div>
         <span class="mbox-badge" data-i18n="mbox.tabs.open">Abierto</span>
         <div class="mbox-caption">
           <div class="mbox-caption-title" data-i18n="raffle.money.title">MONEY RAFFLE</div>
@@ -4312,9 +4314,9 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <!-- RIGHT poster: Mystery Box -->
+      <!-- RIGHT poster -->
       <div class="mbox-poster" data-status="Proximamente">
-        <div class="mbox-poster-img" role="img" aria-label="Poster (2:3)"></div>
+        <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"></div>
         <span class="mbox-badge" data-i18n="mbox.tabs.upcoming">Próximamente</span>
         <div class="mbox-caption">
           <div class="mbox-caption-title" data-i18n="raffle.mystery.title">MYSTERY BOX RAFFLE</div>
@@ -5854,6 +5856,37 @@ const fillTicketsRowsFromLedger = async () => {
 
 
 
+
+
+<script id="mbox-caption-i18n">
+(function(){
+  const EXTRA = {
+    es: {
+      "raffle.money.title": "SORTEO DE DINERO",
+      "raffle.money.subtitle": "Ingresá con tus Tickets.vip",
+      "raffle.mystery.title": "SORTEO CAJA MISTERIOSA",
+      "raffle.mystery.subtitle": "Ingresá con tus Tickets.vip"
+    },
+    en: {
+      "raffle.money.title": "MONEY RAFFLE",
+      "raffle.money.subtitle": "Enter with your Tickets.vip",
+      "raffle.mystery.title": "MYSTERY BOX RAFFLE",
+      "raffle.mystery.subtitle": "Enter with your Tickets.vip"
+    },
+    pt: {
+      "raffle.money.title": "SORTEIO EM DINHEIRO",
+      "raffle.money.subtitle": "Entre com seus Tickets.vip",
+      "raffle.mystery.title": "SORTEIO CAIXA MISTERIOSA",
+      "raffle.mystery.subtitle": "Entre com seus Tickets.vip"
+    }
+  };
+  try{
+    const D = window.DICT || (typeof DICT !== "undefined" ? DICT : null);
+    if (D) Object.keys(EXTRA).forEach(L => { D[L] = Object.assign(D[L]||{}, EXTRA[L]); });
+  }catch(_){}
+  try{ if (window.dI18n && typeof dI18n.apply === 'function') dI18n.apply(); }catch(_){}
+})();
+</script>
 
 </body>
 </html>
