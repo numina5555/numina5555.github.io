@@ -1135,9 +1135,9 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 .mbox-subtitle{margin-top:18px;font-weight:800;letter-spacing:-.01em;color:#fff;font-size:19.9px}
 @media(min-width: 768px){.mbox-subtitle{font-size:24.9px}}
 /* === end Mystery Box posters === */
-.mbox-caption{padding:12px 14px 16px}
+.mbox-caption{position:absolute;left:0;right:0;bottom:0;z-index:6;padding:12px 14px 16px;pointer-events:none;background:linear-gradient(0deg, rgba(0,0,0,.75), rgba(0,0,0,0))}
 .mbox-caption-title{font-weight:900;font-size:20px;line-height:1.12;letter-spacing:.2px;color:var(--primary)}
-.mbox-caption-sub{margin-top:4px;color:#d0d0d0;font-size:13px}
+.mbox-caption-sub{margin-top:4px;color:rgba(255,255,255,.92);font-size:13px}
 </style>
 <style>
 /* === Mystery Box poster wrapper: full-width under tabs/search === */
@@ -4308,23 +4308,13 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
       <div class="mbox-poster" data-status="upcoming" style="position:relative;border-radius:14px;overflow:hidden;background:#0b0b0b;">
   <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"
-       style="position:absolute;inset:0;background-size:cover;background-position:center;z-index:1;"></div>
+       style="position:absolute;inset:0;background-size:cover;background-position:center;z-index:1;"></div><div class="mbox-caption"><div class="mbox-caption-title" data-i18n="mbox.mystery.title">MYSTERY BOX RAFFLE</div><div class="mbox-caption-sub" data-i18n="mbox.mystery.sub">Enter with your Tickets.vip</div></div>
 
   <!-- Top pill (unchanged) -->
   <span class="mbox-badge" data-i18n="mbox.tabs.upcoming" style="position:absolute;top:10px;left:12px;z-index:5;">Próximamente</span>
 
   <!-- Bottom caption rendered as a secondary .mbox-badge so the carousel keeps it -->
-  <span class="mbox-badge mbox-caption-badge"
-        style="position:absolute;left:0;right:0;bottom:0;z-index:4;
-               display:block;background:none;border:none;box-shadow:none;
-               padding:12px 14px 16px;height:auto;">
-    <div style="font-weight:900;font-size:20px;line-height:1.12;letter-spacing:.2px;color:#FFD43B;">
-      MYSTERY BOX RAFFLE
-    </div>
-    <div style="margin-top:4px;color:rgba(255,255,255,.92);font-size:13px;">
-      Enter with your Tickets.vip
-    </div>
-  </span>
+  
 </div>
   <span class="mbox-badge" data-i18n="mbox.tabs.upcoming">Próximamente</span>
   <div class="mbox-caption">
