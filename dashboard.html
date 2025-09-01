@@ -1208,6 +1208,33 @@ html, body { overflow-x: hidden; }
 .mbox-badge{position:absolute;top:10px;left:12px;z-index:4;}
 </style>
 
+
+<!-- Auto-scale 50% en móviles (replicando patrón de zoom por CSS) -->
+<style id="auto-scale-50">
+@media (max-width: 900px){
+  html.__uiScale50 body{
+    transform: scale(0.5);
+    transform-origin: top left;
+    width: 200%; /* compensa el scale */
+  }
+  /* Safari iOS */
+  @supports (-webkit-touch-callout: none){
+    html.__uiScale50 body{
+      -webkit-transform: scale(0.5);
+      -webkit-transform-origin: top left;
+    }
+  }
+}
+</style>
+<script>
+(function(){
+  try{
+    if (window.matchMedia('(max-width: 900px)').matches) {
+      document.documentElement.classList.add('__uiScale50');
+    }
+  }catch(e){ /* no-op */ }
+})();
+</script>
 </head>
 <body>
   <header class="dashboard-header">
