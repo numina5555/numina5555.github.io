@@ -1,22 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
-\1
-<!-- ChatGPT patch: viewport instant for phones (no pinch needed), desktop untouched -->
-<script id="viewport-instant-writer">
-(function(){
-  var W = 1200; // desktop width target
-  var minDim = Math.min(screen.width || 9999, screen.height || 9999, (window.innerWidth||9999));
-  var isPhone = minDim < 992;
-  if (isPhone){
-    var scale = Math.max(0.30, Math.min(1, minDim / W));
-    document.write('<meta name="viewport" content="width='+W+', initial-scale='+scale.toFixed(3)+', viewport-fit=cover, maximum-scale=1">');
-  } else {
-    document.write('<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">');
-  }
-})();
-</script>
-
+<head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NUMINA | Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -4305,11 +4291,11 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="mbox-posters">
       <div class="mbox-poster" data-status="Abierto">
         <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"></div>
-        <span class="mbox-badge">Próximamente</span>
+        <span class="mbox-badge"><span data-i18n="mbox.tabs.upcoming">Próximamente</span></span>
       </div>
       <div class="mbox-poster" data-status="Abierto">
         <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"></div>
-        <span class="mbox-badge">Próximamente</span>
+        <span class="mbox-badge"><span data-i18n="mbox.tabs.upcoming">Próximamente</span></span>
       </div>
     </div>
   </div>
