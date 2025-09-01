@@ -4,6 +4,44 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NUMINA | Dashboard</title>
+<!-- ChatGPT patch: mobile hotfix (iPhone-size tuning, prevent card/table truncation) -->
+<style id="mobile-hotfix-iphone">
+/* Base: ensure no global overflow clips content */
+.stat-card{ overflow: visible !important; min-width:0; }
+.stats-grid{ min-width:0; overflow: visible; }
+
+/* Force single-column cards on small phones */
+@media (max-width: 640px){
+  .stats-grid{ grid-template-columns: 1fr !important; }
+  .stat-card{ width: 100% !important; }
+}
+
+/* Make content smaller on phones, especially iPhone widths */
+@media (max-width: 576px){
+  :root{ font-size: 62.5%; } /* 1rem = 10px */
+  .main-content{ padding: 0.9rem !important; }
+  .welcome-banner h1{ font-size: clamp(1.25rem, 4.5vw, 1.6rem); }
+  .section-title{ font-size: clamp(1rem, 4vw, 1.2rem); }
+  .stat-card{ padding: 1rem !important; }
+  .stat-card .title{ font-size: clamp(0.8rem, 2.8vw, 1rem); }
+  .stat-card .value{ font-size: clamp(1.1rem, 5vw, 1.4rem); }
+  .btn, .action-btn{ padding: .55rem .85rem; }
+}
+
+/* Extra-tight for <=390px (iPhone 12/13 mini logical width) */
+@media (max-width: 390px){
+  :root{ font-size: 58%; }  /* ~9.3px rem */
+  .stat-card{ padding: 0.85rem !important; }
+}
+
+/* Tables: horizontal scroll on small screens, never truncate */
+.table-container{ width:100%; }
+@media (max-width: 768px){
+  .table-container{ overflow-x:auto !important; -webkit-overflow-scrolling:touch; }
+  .table-container > table{ min-width: 680px; }
+  table th, table td{ white-space: nowrap; }
+}
+</style>
 <!-- ChatGPT patch: Mobile polished (off‑canvas sidebar, grid/table fixes) -->
 <style id="mobile-polish-v2">
 /* Keep header accessible */
