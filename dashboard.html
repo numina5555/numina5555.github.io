@@ -4,12 +4,21 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NUMINA | Dashboard</title>
-<!-- ChatGPT patch: Desktop auto-fit to phone width (no user pinch) -->
-<style id="desktop-auto-fit-css">
-#desktopCanvas{ width: 1200px; transform-origin: top left; }
-#desktopCanvas.scale{ will-change: transform; }
-.auto-fit-holder{ width: 100%; height: auto; overflow: hidden; }
-</style>
+<!-- ChatGPT patch: Forzar layout de escritorio solo en teléfonos -->
+<script id="desktop-on-phone-patch">
+(function(){
+  var isPhone = Math.min(window.innerWidth, screen.width) < 992;
+  if (!isPhone) return; // No tocar desktop
+
+  var W = 1200; // ancho 'desktop' de tu layout (activa 4 cards, sidebar visible y tablas completas)
+  var vw = Math.min(window.innerWidth, screen.width);
+  var scale = Math.max(0.36, Math.min(1, vw / W)); // ajusta para encajar sin pellizcar
+
+  var meta = document.querySelector('meta[name="viewport"]');
+  if (!meta) { meta = document.createElement('meta'); meta.name = 'viewport'; document.head.appendChild(meta); }
+  meta.setAttribute('content', 'width=' + W + ', initial-scale=' + scale.toFixed(3) + ', viewport-fit=cover');
+})();
+</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -5831,35 +5840,5 @@ const fillTicketsRowsFromLedger = async () => {
 
 
 
-<!-- ChatGPT patch: Desktop auto-fit JS -->
-<script id="desktop-auto-fit-js">
-(function(){
-  function applyScale(){
-    var canvas = document.getElementById('desktopCanvas');
-    if(!canvas) return;
-    var W = 1200; // target desktop width
-    var vw = Math.min(window.innerWidth, screen.width);
-    var scale = Math.max(0.36, Math.min(1, vw / W)); // clamp
-    canvas.style.transform = 'scale(' + scale + ')';
-    // Adjust holder height so the page can scroll vertically
-    var rect = canvas.getBoundingClientRect();
-    var fullHeight = canvas.scrollHeight * scale;
-    var holder = document.querySelector('.auto-fit-holder');
-    if(holder){ holder.style.height = fullHeight + 'px'; }
-  }
-  document.addEventListener('DOMContentLoaded', function(){
-    // Wrap main body content in holder+canvas
-    var bodyChildren = Array.from(document.body.childNodes);
-    var holder = document.createElement('div'); holder.className = 'auto-fit-holder';
-    var canvas = document.createElement('div'); canvas.id = 'desktopCanvas'; canvas.className='scale';
-    while(document.body.firstChild){ canvas.appendChild(document.body.firstChild); }
-    holder.appendChild(canvas);
-    document.body.appendChild(holder);
-    applyScale();
-  });
-  window.addEventListener('resize', applyScale);
-  window.addEventListener('orientationchange', function(){ setTimeout(applyScale, 200); });
-})();
-</script>
 </body>
 </html>
