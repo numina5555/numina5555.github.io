@@ -4291,11 +4291,11 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="mbox-posters">
       <div class="mbox-poster" data-status="Abierto">
         <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"></div>
-        <span class="mbox-badge"><span data-i18n="mbox.tabs.upcoming">Próximamente</span></span>
+        <span class="mbox-badge" data-i18n="mbox.tabs.upcoming">Próximamente</span>
       </div>
       <div class="mbox-poster" data-status="Abierto">
         <div class="mbox-poster-img placeholder" role="img" aria-label="Poster (2:3)"></div>
-        <span class="mbox-badge"><span data-i18n="mbox.tabs.upcoming">Próximamente</span></span>
+        <span class="mbox-badge" data-i18n="mbox.tabs.upcoming">Próximamente</span>
       </div>
     </div>
   </div>
@@ -5792,7 +5792,9 @@ const fillTicketsRowsFromLedger = async () => {
           imgDiv.setAttribute('aria-label', i === 0 ? 'Foto sorteo dinero' : 'Sorteo mystery box');
         }
         if (badge) {
-          badge.textContent = (i === 0) ? 'Abierto' : 'Próximamente';
+          const key = (i === 0) ? 'mbox.status.open' : 'mbox.tabs.upcoming';
+          badge.setAttribute('data-i18n', key);
+          badge.textContent = (window.dI18n && typeof dI18n.t==='function') ? dI18n.t(key) : (i===0?'Abierto':'Próximamente');
         }
       });
     } catch (_) {}
