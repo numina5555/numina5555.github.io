@@ -4,96 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NUMINA | Dashboard</title>
-<!-- ChatGPT patch: Desktop-on-Mobile toggle -->
-<style id="desktop-on-mobile-css">
-.dom-toggle{
-  position: fixed; right: 12px; bottom: 16px; z-index: 5000;
-  background: rgba(0,0,0,.6); color: #ffd000; border: 1px solid rgba(255,208,0,.6);
-  border-radius: 999px; padding: .45rem .9rem; font-size: .9rem;
-  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-}
-.dom-toggle:hover{ background: rgba(0,0,0,.75); }
-@media (min-width: 992px){ .dom-toggle{ display:none; } } /* ocultar en desktop real */
-</style>
-<!-- ChatGPT patch: Responsive full adaptation (v1) -->
-<style id="responsive-full-v1">
-/* ---------- Global/base ---------- */
-:root{
-  /* Desktop font-size was already tuned in this version; leave it. */
-}
-/* Header always accessible */
-.dashboard-header{ position: sticky; top: 0; z-index: 2000; }
-/* Prevent any grid/flex children from overflowing */
-* { min-width: 0; }
-.card, .stat-card, .section, .welcome-banner, .table-container { min-width: 0; }
-.stat-card { overflow: visible; }
-/* Default stats grid is fluid; desktop rule elsewhere will force 4 cols */
-.stats-grid{ display: grid; grid-template-columns: 1fr; gap: 1rem; }
-
-/* ---------- Sidebar off-canvas on mobile ---------- */
-.hamburger-btn{
-  display:none; position:absolute; left:12px; top:50%; transform:translateY(-50%);
-  background:transparent; border:0; color:var(--text, #fff); font-size:1.25rem; padding:.5rem; border-radius:8px;
-}
-.hamburger-btn:focus{ outline:none; box-shadow:0 0 0 3px rgba(255,215,0,.25); }
-.sidebar-backdrop{ display:block; }
-
-@media (max-width: 991.98px){
-  .hamburger-btn{ display:inline-flex; align-items:center; justify-content:center; }
-  .sidebar{
-    position: fixed; left: 0; top: env(safe-area-inset-top); top: 0;
-    height: 100vh; width: 260px;
-    transform: translateX(-100%); transition: transform .22s ease;
-    z-index: 2100; overflow-y: auto; box-shadow: 0 10px 24px rgba(0,0,0,.45);
-  }
-  body.menu-open .sidebar{ transform: translateX(0); }
-  .sidebar-backdrop{
-    position: fixed; inset: 0; background: rgba(0,0,0,.5); opacity: 0; transition: opacity .2s;
-    z-index: 2050;
-  }
-  body.menu-open .sidebar-backdrop{ opacity: 1; }
-  body.menu-open .sidebar-backdrop[hidden]{ display:block; } /* ensure visible */
-  /* Content padding */
-  .main-content{ padding: 1rem !important; }
-  /* Undo any "mini sidebar" variants that hide text */
-  .menu-item span{ display:inline !important; }
-}
-
-/* ---------- Typography & spacing scaling for phones ---------- */
-@media (max-width: 767.98px){
-  :root{ font-size: 62.5%; } /* 1rem ≈ 10px */
-  .welcome-banner h1{ font-size: clamp(1.25rem, 5vw, 1.6rem); }
-  .section-title{ font-size: clamp(1rem, 4.4vw, 1.2rem); }
-  .stat-card{ padding: 1rem; }
-  .stat-card .title{ font-size: clamp(0.8rem, 3vw, 1rem); letter-spacing:.02em; }
-  .stat-card .value{ font-size: clamp(1.1rem, 5.2vw, 1.4rem); }
-  .btn, .action-btn{ padding: .55rem .85rem; }
-}
-@media (max-width: 389.98px){ :root{ font-size: 58%; } }
-
-/* ---------- Stats grid columns by breakpoint ---------- */
-@media (min-width: 576px){ .stats-grid{ grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 768px){ .stats-grid{ grid-template-columns: repeat(3, 1fr); } }
-@media (min-width: 1200px){ .stats-grid{ grid-template-columns: repeat(4, 1fr); } }
-
-/* ---------- Tables: never truncate on mobile ---------- */
-.table-container{ width:100%; }
-@media (max-width: 991.98px){
-  .table-container{ overflow-x:auto !important; -webkit-overflow-scrolling:touch; }
-  .table-container > table{ min-width: 760px; }
-  table th, table td{ white-space: nowrap; }
-}
-@media (max-width: 480px){
-  .table-container > table{ min-width: 640px; }
-  table th, table td{ padding: .6rem .7rem; }
-}
-
-/* ---------- Desktop specifics (keep like foto 2) ---------- */
-@media (min-width: 1200px){
-  :root{ font-size: 72%; } /* conserves previous desktop scaling */
-  .stats-grid{ grid-template-columns: repeat(4, 1fr) !important; }
-}
-
+<!-- ChatGPT patch: Desktop auto-fit to phone width (no user pinch) -->
+<style id="desktop-auto-fit-css">
+#desktopCanvas{ width: 1200px; transform-origin: top left; }
+#desktopCanvas.scale{ will-change: transform; }
+.auto-fit-holder{ width: 100%; height: auto; overflow: hidden; }
 </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1289,7 +1204,6 @@ html, body { overflow-x: hidden; }
 </head>
 <body>
   <header class="dashboard-header">
-  <button id="hamburger-btn" aria-label="Abrir menú" class="hamburger-btn" type="button">    <i class="fas fa-bars"></i>  </button>
     <div style="flex-grow:1; text-align:center;">
       <div class="logo">NUMINA</div>
     </div>
@@ -1297,7 +1211,6 @@ html, body { overflow-x: hidden; }
       <div class="user-avatar" id="user-avatar">U</div>
     </div>
   </header>
-  <div id="sidebar-backdrop" class="sidebar-backdrop" hidden></div>
 
   <div class="dashboard-container">
     <nav class="sidebar">
@@ -5918,80 +5831,34 @@ const fillTicketsRowsFromLedger = async () => {
 
 
 
-<!-- ChatGPT patch: Responsive full JS (v1) -->
-<script id="responsive-full-v1-js">
-document.addEventListener('DOMContentLoaded', function(){
-  var btn = document.getElementById('hamburger-btn');
-  var backdrop = document.getElementById('sidebar-backdrop');
-  function setOpen(open){
-    document.body.classList.toggle('menu-open', !!open);
-    if (backdrop) backdrop.hidden = !open;
-  }
-  if (btn) btn.addEventListener('click', function(){ setOpen(!document.body.classList.contains('menu-open')); });
-  if (backdrop) backdrop.addEventListener('click', function(){ setOpen(false); });
-  document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ setOpen(false); }});
-
-  // Auto-wrap tables in .table-container (once)
-  document.querySelectorAll('table').forEach(function(tbl){
-    var parent = tbl.parentElement;
-    if (!parent) return;
-    if (!parent.classList.contains('table-container')){
-      var wrap = document.createElement('div');
-      wrap.className = 'table-container';
-      parent.replaceChild(wrap, tbl);
-      wrap.appendChild(tbl);
-    }
-  });
-
-  // Close menu when clicking any sidebar link
-  document.querySelectorAll('.sidebar a, .sidebar .menu-item').forEach(function(el){
-    el.addEventListener('click', function(){ setOpen(false); });
-  });
-});
-</script>
-<button class="dom-toggle" id="domToggle" type="button">Vista: Escritorio</button>
-<!-- ChatGPT patch: Desktop-on-Mobile logic -->
-<script id="desktop-on-mobile-js">
+<!-- ChatGPT patch: Desktop auto-fit JS -->
+<script id="desktop-auto-fit-js">
 (function(){
-  function setViewport(content){
-    var meta = document.querySelector('meta[name="viewport"]');
-    if(!meta){
-      meta = document.createElement('meta'); meta.name = 'viewport';
-      document.head.appendChild(meta);
-    }
-    meta.setAttribute('content', content);
-  }
-  function applyMode(){
-    var wantDesktop = localStorage.getItem('dom_mode') !== 'mobile';
-    var isSmall = Math.min(screen.width, screen.height) < 992 || window.innerWidth < 992;
-    if(isSmall && wantDesktop){
-      // Pretend desktop: width=1200 makes CSS treat it as >=1200px
-      setViewport('width=1200, initial-scale=1');
-      var btn = document.getElementById('domToggle');
-      if(btn) btn.textContent = 'Vista: Escritorio';
-    }else{
-      setViewport('width=device-width, initial-scale=1');
-      var btn = document.getElementById('domToggle');
-      if(btn) btn.textContent = 'Vista: Móvil';
-    }
+  function applyScale(){
+    var canvas = document.getElementById('desktopCanvas');
+    if(!canvas) return;
+    var W = 1200; // target desktop width
+    var vw = Math.min(window.innerWidth, screen.width);
+    var scale = Math.max(0.36, Math.min(1, vw / W)); // clamp
+    canvas.style.transform = 'scale(' + scale + ')';
+    // Adjust holder height so the page can scroll vertically
+    var rect = canvas.getBoundingClientRect();
+    var fullHeight = canvas.scrollHeight * scale;
+    var holder = document.querySelector('.auto-fit-holder');
+    if(holder){ holder.style.height = fullHeight + 'px'; }
   }
   document.addEventListener('DOMContentLoaded', function(){
-    applyMode();
-    var btn = document.getElementById('domToggle');
-    if(btn){
-      btn.addEventListener('click', function(){
-        var now = localStorage.getItem('dom_mode');
-        // toggle
-        if(now === 'mobile'){ localStorage.setItem('dom_mode','desktop'); }
-        else { localStorage.setItem('dom_mode','mobile'); }
-        // Re-apply and reload to ensure layout recalculates correctly
-        applyMode();
-        location.reload();
-      });
-    }
+    // Wrap main body content in holder+canvas
+    var bodyChildren = Array.from(document.body.childNodes);
+    var holder = document.createElement('div'); holder.className = 'auto-fit-holder';
+    var canvas = document.createElement('div'); canvas.id = 'desktopCanvas'; canvas.className='scale';
+    while(document.body.firstChild){ canvas.appendChild(document.body.firstChild); }
+    holder.appendChild(canvas);
+    document.body.appendChild(holder);
+    applyScale();
   });
-  // Re-apply on orientation change
-  window.addEventListener('orientationchange', function(){ setTimeout(function(){ applyMode(); location.reload(); }, 200); });
+  window.addEventListener('resize', applyScale);
+  window.addEventListener('orientationchange', function(){ setTimeout(applyScale, 200); });
 })();
 </script>
 </body>
