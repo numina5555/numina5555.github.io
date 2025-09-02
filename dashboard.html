@@ -1679,14 +1679,43 @@ async function cargarDashboard(){
   } catch(_) {}
 }
 
-    ready(async ()=>{
+    
+    // Simple navigation initializer (no data fetching)
+    function initNav(){
+      try{
+        const menuItems = document.querySelectorAll('.menu-item[data-target]');
+        const sections = document.querySelectorAll('.section-content');
+        const mainDashboard = document.getElementById('main-dashboard');
+        menuItems.forEach(function(item){
+          item.addEventListener('click', function(){
+            const target = item.getAttribute('data-target');
+            // active state
+            menuItems.forEach(function(i){ i.classList.remove('active'); });
+            item.classList.add('active');
+            // show target
+            if (target === 'dashboard'){
+              if (mainDashboard) mainDashboard.style.display = 'block';
+              sections.forEach(function(s){ s.style.display = 'none'; });
+              if (typeof cargarDashboard === 'function') cargarDashboard();
+              return;
+            }
+            if (target === 'logout'){ return; }
+            if (mainDashboard) mainDashboard.style.display = 'none';
+            sections.forEach(function(s){ s.style.display = (s.id === 'section-'+target ? 'block' : 'none'); });
+            if (target === 'compras' && typeof cargarMisCompras === 'function') { cargarMisCompras(); }
+            if (target === 'sorteos' && typeof cargarSorteos === 'function') { cargarSorteos(); }
+          });
+        });
+      }catch(e){ console.error(e); }
+    }
+ready(async ()=>{
       initLangMenu();
       initCopyButton();
       initNav();
       dI18n.apply();
-      const supabase = getSupabase();
+      // (mock) no supabase client
       await cargarDashboard();
-      initConfig(supabase);
+      if (typeof initConfig === "function") initConfig(null);
       document.getElementById('logout-btn')?.addEventListener('click', async ()=>{ await getSupabase().auth.signOut(); window.location.href = '/login.html'; });
     });
   </script>
@@ -1848,7 +1877,7 @@ overlay.classList.add("show");
     try {
       if (!currentSku) return;
       // 1) validar sesión
-      const supabase = getSupabase();
+      // (mock) no supabase client
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         alert('Inicia sesión para continuar con la compra.');
@@ -2987,7 +3016,7 @@ ${msg}`;
     const originalLabel = btn.textContent;
     btn.textContent = 'Enviando…';
 
-    const supabase = getSupabase();
+    // (mock) no supabase client
     const { data: { user }, error: authErr } = await supabase.auth.getUser();
     if (authErr || !user) throw new Error('No autenticado.');
 
@@ -3784,7 +3813,7 @@ async function cargarSorteos(){
     const tbody = document.getElementById('sorteos-tbody');
     if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">'+ (window.dI18n ? dI18n.t('labels.loading') : 'Cargando…') +'</td></tr>';
 
-    const supabase = getSupabase();
+    // (mock) no supabase client
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user){ window.location.href = '/login.html'; return; }
 
