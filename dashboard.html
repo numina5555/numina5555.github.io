@@ -1235,6 +1235,37 @@ html, body { overflow-x: hidden; }
   }catch(e){ /* no-op */ }
 })();
 </script>
+
+<!-- NUMINA: Pill "Participar" centrada en tarjeta de sorteo -->
+<style id="numina-pill-participar-css">
+  .mbox-pillwrap{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:12px 0 16px;
+  }
+  .mbox-pill{
+    background: var(--primary);
+    color:#111;
+    border:0;
+    border-radius:999px;
+    padding:10px 18px;
+    font-weight:900;
+    cursor:pointer;
+    box-shadow:0 8px 22px rgba(255,215,0,.28);
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .mbox-pill:hover{ transform: translateY(-1px); box-shadow:0 12px 26px rgba(255,215,0,.35); }
+  .mbox-pill:active{ transform: translateY(0); box-shadow:0 6px 18px rgba(255,215,0,.28); }
+
+  /* Si es poster (lista horizontal), la pill se superpone abajo centrada */
+  .mbox-poster{ position:relative; }
+  .mbox-poster .mbox-pillwrap{
+    position:absolute;
+    left:0; right:0; bottom:12px;
+    padding:0;
+  }
+</style>
 </head>
 <body>
   <header class="dashboard-header">
@@ -5901,5 +5932,71 @@ const fillTicketsRowsFromLedger = async () => {
 
 
 
+
+<!-- NUMINA: Inyección automática de pill "Participar" en sorteos Abiertos -->
+<script id="numina-pill-participar-js">
+(function(){
+  function addPillToOpenItems(root){
+    root = root || document;
+    var tOpen = (window.dI18n && dI18n.t && dI18n.t('mbox.status.open')) || 'Abierto';
+    var tCta  = (window.dI18n && dI18n.t && dI18n.t('mbox.actions.participate')) || 'Participar';
+
+    var cards = root.querySelectorAll('.mbox-card, .mbox-poster');
+    cards.forEach(function(card){
+      if (!card || card.dataset.__hasPill) return;
+
+      // chip/badge con el estado
+      var chip = card.querySelector('.mbox-chip, .mbox-badge');
+      var label = (chip && (chip.textContent || '').trim().toLowerCase()) || '';
+
+      if (label === String(tOpen).toLowerCase()){
+        var wrap = document.createElement('div');
+        wrap.className = 'mbox-pillwrap';
+
+        var btn = document.createElement('button');
+        btn.className = 'mbox-pill';
+        btn.type = 'button';
+        btn.setAttribute('data-i18n','mbox.actions.participate');
+        btn.textContent = tCta;
+
+        wrap.appendChild(btn);
+
+        // Preferimos el body si existe, si no, al contenedor general
+        var body = card.querySelector('.mbox-card-body');
+        if (body) body.appendChild(wrap);
+        else card.appendChild(wrap);
+
+        // Acción demo (reemplazar por flujo real si lo tenés)
+        btn.addEventListener('click', function(ev){
+          ev.preventDefault();
+          try{
+            if (window.handleParticiparClick) return window.handleParticiparClick(card, ev);
+          }catch(_){}
+          alert(tCta + ' (UI demo)');
+        });
+
+        card.dataset.__hasPill = '1';
+        try{ if (window.dI18n && typeof dI18n.apply === 'function') dI18n.apply(); }catch(_){}
+      }
+    });
+  }
+
+  function init(){
+    addPillToOpenItems(document);
+    setTimeout(function(){ addPillToOpenItems(document); }, 400);
+    try{
+      var wrap = document.querySelector('.mbox-wrap') || document.body;
+      var mo = new MutationObserver(function(){ addPillToOpenItems(wrap); });
+      mo.observe(wrap, {childList:true, subtree:true});
+    }catch(_){}
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, {once:true});
+  } else {
+    init();
+  }
+})();
+</script>
 </body>
 </html>
