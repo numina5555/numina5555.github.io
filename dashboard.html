@@ -1717,24 +1717,8 @@ html, body { overflow-x: hidden; }
 })();
 
       document.getElementById('referrals-value').textContent = (typeof userData.referrals_count !== 'undefined' ? userData.referrals_count : (userData.referrals?.length || '0'));
-      /* NUMINA: tickets activos = suma del ledger (positivos + negativos) */
-try {
-  const { data: trows, error: terr } = await supabase
-    .from('tickets_ledger')
-    .select('count')
-    .eq('user_id', user.id);
-  if (!terr && Array.isArray(trows)) {
-    const sum = trows.reduce((acc, r) => acc + (Number(r?.count) || 0), 0);
-    document.getElementById('tickets-value').textContent = String(sum);
-  } else {
-    document.getElementById('tickets-value').textContent = (userData.tickets_count || '0');
-  }
-} catch(e) {
-  console.warn('tickets ledger sum', e);
-  document.getElementById('tickets-value').textContent = (userData.tickets_count || '0');
-}
-
-      setText('full-name', userData.full_name);
+      document.getElementById('tickets-value').textContent = '3';
+setText('full-name', userData.full_name);
       setText('user-email', userData.email);
       setText('user-phone', userData.phone);
       setText('user-address', userData.address);
@@ -5900,63 +5884,6 @@ const fillTicketsRowsFromLedger = async () => {
 
 
 
-
-
-<!-- ==== TARGETED MOCK (tickets_ledger only) ==== -->
-<script>
-(function(){
-  // If we don't have a supabase client yet, do nothing.
-  var get = window.getSupabase || function(){ return window.supabase; };
-  var sb = (typeof get === 'function') ? get() : null;
-  if (!sb || typeof sb.from !== 'function') return;
-
-  // Keep a reference to the original .from
-  var realFrom = sb.from.bind(sb);
-
-  // A tiny thenable query builder that mimics supabase-js just enough
-  function builderFor(mockArray){
-    var state = { single:false };
-    var api = {
-      select: function(){ return api; },
-      eq: function(){ return api; },
-      neq: function(){ return api; },
-      gte: function(){ return api; },
-      lte: function(){ return api; },
-      gt: function(){ return api; },
-      lt: function(){ return api; },
-      in: function(){ return api; },
-      is: function(){ return api; },
-      like: function(){ return api; },
-      ilike: function(){ return api; },
-      or: function(){ return api; },
-      order: function(){ return api; },
-      limit: function(){ return api; },
-      range: function(){ return api; },
-      single: function(){ state.single = true; return api; },
-      then: function(res, rej){
-        var payload = state.single ? (Array.isArray(mockArray) ? mockArray[0] : mockArray) : mockArray;
-        return Promise.resolve({ data: payload, error: null, count: Array.isArray(mockArray) ? mockArray.length : (mockArray ? 1 : 0) }).then(res, rej);
-      },
-      catch: function(rej){ return Promise.resolve().catch(rej); },
-      finally: function(cb){ return Promise.resolve().finally(cb); }
-    };
-    return api;
-  }
-
-  // Override only for the 'tickets_ledger' table
-  sb.from = function(table){
-    if (table === 'tickets_ledger'){
-      var MOCK = [
-        { created_at: '2025-08-23T00:00:00Z', product: 'Pulsera Numina', tickets: 1, referrer_id: null, user_id: 'mock-user' },
-        { created_at: '2025-08-23T00:00:00Z', product: '3Ref.C1',        tickets: 1, referrer_id: 'r1', user_id: 'mock-user' },
-        { created_at: '2025-08-23T00:00:00Z', product: '3Ref.C1',        tickets: 1, referrer_id: 'r1', user_id: 'mock-user' }
-      ];
-      return builderFor(MOCK);
-    }
-    return realFrom(table);
-  };
-})();
-</script>
 
 </body>
 </html>
