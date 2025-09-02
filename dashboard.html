@@ -5789,27 +5789,6 @@ const fillTicketsRowsFromLedger = async () => {
 .mboxcin-title{margin-top:18px;font-weight:800;letter-spacing:-.01em;color:#fff;font-size:19.9px}
 @media(min-width:768px){.mboxcin-title{font-size:24.9px}}
 /* === end === */
-
-/* === Patch: show #balance-value text ON TOP of the image (overlay) === */
-.stat-card { position: relative; } /* already present for other effects; safe to repeat */
-#balance-value{
-  position: absolute;
-  left: 50%;
-  bottom: 14px;               /* sit over bottom of the image */
-  transform: translateX(-50%);
-  z-index: 3;                 /* above any image/background/pseudo-elements */
-  margin: 0 !important;
-  color: #fff;
-  font-weight: 900;
-  font-size: clamp(14px, 2.2vw, 20px);
-  line-height: 1.1;
-  text-align: center;
-  letter-spacing: .3px;
-  text-shadow: 0 2px 8px rgba(0,0,0,.7);
-  pointer-events: none;       /* do not block click on the card */
-}
-/* Optional: tighter title spacing for this card so it doesn't collide */
-#balance-value + .change{ margin-top: 28px; }
 </style>
 
 <script>
@@ -5905,6 +5884,45 @@ const fillTicketsRowsFromLedger = async () => {
 
 
 
+
+
+<!-- === PATCH: overlay for #balance-value + speed up Mystery images === -->
+<script>
+(function(){
+  try{
+    // 1) Put "MYSTERY BOX" (#balance-value) OVER the image without altering card styles
+    var val = document.getElementById('balance-value');
+    if (val){
+      var card = val.closest('.stat-card');
+      if (card && getComputedStyle(card).position === 'static'){
+        card.style.position = 'relative'; // local only
+      }
+      // inline overlay styles (scoped to this element only)
+      Object.assign(val.style, {
+        position: 'absolute',
+        left: '50%',
+        bottom: '12px',
+        transform: 'translateX(-50%)',
+        zIndex: '5',
+        color: '#fff',
+        fontWeight: '900',
+        fontSize: '20px',
+        textShadow: '0 2px 6px rgba(0,0,0,.7)',
+        pointerEvents: 'none',
+        margin: '0'
+      });
+    }
+
+    // 2) Mystery images: bypass the "click-to-allow" guard so posters render immediately
+    // Some code defers render until window.__mbAllow === true; force-enable and try render
+    window.__mbAllow = true;
+    // If their renderer exists, call it (safe no-op if not defined)
+    if (typeof window.renderMBContent === 'function') {
+      try { window.renderMBContent(); } catch(_) {}
+    }
+  }catch(e){ console.warn('overlay+speed patch error', e); }
+})();
+</script>
 
 </body>
 </html>
