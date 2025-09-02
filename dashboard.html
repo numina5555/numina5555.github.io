@@ -1236,16 +1236,22 @@ html, body { overflow-x: hidden; }
 })();
 </script>
 
-<!-- NUMINA v2: Pill "Participar" centrada sobre la foto del sorteo -->
-<style id="numina-pill-participar-css-v2">
+<!-- NUMINA v3: Pill "Participar" visible sobre la imagen -->
+<style id="numina-pill-participar-css-v3">
+  .mbox-card-head, .mbox-poster{ position: relative; }
   .mbox-pillwrap{
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    bottom: 14px;
     display:flex;
     justify-content:center;
     align-items:center;
-    z-index: 9; /* por encima de ::after del head */
+    z-index: 9999; /* asegura estar por encima del overlay ::after */
+    pointer-events: auto;
   }
   .mbox-pill{
-    background: #FED60A; /* amarillo del chip */
+    background: #FED60A;
     color:#111;
     border:0;
     border-radius:999px;
@@ -1254,29 +1260,10 @@ html, body { overflow-x: hidden; }
     cursor:pointer;
     box-shadow:0 8px 22px rgba(255,215,0,.28);
     transition: transform .12s ease, box-shadow .12s ease;
+    white-space: nowrap;
   }
   .mbox-pill:hover{ transform: translateY(-1px); box-shadow:0 12px 26px rgba(255,215,0,.35); }
   .mbox-pill:active{ transform: translateY(0); box-shadow:0 6px 18px rgba(255,215,0,.28); }
-
-  /* Ubicarla sobre la IMAGEN dentro del head */
-  .mbox-card-head{ position: relative; }
-  .mbox-card-head .mbox-pillwrap{
-    position:absolute;
-    left:50%;
-    transform:translateX(-50%);
-    bottom: 14px;
-    padding:0;
-    pointer-events:auto;
-  }
-
-  /* Fallback para posters/carousels con overlay absoluto */
-  .mbox-poster{ position:relative; }
-  .mbox-poster .mbox-pillwrap{
-    position:absolute;
-    left:50%;
-    transform:translateX(-50%);
-    bottom: 12px;
-  }
 </style>
 </head>
 <body>
@@ -5945,78 +5932,93 @@ const fillTicketsRowsFromLedger = async () => {
 
 
 
-<!-- NUMINA v2: Inserta pill "Participar" cuando el estado es Abierto -->
-<script id="numina-pill-participar-js-v2">
+<!-- NUMINA v3: Lógica robusta de inyección -->
+<script id="numina-pill-participar-js-v3">
 (function(){
-  function textOf(el){ return (el && (el.textContent||"").trim().toLowerCase()) || ""; }
-  function i18n(key, fallback){
-    try{ if (window.dI18n && dI18n.t) return dI18n.t(key) || fallback; }catch(_){}
-    return fallback;
+  function getText(el){
+    if (!el) return "";
+    return (el.textContent || "").replace(/\s+/g, ' ').trim().toLowerCase();
   }
-
-  var OPEN = String(i18n('mbox.status.open', 'Abierto')).toLowerCase();
-  var CTA  = i18n('mbox.actions.participate', 'Participar');
+  function isOpenCard(card){
+    // Criterios: texto "abierto"/"open" en algún chip/badge/status
+    var chips = card.querySelectorAll('.mbox-chip, .mbox-badge, [class*="chip"], [class*="badge"], [data-status], [aria-label]');
+    for (var i=0;i<chips.length;i++){
+      var c = chips[i];
+      var t = getText(c);
+      var attr = (c.getAttribute('data-status')||c.getAttribute('aria-label')||"").toLowerCase();
+      if (t.includes('abierto') || t.includes('open') || attr.includes('abierto') || attr.includes('open')){
+        return true;
+      }
+      // data-i18n hints
+      var di = (c.getAttribute('data-i18n')||"").toLowerCase();
+      if (di.includes('mbox.status.open')) return true;
+    }
+    // Fallback: si el card está en un tab "Abiertos"
+    var tab = document.querySelector('[aria-selected="true"], .is-active');
+    if (tab){
+      var tabText = getText(tab);
+      if (tabText.includes('abiertos') || tabText.includes('open')){
+        // Si estamos en el tab de abiertos, y el card NO dice próximamente/finalizado, lo tomamos como abierto
+        var bad = card.querySelector('.mbox-chip, .mbox-badge, [class*="chip"], [class*="badge"]');
+        var bt = getText(bad);
+        if (!(bt.includes('próximamente') || bt.includes('proximamente') || bt.includes('finalizado') || bt.includes('cerrado'))){
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 
   function addPill(card){
     if (!card || card.dataset.__hasPill) return;
-
-    var pillWrap = document.createElement('div');
-    pillWrap.className = 'mbox-pillwrap';
+    var wrap = document.createElement('div');
+    wrap.className = 'mbox-pillwrap';
 
     var btn = document.createElement('button');
     btn.className = 'mbox-pill';
     btn.type = 'button';
-    btn.setAttribute('data-i18n','mbox.actions.participate');
-    btn.textContent = CTA;
+    btn.textContent = (window.dI18n && dI18n.t && dI18n.t('mbox.actions.participate')) || 'Participar';
 
-    pillWrap.appendChild(btn);
+    wrap.appendChild(btn);
 
-    // Preferimos ubicarla en el HEAD para que quede "sobre" la imagen
-    var head = card.querySelector('.mbox-card-head');
-    if (head) head.appendChild(pillWrap);
-    else card.appendChild(pillWrap);
+    // Lugar preferido: head sobre la imagen; fallback: card
+    var head = card.querySelector('.mbox-card-head') || card;
+    head.appendChild(wrap);
 
-    // Hook opcional si existe tu función real
     btn.addEventListener('click', function(ev){
       ev.preventDefault();
       try{
         if (window.handleParticiparClick) return window.handleParticiparClick(card, ev);
       }catch(_){}
-      alert(CTA + ' (UI demo)');
+      alert(btn.textContent + ' (UI demo)');
     });
 
     card.dataset.__hasPill = '1';
-    try{ if (window.dI18n && typeof dI18n.apply === 'function') dI18n.apply(); }catch(_){}
   }
 
   function scan(root){
-    var cards = (root || document).querySelectorAll('.mbox-card, .mbox-poster');
+    var cards = (root || document).querySelectorAll('.mbox-card, .mbox-poster, [class*="mbox-card"]');
     cards.forEach(function(card){
-      // detectar chip/etiqueta de estado dentro del head
-      var chip = card.querySelector('.mbox-chip, .mbox-badge, .mbox-status');
-      var label = textOf(chip);
-      if (label === OPEN) addPill(card);
+      if (isOpenCard(card)) addPill(card);
     });
   }
 
   function init(){
     scan(document);
-    // re-scan por si el DOM se genera luego (carouseles, fetch, etc.)
-    var target = document.querySelector('.mbox-wrap') || document.body;
     try{
       var mo = new MutationObserver(function(muts){
         for (var i=0;i<muts.length;i++){
-          var n = muts[i].target;
-          scan(n.nodeType === 1 ? n : document);
+          var t = muts[i].target;
+          scan(t.nodeType === 1 ? t : document);
         }
       });
-      mo.observe(target, {childList:true, subtree:true});
+      mo.observe(document.body, {childList:true, subtree:true});
     }catch(_){}
   }
 
   if (document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', init, {once:true});
-  }else{
+  } else {
     init();
   }
 })();
