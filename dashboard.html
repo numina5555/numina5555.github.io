@@ -1662,234 +1662,23 @@ html, body { overflow-x: hidden; }
         } catch(e){ alert('No se pudo copiar el código. Intenta manualmente.'); console.error(e); }
       });
     }
-    async function cargarDashboard(){
-      document.getElementById('welcome-title').textContent = dI18n.t('labels.loading');
-      document.getElementById('referral-code').textContent = '---';
-      document.getElementById('balance-value').textContent = 'MYSTERY BOX'; // NUMINA: oculto saldo
-      document.getElementById('purchases-value').textContent = '--';
-      document.getElementById('referrals-value').textContent = '--';
-      document.getElementById('tickets-value').textContent = '--';
-      ['full-name','user-email','user-phone','user-address','user-country','user-city','user-postal'].forEach(id=> setText(id, ''));
-      document.getElementById('purchases-body').innerHTML = '<tr><td colspan="5" style="text-align:center;">'+dI18n.t('labels.loading')+'</td></tr>';
-      document.getElementById('referrals-body').innerHTML = '<tr><td colspan="5" style="text-align:center;">'+dI18n.t('labels.loading')+'</td></tr>';
-      const supabase = getSupabase();
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) { window.location.href = '/login.html'; return; }
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('*, purchases(*), referrals:referrals!referrer_id(*)')
-        .eq('id', user.id)
-        .maybeSingle();
-      if (userError || !userData) { console.error(userError); return; }
-      document.getElementById('user-avatar').textContent = (userData.full_name?.charAt(0).toUpperCase() || 'U');
-      window.__lastUserName = (userData.full_name || userData.email || '').trim();
-      document.getElementById('welcome-title').textContent = (dI18n.t('labels.welcome') + ', ' + (window.__lastUserName || '')).trim();
-      document.getElementById('referral-code').textContent = (userData.referral_code || '---');
-      document.getElementById('balance-value').textContent = 'MYSTERY BOX'; // NUMINA: oculto saldo
-      /* NUMINA: compras activas = count(purchases) con status activo */
-(function(){
-  const el = document.getElementById('purchases-value');
-  try {
-    const activeSet = new Set(['paid','pending','pagado','pendiente']);
-    const list = Array.isArray(userData.purchases) ? userData.purchases : [];
-    let count = list.filter(p => activeSet.has(String(p?.status || '').toLowerCase())).length;
-    if (count === 0) {
-      // Fallback: consultar directo a la tabla por si no llegó el embed
-      (async ()=>{
-        try{
-          const { data: prow, error: perr } = await supabase
-            .from('purchases')
-            .select('status')
-            .eq('user_id', user.id)
-            .in('status', ['paid','pending']);
-          if (!perr && Array.isArray(prow)) {
-            el.textContent = String(prow.length);
-            return;
-          }
-        }catch(e){ /* noop */ }
-        el.textContent = String(userData.active_purchases ?? '0');
-      })();
-    }
-    el.textContent = String(count || userData.active_purchases || '0');
-  } catch(e){
-    el.textContent = String(userData.active_purchases || '0');
-  }
-})();
-
-      document.getElementById('referrals-value').textContent = (typeof userData.referrals_count !== 'undefined' ? userData.referrals_count : (userData.referrals?.length || '0'));
-      /* NUMINA: tickets activos = suma del ledger (positivos + negativos) */
-try {
-  const { data: trows, error: terr } = await supabase
-    .from('tickets_ledger')
-    .select('count')
-    .eq('user_id', user.id);
-  if (!terr && Array.isArray(trows)) {
-    const sum = trows.reduce((acc, r) => acc + (Number(r?.count) || 0), 0);
-    document.getElementById('tickets-value').textContent = String(sum);
-  } else {
-    document.getElementById('tickets-value').textContent = (userData.tickets_count || '0');
-  }
-} catch(e) {
-  console.warn('tickets ledger sum', e);
-  document.getElementById('tickets-value').textContent = (userData.tickets_count || '0');
+    
+async function cargarDashboard(){
+  // --- MOCK DASHBOARD (sin consultas) ---
+  try { document.getElementById('welcome-title').textContent = 'Bienvenido/a'; } catch(_) {}
+  try { document.getElementById('referral-code').textContent = 'ABC123'; } catch(_) {}
+  try { document.getElementById('balance-value').textContent = 'MYSTERY BOX'; } catch(_) {}
+  try { document.getElementById('purchases-value').textContent = '0'; } catch(_) {}
+  try { document.getElementById('referrals-value').textContent = '0'; } catch(_) {}
+  try { document.getElementById('tickets-value').textContent = '3'; } catch(_) {}
+  try { 
+    var pb = document.getElementById('purchases-body');
+    if (pb) pb.innerHTML = '<tr><td colspan="5" style="text-align:center;">—</td></tr>';
+    var rb = document.getElementById('referrals-body');
+    if (rb) rb.innerHTML = '<tr><td colspan="5" style="text-align:center;">—</td></tr>';
+  } catch(_) {}
 }
 
-      setText('full-name', userData.full_name);
-      setText('user-email', userData.email);
-      setText('user-phone', userData.phone);
-      setText('user-address', userData.address);
-      setText('user-country', userData.country);
-      setText('user-city', userData.city);
-      setText('user-postal', userData.postal_code);
-      const purchasesBody = document.getElementById('purchases-body');
-      if (userData.purchases?.length){
-        purchasesBody.innerHTML = userData.purchases.map(p=>{
-          const created = p.created_at ? new Date(p.created_at).toLocaleDateString() : '';
-          const value = (typeof p.value === 'number') ? p.value.toFixed(2) : '0.00';
-          return `<tr data-purchase-id="${p.id}"><td>${(window.i18nProductName?window.i18nProductName(p.product_name||''):(p.product_name||''))}</td>
-            <td>${created}</td>
-            <td>$${value}</td>
-            <td>${statusBadge(p.status)}</td>
-            <td><button class="action-btn" data-action="details" data-purchase-id="${p.id}" data-id="${p.id || ''}"><span data-i18n="tables.details">${dI18n.t('tables.details')}</span></button></td>
-          </tr>`;
-        }).join('');
-      } else {
-        purchasesBody.innerHTML = '<tr><td colspan=\"5\" style=\"text-align:center;\"><span data-i18n=\"purchases.none\">Sin compras</span></td></tr>';
-      }
-      const referralsBody = document.getElementById('referrals-body');
-      if (userData.referrals?.length){
-       referralsBody.innerHTML = userData.referrals.map(r=>{
-  const created   = r.created_at ? new Date(r.created_at).toLocaleDateString() : '';
-  const purchases = Number(r.purchases_count) || 0;
-  const tickets   = Math.floor(purchases / 3);
-
-  // Regla: si compras < 1 → PENDIENTE; si no, respeta activo/inactivo
-  const effectiveStatus = (purchases >= 1)
-    ? (r.is_active ? 'active' : 'inactive')
-    : 'pending';
-
-  return `<tr><td>${r.referred_email || ''}</td>
-    <td>${created}</td>
-    <td>${purchases}</td>
-    <td>${statusBadge(effectiveStatus)}</td>
-    <td>${tickets}</td>
-  </tr>`;
-}).join('');
-
-      } else {
-        referralsBody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><span data-i18n="referrals.none">'+dI18n.t('referrals.none')+'</span></td></tr>';
-      }
-      ['balance-value','purchases-value','referrals-value','tickets-value'].forEach(id=>{
-        const valEl = document.getElementById(id); if (!valEl) return;
-        if (!/\$?---|--/.test(valEl.textContent)){
-          const change = valEl.parentElement.querySelector('.change');
-          if (change) change.style.display = 'none';
-        }
-      });
-    }
-    async function cargarMisCompras(){
-      const tbody = document.getElementById('miscompras-body');
-      if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">'+dI18n.t('labels.loading')+'</td></tr>';
-      const supabase = getSupabase();
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user){ window.location.href = '/login.html'; return; }
-      const { data, error } = await supabase
-        .from('purchases')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-      if (error || !Array.isArray(data)){
-        if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><span data-i18n="purchases.none">'+dI18n.t('purchases.none')+'</span></td></tr>';
-        console.error(error);
-        return;
-      }
-      if (!data.length){
-        if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><span data-i18n="purchases.none">'+dI18n.t('purchases.none')+'</span></td></tr>';
-        return;
-      }
-      tbody.innerHTML = data.map(p=>{
-        const created = p.created_at ? new Date(p.created_at).toLocaleDateString() : '';
-        const value = (typeof p.value === 'number') ? p.value.toFixed(2) : '0.00';
-        const claimCell = '<button class="action-btn" data-action="claim" data-id="'+(p.id||'')+'">'+('<span data-i18n="tables.claim">'+(dI18n.t('tables.claim')||'Claim')+'</span>')+'</button>';
-        return `<tr>
-          <td>${(window.i18nProductName?window.i18nProductName(p.product_name||''):(p.product_name||''))}</td>
-          <td>${created}</td>
-          <td>$${value}</td>
-          <td>${statusBadge(p.status)}</td>
-          <td>${claimCell}</td>
-        </tr>`;
-      }).join('');
-    }
-    function initNav(){
-      const menuItems = document.querySelectorAll('.menu-item[data-target]');
-      const sections = document.querySelectorAll('.section-content');
-      const mainDashboard = document.getElementById('main-dashboard');
-      menuItems.forEach(item=>{
-        item.addEventListener('click', ()=>{
-          const target = item.getAttribute('data-target');
-          menuItems.forEach(i=> i.classList.remove('active'));
-          item.classList.add('active');
-          if (target === 'dashboard'){ mainDashboard.style.display = 'block'; sections.forEach(s=> s.style.display='none'); cargarDashboard(); return; }
-          if (target === 'logout'){ return; }
-          mainDashboard.style.display = 'none';
-          sections.forEach(s=> s.style.display = (s.id === 'section-'+target ? 'block' : 'none'));
-          if (target === 'compras') { cargarMisCompras(); }
-          if (target === 'sorteos') { cargarSorteos(); }
-        });
-      });
-    }
-    function initConfig(supabase){
-      (async function(){
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-        const { data } = await supabase
-          .from('users')
-          .select('full_name,phone,address,country,city,postal_code')
-          .eq('id', user.id)
-          .maybeSingle();
-        if (!data) return;
-        const $ = (id)=>document.getElementById(id);
-        if ($('cfg-fullname')) $('cfg-fullname').value = data.full_name || '';
-        if ($('cfg-phone')) $('cfg-phone').value = data.phone || '';
-        if ($('cfg-address')) $('cfg-address').value = data.address || '';
-        if ($('cfg-country')) $('cfg-country').value = data.country || '';
-        if ($('cfg-city')) $('cfg-city').value = data.city || '';
-        if ($('cfg-postal')) $('cfg-postal').value = data.postal_code || '';
-      })();
-      const datos = document.getElementById('config-datos-form');
-      if (datos) datos.addEventListener('submit', async (e)=>{
-        e.preventDefault();
-        const updates = {
-          full_name: (document.getElementById('cfg-fullname').value||'').trim() || null,
-          phone:     (document.getElementById('cfg-phone').value||'').trim() || null,
-          address:   (document.getElementById('cfg-address').value||'').trim() || null,
-          country:   (document.getElementById('cfg-country').value||'').trim() || null,
-          city:      (document.getElementById('cfg-city').value||'').trim() || null,
-          postal_code:(document.getElementById('cfg-postal').value||'').trim() || null,
-        };
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user){ alert('Sesión expirada'); return; }
-        const { error } = await supabase.from('users').update(updates).eq('id', user.id);
-alert('Cambios guardados');
-        setText('full-name', updates.full_name);
-        setText('user-phone', updates.phone);
-        setText('user-address', updates.address);
-        setText('user-country', updates.country);
-        setText('user-city', updates.city);
-        setText('user-postal', updates.postal_code);
-      });
-      const pass = document.getElementById('config-pass-form');
-      if (pass) pass.addEventListener('submit', async (e)=>{
-        e.preventDefault();
-        const p1 = document.getElementById('cfg-pass1').value;
-        const p2 = document.getElementById('cfg-pass2').value;
-        if (!p1 || p1.length < 6){ alert('La contraseña debe tener al menos 6 caracteres'); return; }
-        if (p1 !== p2){ alert('Las contraseñas no coinciden'); return; }
-        const { error } = await supabase.auth.updateUser({ password: p1 });
-alert('Contraseña actualizada');
-        pass.reset();
-      });
-    }
     ready(async ()=>{
       initLangMenu();
       initCopyButton();
@@ -5243,55 +5032,15 @@ document.addEventListener('DOMContentLoaded', () => {
     var clearBtn = tab.querySelector('.ta-clear');
     
     // Load rows strictly from Supabase (no demo)
-    var rows = [];
-    async function loadRowsFromSupabase(){
-      try{
-        // Prefer existing client instance
-        var sb = (window.supabase && typeof window.supabase.from === 'function')
-                 ? window.supabase
-                 : (window.supabase && window.supabase.createClient && (window.NMN_SUPABASE_URL || window.SUPABASE_URL) && (window.NMN_SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY)
-                    ? window.supabase.createClient(window.NMN_SUPABASE_URL || window.SUPABASE_URL, window.NMN_SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY)
-                    : null);
-        if(!sb){ renderRows(tab, []); return; }
+    
+    // Load mock rows (no Supabase, no network)
+    var rows = [
+      { date: '2025-08-23T00:00:00Z', product: 'Pulsera Numina', tickets: 1, referido: [] },
+      { date: '2025-08-23T00:00:00Z', product: '3Ref.C1',        tickets: 1, referido: ['Sí'] },
+      { date: '2025-08-23T00:00:00Z', product: '3Ref.C1',        tickets: 1, referido: ['Sí'] }
+    ];
+    renderRows(tab, rows);
 
-        var { data: userRes } = await sb.auth.getUser();
-        var userId = window.NMN_USER_ID || (userRes && userRes.user && userRes.user.id);
-        if(!userId){ renderRows(tab, []); return; }
-
-        // 1) Pull raw ledger rows
-        var { data: ledger, error: e1 } = await sb.from('tickets_ledger')
-          .select('count, created_at, purchase_id, sku')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false });
-        if(e1){ console.warn('tickets_ledger error:', e1); ledger = []; }
-
-        // 2) Map to table rows; fetch purchase names for purchase_ids found
-        var pidSet = new Set((ledger||[]).map(r => r.purchase_id).filter(Boolean));
-        var purchasesById = {};
-        if(pidSet.size){
-          var ids = Array.from(pidSet);
-          var { data: purchases, error: e2 } = await sb.from('purchases')
-            .select('id, product_name')
-            .in('id', ids);
-          if(!e2 && Array.isArray(purchases)){ purchases.forEach(p => purchasesById[p.id] = p); }
-        }
-
-        rows = (ledger||[]).map(ev => {
-          return {
-            date: ev.created_at,
-            product: (ev.purchase_id && purchasesById[ev.purchase_id]) ? (purchasesById[ev.purchase_id].product_name || ev.sku || '—') : (ev.sku || '—'),
-            tickets: ev.count || 0,
-            referido: [] // (veremos luego cómo resolver referidos por esquema)
-          };
-        });
-
-        renderRows(tab, rows);
-      }catch(err){
-        console.warn('loadRowsFromSupabase failed:', err);
-        renderRows(tab, []);
-      }
-    }
-    loadRowsFromSupabase();
     function filter(){
       var q = (input && input.value || '').toLowerCase();
       var filtered = !q ? rows : rows.filter(function(r){
@@ -5325,55 +5074,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // === Supabase-backed Active Tickets (optional) ===
-    async function tryLoadActiveFromSupabaseIntoKPI(tabEl){
-      try{
-        if(!window.supabase || !window.supabase.createClient) return false;
-        var SUPABASE_URL = window.NMN_SUPABASE_URL || window.SUPABASE_URL;
-        var SUPABASE_ANON_KEY = window.NMN_SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY;
-        if(!SUPABASE_URL || !SUPABASE_ANON_KEY) return false;
-        var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // Resolve user id (prefer explicit global, otherwise current session user)
-        var userId = window.NMN_USER_ID;
-        if(!userId){
-          var { data: { user } } = await sb.auth.getUser();
-          userId = user && user.id;
-        }
-        if(!userId) return false;
-
-        // Strategy 1: direct 'tickets' table with status='active'
-        var q1 = await sb.from('tickets')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', userId)
-          .eq('status', 'active');
-        if(q1.error && !['PGRST116'].includes(q1.error.code)){ console.warn('Supabase tickets count error:', q1.error); }
-        var activeCount = q1.count || 0;
-
-        // Strategy 2 (fallback): 'ticket_events' ledger (delta or product-based)
-        if(activeCount === 0){
-          var q2 = await sb.from('ticket_events')
-            .select('type, product_name, emails, tickets, delta, created_at')
-            .eq('user_id', userId);
-          if(!q2.error && Array.isArray(q2.data)){
-            var rows2 = q2.data.map(mapEventToRow);
-            // if a 'delta' exists, use it, else tickets value
-            var deltaSum = q2.data.reduce((s,e)=> s + (typeof e.delta === 'number' ? e.delta : 0), 0);
-            var baseSum = rows2.reduce((s,r)=> s + (r.tickets||0), 0);
-            activeCount = deltaSum !== 0 ? deltaSum : baseSum;
-          }
-        }
-
-        var a = tabEl.querySelector('#kpi-active');
-        if(a){ a.textContent = String(activeCount); }
-        return true;
-      }catch(err){
-        console.warn('Supabase active tickets load failed:', err);
-        return false;
-      }
-    }
-
-    paintKpis(); tryLoadActiveFromSupabaseIntoKPI(tab);
-    }
+    
 
   function openTickets(e){
     if(e) e.preventDefault();
