@@ -968,6 +968,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 }
 </style>
 
+<!-- NUMINA: Opción E (Neon suave) para botones Detalles/Eliminar + separación -->
 
 
 
@@ -975,8 +976,7 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 
 
 
-
-
+<!-- NUMINA: Hero en recuadro (tuneado para mayor visibilidad) -->
 <style id="raffle-hero-css">
   :root{
     
@@ -1155,22 +1155,49 @@ html, body { overflow-x: hidden; }
 })();
 </script>
 
-<style id="numina-pill-participar-css">
-  .numina-pill{
-    position: fixed; /* portal above everything */
-    z-index: 2147483647;
-    background: #FED60A;
+<style id="numina-pill-participar-css-v6">
+  /* --- 1) Fallback SOLO CSS (visible aun si JS no corre) --- */
+  .mbox-card-head{ position:relative; }
+  .mbox-card-head::after{
+    content: "Participar";
+    position:absolute;
+    left:50%; transform:translateX(-50%);
+    bottom:14px;
+    background:#FED60A;
     color:#111;
-    border:0;
     border-radius:999px;
     padding:10px 18px;
     font-weight:900;
+    white-space:nowrap;
+    z-index:9999;
+    pointer-events:none; /* visual; si JS corre, lo reemplaza por botón real */
     box-shadow:0 8px 22px rgba(255,215,0,.28);
-    white-space: nowrap;
-    cursor:pointer;
+  }
+
+  /* --- 2) Botón real (cuando JS corre), posicionado DENTRO del head --- */
+  .numina-pillwrap{
+    position:absolute;
+    left:50%; transform:translateX(-50%);
+    bottom:14px;
+    z-index:999999; /* por encima de overlays */
+    display:flex; align-items:center; justify-content:center;
+  }
+  .numina-pill{
+    background:#FED60A;
+    color:#111;
+    border:0; border-radius:999px;
+    padding:10px 18px;
+    font-weight:900;
+    white-space:nowrap; cursor:pointer;
+    box-shadow:0 8px 22px rgba(255,215,0,.28);
     transition: transform .12s ease, box-shadow .12s ease;
   }
   .numina-pill:hover{ transform: translateY(-1px); box-shadow:0 12px 26px rgba(255,215,0,.35); }
+
+  /* --- 3) Portal/Fixed por si el overlay/la tarjeta crean stacking contexts raros --- */
+  .numina-pill--portal{
+    position:fixed; z-index:2147483647;
+  }
 </style>
 </head>
 <body>
@@ -3836,7 +3863,7 @@ if (fn.error || !paymentUrl){
 
 
 
-
+<!-- NUMINA share-invite upgrade: builds https://numina.vip/login.html?ref=YOUR_CODE -->
 <script>
 (function(){
   function getSB(){
@@ -5351,7 +5378,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-
+<!-- NUMINA PATCH: Unify tickets KPI logic across Dashboard and Sorteos -->
 <script>
 (function(){
   // Sum tickets from tickets_ledger for the current user (positives + negatives)
@@ -5402,7 +5429,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-
+<!-- NUMINA PATCH 2: Unify KPI logic in Tickets Activos tab with Sorteos (use tickets_ledger) -->
 <script>
 (function(){
   async function _getClient(){
@@ -5466,7 +5493,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-
+<!-- NUMINA PATCH 3: Fill Tickets Activos table from tickets_ledger (fecha, producto, tickets, referido) -->
 <script>
 (function(){
   function _prettyName(sku){
@@ -5839,71 +5866,94 @@ const fillTicketsRowsFromLedger = async () => {
 
 
 
-<script id="numina-pill-participar-js">
+<script id="numina-pill-participar-js-v6">
 (function(){
   const $$  = (s, r) => Array.from((r||document).querySelectorAll(s));
   const txt = el => (el && (el.textContent||'').toLowerCase().trim()) || '';
-  const isOpen = card => {
+
+  function isOpen(card){
+    // Si no podemos leer el estado, igual agregamos (el usuario pidió verla si o si)
     const chips = $$('.mbox-chip, .mbox-badge, [class*="chip"], [class*="badge"], [data-status], [aria-label]', card);
-    for (const c of chips) {
+    for (const c of chips){
       const s = (c.getAttribute('data-status')||c.getAttribute('aria-label')||'').toLowerCase();
       const i18n = (c.getAttribute('data-i18n')||'').toLowerCase();
       if (txt(c).includes('abierto') || txt(c).includes('open') || s.includes('abierto') || s.includes('open') || i18n.includes('mbox.status.open')) return true;
     }
-    // Fallback: si estás en tab Open/Abiertos y el chip no diga Próximamente/Closed
-    const activeTab = document.querySelector('[aria-selected="true"], .is-active');
-    if (activeTab){
-      const t = txt(activeTab);
-      if (t.includes('abiertos') || t.includes('open')){
-        const chip = card.querySelector('.mbox-chip, .mbox-badge, [class*="chip"], [class*="badge"]');
-        const v = txt(chip);
-        if (!(v.includes('próximamente') || v.includes('proximamente') || v.includes('upcoming') || v.includes('closed') || v.includes('cerrado'))) return true;
-      }
+    // Fallback: si hay un chip que diga próximos/closed, no lo agrego; si no, lo agrego
+    const chip = card.querySelector('.mbox-chip, .mbox-badge, [class*="chip"], [class*="badge"]');
+    const v = txt(chip);
+    if (v.includes('próximamente') || v.includes('proximamente') || v.includes('upcoming') || v.includes('closed') || v.includes('cerrado')) return false;
+    return true;
+  }
+
+  function buildInHead(card){
+    // quito el pseudo-elemento visual via style para que no duplique el texto
+    card.querySelectorAll('.mbox-card-head').forEach(h => h.style.setProperty('content','none','important'));
+    const head = card.querySelector('.mbox-card-head') || card;
+    let wrap = head.querySelector('.numina-pillwrap');
+    if (!wrap){
+      wrap = document.createElement('div'); wrap.className = 'numina-pillwrap';
+      const b = document.createElement('button'); b.className = 'numina-pill'; b.type='button';
+      b.textContent = (window.dI18n && dI18n.t && dI18n.t('mbox.actions.participate')) || 'Participar';
+      b.onclick = ev => {
+        ev.preventDefault();
+        try{ if (window.handleParticiparClick) return window.handleParticiparClick(card, ev); }catch(_){}
+        alert('Participar (UI demo)');
+      };
+      wrap.appendChild(b); head.appendChild(wrap);
     }
-    return false;
-  };
-  const make = card => {
-    const b = document.createElement('button');
-    b.className = 'numina-pill';
-    b.textContent = (window.dI18n && dI18n.t && dI18n.t('mbox.actions.participate')) || 'Participar';
-    b.onclick = ev => {
-      ev.preventDefault();
-      try { if (window.handleParticiparClick) return window.handleParticiparClick(card, ev); } catch(e){}
-      alert('Participar (UI demo)');
-    };
-    b.__card = card;
-    document.body.appendChild(b);
+    return wrap.querySelector('.numina-pill');
+  }
+
+  function buildPortal(card){
+    let b = card.__numinaPortal;
+    if (!b){
+      b = document.createElement('button'); b.className = 'numina-pill numina-pill--portal'; b.type='button';
+      b.textContent = (window.dI18n && dI18n.t && dI18n.t('mbox.actions.participate')) || 'Participar';
+      b.onclick = ev => {
+        ev.preventDefault();
+        try{ if (window.handleParticiparClick) return window.handleParticiparClick(card, ev); }catch(_){}
+        alert('Participar (UI demo)');
+      };
+      card.__numinaPortal = b; document.body.appendChild(b);
+    }
     return b;
-  };
-  const place = (b, card) => {
+  }
+
+  function placePortal(b, card){
     const r = card.getBoundingClientRect(), pad = 14;
-    if (r.width<=0||r.height<=0||r.bottom<0||r.top>innerHeight||r.right<0||r.left>innerWidth){ b.style.display='none'; return; }
+    if (r.width<=0||r.height<=0||r.bottom<0||r.top>innerHeight||r.right<0||r.left>innerWidth){
+      b.style.display='none'; return;
+    }
     b.style.display='block';
     const bw = b.offsetWidth, bh = b.offsetHeight;
     b.style.left = Math.round(r.left + (r.width - bw)/2) + 'px';
     b.style.top  = Math.round(r.bottom - pad - bh) + 'px';
-  };
-  const ensure = () => {
-    for (const card of $$('.mbox-card, .mbox-poster, [class*="mbox-card"]')) {
+  }
+
+  function ensure(){
+    const cards = $$('.mbox-card, .mbox-poster, [class*="mbox-card"], [class*="poster"]');
+    for (const card of cards){
       if (!isOpen(card)) continue;
-      let b = card.__numinaPill;
-      if (!b) card.__numinaPill = b = make(card);
-      place(b, card);
+      // 1) Intento en head (si stacking context lo permite)
+      const btn = buildInHead(card);
+      // 2) Además agrego portal por si hay overlay que tape (garantía visual)
+      const portal = buildPortal(card);
+      placePortal(portal, card);
     }
-  };
-  const cleanup = () => {
-    for (const b of $$('.numina-pill')) {
-      if (!b.__card || !document.contains(b.__card)) b.remove();
-    }
-  };
-  const init = () => {
-    ensure(); cleanup();
+  }
+
+  function init(){
+    ensure();
     addEventListener('scroll', ensure, {passive:true});
     addEventListener('resize', ensure, {passive:true});
-    const mo = new MutationObserver(() => { ensure(); cleanup(); });
-    mo.observe(document.body, {childList:true, subtree:true});
-    setInterval(ensure, 400);
-  };
+    try{
+      const mo = new MutationObserver(ensure);
+      mo.observe(document.body, {childList:true, subtree:true});
+    }catch(_){}
+    setInterval(ensure, 600);
+  }
+
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, {once:true}); else init();
 })();
 </script>
