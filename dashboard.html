@@ -1155,49 +1155,53 @@ html, body { overflow-x: hidden; }
 })();
 </script>
 
-<style id="numina-pill-participar-css-v6">
-  /* --- 1) Fallback SOLO CSS (visible aun si JS no corre) --- */
-  .mbox-card-head{ position:relative; }
-  .mbox-card-head::after{
-    content: "Participar";
-    position:absolute;
-    left:50%; transform:translateX(-50%);
-    bottom:14px;
-    background:#FED60A;
-    color:#111;
-    border-radius:999px;
-    padding:10px 18px;
-    font-weight:900;
-    white-space:nowrap;
-    z-index:9999;
-    pointer-events:none; /* visual; si JS corre, lo reemplaza por botón real */
-    box-shadow:0 8px 22px rgba(255,215,0,.28);
+<style id="numina-ux-pack-v1">
+  :root{
+    --ux-surface:#16171a;
+    --ux-border:#2a2c31;
+    --ux-muted:#b7bcc7;
+    --ux-primary:#FED60A;
+    --ux-ok:#19c37d;
   }
+  /* Hero de acciones rápidas */
+  #numina-quick-actions{
+    background: linear-gradient(180deg, rgba(254,214,10,.10), rgba(254,214,10,.04));
+    border:1px solid rgba(254,214,10,.16);
+    border-radius:16px;
+    padding:16px;
+    margin:14px 0 18px;
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+  }
+  #numina-quick-actions .qa-left{display:flex;flex-direction:column;gap:6px}
+  #numina-quick-actions h3{margin:0;font-size:1.2rem;font-weight:900;letter-spacing:.2px}
+  #numina-quick-actions p{margin:0;color:var(--ux-muted);font-size:.95rem}
+  .qa-actions{display:flex;flex-wrap:wrap;gap:10px}
+  .btn-pill{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;
+    border:1px solid #2a2c31;background:#1b1c20;color:#fff;font-weight:800;text-decoration:none}
+  .btn-pill--pri{background:var(--ux-primary);color:#111;border-color:transparent}
+  .btn-pill:hover{transform:translateY(-1px); box-shadow:0 8px 22px rgba(0,0,0,.28)}
 
-  /* --- 2) Botón real (cuando JS corre), posicionado DENTRO del head --- */
-  .numina-pillwrap{
-    position:absolute;
-    left:50%; transform:translateX(-50%);
-    bottom:14px;
-    z-index:999999; /* por encima de overlays */
-    display:flex; align-items:center; justify-content:center;
-  }
-  .numina-pill{
-    background:#FED60A;
-    color:#111;
-    border:0; border-radius:999px;
-    padding:10px 18px;
-    font-weight:900;
-    white-space:nowrap; cursor:pointer;
-    box-shadow:0 8px 22px rgba(255,215,0,.28);
-    transition: transform .12s ease, box-shadow .12s ease;
-  }
-  .numina-pill:hover{ transform: translateY(-1px); box-shadow:0 12px 26px rgba(255,215,0,.35); }
+  /* KPIs (si existen con clase .stat-card) */
+  .stat-card .value{ font-variant-numeric: tabular-nums; line-height:1; }
 
-  /* --- 3) Portal/Fixed por si el overlay/la tarjeta crean stacking contexts raros --- */
-  .numina-pill--portal{
-    position:fixed; z-index:2147483647;
-  }
+  /* Tablas más compactas */
+  .table-container{ border-radius:14px; overflow:hidden; }
+  table thead th{ position:sticky; top:0; z-index:2; }
+  .status{ display:inline-block; min-width:8ch; text-align:center; border-radius:999px; padding:.35rem .65rem; font-weight:800; }
+  .status.active{ background:rgba(25,195,125,.14); color:#23d598; }
+  .status.pending{ background:rgba(255,176,32,.15); color:#ffc46b; }
+  .status.paid{ background:rgba(25,195,125,.14); color:#23d598; }
+  .action-btn, .btn-delete-row{ border-radius:12px; font-weight:800; }
+
+  /* Sorteos: pill “Participar” centrada sobre la imagen */
+  .mbox-card-head, .mbox-poster{ position:relative; }
+  .mbox-pillwrap{ position:absolute; left:50%; transform:translateX(-50%); bottom:14px; z-index:9999; }
+  .mbox-pill{ background:var(--ux-primary); color:#111; border:0; border-radius:999px; padding:10px 18px; font-weight:900; cursor:pointer; box-shadow:0 8px 22px rgba(255,215,0,.28); }
+  .mbox-pill:hover{ transform: translateX(-50%) translateY(-1px); }
+
+  /* Caption más legible */
+  .mbox-caption-title{ color:var(--ux-primary) !important; }
+  .mbox-caption-sub{ color:#eaeef7 !important; opacity:.9 }
 </style>
 </head>
 <body>
@@ -1245,6 +1249,18 @@ html, body { overflow-x: hidden; }
     </nav>
 
     <main class="main-content">
+<section id="numina-quick-actions">
+  <div class="qa-left">
+    <h3>Tu panel al día</h3>
+    <p>Acciones rápidas para lo que más usás.</p>
+  </div>
+  <div class="qa-actions">
+    <a class="btn-pill btn-pill--pri" href="#section-sorteos">Participar en sorteos</a>
+    <a class="btn-pill" href="#comprar-tickets">Comprar tickets</a>
+    <a class="btn-pill" href="#referrals">Invitar amigos</a>
+  </div>
+</section>
+
       <div id="main-dashboard">
         <section class="welcome-banner" id="welcome-banner">
           <div class="welcome-text">
@@ -5866,95 +5882,60 @@ const fillTicketsRowsFromLedger = async () => {
 
 
 
-<script id="numina-pill-participar-js-v6">
+<script id="numina-portal-pill-v1">
 (function(){
-  const $$  = (s, r) => Array.from((r||document).querySelectorAll(s));
-  const txt = el => (el && (el.textContent||'').toLowerCase().trim()) || '';
-
+  const $$=(s,r)=>Array.from((r||document).querySelectorAll(s));
+  const txt=el=>(el&&(el.textContent||'').toLowerCase().trim())||'';
   function isOpen(card){
-    // Si no podemos leer el estado, igual agregamos (el usuario pidió verla si o si)
-    const chips = $$('.mbox-chip, .mbox-badge, [class*="chip"], [class*="badge"], [data-status], [aria-label]', card);
-    for (const c of chips){
-      const s = (c.getAttribute('data-status')||c.getAttribute('aria-label')||'').toLowerCase();
-      const i18n = (c.getAttribute('data-i18n')||'').toLowerCase();
-      if (txt(c).includes('abierto') || txt(c).includes('open') || s.includes('abierto') || s.includes('open') || i18n.includes('mbox.status.open')) return true;
+    const chips=$$('.mbox-chip,.mbox-badge,[class*="chip"],[class*="badge"],[data-status],[aria-label]',card);
+    for(const c of chips){
+      const s=(c.getAttribute('data-status')||c.getAttribute('aria-label')||'').toLowerCase();
+      const i=(c.getAttribute('data-i18n')||'').toLowerCase();
+      if(txt(c).includes('abierto')||txt(c).includes('open')||s.includes('abierto')||s.includes('open')||i.includes('mbox.status.open')) return true;
     }
-    // Fallback: si hay un chip que diga próximos/closed, no lo agrego; si no, lo agrego
-    const chip = card.querySelector('.mbox-chip, .mbox-badge, [class*="chip"], [class*="badge"]');
-    const v = txt(chip);
-    if (v.includes('próximamente') || v.includes('proximamente') || v.includes('upcoming') || v.includes('closed') || v.includes('cerrado')) return false;
-    return true;
+    return true; // si no detecta, igual mostramos (pedido UX)
   }
-
-  function buildInHead(card){
-    // quito el pseudo-elemento visual via style para que no duplique el texto
-    card.querySelectorAll('.mbox-card-head').forEach(h => h.style.setProperty('content','none','important'));
-    const head = card.querySelector('.mbox-card-head') || card;
-    let wrap = head.querySelector('.numina-pillwrap');
-    if (!wrap){
-      wrap = document.createElement('div'); wrap.className = 'numina-pillwrap';
-      const b = document.createElement('button'); b.className = 'numina-pill'; b.type='button';
-      b.textContent = (window.dI18n && dI18n.t && dI18n.t('mbox.actions.participate')) || 'Participar';
-      b.onclick = ev => {
-        ev.preventDefault();
-        try{ if (window.handleParticiparClick) return window.handleParticiparClick(card, ev); }catch(_){}
-        alert('Participar (UI demo)');
-      };
-      wrap.appendChild(b); head.appendChild(wrap);
-    }
-    return wrap.querySelector('.numina-pill');
-  }
-
-  function buildPortal(card){
-    let b = card.__numinaPortal;
-    if (!b){
-      b = document.createElement('button'); b.className = 'numina-pill numina-pill--portal'; b.type='button';
-      b.textContent = (window.dI18n && dI18n.t && dI18n.t('mbox.actions.participate')) || 'Participar';
-      b.onclick = ev => {
-        ev.preventDefault();
-        try{ if (window.handleParticiparClick) return window.handleParticiparClick(card, ev); }catch(_){}
-        alert('Participar (UI demo)');
-      };
-      card.__numinaPortal = b; document.body.appendChild(b);
+  function makePortal(card){
+    let b=card.__numinaPortal;
+    if(!b){
+      b=document.createElement('button');
+      b.className='numina-portal-pill';
+      Object.assign(b.style,{position:'fixed',zIndex:2147483647,background:'#FED60A',color:'#111',border:'0',borderRadius:'999px',padding:'10px 18px',fontWeight:'900',whiteSpace:'nowrap',boxShadow:'0 8px 22px rgba(255,215,0,.28)'});
+      b.textContent=(window.dI18n && dI18n.t && dI18n.t('mbox.actions.participate'))||'Participar';
+      b.onclick=ev=>{ev.preventDefault(); try{ if(window.handleParticiparClick) return window.handleParticiparClick(card,ev);}catch(e){}};
+      document.body.appendChild(b);
+      card.__numinaPortal=b;
     }
     return b;
   }
-
-  function placePortal(b, card){
-    const r = card.getBoundingClientRect(), pad = 14;
-    if (r.width<=0||r.height<=0||r.bottom<0||r.top>innerHeight||r.right<0||r.left>innerWidth){
-      b.style.display='none'; return;
-    }
+  function place(b, card){
+    const r=card.getBoundingClientRect(), pad=14;
+    if(r.width<=0||r.height<=0||r.bottom<0||r.top>innerHeight||r.right<0||r.left>innerWidth){ b.style.display='none'; return; }
     b.style.display='block';
-    const bw = b.offsetWidth, bh = b.offsetHeight;
-    b.style.left = Math.round(r.left + (r.width - bw)/2) + 'px';
-    b.style.top  = Math.round(r.bottom - pad - bh) + 'px';
+    const bw=b.offsetWidth, bh=b.offsetHeight;
+    b.style.left=Math.round(r.left+(r.width-bw)/2)+'px';
+    b.style.top =Math.round(r.bottom-pad-bh)+'px';
   }
-
   function ensure(){
-    const cards = $$('.mbox-card, .mbox-poster, [class*="mbox-card"], [class*="poster"]');
-    for (const card of cards){
-      if (!isOpen(card)) continue;
-      // 1) Intento en head (si stacking context lo permite)
-      const btn = buildInHead(card);
-      // 2) Además agrego portal por si hay overlay que tape (garantía visual)
-      const portal = buildPortal(card);
-      placePortal(portal, card);
+    for(const card of $$('.mbox-card,.mbox-poster,[class*="mbox-card"]')){
+      // Pill dentro del head (si es posible)
+      const head=card.querySelector('.mbox-card-head')||card;
+      if(head && !head.querySelector('.mbox-pillwrap')){
+        const wrap=document.createElement('div'); wrap.className='mbox-pillwrap';
+        const btn=document.createElement('button'); btn.className='mbox-pill'; btn.type='button';
+        btn.textContent=(window.dI18n && dI18n.t && dI18n.t('mbox.actions.participate'))||'Participar';
+        btn.onclick=ev=>{ev.preventDefault(); try{ if(window.handleParticiparClick) return window.handleParticiparClick(card,ev);}catch(e){}};
+        wrap.appendChild(btn); head.appendChild(wrap);
+      }
+      // Portal fijo para garantía visual
+      const portal=makePortal(card); place(portal, card);
     }
   }
-
-  function init(){
-    ensure();
-    addEventListener('scroll', ensure, {passive:true});
-    addEventListener('resize', ensure, {passive:true});
-    try{
-      const mo = new MutationObserver(ensure);
-      mo.observe(document.body, {childList:true, subtree:true});
-    }catch(_){}
-    setInterval(ensure, 600);
-  }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, {once:true}); else init();
+  ensure();
+  addEventListener('scroll', ensure, {passive:true});
+  addEventListener('resize', ensure, {passive:true});
+  try{ new MutationObserver(ensure).observe(document.body,{childList:true,subtree:true}); }catch(_){}
+  setInterval(ensure, 600);
 })();
 </script>
 </body>
