@@ -1236,34 +1236,23 @@ html, body { overflow-x: hidden; }
 })();
 </script>
 
-<!-- NUMINA v4: Pill "Participar" forzada sobre la imagen -->
-<style id="numina-pill-participar-css-v4">
-  .mbox-card-head, .mbox-poster{ position: relative; }
-  .mbox-pillwrap{
-    position:absolute;
-    left:50%;
-    transform:translateX(-50%);
-    bottom: 14px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    z-index: 2147483647; /* al tope */
-    pointer-events:auto;
-  }
-  .mbox-pill{
+<!-- NUMINA v5: estilos de la pill -->
+<style id="numina-pill-participar-css-v5">
+  .numina-pill{
+    position: fixed; /* portal sobre todo */
+    z-index: 2147483647;
     background: #FED60A;
     color:#111;
     border:0;
     border-radius:999px;
     padding:10px 18px;
     font-weight:900;
-    cursor:pointer;
     box-shadow:0 8px 22px rgba(255,215,0,.28);
-    transition: transform .12s ease, box-shadow .12s ease;
     white-space: nowrap;
+    cursor:pointer;
+    transition: transform .12s ease, box-shadow .12s ease;
   }
-  .mbox-pill:hover{ transform: translateY(-1px); box-shadow:0 12px 26px rgba(255,215,0,.35); }
-  .mbox-pill:active{ transform: translateY(0); box-shadow:0 6px 18px rgba(255,215,0,.28); }
+  .numina-pill:hover{ transform: translateY(-1px); box-shadow:0 12px 26px rgba(255,215,0,.35); }
 </style>
 </head>
 <body>
@@ -5932,65 +5921,89 @@ const fillTicketsRowsFromLedger = async () => {
 
 
 
-<!-- NUMINA v4: Sin guardas; elimina y vuelve a crear para evitar “no duplicar” -->
-<script id="numina-pill-participar-js-v4">
+<!-- NUMINA v5: portal fijo posicionado por boundingClientRect -->
+<script id="numina-pill-participar-js-v5">
 (function(){
-  function getText(el){
-    if (!el) return "";
-    return (el.textContent || "").replace(/\s+/g, ' ').trim().toLowerCase();
-  }
-  function isOpenCard(card){
-    var chips = card.querySelectorAll('.mbox-chip, .mbox-badge, [class*="chip"], [class*="badge"], [data-status], [aria-label]');
+  function $$ (sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+  function txt(el){ return (el && (el.textContent||'').toLowerCase().trim()) || ''; }
+
+  function isOpen(card){
+    var chips = $$('.mbox-chip, .mbox-badge, [class*="chip"], [class*="badge"], [data-status], [aria-label]', card);
     for (var i=0;i<chips.length;i++){
       var c = chips[i];
-      var t = getText(c);
-      var attr = (c.getAttribute('data-status')||c.getAttribute('aria-label')||"").toLowerCase();
-      var i18n = (c.getAttribute('data-i18n')||"").toLowerCase();
-      if (t.includes('abierto') || t.includes('open') || attr.includes('abierto') || attr.includes('open') || i18n.includes('mbox.status.open')){
-        return true;
-      }
+      var s = (c.getAttribute('data-status')||c.getAttribute('aria-label')||'').toLowerCase();
+      if (txt(c).includes('abierto') || txt(c).includes('open') || s.includes('abierto') || s.includes('open') ||
+          ((c.getAttribute('data-i18n')||'').toLowerCase().includes('mbox.status.open'))) return true;
     }
     return false;
   }
-  function buildPill(){
-    var wrap = document.createElement('div');
-    wrap.className = 'mbox-pillwrap';
-    var btn = document.createElement('button');
-    btn.className = 'mbox-pill';
-    btn.type = 'button';
-    btn.textContent = (window.dI18n && dI18n.t && dI18n.t('mbox.actions.participate')) || 'Participar';
-    wrap.appendChild(btn);
-    btn.addEventListener('click', function(ev){
+
+  function makePill(){
+    var b = document.createElement('button');
+    b.className = 'numina-pill';
+    b.textContent = (window.dI18n && dI18n.t && dI18n.t('mbox.actions.participate')) || 'Participar';
+    b.addEventListener('click', function(ev){
       ev.preventDefault();
-      try{ if (window.handleParticiparClick) return window.handleParticiparClick(wrap.closest(".mbox-card, .mbox-poster"), ev); }catch(_){}
-      alert(btn.textContent + ' (UI demo)');
+      try{
+        if (window.handleParticiparClick) return window.handleParticiparClick(b.__card, ev);
+      }catch(_){}
+      alert(b.textContent + ' (UI demo)');
     });
-    return wrap;
+    return b;
   }
-  function applyOnce(root){
-    var cards = (root || document).querySelectorAll('.mbox-card, .mbox-poster, [class*="mbox-card"]');
+
+  function positionPill(b, card){
+    var r = card.getBoundingClientRect();
+    var pad = 14;
+    // si la card está fuera de viewport, ocultar
+    if (r.width <= 0 || r.height <= 0 || r.bottom < 0 || r.top > window.innerHeight || r.right < 0 || r.left > window.innerWidth){
+      b.style.display = 'none';
+      return;
+    }
+    b.style.display = 'block';
+    // primero medir ancho/alto aproximado
+    document.body.appendChild(b); // asegurar que tenga tamaño
+    var bw = b.offsetWidth, bh = b.offsetHeight;
+    b.style.left = (Math.round(r.left + (r.width - bw)/2)) + 'px';
+    b.style.top  = (Math.round(r.bottom - pad - bh)) + 'px';
+  }
+
+  function ensure(){
+    var cards = $$('.mbox-card, .mbox-poster, [class*="mbox-card"]');
     cards.forEach(function(card){
-      if (!isOpenCard(card)) return;
-      var head = card.querySelector('.mbox-card-head') || card;
-      // eliminar cualquier pill previa y crear una nueva (evita “no duplicar”)
-      head.querySelectorAll('.mbox-pillwrap').forEach(function(e){ e.remove(); });
-      head.appendChild(buildPill());
+      if (!isOpen(card)) return;
+      // crear o reutilizar pill asociada
+      var b = card.__numinaPill;
+      if (!b){
+        b = makePill();
+        b.__card = card;
+        card.__numinaPill = b;
+        document.body.appendChild(b);
+      }
+      positionPill(b, card);
     });
   }
+
+  function cleanup(){
+    $$('.numina-pill').forEach(function(b){
+      if (!b.__card || !document.contains(b.__card)){ b.remove(); }
+    });
+  }
+
   function init(){
-    applyOnce(document);
-    // Reintento por intervalos (por si Shadow DOM/iframes re-renderizan)
-    var tries = 0;
-    var iv = setInterval(function(){
-      tries++; applyOnce(document);
-      if (tries > 50) clearInterval(iv); // ~25s si corre cada 500ms
-    }, 500);
+    ensure();
+    cleanup();
+    // repintar en scroll/resize/interval/mutations
+    ['scroll','resize'].forEach(function(ev){ window.addEventListener(ev, ensure, {passive:true}); });
+    var iv = setInterval(ensure, 400);
     try{
-      var mo = new MutationObserver(function(){ applyOnce(document); });
+      var mo = new MutationObserver(function(){ ensure(); cleanup(); });
       mo.observe(document.body, {childList:true, subtree:true});
     }catch(_){}
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, {once:true}); else init();
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, {once:true});
+  else init();
 })();
 </script>
 </body>
