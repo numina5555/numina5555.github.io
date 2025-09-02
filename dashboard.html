@@ -968,96 +968,15 @@ button:hover, .stat-card:hover, .settings-card:hover, .srt-card:hover, .pd-card:
 }
 </style>
 
-<!-- NUMINA: Opción E (Neon suave) para botones Detalles/Eliminar + separación -->
-<style id="numina-buttons-opcion-e">
-  /* Separación entre botones en la columna de Acciones */
-  #purchases-table td:nth-child(5),
-  #miscompras-table td:nth-child(5) {
-    display: flex;
-    gap: 14px;
-    align-items: center;
-  }
-
-  /* Detalles (dorado) – estilo Neon suave */
-  .table-container .action-btn[data-action="details"]{
-    background: transparent;
-    color: var(--primary);
-    border: 1.5px solid var(--primary);
-    border-radius: 14px;
-    font-weight: 700;
-    padding: .45rem .9rem;
-    box-shadow: 0 0 0 1px rgba(255,215,0,.45) inset;
-    text-shadow: 0 0 6px rgba(255,215,0,.35);
-    transition: all .18s ease;
-  }
-  .table-container .action-btn[data-action="details"]:hover{
-  background: var(--primary) !important;
-  color: var(--dark) !important;
-  border-color: var(--primary) !important;
-  box-shadow: 0 0 12px rgba(255,215,0,.45), 0 0 0 2px var(--primary) inset !important;
-  text-shadow: none !important;
-}
-
-  /* Eliminar (rojo) – estilo Neon suave */
-  .table-container .btn-delete-row,
-  .table-container .action-btn[data-action="delete"]{
-    background: transparent;
-    color: var(--danger);
-    border: 1.5px solid var(--danger);
-    border-radius: 14px;
-    font-weight: 700;
-    padding: .45rem .9rem;
-    box-shadow: 0 0 0 1px rgba(220,53,69,.45) inset;
-    text-shadow: 0 0 6px rgba(220,53,69,.35);
-    transition: all .18s ease;
-  }
-  .table-container .btn-delete-row:hover,
-  .table-container .action-btn[data-action="delete"]:hover{
-    background: rgba(220,53,69,.10);
-    color: #fff;
-    box-shadow: 0 0 18px rgba(220,53,69,.35), 0 0 0 1px rgba(220,53,69,.6) inset;
-  }
-</style>
-
-
-<style id="numina-actions-visible-fix">
-
-/* === NUMINA FIX v2: acciones en una sola línea === */
-.table-container { overflow-x: auto; }
-#purchases-table th:nth-child(5),
-#miscompras-table th:nth-child(5),
-#referrals-table th:nth-child(5){
-  width: 22% !important;               /* más espacio para dos botones */
-}
-#purchases-table td:nth-child(5),
-#miscompras-table td:nth-child(5),
-#referrals-table td:nth-child(5){
-  overflow: visible !important;
-  white-space: nowrap !important;       /* NO partir en varias líneas */
-  display: flex !important;             /* coloca los botones en fila */
-  gap: 12px !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  flex-wrap: nowrap !important;         /* evitar que bajen a segunda línea */
-  min-width: 240px !important;          /* asegura espacio mínimo */
-  padding-right: 16px;
-}
-/* Asegurar que los botones no tomen todo el ancho */
-.table-container .action-btn,
-.table-container .btn-delete-row{
-  display: inline-flex !important;
-  width: auto !important;
-  min-width: auto !important;
-  flex: 0 0 auto !important;
-  padding: .45rem .9rem !important;
-  border-radius: 12px !important;
-}
-
-</style>
 
 
 
-<!-- NUMINA: Hero en recuadro (tuneado para mayor visibilidad) -->
+
+
+
+
+
+
 <style id="raffle-hero-css">
   :root{
     
@@ -1236,10 +1155,9 @@ html, body { overflow-x: hidden; }
 })();
 </script>
 
-<!-- NUMINA v5: estilos de la pill -->
-<style id="numina-pill-participar-css-v5">
+<style id="numina-pill-participar-css">
   .numina-pill{
-    position: fixed; /* portal sobre todo */
+    position: fixed; /* portal above everything */
     z-index: 2147483647;
     background: #FED60A;
     color:#111;
@@ -3918,7 +3836,7 @@ if (fn.error || !paymentUrl){
 
 
 
-<!-- NUMINA share-invite upgrade: builds https://numina.vip/login.html?ref=YOUR_CODE -->
+
 <script>
 (function(){
   function getSB(){
@@ -5433,7 +5351,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-<!-- NUMINA PATCH: Unify tickets KPI logic across Dashboard and Sorteos -->
+
 <script>
 (function(){
   // Sum tickets from tickets_ledger for the current user (positives + negatives)
@@ -5484,7 +5402,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-<!-- NUMINA PATCH 2: Unify KPI logic in Tickets Activos tab with Sorteos (use tickets_ledger) -->
+
 <script>
 (function(){
   async function _getClient(){
@@ -5548,7 +5466,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-<!-- NUMINA PATCH 3: Fill Tickets Activos table from tickets_ledger (fecha, producto, tickets, referido) -->
+
 <script>
 (function(){
   function _prettyName(sku){
@@ -5921,89 +5839,72 @@ const fillTicketsRowsFromLedger = async () => {
 
 
 
-<!-- NUMINA v5: portal fijo posicionado por boundingClientRect -->
-<script id="numina-pill-participar-js-v5">
+<script id="numina-pill-participar-js">
 (function(){
-  function $$ (sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
-  function txt(el){ return (el && (el.textContent||'').toLowerCase().trim()) || ''; }
-
-  function isOpen(card){
-    var chips = $$('.mbox-chip, .mbox-badge, [class*="chip"], [class*="badge"], [data-status], [aria-label]', card);
-    for (var i=0;i<chips.length;i++){
-      var c = chips[i];
-      var s = (c.getAttribute('data-status')||c.getAttribute('aria-label')||'').toLowerCase();
-      if (txt(c).includes('abierto') || txt(c).includes('open') || s.includes('abierto') || s.includes('open') ||
-          ((c.getAttribute('data-i18n')||'').toLowerCase().includes('mbox.status.open'))) return true;
+  const $$  = (s, r) => Array.from((r||document).querySelectorAll(s));
+  const txt = el => (el && (el.textContent||'').toLowerCase().trim()) || '';
+  const isOpen = card => {
+    const chips = $$('.mbox-chip, .mbox-badge, [class*="chip"], [class*="badge"], [data-status], [aria-label]', card);
+    for (const c of chips) {
+      const s = (c.getAttribute('data-status')||c.getAttribute('aria-label')||'').toLowerCase();
+      const i18n = (c.getAttribute('data-i18n')||'').toLowerCase();
+      if (txt(c).includes('abierto') || txt(c).includes('open') || s.includes('abierto') || s.includes('open') || i18n.includes('mbox.status.open')) return true;
+    }
+    // Fallback: si estás en tab Open/Abiertos y el chip no diga Próximamente/Closed
+    const activeTab = document.querySelector('[aria-selected="true"], .is-active');
+    if (activeTab){
+      const t = txt(activeTab);
+      if (t.includes('abiertos') || t.includes('open')){
+        const chip = card.querySelector('.mbox-chip, .mbox-badge, [class*="chip"], [class*="badge"]');
+        const v = txt(chip);
+        if (!(v.includes('próximamente') || v.includes('proximamente') || v.includes('upcoming') || v.includes('closed') || v.includes('cerrado'))) return true;
+      }
     }
     return false;
-  }
-
-  function makePill(){
-    var b = document.createElement('button');
+  };
+  const make = card => {
+    const b = document.createElement('button');
     b.className = 'numina-pill';
     b.textContent = (window.dI18n && dI18n.t && dI18n.t('mbox.actions.participate')) || 'Participar';
-    b.addEventListener('click', function(ev){
+    b.onclick = ev => {
       ev.preventDefault();
-      try{
-        if (window.handleParticiparClick) return window.handleParticiparClick(b.__card, ev);
-      }catch(_){}
-      alert(b.textContent + ' (UI demo)');
-    });
+      try { if (window.handleParticiparClick) return window.handleParticiparClick(card, ev); } catch(e){}
+      alert('Participar (UI demo)');
+    };
+    b.__card = card;
+    document.body.appendChild(b);
     return b;
-  }
-
-  function positionPill(b, card){
-    var r = card.getBoundingClientRect();
-    var pad = 14;
-    // si la card está fuera de viewport, ocultar
-    if (r.width <= 0 || r.height <= 0 || r.bottom < 0 || r.top > window.innerHeight || r.right < 0 || r.left > window.innerWidth){
-      b.style.display = 'none';
-      return;
+  };
+  const place = (b, card) => {
+    const r = card.getBoundingClientRect(), pad = 14;
+    if (r.width<=0||r.height<=0||r.bottom<0||r.top>innerHeight||r.right<0||r.left>innerWidth){ b.style.display='none'; return; }
+    b.style.display='block';
+    const bw = b.offsetWidth, bh = b.offsetHeight;
+    b.style.left = Math.round(r.left + (r.width - bw)/2) + 'px';
+    b.style.top  = Math.round(r.bottom - pad - bh) + 'px';
+  };
+  const ensure = () => {
+    for (const card of $$('.mbox-card, .mbox-poster, [class*="mbox-card"]')) {
+      if (!isOpen(card)) continue;
+      let b = card.__numinaPill;
+      if (!b) card.__numinaPill = b = make(card);
+      place(b, card);
     }
-    b.style.display = 'block';
-    // primero medir ancho/alto aproximado
-    document.body.appendChild(b); // asegurar que tenga tamaño
-    var bw = b.offsetWidth, bh = b.offsetHeight;
-    b.style.left = (Math.round(r.left + (r.width - bw)/2)) + 'px';
-    b.style.top  = (Math.round(r.bottom - pad - bh)) + 'px';
-  }
-
-  function ensure(){
-    var cards = $$('.mbox-card, .mbox-poster, [class*="mbox-card"]');
-    cards.forEach(function(card){
-      if (!isOpen(card)) return;
-      // crear o reutilizar pill asociada
-      var b = card.__numinaPill;
-      if (!b){
-        b = makePill();
-        b.__card = card;
-        card.__numinaPill = b;
-        document.body.appendChild(b);
-      }
-      positionPill(b, card);
-    });
-  }
-
-  function cleanup(){
-    $$('.numina-pill').forEach(function(b){
-      if (!b.__card || !document.contains(b.__card)){ b.remove(); }
-    });
-  }
-
-  function init(){
-    ensure();
-    cleanup();
-    // repintar en scroll/resize/interval/mutations
-    ['scroll','resize'].forEach(function(ev){ window.addEventListener(ev, ensure, {passive:true}); });
-    var iv = setInterval(ensure, 400);
-    try{
-      var mo = new MutationObserver(function(){ ensure(); cleanup(); });
-      mo.observe(document.body, {childList:true, subtree:true});
-    }catch(_){}
-  }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, {once:true});
-  else init();
+  };
+  const cleanup = () => {
+    for (const b of $$('.numina-pill')) {
+      if (!b.__card || !document.contains(b.__card)) b.remove();
+    }
+  };
+  const init = () => {
+    ensure(); cleanup();
+    addEventListener('scroll', ensure, {passive:true});
+    addEventListener('resize', ensure, {passive:true});
+    const mo = new MutationObserver(() => { ensure(); cleanup(); });
+    mo.observe(document.body, {childList:true, subtree:true});
+    setInterval(ensure, 400);
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, {once:true}); else init();
 })();
 </script>
 </body>
