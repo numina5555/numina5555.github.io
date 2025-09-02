@@ -1236,8 +1236,8 @@ html, body { overflow-x: hidden; }
 })();
 </script>
 
-<!-- NUMINA v3: Pill "Participar" visible sobre la imagen -->
-<style id="numina-pill-participar-css-v3">
+<!-- NUMINA v4: Pill "Participar" forzada sobre la imagen -->
+<style id="numina-pill-participar-css-v4">
   .mbox-card-head, .mbox-poster{ position: relative; }
   .mbox-pillwrap{
     position:absolute;
@@ -1247,8 +1247,8 @@ html, body { overflow-x: hidden; }
     display:flex;
     justify-content:center;
     align-items:center;
-    z-index: 9999; /* asegura estar por encima del overlay ::after */
-    pointer-events: auto;
+    z-index: 2147483647; /* al tope */
+    pointer-events:auto;
   }
   .mbox-pill{
     background: #FED60A;
@@ -5932,95 +5932,65 @@ const fillTicketsRowsFromLedger = async () => {
 
 
 
-<!-- NUMINA v3: Lógica robusta de inyección -->
-<script id="numina-pill-participar-js-v3">
+<!-- NUMINA v4: Sin guardas; elimina y vuelve a crear para evitar “no duplicar” -->
+<script id="numina-pill-participar-js-v4">
 (function(){
   function getText(el){
     if (!el) return "";
     return (el.textContent || "").replace(/\s+/g, ' ').trim().toLowerCase();
   }
   function isOpenCard(card){
-    // Criterios: texto "abierto"/"open" en algún chip/badge/status
     var chips = card.querySelectorAll('.mbox-chip, .mbox-badge, [class*="chip"], [class*="badge"], [data-status], [aria-label]');
     for (var i=0;i<chips.length;i++){
       var c = chips[i];
       var t = getText(c);
       var attr = (c.getAttribute('data-status')||c.getAttribute('aria-label')||"").toLowerCase();
-      if (t.includes('abierto') || t.includes('open') || attr.includes('abierto') || attr.includes('open')){
+      var i18n = (c.getAttribute('data-i18n')||"").toLowerCase();
+      if (t.includes('abierto') || t.includes('open') || attr.includes('abierto') || attr.includes('open') || i18n.includes('mbox.status.open')){
         return true;
-      }
-      // data-i18n hints
-      var di = (c.getAttribute('data-i18n')||"").toLowerCase();
-      if (di.includes('mbox.status.open')) return true;
-    }
-    // Fallback: si el card está en un tab "Abiertos"
-    var tab = document.querySelector('[aria-selected="true"], .is-active');
-    if (tab){
-      var tabText = getText(tab);
-      if (tabText.includes('abiertos') || tabText.includes('open')){
-        // Si estamos en el tab de abiertos, y el card NO dice próximamente/finalizado, lo tomamos como abierto
-        var bad = card.querySelector('.mbox-chip, .mbox-badge, [class*="chip"], [class*="badge"]');
-        var bt = getText(bad);
-        if (!(bt.includes('próximamente') || bt.includes('proximamente') || bt.includes('finalizado') || bt.includes('cerrado'))){
-          return true;
-        }
       }
     }
     return false;
   }
-
-  function addPill(card){
-    if (!card || card.dataset.__hasPill) return;
+  function buildPill(){
     var wrap = document.createElement('div');
     wrap.className = 'mbox-pillwrap';
-
     var btn = document.createElement('button');
     btn.className = 'mbox-pill';
     btn.type = 'button';
     btn.textContent = (window.dI18n && dI18n.t && dI18n.t('mbox.actions.participate')) || 'Participar';
-
     wrap.appendChild(btn);
-
-    // Lugar preferido: head sobre la imagen; fallback: card
-    var head = card.querySelector('.mbox-card-head') || card;
-    head.appendChild(wrap);
-
     btn.addEventListener('click', function(ev){
       ev.preventDefault();
-      try{
-        if (window.handleParticiparClick) return window.handleParticiparClick(card, ev);
-      }catch(_){}
+      try{ if (window.handleParticiparClick) return window.handleParticiparClick(wrap.closest(".mbox-card, .mbox-poster"), ev); }catch(_){}
       alert(btn.textContent + ' (UI demo)');
     });
-
-    card.dataset.__hasPill = '1';
+    return wrap;
   }
-
-  function scan(root){
+  function applyOnce(root){
     var cards = (root || document).querySelectorAll('.mbox-card, .mbox-poster, [class*="mbox-card"]');
     cards.forEach(function(card){
-      if (isOpenCard(card)) addPill(card);
+      if (!isOpenCard(card)) return;
+      var head = card.querySelector('.mbox-card-head') || card;
+      // eliminar cualquier pill previa y crear una nueva (evita “no duplicar”)
+      head.querySelectorAll('.mbox-pillwrap').forEach(function(e){ e.remove(); });
+      head.appendChild(buildPill());
     });
   }
-
   function init(){
-    scan(document);
+    applyOnce(document);
+    // Reintento por intervalos (por si Shadow DOM/iframes re-renderizan)
+    var tries = 0;
+    var iv = setInterval(function(){
+      tries++; applyOnce(document);
+      if (tries > 50) clearInterval(iv); // ~25s si corre cada 500ms
+    }, 500);
     try{
-      var mo = new MutationObserver(function(muts){
-        for (var i=0;i<muts.length;i++){
-          var t = muts[i].target;
-          scan(t.nodeType === 1 ? t : document);
-        }
-      });
+      var mo = new MutationObserver(function(){ applyOnce(document); });
       mo.observe(document.body, {childList:true, subtree:true});
     }catch(_){}
   }
-
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', init, {once:true});
-  } else {
-    init();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, {once:true}); else init();
 })();
 </script>
 </body>
