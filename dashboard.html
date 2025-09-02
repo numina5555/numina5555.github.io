@@ -5902,10 +5902,18 @@ const fillTicketsRowsFromLedger = async () => {
 
 
 
-<!-- ==== MOCK PATCH: disable real config/auth and provide safe stubs ==== -->
+<!-- ==== MOCK PATCH v2: no consultas + permite "session" simulada ==== -->
 <script>
 (function(){
   function noop(){}
+  // Si venís de login real, NO toco nada si ya existe un cliente con auth real
+  if (window.supabase && window.supabase.auth && typeof window.supabase.auth.getUser === 'function') {
+    // dejamos el real; sólo neutralizamos initConfig si rompe
+    window.initConfig = window.initConfig || function(){};
+    return;
+  }
+
+  // Cliente stub SIN red y con usuario "falso" para que el dashboard no redirija a login
   const STUB = {
     from: function(){ 
       return {
@@ -5917,14 +5925,21 @@ const fillTicketsRowsFromLedger = async () => {
     },
     rpc: async function(){ return { data: null, error: null }; },
     auth: {
-      getUser: async function(){ return { data: { user: null }, error: null }; },
+      // devolvemos un usuario simulado
+      getUser: async function(){ return { data: { user: { id: 'mock-user', email: 'mock@numina.vip' } }, error: null }; },
       signOut: async function(){ return { error: null }; },
       onAuthStateChange: function(){ return { data: { subscription: { unsubscribe: noop } } }; }
     }
   };
+
+  // Exponer stubs
   window.getSupabase = function(){ return STUB; };
   window.supabase = STUB;
-  window.initConfig = function(_supabase){ /* mock: do nothing */ };
+
+  // initConfig no hace nada
+  window.initConfig = function(_supabase){};
+
+  // Logout sólo redirige
   const logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn && logoutBtn.parentNode){
     const clone = logoutBtn.cloneNode(true);
