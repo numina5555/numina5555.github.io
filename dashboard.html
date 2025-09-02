@@ -5902,53 +5902,59 @@ const fillTicketsRowsFromLedger = async () => {
 
 
 
-<!-- ==== MOCK PATCH v2: no consultas + permite "session" simulada ==== -->
+<!-- ==== TARGETED MOCK (tickets_ledger only) ==== -->
 <script>
 (function(){
-  function noop(){}
-  // Si venís de login real, NO toco nada si ya existe un cliente con auth real
-  if (window.supabase && window.supabase.auth && typeof window.supabase.auth.getUser === 'function') {
-    // dejamos el real; sólo neutralizamos initConfig si rompe
-    window.initConfig = window.initConfig || function(){};
-    return;
+  // If we don't have a supabase client yet, do nothing.
+  var get = window.getSupabase || function(){ return window.supabase; };
+  var sb = (typeof get === 'function') ? get() : null;
+  if (!sb || typeof sb.from !== 'function') return;
+
+  // Keep a reference to the original .from
+  var realFrom = sb.from.bind(sb);
+
+  // A tiny thenable query builder that mimics supabase-js just enough
+  function builderFor(mockArray){
+    var state = { single:false };
+    var api = {
+      select: function(){ return api; },
+      eq: function(){ return api; },
+      neq: function(){ return api; },
+      gte: function(){ return api; },
+      lte: function(){ return api; },
+      gt: function(){ return api; },
+      lt: function(){ return api; },
+      in: function(){ return api; },
+      is: function(){ return api; },
+      like: function(){ return api; },
+      ilike: function(){ return api; },
+      or: function(){ return api; },
+      order: function(){ return api; },
+      limit: function(){ return api; },
+      range: function(){ return api; },
+      single: function(){ state.single = true; return api; },
+      then: function(res, rej){
+        var payload = state.single ? (Array.isArray(mockArray) ? mockArray[0] : mockArray) : mockArray;
+        return Promise.resolve({ data: payload, error: null, count: Array.isArray(mockArray) ? mockArray.length : (mockArray ? 1 : 0) }).then(res, rej);
+      },
+      catch: function(rej){ return Promise.resolve().catch(rej); },
+      finally: function(cb){ return Promise.resolve().finally(cb); }
+    };
+    return api;
   }
 
-  // Cliente stub SIN red y con usuario "falso" para que el dashboard no redirija a login
-  const STUB = {
-    from: function(){ 
-      return {
-        select: async function(){ return { data: [], error: null }; },
-        insert: async function(){ return { data: null, error: null }; },
-        update: async function(){ return { data: null, error: null }; },
-        delete: async function(){ return { data: null, error: null }; }
-      };
-    },
-    rpc: async function(){ return { data: null, error: null }; },
-    auth: {
-      // devolvemos un usuario simulado
-      getUser: async function(){ return { data: { user: { id: 'mock-user', email: 'mock@numina.vip' } }, error: null }; },
-      signOut: async function(){ return { error: null }; },
-      onAuthStateChange: function(){ return { data: { subscription: { unsubscribe: noop } } }; }
+  // Override only for the 'tickets_ledger' table
+  sb.from = function(table){
+    if (table === 'tickets_ledger'){
+      var MOCK = [
+        { created_at: '2025-08-23T00:00:00Z', product: 'Pulsera Numina', tickets: 1, referrer_id: null, user_id: 'mock-user' },
+        { created_at: '2025-08-23T00:00:00Z', product: '3Ref.C1',        tickets: 1, referrer_id: 'r1', user_id: 'mock-user' },
+        { created_at: '2025-08-23T00:00:00Z', product: '3Ref.C1',        tickets: 1, referrer_id: 'r1', user_id: 'mock-user' }
+      ];
+      return builderFor(MOCK);
     }
+    return realFrom(table);
   };
-
-  // Exponer stubs
-  window.getSupabase = function(){ return STUB; };
-  window.supabase = STUB;
-
-  // initConfig no hace nada
-  window.initConfig = function(_supabase){};
-
-  // Logout sólo redirige
-  const logoutBtn = document.getElementById('logout-btn');
-  if (logoutBtn && logoutBtn.parentNode){
-    const clone = logoutBtn.cloneNode(true);
-    logoutBtn.parentNode.replaceChild(clone, logoutBtn);
-    clone.addEventListener('click', function(e){
-      e.preventDefault();
-      window.location.href = '/login.html';
-    });
-  }
 })();
 </script>
 
